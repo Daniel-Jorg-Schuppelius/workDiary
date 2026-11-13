@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Material\Sync;
 
+use App\Exceptions\MaterialStockException;
 use App\Http\Requests\Material\SaveDayMaterialUsageRequest;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -27,6 +28,8 @@ use RuntimeException;
  * `material.usage`. Dieselben Regeln und derselbe Dienst wie online; die
  * client_uuid des Befehls verhindert die zweite Zeile beim erneuten Senden.
  * Fehlt eine Pflichtangabe, ist das ein Konflikt — der Nutzer ergänzt sie.
+ * Verhindert eine Lagerregel die Bestandsbuchung (Bestand, Charge,
+ * Seriennummer, Einheit; MVP-1679), ebenso: Konflikt statt stiller Buchung.
  */
 final class MaterialUsageSyncHandler implements SyncCommandHandler {
     private const array REQUIRED = ['project_id', 'date', 'description', 'quantity', 'unit'];
@@ -60,7 +63,11 @@ final class MaterialUsageSyncHandler implements SyncCommandHandler {
         $data = SyncFormRequest::validate(SaveDayMaterialUsageRequest::class, $payload, $user)->validated();
         $project = Project::query()->findOrFail((int) $data['project_id']);
 
-        $usage = $this->recorder->recordForDay($user, $project, CarbonImmutable::parse((string) $data['date']), Arr::except($data, ['project_id', 'date']));
+        try {
+            $usage = $this->recorder->recordForDay($user, $project, CarbonImmutable::parse((string) $data['date']), Arr::except($data, ['project_id', 'date']));
+        } catch (MaterialStockException $e) {
+            throw new SyncConflictException($e->reason(), ['field' => $e->field(), 'stock' => $e->reason()], '');
+        }
 
         return 'material_usages:' . $usage->id;
     }

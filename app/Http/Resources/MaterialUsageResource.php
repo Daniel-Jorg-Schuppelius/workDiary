@@ -10,6 +10,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Inventory\Warehouse;
 use App\Models\Material\{Material, MaterialUsage};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
@@ -32,6 +33,9 @@ class MaterialUsageResource extends JsonResource {
             'unit_price' => $this->unit_price,
             'tax_rate' => $this->tax_rate,
             'line_total_net' => $this->line_total_net,
+            // Bestandswirkung (MVP-1679): null = nicht lagergeführt.
+            'stock_status' => $this->stock_status?->value,
+            'stock_warehouse_id' => Sqid::encodeOrNull(Warehouse::class, $this->stock_warehouse_id),
             'created_at' => optional($this->created_at)->toIso8601String(),
         ];
     }

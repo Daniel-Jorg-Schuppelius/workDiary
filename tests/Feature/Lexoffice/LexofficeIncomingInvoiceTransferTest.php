@@ -337,7 +337,7 @@ final class LexofficeIncomingInvoiceTransferTest extends TestCase {
     private function xml(string $number): string {
         $customer = Customer::query()->firstOrCreate(['organization_id' => $this->organization->id, 'name' => 'Muster GmbH'], [
             'currency' => 'EUR', 'email' => 'einkauf@muster.example', 'address_street' => 'Kundenweg 7',
-            'address_zip' => '54321', 'address_city' => 'Hamburg', 'country' => 'DE', 'buyer_reference' => '991-12345-67',
+            'address_zip' => '54321', 'address_city' => 'Hamburg', 'country' => 'DE', 'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
         $invoice = Invoice::create([

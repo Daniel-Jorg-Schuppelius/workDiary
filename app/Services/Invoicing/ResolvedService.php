@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Support\Locales;
+use ERechnungToolkit\Enums\UnitCode;
+
 /**
  * Aufgelöste Standardleistung (MVP-486): Artikelbezug, Bezeichnung, Einheit,
  * Standardtext und — als Rückfall für die Preisfindung — der Nettopreis.
@@ -41,4 +44,28 @@ final class ResolvedService {
          */
         public readonly bool $priceIsExplicit = false,
     ) {}
+
+    /**
+     * Nach Dauer abrechnen? Nur die Einheit „Pauschale“ ergibt je Auftrag eine
+     * Position mit Menge 1 (MVP-1678): UN/ECE `LS` laut erechnung-toolkit oder
+     * die Pauschal-Einheit der App in einer ihrer Sprachen. Alle anderen
+     * Einheiten (leer, Stunde, Stk, Tag, km, Freitext) rechnen nach Dauer.
+     */
+    public function isHourly(): bool {
+        $unit = trim((string) $this->unitName);
+        if ($unit === '') {
+            return true;
+        }
+        if (UnitCode::fromText($unit) === UnitCode::LUMP_SUM) {
+            return false;
+        }
+        $normalized = mb_strtolower(rtrim($unit, '.'));
+        foreach (Locales::codes() as $locale) {
+            if ($normalized === mb_strtolower(rtrim((string) trans('invoicing.unit_flat', [], $locale), '.'))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

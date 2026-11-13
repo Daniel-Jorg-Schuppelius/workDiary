@@ -8,6 +8,153 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-12
+
+Phase 178 seit 1.2.0: die Entscheidungen des Inhabers aus Phase 176
+(MVP-1678–1687) — Pauschal-Leistung als eine Position je Auftrag,
+Materialverbrauch bucht den Lagerbestand, Nachdruck mit eingefrorenen
+Verkäufer-, Bankdaten und Belegsprache, Storno mit der USt-IdNr. des Originals,
+Kategorie O für Leistungen ins Drittland, SEPA-Verfall ab der Unterschrift,
+Aufbewahrung von Datenschutzvorfällen je Organisation sowie die E-Rechnung mit
+php-erechnung-toolkit 0.22.0 (Lieferland, Registernummer des Kunden,
+Prüfung der Leitweg-ID). Der Tag `v1.3.0` folgt nach dem Commit.
+
+### Hinzugefügt
+
+- Pauschalen aus Zeiten (`MVP-1678`): Nennt die Abrechnungsregel des Projekts
+  oder die Standardleistung der Organisation die Einheit „Pauschale“, rechnen
+  Rechnungslauf samt Vorschau, Faktura-Übergabe (alle Ziele) und der
+  Lexoffice-Zeitbeleg je Auftrag und Abrechnung eine Position mit Menge 1 zum
+  Preis der Leistung statt „Stunden × Pauschalpreis“. Zeiten ohne Auftrag
+  bilden je Projekt und Tätigkeitsart eine Pauschale. Die Zeiten bleiben als
+  Nachweis an der Position (BT-127 in der E-Rechnung) und gelten als
+  abgerechnet; Taktung, Anfahrtsminuten der Kundenkondition und die Auffüllung
+  auf vereinbarte Stunden gelten für Pauschalen nicht. Als Pauschale zählen
+  „Pauschale“ und „pauschal“ (UN/ECE `LS` laut erechnung-toolkit) sowie die
+  Pauschal-Einheit der App in allen Sprachen („pausch.“, „flat“, „forfait“,
+  „global“, „forf.“). Alle anderen Einheiten – leer, „Stunde“, „Stk“, „Tag“,
+  „km“ oder Freitext – rechnen unverändert nach Dauer. Ohne Preis der Leistung
+  steht die Pauschale mit 0,00 € und Hinweis in der Vorschau.
+- Nachdruck wie ausgestellt (`MVP-1680`): Beim Ausstellen gehen Bankverbindung
+  und Rechtsangaben der Organisation sowie die Belegsprache in den
+  Partei-Snapshot. PDF (auch Mail-Anhang und Kundenportal), XRechnung, ZUGFeRD,
+  GAEB-Rechnungsexport und die Buchhaltung lesen bei ausgestellten Rechnungen
+  Verkäuferdaten, Bankblock, QR-Code, § 19-Zeile und Sprache aus dem
+  eingefrorenen Stand; Entwürfe zeigen den heutigen. Die Texte der E-Rechnung
+  stehen in der Belegsprache, auch beim Download aus einer anders
+  eingestellten Oberfläche.
+- Materialverbrauch bucht Bestand (`MVP-1679`): Ist das Material mit einem
+  lagerfähigen Artikel verknüpft und das Lagermodul aktiv, bucht der Verbrauch
+  am Stundenzettel, auf „Heute“, über die API und offline den Abgang aus dem
+  Standardlager — in der erfassten Einheit (Schreibweisen wie „Stk.“ für „Stk“
+  zählen als Basiseinheit), bewertet nach dem Verfahren der Variante, mit dem
+  Verbrauch als Quelle der Bewegung. Eine geänderte Menge bucht die Differenz,
+  ein anderes Material bucht den alten Artikel zurück, Löschen der Zeile oder
+  des Stundenzettels bucht zurück — idempotent über den Schlüssel
+  `material_usage:<id>`. Es gelten die Regeln des Lagerwegs: zu wenig Bestand
+  ist ein Eingabefehler, „Negativen Bestand zulassen“ braucht das Recht
+  „Negative Bestände freigeben“ und wird bei Vier-Augen-Pflicht zum Antrag im
+  Genehmigungs-Eingang; seriennummernpflichtige Artikel nur über das Lager,
+  chargenpflichtige nur aus Chargen. Offline wird daraus ein Konflikt statt
+  einer stillen Buchung. Bei externer Bestandsführung geht jede Bewegung in
+  die Outbox des führenden Systems, bei „nur lesen“ bucht WorkDiary nicht. Die
+  Zeile am Stundenzettel und die API (`stock_status`, `stock_warehouse_id`)
+  zeigen, ob und aus welchem Lager gebucht wurde. Ein geänderter oder
+  gelöschter Verbrauch zieht seinen offenen Negativbestand-Antrag zurück
+  (neuer Stand „Zurückgezogen“). FIFO und FEFO können jetzt in eine Schicht
+  zurückbuchen.
+- Aufbewahrung abgeschlossener Datenschutzvorfälle je Organisation
+  (`MVP-1683`): Unter Datenschutz → Aufbewahrung & Löschung legt die
+  Organisation die Frist selbst fest (1 bis 10 Jahre, Recht
+  `dataprotection.compliance.manage`); leer gilt die Vorgabe des Rechtsraums
+  (3 Jahre, CH 5 Jahre). Der Löschscan rechnet mit dem Wert der Organisation.
+- Registernummer am Kunden (`MVP-1686`): Der Kundendialog führt unter
+  „Portal & Sonstiges“ die Registernummer (Handelsregister, Freitext wie die
+  eigene Angabe der Organisation). Die E-Rechnung nennt sie als
+  Registerkennung des Käufers (BT-47); bei Reverse Charge an Kunden im Inland
+  (§ 13b UStG) genügt sie statt der USt-IdNr. (BR-AE-02), die Prüfung vor dem
+  Versand hält dort nur noch an, wenn beides fehlt. Grenzüberschreitend bleibt
+  die USt-IdNr. Pflicht (§ 14a Abs. 1 UStG). Ausstellen friert sie mit dem Empfänger ein; Storno und
+  Korrekturrechnung übernehmen eine fehlende aus dem Original. Detailseite,
+  Zusammenführen, Datenauskunft (Art. 15) sowie CSV-Export und -Import
+  (Spalte `register_number`, Kopfzeilen „Registernummer“, „Handelsregister“)
+  führen sie mit. Der Rechnungseingang zeigt die Registernummer des
+  Verkäufers (BT-30).
+- Leitweg-ID geprüft (`MVP-1687`): Der Kundendialog speichert die
+  Käuferreferenz vereinheitlicht und prüft Aufbau und Prüfziffer nach der
+  KoSIT-Formatspezifikation 2.0.2, wenn sie wie eine Leitweg-ID aussieht oder
+  der Kunde öffentlicher Auftraggeber ist; eine ungültige wird gespeichert und
+  mit dem Grund gemeldet. Eine Peppol-Teilnehmer-ID mit Schema 0204 ohne
+  gültige Leitweg-ID lehnt der Dialog ab. Die Prüfung vor dem Versand warnt,
+  wenn ein öffentlicher Auftraggeber oder ein per 0204 adressierter Empfänger
+  keine gültige Leitweg-ID in BT-10 trägt — auch bei Zustellung per E-Mail.
+
+### Behoben
+
+- Stornorechnung und Korrekturrechnung zu Reverse Charge oder
+  innergemeinschaftlicher Lieferung übernehmen die USt-IdNr. des Originals, wenn
+  der Kunde heute keine mehr führt (`MVP-1681`); die E-Rechnungs-Prüfung hielt
+  sie vorher an (BR-AE-02, BR-IC-02).
+- Leistungen an Unternehmen außerhalb der EU stehen in der E-Rechnung als „nicht
+  steuerbar“ (Kategorie O, § 3a Abs. 2 UStG) wie in der Buchhaltung
+  (`MVP-1684`); vorher schrieb die E-Rechnung „Ausfuhr“ (G). Ohne USt-IdNrn.,
+  mit Steuernummer, nicht neben anderen Kategorien. Waren ins Drittland bleiben
+  Ausfuhr (G) und tragen jetzt den Hinweis „Steuerfreie Ausfuhrlieferung“ statt
+  des § 3a-Hinweises für Leistungen.
+- Die § 19-Zeile im PDF, der Befreiungshinweis und die Kennziffern der
+  Buchhaltung folgten der heutigen Kleinunternehmer-Einstellung statt dem Stand
+  beim Ausstellen (`MVP-1680`).
+- Ein nie genutztes SEPA-Mandat verfällt 36 Monate nach der Unterschrift
+  (`MVP-1682`); vorher blieb es unbegrenzt einziehbar, nur genutzte Mandate
+  verfielen 36 Monate nach dem letzten Einzug.
+- Innergemeinschaftliche Lieferung (Kategorie K): Die E-Rechnung nennt die
+  Anschrift des Kunden als Lieferanschrift mit Lieferland (BT-80, BR-IC-12) in
+  UBL und CII (`MVP-1686`); der KoSIT-Validator wies sie vorher ab. Fehlen PLZ
+  oder Ort, hält die Prüfung vor dem Versand die XRechnung an (BR-DE-10/11).
+- „Nicht steuerbar“ (Kategorie O) steht in der E-Rechnung ohne Steuersatz an
+  Positionen, Rabatten und Zuschlägen (BR-O-05, `MVP-1686`); die Warnungen zu
+  Lieferland und Positionssatz entfallen.
+- Rechnungseingang: Die Registernummer des Verkäufers (BT-30) wurde aus
+  UBL-Rechnungen als Steuernummer gelesen und konnte so in die Zuordnung über
+  die Steuernummer geraten (`MVP-1686`).
+
+### Hinweise zum Update
+
+- Prüfen Sie die Einheit der Standardleistung (Einstellungen → Rechnungen)
+  und der Abrechnungsregeln an Projekten: Die Einheit „Pauschale“
+  (auch „pauschal“, „pausch.“) rechnet ab jetzt eine Position je Auftrag statt
+  Stunden × Preis (`MVP-1678`). Andere Einheiten wie „Stk“, „Tag“ oder „km“
+  rechnen unverändert nach Dauer.
+- Rechnungen an Unternehmen im Drittland brauchen für die E-Rechnung die
+  Steuernummer der Organisation (`MVP-1684`). Bereits ausgestellte Rechnungen
+  mit Kategorie G bleiben beim Nachdruck unverändert und buchen weiter als
+  „nicht steuerbar“.
+- Rechnungen, die vor diesem Update ausgestellt wurden, führen Bankverbindung
+  und Belegsprache nicht im Snapshot; diese Angaben kommen beim Nachdruck aus
+  dem heutigen Stand. Die Verkäuferdaten lagen schon im Snapshot und gelten jetzt
+  auch für E-Rechnung und GAEB-Export eingefroren (`MVP-1680`).
+- Zwei Migrationen (`2027_04_18_110000`, `2027_04_18_110100`): Bestandsstand
+  am Materialverbrauch, Quelle am Negativbestand-Antrag (`MVP-1679`).
+  Verbräuche vor dem Update bleiben ungebucht. Ab jetzt bucht der Verbrauch
+  lagerfähiger Artikel den Bestand: Wer solches Material bisher zusätzlich über
+  das Lager entnommen hat, entnimmt es künftig nur noch am Stundenzettel, sonst
+  zählt der Abgang doppelt. Ohne Lager mit dem Kennzeichen „Standard“ bleibt der
+  Verbrauch mit „Nicht gebucht – kein Standardlager“ ungebucht.
+- Der tägliche Fristenlauf setzt nie genutzte SEPA-Mandate, deren Unterschrift
+  mehr als 36 Monate zurückliegt, beim ersten Lauf auf „Abgelaufen“
+  (`MVP-1682`); der Zahlungslauf nimmt sie schon ab dem Update nicht mehr.
+- Neue Toolkit-Versionen (`MVP-1685`, `MVP-1686`): `daniel-jorg-schuppelius/php-erechnung-toolkit`
+  `^0.22` (Lieferland, Kategorie O ohne Satz, Befreiungsgrund je Kategorie,
+  Registerkennung, Leitweg-ID-Prüfung) und `dschuppelius/php-common-toolkit`
+  `^2.17`; nach dem Update `composer install` ausführen. Das Land einer USt-IdNr. (auch `EL` für
+  Griechenland) löst jetzt php-common-toolkit auf.
+- Migration `2027_04_18_120000`: Spalte `customers.register_number`
+  (`MVP-1686`). Für Reverse Charge an Kunden ohne USt-IdNr. die Registernummer
+  im Kundenstamm nachtragen.
+- Gespeicherte Leitweg-IDs bleiben, wie sie sind, bis der Kunde das nächste Mal
+  gespeichert wird (`MVP-1687`). Eine Peppol-Teilnehmer-ID mit Schema 0204 und
+  falscher Prüfziffer lässt sich erst nach der Korrektur wieder speichern.
+
 ## [1.2.0] - 2026-11-12
 
 Phasen 174–176 seit 1.1.0: Lückenschluss aus dem Nachscan vom 2026-11-09,

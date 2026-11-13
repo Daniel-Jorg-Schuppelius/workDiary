@@ -29,8 +29,18 @@ interface InventoryValuationStrategy {
     /** Wareneingang mit Einzelkosten je Basiseinheit; optional mit Herkunftsbeleg (z. B. Bestellzeile) und Eingabe in Artikeleinheit. */
     public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement;
 
-    /** Abgang je Charge (gewählt oder FEFO-zugeteilt), jeder Teil verfahrensgemäß bewertet; `$requireLot` weist einen Teil ohne Charge ab. */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null): StockIssue;
+    /**
+     * Abgang je Charge (gewählt oder FEFO-zugeteilt), jeder Teil verfahrensgemäß bewertet; `$requireLot` weist einen Teil ohne Charge ab.
+     * Mit Schlüssel ist der Abgang idempotent, `$source` ist der Beleg der Bewegungen.
+     */
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null): StockIssue;
+
+    /**
+     * Rückbuchung eines Abgangs (Bewegungsart Return) zum Stückkostenwert des
+     * Abgangs in dessen Charge; der Bestand des Verfahrens wächst wieder an
+     * (Durchschnittsbuch bzw. neue Schicht).
+     */
+    public function returnToStock(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?StockLot $lot = null, ?string $idempotencyKey = null): StockMovement;
 
     /** Bewerteter Bestand in Basiseinheit. @return numeric-string */
     public function onHand(ArticleVariant $variant, Warehouse $warehouse): string;

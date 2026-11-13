@@ -1,7 +1,7 @@
 ---
 title: "Faktura-Übergabe"
 topic: finance.transfers
-version: 5
+version: 7
 keywords:
     - Lexoffice-Übergabe
     - Zeiten an Lexoffice
@@ -78,6 +78,12 @@ Berechtigungen: Zeit- und Materialübergaben sind getrennt geschützt
 vorbereiten und übertragen**). Die Liste sehen Personen mit
 **Übergabenachweise einsehen**; Stornieren und Korrigieren erfordern
 zusätzlich **Finanzkonfiguration verwalten**.
+
+**Pauschalen:** Nennt die Abrechnungsregel des Projekts oder die
+Standardleistung der Organisation die Einheit „Pauschale“, entsteht je Auftrag
+eine Position mit Menge 1 zum Preis der Leistung; die Zeiten des Auftrags bleiben
+die Quellen der Position. Alle anderen Einheiten, etwa Stunde, Tag oder Stk,
+rechnen nach Dauer. Taktung und vereinbarte Stunden gelten nicht für Pauschalen.
 
 ## Zugehörige Belege
 

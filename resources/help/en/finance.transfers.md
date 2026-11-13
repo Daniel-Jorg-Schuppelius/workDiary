@@ -1,7 +1,7 @@
 ---
 title: "Invoicing transfer"
 topic: finance.transfers
-version: 5
+version: 7
 keywords:
     - Lexoffice transfer
     - send times to Lexoffice
@@ -75,6 +75,12 @@ Permissions: time and material transfers are protected separately
 billable material**). People with **View transfer receipts** see the
 list; cancelling and correcting additionally require **Manage finance
 configuration**.
+
+**Flat rates:** if the project's billing rule or the organisation's default
+service names the unit "flat" or "Pauschale", each order becomes one line with
+quantity 1 at the service price; the order's times remain the sources of the line.
+All other units, such as hour, day or pcs, bill by duration. Rounding increments
+and agreed hours do not apply to flat rates.
 
 ## Related documents
 

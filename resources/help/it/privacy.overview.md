@@ -1,7 +1,7 @@
 ---
 title: "Panoramica della gestione della protezione dei dati"
 topic: privacy.overview
-version: 5
+version: 6
 keywords:
     - GDPR
     - registro dei trattamenti
@@ -173,6 +173,12 @@ dipendono i termini.
   anni o giorni e la **Base giuridica**. Le aree con l'indicazione «solo
   censimento, senza scansione» documentano solo il termine; per esse non
   nascono proposte.
+- **Violazioni dei dati**: il termine per gli incidenti chiusi lo stabilisce
+  la Sua organizzazione (da 1 a 10 anni); se vuoto vale il valore predefinito
+  dell'ordinamento – 3 anni, 5 anni in Svizzera. Può modificarlo chi può qui
+  avviare la scansione e confermare le proposte; la scansione di
+  cancellazione usa il valore inserito. Scenda sotto il valore predefinito
+  solo se conserva in altro modo la prova per l'autorità di controllo.
 - **Scansiona ora** cerca i record con termine scaduto e crea **Proposte di
   eliminazione**. La scansione viene eseguita anche automaticamente a
   intervalli regolari (per impostazione predefinita ogni settimana). I record

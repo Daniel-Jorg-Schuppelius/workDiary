@@ -1,7 +1,7 @@
 ---
 title: "Existencias y escaneo"
 topic: inventory.stock
-version: 6
+version: 7
 keywords:
     - stock
     - almacén
@@ -96,6 +96,8 @@ lote; los lotes bloqueados, solo tras su liberación.
 **SKU y GTIN.** Los ajustes de almacén muestran quién gestiona el número de artículo, el SKU de las variantes y el GTIN. Se elige en la página «Rangos de numeración», rango «Artículo». Si un sistema de gestión de mercancías gestiona los números, los campos quedan bloqueados en el maestro de artículos y llegan con la sincronización.
 
 **Existencias negativas a cuatro ojos:** si la organización exige en la configuración de almacén una aprobación a cuatro ojos para salidas a existencias negativas, una salida con «Permitir existencias negativas» se convierte en una solicitud en la bandeja de aprobaciones. Solo se registra cuando otra persona con el permiso «Autorizar existencias negativas» da su conformidad; solicitante y aprobador quedan en el registro de auditoría.
+
+**Consumo de material en el parte de horas:** el material vinculado a un artículo con gestión de existencias registra, al anotarlo en el parte de horas o en «Hoy», la salida del almacén marcado como «Predeterminado» (si hay varios, el primero por nombre). El movimiento aparece en el diario de almacén con la cantidad y la unidad introducidas; un cambio registra la diferencia y eliminarlo lo devuelve. Rigen las reglas de esta página: existencias negativas solo con el permiso y, en su caso, cuatro ojos, lotes por fecha de caducidad, números de serie solo a través del almacén. El material que hasta ahora retiraba además aquí, en adelante regístrelo solo en el parte de horas; de lo contrario la salida cuenta dos veces.
 
 **Redistribuir reservas:** en el diálogo «Modificar reserva» cede la cantidad abierta a otra reserva del mismo artículo, almacén y propiedad, por ejemplo a una orden con mayor prioridad. Una reserva más reciente nunca desplaza en silencio a una más antigua; la redistribución queda en el registro de auditoría y la línea de material de una orden de fabricación la sigue.
 

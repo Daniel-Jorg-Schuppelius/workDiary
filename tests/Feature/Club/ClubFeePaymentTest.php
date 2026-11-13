@@ -225,7 +225,7 @@ class ClubFeePaymentTest extends TestCase {
         $claim->update(['due_on' => CarbonImmutable::today()->toDateString()]);
         $mandate = SepaMandate::query()->create([
             'organization_id' => $this->organization->id, 'customer_id' => $this->account->customer_id, 'reference' => 'MNDT-MUSTER-1', 'kind' => MandateKind::Recurring->value,
-            'status' => MandateStatus::Active->value, 'signed_on' => '2026-01-10', 'iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001', 'account_holder' => 'Familie Muster',
+            'status' => MandateStatus::Active->value, 'signed_on' => now()->subMonths(10)->toDateString(), 'iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001', 'account_holder' => 'Familie Muster',
         ]);
         $bankAccount = BankAccount::factory()->create(['organization_id' => $this->organization->id]);
         Setting::set('finance.sepa_creditor_id', 'DE98ZZZ09999999999', SettingScope::Organization, $this->organization);
@@ -341,7 +341,7 @@ class ClubFeePaymentTest extends TestCase {
         $claim->update(['due_on' => CarbonImmutable::today()->toDateString()]);
         SepaMandate::query()->create([
             'organization_id' => $this->organization->id, 'customer_id' => $this->account->customer_id, 'reference' => 'MNDT-MUSTER-2', 'kind' => MandateKind::Recurring->value,
-            'status' => MandateStatus::Active->value, 'signed_on' => '2026-01-10', 'iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001', 'account_holder' => 'Familie Muster',
+            'status' => MandateStatus::Active->value, 'signed_on' => now()->subMonths(10)->toDateString(), 'iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001', 'account_holder' => 'Familie Muster',
         ]);
         $bankAccount = BankAccount::factory()->create(['organization_id' => $this->organization->id]);
         Setting::set('finance.sepa_creditor_id', 'DE98ZZZ09999999999', SettingScope::Organization, $this->organization);

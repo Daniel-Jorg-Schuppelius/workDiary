@@ -18,4 +18,15 @@ return [
         'link_hint' => 'Asignar materiales sin artículo mediante el mismo SKU o número de artículo; las coincidencias ambiguas quedan abiertas.',
         'linked' => ':count materiales asignados a un artículo.',
     ],
+    'stock' => [
+        'insufficient' => 'En el almacén «:warehouse» solo hay :available :unit disponibles. Para una salida a existencias negativas, marque «Permitir stock negativo».',
+        'negative_forbidden' => 'Solo quien tenga el permiso «Autorizar existencias negativas» puede registrar una salida a existencias negativas.',
+        'serial_required' => 'El artículo requiere número de serie. Retírelo desde el almacén con su número de serie o registre el consumo sin ficha de material.',
+        'booking_failed' => 'No se pudo registrar la salida de almacén: :reason',
+        'return_failed' => 'No se pudo registrar la devolución al almacén: :reason',
+        'usage_gone' => 'El consumo de material de esta solicitud ya no existe.',
+        'allow_negative_hint' => 'Solo es necesario si un artículo con gestión de existencias no tiene suficientes existencias en el almacén predeterminado.',
+        'notice' => ':status · almacén «:warehouse»',
+        'current' => 'Existencias: :notice',
+    ],
 ];

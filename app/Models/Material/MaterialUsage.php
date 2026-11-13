@@ -11,8 +11,10 @@
 namespace App\Models\Material;
 
 use App\Casts\{MoneyCast, PercentageCast, QuantityCast};
+use App\Enums\Material\MaterialStockStatus;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Inventory\Warehouse;
 use App\Models\Time\Timesheet;
 use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CurrencyCode;
@@ -34,7 +36,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property \CommonToolkit\ValueObjects\Money|null $line_total_net
  * @property bool $billed
+ * @property MaterialStockStatus|null $stock_status Bestandswirkung (MVP-1679); leer = nicht lagergeführt
+ * @property int|null $stock_warehouse_id Lager, aus dem gebucht wurde bzw. wird
  * @property-read \App\Models\Material\Material|null $material
+ * @property-read Warehouse|null $stockWarehouse
  */
 class MaterialUsage extends Model {
     use Auditable;
@@ -66,6 +71,7 @@ class MaterialUsage extends Model {
         'tax_rate' => PercentageCast::class . ':2',
         'line_total_net' => MoneyCast::class . ':currency,2',
         'billed' => 'boolean',
+        'stock_status' => MaterialStockStatus::class,
     ];
 
     /** Zeilen- und Zettelsumme sind decimal(12,2) (UI-Fuzz 2026-09-21: 1264). */
@@ -106,5 +112,22 @@ class MaterialUsage extends Model {
     /** @return BelongsTo<Asset, $this> */
     public function asset(): BelongsTo {
         return $this->belongsTo(Asset::class);
+    }
+
+    /** @return BelongsTo<Warehouse, $this> Lager der Bestandsbuchung (MVP-1679). */
+    public function stockWarehouse(): BelongsTo {
+        return $this->belongsTo(Warehouse::class, 'stock_warehouse_id');
+    }
+
+    /** Bestandswirkung für Zeile und Meldung, etwa „Vom Bestand abgebucht · Hauptlager“; null ohne Lagerbezug. */
+    public function stockNotice(): ?string {
+        if ($this->stock_status === null) {
+            return null;
+        }
+        $warehouse = $this->stockWarehouse?->name;
+
+        return $warehouse !== null
+            ? (string) __('material.stock.notice', ['status' => $this->stock_status->label(), 'warehouse' => $warehouse])
+            : $this->stock_status->label();
     }
 }

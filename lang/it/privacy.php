@@ -93,4 +93,11 @@ return [
         'state_save' => 'Salva stato',
         'state_saved' => 'Stato di attuazione ed esigenza di protezione salvati.',
     ],
+    'retention' => [
+        'years_label' => 'Periodo di conservazione per :area in anni',
+        'years_unit' => 'anni',
+        'years_default' => 'Vuoto = valore predefinito della giurisdizione (:years anni)',
+        'years_own' => 'periodo proprio dell\'organizzazione',
+        'years_saved' => 'Periodo di conservazione per «:area» salvato.',
+    ],
 ];

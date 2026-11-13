@@ -23,6 +23,8 @@ enum NegativeStockRequestStatus: string implements HasLabel, HasStatusTransition
     case Pending = 'pending';
     case Approved = 'approved';
     case Rejected = 'rejected';
+    /** Die Quelle (Materialverbrauch) hat sich geändert oder ist gelöscht — nichts mehr zu entscheiden (MVP-1679). */
+    case Withdrawn = 'withdrawn';
 
     public function label(): string {
         return (string) __('enums.inventory.negative-stock-request-status.' . $this->value);
@@ -31,8 +33,8 @@ enum NegativeStockRequestStatus: string implements HasLabel, HasStatusTransition
     /** @return list<self> */
     public function allowedTransitions(): array {
         return match ($this) {
-            self::Pending => [self::Approved, self::Rejected],
-            self::Approved, self::Rejected => [],
+            self::Pending => [self::Approved, self::Rejected, self::Withdrawn],
+            self::Approved, self::Rejected, self::Withdrawn => [],
         };
     }
 }

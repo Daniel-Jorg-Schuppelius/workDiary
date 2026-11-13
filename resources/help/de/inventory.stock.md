@@ -1,7 +1,7 @@
 ---
 title: "Lagerbestände & Scannen"
 topic: inventory.stock
-version: 6
+version: 7
 keywords:
     - Warenbestand
     - Bestand buchen
@@ -101,6 +101,8 @@ Chargen erst nach der Freigabe.
 **SKU und GTIN.** Die Lager-Einstellungen zeigen, wer Artikelnummer, Varianten-SKU und GTIN führt. Gewählt wird das auf der Seite „Nummernkreise“ beim Kreis „Artikel“. Führt eine Warenwirtschaft die Nummern, sind die Felder im Artikelstamm gesperrt und kommen mit dem Abgleich.
 
 **Negativbestand mit vier Augen:** Verlangt die Organisation in den Lager-Einstellungen eine Vier-Augen-Freigabe für Entnahmen in den Negativbestand, wird eine Entnahme mit „Negativen Bestand zulassen“ zum Antrag im Genehmigungs-Eingang. Gebucht wird erst, wenn eine andere Person mit dem Recht „Negative Bestände freigeben“ zustimmt; Antragsteller und Freigebende stehen im Audit-Protokoll.
+
+**Materialverbrauch am Stundenzettel:** Material, das mit einem lagergeführten Artikel verknüpft ist, bucht beim Erfassen am Stundenzettel oder auf „Heute“ den Abgang aus dem Lager mit der Kennzeichnung „Standard“ (bei mehreren das erste nach Name). Die Bewegung steht im Lagerjournal mit der erfassten Menge und Einheit; eine Änderung bucht die Differenz, das Löschen bucht zurück. Es gelten die Regeln dieser Seite: Negativbestand nur mit Recht und gegebenenfalls vier Augen, Chargen nach Mindesthaltbarkeit, Seriennummern nur über das Lager. Material, das Sie bisher zusätzlich hier entnommen haben, entnehmen Sie künftig nur noch am Stundenzettel — sonst zählt der Abgang doppelt.
 
 **Reservierungen umverteilen:** Im Dialog „Reservierung ändern“ geben Sie offene Menge an eine andere Reservierung desselben Artikels, Lagers und Eigentums ab, etwa an einen Auftrag mit höherer Priorität. Eine jüngere Reservierung verdrängt eine ältere nie still; die Umverteilung steht im Audit-Protokoll, und die Materialposition eines Fertigungsauftrags folgt ihr.
 

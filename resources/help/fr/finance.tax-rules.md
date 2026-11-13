@@ -1,7 +1,7 @@
 ---
 title: "Matrice des règles fiscales"
 topic: finance.tax-rules
-version: 2
+version: 3
 keywords:
     - taux de TVA
     - TVA
@@ -71,6 +71,13 @@ intracommunautaire formellement valide reçoivent automatiquement
 l'autoliquidation (Reverse Charge, 0 %), les clients de pays tiers la
 mention d'export (0 %) — les lignes correspondantes de la matrice
 fournissent pour cela le texte d'information sur la pièce.
+
+Pour les pays tiers, le régime fiscal distingue marchandises et prestations :
+le matériel est une exportation (catégorie G) avec la mention « Livraison à
+l'exportation exonérée » ; une prestation à une entreprise hors UE n'est pas
+imposable en Allemagne (catégorie O, § 3a al. 2 UStG) et porte la mention du type
+de taux Export. La facture électronique, la mention d'exonération du PDF et la
+comptabilité lisent la même catégorie, figée à l'émission.
 
 Une ligne de type **Exonéré** indique la disposition d'exonération des
 opérations exonérées selon le § 4 UStG : son texte d'information figure

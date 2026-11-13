@@ -15,6 +15,7 @@ return [
     'unit_hour' => 'h',
     'unit_flat' => 'pausch.',
     'unit_piece' => 'St.',
+    'unit_flat_rate_hint' => 'Die Einheit „Pauschale“ rechnet je Auftrag und Abrechnung eine Position mit Menge 1 zum Preis der Leistung. Leer oder jede andere Einheit, etwa Stunde, Tag oder Stk: Zeiten zählen nach Dauer.',
     'tax_rate' => 'MwSt-Satz',
     'currency' => 'Währung',
     'totals' => [
@@ -25,7 +26,16 @@ return [
 
     // E-Rechnung (Feature 045, Abschnitt 8): XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Leitweg-ID / Käuferreferenz (BT-10)',
-    'buyer_reference_hint' => 'Pflichtangabe für die XRechnung (E-Rechnung): bei Behörden die Leitweg-ID, sonst eine vom Kunden vorgegebene Referenz.',
+    'buyer_reference_hint' => 'Pflichtangabe für die XRechnung (E-Rechnung): bei Behörden die Leitweg-ID (wird beim Speichern vereinheitlicht und auf die Prüfziffer geprüft), sonst eine vom Kunden vorgegebene Referenz.',
+    'buyer_reference_leitweg_invalid' => 'Gespeichert. Die Käuferreferenz ist aber keine gültige Leitweg-ID: :reason Bitte beim Auftraggeber prüfen — Rechnungen an öffentliche Auftraggeber würden abgewiesen.',
+    // Grund einer ungültigen Leitweg-ID (MVP-1687); die Toolkit-Meldungen sind nur deutsch.
+    'leitweg_reason' => [
+        'form' => 'Sie hat nicht die Form Grobadressierung[-Feinadressierung]-Prüfziffer.',
+        'structure' => 'Die Grobadressierung braucht 2, 3, 5, 8, 9 oder 12 Ziffern und beginnt mit der Kennzahl eines Landes (01–16) oder des Bundes (99); die Feinadressierung hat höchstens 30 Zeichen.',
+        'check_digits' => 'Die Prüfziffer :given stimmt nicht, erwartet :expected.',
+    ],
+    'register_number' => 'Registernummer (Handelsregister)',
+    'register_number_hint' => 'Etwa „Amtsgericht Musterstadt HRB 12345“. Die E-Rechnung führt sie als Registerkennung des Kunden (BT-47); schuldet ein Kunde im Inland die Steuer (§ 13b UStG), ersetzt sie eine fehlende USt-IdNr.',
     // USt-IdNr. des Kunden im Rechnungs-PDF (§ 14a UStG, MVP-1623).
     'buyer_vat_id' => 'Ihre USt-IdNr.',
     'einvoice' => [
@@ -61,8 +71,9 @@ return [
             'missing_buyer_reference' => 'Beim Kunden fehlt die Leitweg-ID/Käuferreferenz (BT-10).',
             'missing_seller_field' => 'Verkäuferangabe fehlt: :field (Organisations-Einstellungen → Rechnungen).',
             'missing_tax_id' => 'Weder USt-IdNr. noch Steuernummer in den Organisations-Einstellungen hinterlegt.',
-            'reverse_charge_buyer_vat_id' => 'Reverse Charge (Kategorie AE) verlangt die USt-IdNr. des Kunden (BR-AE-02) — bitte beim Kunden hinterlegen.',
+            'reverse_charge_buyer_vat_id' => 'Reverse Charge (Kategorie AE) verlangt die USt-IdNr. des Kunden, im Inland (§ 13b UStG) ersatzweise seine Registernummer (BR-AE-02, § 14a Abs. 1 UStG) — bitte beim Kunden hinterlegen.',
             'intra_community_buyer_vat_id' => 'Innergemeinschaftliche Lieferung (Kategorie K) verlangt die USt-IdNr. des Kunden (BR-IC-02) — bitte beim Kunden hinterlegen.',
+            'intra_community_delivery_address' => 'Innergemeinschaftliche Lieferung (Kategorie K): Die E-Rechnung nennt die Kundenanschrift als Lieferanschrift mit Lieferland (BT-80, BR-IC-12); die XRechnung verlangt dazu PLZ und Ort (BR-DE-10, BR-DE-11) — bitte beim Kunden Land, PLZ und Ort hinterlegen.',
             'seller_vat_id_required' => 'Innergemeinschaftliche Lieferung und Ausfuhr (Kategorien K und G) verlangen die USt-IdNr. der Organisation (BR-IC-02, BR-G-02) — bitte in den Organisations-Einstellungen hinterlegen.',
             'not_subject_mixed' => 'Nicht steuerbare Positionen (Kategorie O) dürfen in der E-Rechnung nicht neben anderen Steuerkategorien stehen (BR-O-11) — bitte getrennt abrechnen.',
             'not_subject_tax_number' => 'Nicht steuerbare Umsätze (Kategorie O) tragen keine USt-IdNr. (BR-O-02); die E-Rechnung braucht dafür die Steuernummer in den Organisations-Einstellungen.',
@@ -79,9 +90,8 @@ return [
             'missing_buyer_email' => 'Kunden-E-Mail fehlt (elektronische Empfängeradresse BT-49).',
             'missing_due_date' => 'Fälligkeitsdatum fehlt — das Standard-Zahlungsziel wird verwendet.',
             'service_date_fallback' => 'Keine Position nennt ein Leistungsdatum oder einen Zeitraum; als Leistungszeitpunkt gilt das Rechnungsdatum (§ 14 Abs. 4 Nr. 6 UStG).',
-            'intra_community_delivery_country' => 'Innergemeinschaftliche Lieferung (Kategorie K): Die E-Rechnung enthält noch kein Lieferland (BT-80, Regel BR-IC-12) — strenge Empfänger weisen sie ab.',
-            'not_subject_line_rate' => 'Nicht steuerbare Umsätze (Kategorie O): Die E-Rechnung nennt in den Positionen noch einen Steuersatz von 0 % (Regel BR-O-05) — strenge Empfänger weisen sie ab.',
             'exemption_unspecified' => 'Steuerfreie Positionen (Kategorie E): Es ist kein Befreiungsgrund hinterlegt, die E-Rechnung nennt nur „Steuerfreier Umsatz“. Legen Sie in der Steuerregelmatrix eine Regel mit der Satzart „Befreit“ an und tragen Sie den Befreiungstatbestand als Beleg-Hinweistext ein (§ 14 Abs. 4 Nr. 8 UStG).',
+            'invalid_leitweg_id' => 'Keine gültige Leitweg-ID (:terms): :reason Eingangsplattformen der öffentlichen Hand weisen die Rechnung damit ab — bitte die Leitweg-ID beim Auftraggeber erfragen.',
             'activity_report_missing' => 'Für diesen Empfänger wird ein Leistungsnachweis erwartet, die Rechnung trägt aber keine Unterlagen.',
             'near_limit' => 'Die E-Rechnung mit Unterlagen ist :size groß und liegt nahe an der Grenze des Empfängers (:limit).',
         ],

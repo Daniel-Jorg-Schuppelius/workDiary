@@ -48,6 +48,7 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'number',
             'company',
             'vat_id',
+            'register_number',
             'contact_name',
             'contact_salutation',
             'contact_title',
@@ -98,6 +99,8 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'firma' => 'company',
             'ust-idnr.' => 'vat_id',
             'ustid' => 'vat_id',
+            'registernummer' => 'register_number',
+            'handelsregister' => 'register_number',
             'ansprechpartner' => 'contact_name',
             'anrede' => 'contact_salutation',
             'titel' => 'contact_title',
@@ -157,7 +160,7 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             $issues[] = $this->formatIssue('email', (string) __('import.error.format.email'));
         }
 
-        foreach (['number' => 64, 'company' => 255, 'vat_id' => 64, 'address_zip' => 16] as $f => $max) {
+        foreach (['number' => 64, 'company' => 255, 'vat_id' => 64, 'register_number' => 200, 'address_zip' => 16] as $f => $max) {
             if (! empty($row[$f]) && mb_strlen((string) $row[$f]) > $max) {
                 $issues[] = $this->tooLongIssue($f, $max);
             }

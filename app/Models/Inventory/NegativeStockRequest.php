@@ -17,7 +17,7 @@ use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
 
 /**
@@ -36,6 +36,8 @@ use Illuminate\Support\Carbon;
  * @property string $quantity
  * @property string|null $entered_qty
  * @property string|null $entered_unit
+ * @property string|null $source_type Herkunft (Morph-Alias), z. B. Materialverbrauch (MVP-1679)
+ * @property int|null $source_id
  * @property NegativeStockRequestStatus $status
  * @property int|null $requested_by
  * @property int|null $decided_by
@@ -52,7 +54,7 @@ class NegativeStockRequest extends Model {
 
     protected $fillable = [
         'organization_id', 'article_variant_id', 'warehouse_id', 'bin_id', 'stock_lot_id', 'ownership_kind',
-        'quantity', 'entered_qty', 'entered_unit', 'status', 'requested_by', 'decided_by', 'decided_at', 'note',
+        'quantity', 'entered_qty', 'entered_unit', 'source_type', 'source_id', 'status', 'requested_by', 'decided_by', 'decided_at', 'note',
     ];
 
     /** @var array<string, string> */
@@ -82,6 +84,11 @@ class NegativeStockRequest extends Model {
     /** @return BelongsTo<StockLot, $this> */
     public function lot(): BelongsTo {
         return $this->belongsTo(StockLot::class, 'stock_lot_id');
+    }
+
+    /** @return MorphTo<Model, $this> */
+    public function source(): MorphTo {
+        return $this->morphTo();
     }
 
     /** @return BelongsTo<User, $this> */

@@ -8924,6 +8924,7 @@ CREATE TABLE `customers` (
   `vat_id` varchar(64) DEFAULT NULL,
   `is_reverse_charge_recipient` tinyint(1) NOT NULL DEFAULT 0,
   `tax_number` varchar(64) DEFAULT NULL,
+  `register_number` varchar(200) DEFAULT NULL,
   `contact_name` varchar(200) DEFAULT NULL,
   `contact_salutation` varchar(16) DEFAULT NULL,
   `contact_title` varchar(64) DEFAULT NULL,
@@ -16923,6 +16924,8 @@ CREATE TABLE `material_usages` (
   `tax_rate` decimal(5,2) DEFAULT NULL,
   `line_total_net` decimal(12,2) NOT NULL DEFAULT 0.00,
   `billed` tinyint(1) NOT NULL DEFAULT 0,
+  `stock_status` varchar(20) DEFAULT NULL,
+  `stock_warehouse_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -16932,9 +16935,11 @@ CREATE TABLE `material_usages` (
   KEY `material_usages_asset_id_foreign` (`asset_id`),
   KEY `material_usages_org_asset_idx` (`organization_id`,`asset_id`),
   KEY `material_usages_billed_index` (`billed`),
+  KEY `material_usages_stock_warehouse_id_foreign` (`stock_warehouse_id`),
   CONSTRAINT `material_usages_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
   CONSTRAINT `material_usages_material_id_foreign` FOREIGN KEY (`material_id`) REFERENCES `materials` (`id`) ON DELETE SET NULL,
   CONSTRAINT `material_usages_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `material_usages_stock_warehouse_id_foreign` FOREIGN KEY (`stock_warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL,
   CONSTRAINT `material_usages_timesheet_id_foreign` FOREIGN KEY (`timesheet_id`) REFERENCES `timesheets` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -17604,6 +17609,8 @@ CREATE TABLE `negative_stock_requests` (
   `quantity` decimal(18,4) NOT NULL,
   `entered_qty` decimal(18,4) DEFAULT NULL,
   `entered_unit` varchar(20) DEFAULT NULL,
+  `source_type` varchar(100) DEFAULT NULL,
+  `source_id` bigint(20) unsigned DEFAULT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'pending',
   `requested_by` bigint(20) unsigned DEFAULT NULL,
   `decided_by` bigint(20) unsigned DEFAULT NULL,
@@ -17619,6 +17626,7 @@ CREATE TABLE `negative_stock_requests` (
   KEY `negative_stock_requests_requested_by_foreign` (`requested_by`),
   KEY `negative_stock_requests_decided_by_foreign` (`decided_by`),
   KEY `negative_stock_requests_organization_id_status_index` (`organization_id`,`status`),
+  KEY `negative_stock_requests_source_idx` (`source_type`,`source_id`),
   CONSTRAINT `negative_stock_requests_article_variant_id_foreign` FOREIGN KEY (`article_variant_id`) REFERENCES `article_variants` (`id`),
   CONSTRAINT `negative_stock_requests_bin_id_foreign` FOREIGN KEY (`bin_id`) REFERENCES `warehouse_bins` (`id`) ON DELETE SET NULL,
   CONSTRAINT `negative_stock_requests_decided_by_foreign` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -28974,3 +28982,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1113,'2027_04_17_3
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1114,'2027_04_17_360000_remap_status_cases_without_setter',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1115,'2027_04_17_360100_mark_customerless_deliveries_not_required',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1116,'2027_04_17_370000_drop_unused_columns_of_projects_teams_timesheets_and_vehicle_profiles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1117,'2027_04_18_110000_add_stock_booking_to_material_usages',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1118,'2027_04_18_110100_add_source_to_negative_stock_requests',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1119,'2027_04_18_120000_add_register_number_to_customers',1);

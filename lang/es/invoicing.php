@@ -15,6 +15,7 @@ return [
     'unit_hour' => 'h',
     'unit_flat' => 'global',
     'unit_piece' => 'ud',
+    'unit_flat_rate_hint' => 'La unidad «global» factura por pedido y facturación una línea con cantidad 1 al precio del servicio. Vacío o cualquier otra unidad, por ejemplo hora, día o ud.: los tiempos cuentan por su duración.',
     'tax_rate' => 'Tipo impositivo',
     'currency' => 'Moneda',
     'totals' => [
@@ -25,7 +26,16 @@ return [
 
     // Facturación electrónica (funcionalidad 045, sección 8): XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Leitweg-ID / referencia del comprador (BT-10)',
-    'buyer_reference_hint' => 'Obligatorio para la XRechnung (factura electrónica): el Leitweg-ID para administraciones públicas, en otro caso una referencia facilitada por el cliente.',
+    'buyer_reference_hint' => 'Obligatorio para la XRechnung (factura electrónica): el Leitweg-ID para administraciones públicas (se normaliza y se comprueba su dígito de control al guardar), en otro caso una referencia facilitada por el cliente.',
+    'buyer_reference_leitweg_invalid' => 'Guardado. Sin embargo, la referencia del comprador no es un Leitweg-ID válido: :reason Compruébelo con el órgano contratante; las facturas a compradores públicos serían rechazadas.',
+    // Grund einer ungültigen Leitweg-ID (MVP-1687); die Toolkit-Meldungen sind nur deutsch.
+    'leitweg_reason' => [
+        'form' => 'No tiene la forma direccionamiento general[-direccionamiento detallado]-dígitos de control.',
+        'structure' => 'El direccionamiento general necesita 2, 3, 5, 8, 9 o 12 dígitos y empieza por el código de un estado federado (01–16) o de la Federación (99); el direccionamiento detallado tiene como máximo 30 caracteres.',
+        'check_digits' => 'Los dígitos de control :given no son correctos; se esperaba :expected.',
+    ],
+    'register_number' => 'Número de registro (registro mercantil)',
+    'register_number_hint' => 'Por ejemplo «Amtsgericht Musterstadt HRB 12345». La factura electrónica lo indica como identificador de registro del cliente (BT-47); si un cliente nacional es el sujeto pasivo (§ 13b UStG), sustituye a un NIF-IVA ausente.',
     // NIF-IVA del cliente en la factura PDF (§ 14a UStG, MVP-1623).
     'buyer_vat_id' => 'Su NIF-IVA',
     'einvoice' => [
@@ -61,8 +71,9 @@ return [
             'missing_buyer_reference' => 'Al cliente le falta el Leitweg-ID/referencia del comprador (BT-10).',
             'missing_seller_field' => 'Falta un dato del vendedor: :field (configuración de la organización → facturación).',
             'missing_tax_id' => 'Ni NIF-IVA ni número fiscal configurados en la configuración de la organización.',
-            'reverse_charge_buyer_vat_id' => 'La inversión del sujeto pasivo (categoría AE) requiere el NIF-IVA del cliente (BR-AE-02); indíquelo en el cliente.',
+            'reverse_charge_buyer_vat_id' => 'La inversión del sujeto pasivo (categoría AE) requiere el NIF-IVA del cliente; para un cliente nacional (§ 13b UStG) basta su número de registro (BR-AE-02, § 14a apdo. 1 UStG); indíquelo en el cliente.',
             'intra_community_buyer_vat_id' => 'La entrega intracomunitaria (categoría K) requiere el NIF-IVA del cliente (BR-IC-02); indíquelo en el cliente.',
+            'intra_community_delivery_address' => 'Entrega intracomunitaria (categoría K): la factura electrónica indica la dirección del cliente como dirección de entrega con el país de entrega (BT-80, BR-IC-12); la XRechnung exige además código postal y localidad (BR-DE-10, BR-DE-11); indique país, código postal y localidad en el cliente.',
             'seller_vat_id_required' => 'Las entregas intracomunitarias y las exportaciones (categorías K y G) requieren el NIF-IVA de la organización (BR-IC-02, BR-G-02); indíquelo en la configuración de la organización.',
             'not_subject_mixed' => 'Las posiciones no sujetas (categoría O) no pueden figurar junto a otras categorías de IVA en una factura electrónica (BR-O-11); factúrelas por separado.',
             'not_subject_tax_number' => 'Las operaciones no sujetas (categoría O) no llevan NIF-IVA (BR-O-02); la factura electrónica necesita para ello el número fiscal en la configuración de la organización.',
@@ -79,9 +90,8 @@ return [
             'missing_buyer_email' => 'Falta el correo del cliente (dirección electrónica de recepción BT-49).',
             'missing_due_date' => 'Falta la fecha de vencimiento — se usa el plazo de pago predeterminado.',
             'service_date_fallback' => 'Ninguna posición indica fecha o periodo de prestación; se toma la fecha de la factura (§ 14 apdo. 4 n.º 6 UStG).',
-            'intra_community_delivery_country' => 'Entrega intracomunitaria (categoría K): la factura electrónica aún no contiene el país de entrega (BT-80, regla BR-IC-12); los destinatarios estrictos la rechazan.',
-            'not_subject_line_rate' => 'Operaciones no sujetas (categoría O): la factura electrónica aún indica un tipo del 0 % en las posiciones (regla BR-O-05); los destinatarios estrictos la rechazan.',
             'exemption_unspecified' => 'Posiciones exentas (categoría E): no hay ningún motivo de exención registrado y la factura electrónica solo indica «Operación exenta». Cree en la matriz de reglas fiscales una regla con el tipo «Exento» e introduzca el supuesto de exención como texto de aviso del justificante (§ 14 apdo. 4 n.º 8 UStG).',
+            'invalid_leitweg_id' => 'Leitweg-ID no válido (:terms): :reason Las plataformas de recepción de las administraciones rechazan la factura; solicite el Leitweg-ID al órgano contratante.',
             'activity_report_missing' => 'Este destinatario espera un justificante de servicios, pero la factura no lleva documentos.',
             'near_limit' => 'La factura electrónica con documentos ocupa :size y está cerca del límite del destinatario (:limit).',
         ],

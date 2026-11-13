@@ -1,7 +1,7 @@
 ---
 title: "Organizzazione e impostazioni"
 topic: admin.organization-settings
-version: 8
+version: 10
 keywords:
     - impostazioni aziendali
     - impostazioni del tenant
@@ -276,7 +276,9 @@ gestione della piattaforma è un'impostazione di sistema in **Impostazioni
 - **Prestazione predefinita (articolo)**: fornisce denominazione, unità,
   testo standard e – se non si trova alcuna tariffa – il prezzo delle
   posizioni di trasferimento. Le regole di fatturazione del progetto hanno la
-  precedenza. Senza articoli nell'anagrafica articoli l'elenco resta vuoto.
+  precedenza. Senza articoli nell'anagrafica articoli l'elenco resta vuoto. Una
+  prestazione con l'unità «forfait» o «Pauschale» fattura una riga con quantità 1
+  per ordine; le altre unità contano in base alla durata.
 - **Modello: testo introduttivo del trasferimento** e **Modello: nota finale
   del trasferimento** (fino a 2000 caratteri ciascuno): vengono copiati nella
   ricevuta alla creazione di un trasferimento e lì sono modificabili.

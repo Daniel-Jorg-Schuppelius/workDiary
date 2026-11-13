@@ -80,6 +80,8 @@ return [
         // Vollzug ist wie bei den Anfragen die Schlüsselvernichtung (MVP-1602).
         'privacy_incidents' => [
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            // Je Organisation einstellbar (MVP-1683); ohne Wert gilt die Frist des Rechtsraums.
+            'years_setting' => 'privacy.incident_retention_years',
             'basis' => ['DE' => 'Art. 33 Abs. 5 DSGVO / §195 BGB', 'AT' => 'Art. 33 Abs. 5 DSGVO / §1489 ABGB', 'CH' => 'Art. 127 OR'],
         ],
 

@@ -1,7 +1,7 @@
 ---
 title: "SEPA-Zahlungsausgang"
 topic: finance.sepa
-version: 2
+version: 3
 keywords:
     - Sammelüberweisung
     - Zahllauf
@@ -71,4 +71,4 @@ den Betrag nur einmal — im Zahllauf statt zusätzlich als offene Forderung.
 
 ## Verfall nach 36 Monaten
 
-Nach dem SEPA-Regelwerk erlischt ein Mandat, wenn 36 Monate lang kein Einzug eingereicht wurde. Der Zahlungslauf nimmt ein solches Mandat schon nicht mehr; der tägliche Fristenlauf setzt es zusätzlich auf **Abgelaufen** und vermerkt das im Protokoll. Für weitere Einzüge holen Sie ein neues Mandat ein.
+Nach dem SEPA-Regelwerk erlischt ein Mandat, wenn 36 Monate lang kein Einzug eingereicht wurde. Die Frist beginnt mit dem letzten Einzug; wurde ein Mandat nie genutzt, beginnt sie mit dem Unterschriftsdatum. Der Zahlungslauf nimmt ein solches Mandat schon nicht mehr; der tägliche Fristenlauf setzt es zusätzlich auf **Abgelaufen** und vermerkt das im Protokoll. Für weitere Einzüge holen Sie ein neues Mandat ein.

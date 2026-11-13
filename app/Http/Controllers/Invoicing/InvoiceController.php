@@ -1157,9 +1157,8 @@ class InvoiceController extends Controller {
             }
         }
 
-        // Belegsprache je Kunde (Feature 034, MVP-721): Vorlagen-Platzhalter
-        // (Belegart, Datum) in der Sprache des Kunden.
-        $rendered = \App\Support\DocumentLocale::within($invoice->customer, $invoice->organization, fn (): array => $template->renderForInvoice($invoice, $data['custom_text'] ?? null));
+        // Belegsprache (Feature 034, MVP-721; MVP-1680): Vorlagen-Platzhalter (Belegart, Datum) in der Sprache des Belegs.
+        $rendered = \App\Support\DocumentLocale::run($invoice->documentLocale(), fn (): array => $template->renderForInvoice($invoice, $data['custom_text'] ?? null));
 
         $bcc = $data['bcc'] ?? [];
         if (! empty($data['bcc_sender'])) {

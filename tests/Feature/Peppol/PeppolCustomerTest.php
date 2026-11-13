@@ -88,16 +88,32 @@ class PeppolCustomerTest extends TestCase {
             ->assertSessionHasErrors('peppol_participant_id');
     }
 
-    public function test_valid_participant_id_is_stored(): void {
+    /** MVP-1687: Unter Schema 0204 steht eine Leitweg-ID; mit falscher Prüfziffer ist die Adresse nicht zustellbar. */
+    public function test_leitweg_id_with_a_wrong_check_digit_is_rejected_by_the_form(): void {
         $this->actingAs($this->admin)
+            ->from(route('customers.show', $this->customer))
             ->put(route('customers.update', $this->customer), [
                 'name' => 'ACME GmbH',
                 'currency' => 'EUR',
                 'peppol_participant_id' => '0204:991-12345-67',
             ])
+            ->assertSessionHasErrors(['peppol_participant_id' => (string) __('peppol.field.participant_id_leitweg_invalid', [
+                'reason' => (string) __('invoicing.leitweg_reason.check_digits', ['given' => '67', 'expected' => '73']),
+            ])]);
+
+        $this->assertSame(self::RECEIVER, $this->customer->refresh()->peppol_participant_id);
+    }
+
+    public function test_valid_participant_id_is_stored(): void {
+        $this->actingAs($this->admin)
+            ->put(route('customers.update', $this->customer), [
+                'name' => 'ACME GmbH',
+                'currency' => 'EUR',
+                'peppol_participant_id' => '0204:991-12345-73',
+            ])
             ->assertSessionHasNoErrors();
 
-        $this->assertSame('0204:991-12345-67', $this->customer->fresh()->peppol_participant_id);
+        $this->assertSame('0204:991-12345-73', $this->customer->refresh()->peppol_participant_id);
     }
 
     public function test_registration_check_stores_the_smp_result(): void {

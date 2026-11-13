@@ -110,7 +110,7 @@ final class IncomingSupportingDocumentsTest extends TestCase {
 
     /** @param list<SupportingDocument> $documents */
     private function receive(array $documents): IncomingEInvoice {
-        $builder = ERechnungDocumentBuilder::xrechnung('LF-2026-' . random_int(1000, 9999), '991-12345-67')
+        $builder = ERechnungDocumentBuilder::xrechnung('LF-2026-' . random_int(1000, 9999), '991-12345-73')
             ->withIssueDate(new DateTimeImmutable('2026-10-01'))
             ->withDueDate(new DateTimeImmutable('2026-10-31'))
             ->withSeller('Lieferant GmbH', 'DE987654321')

@@ -1,7 +1,7 @@
 ---
 title: "SEPA outgoing payments"
 topic: finance.sepa
-version: 2
+version: 3
 keywords:
     - bulk transfer
     - payment run
@@ -69,4 +69,4 @@ the amount only once — in the payment run instead of also as an open receivabl
 
 ## Expiry after 36 months
 
-Under the SEPA rulebook a mandate lapses if no collection has been submitted for 36 months. The payment run already skips such a mandate; the daily deadline run also sets it to **Expired** and records this in the log. For further collections, obtain a new mandate.
+Under the SEPA rulebook a mandate lapses if no collection has been submitted for 36 months. The period starts with the last collection; if a mandate has never been used, it starts with the signature date. The payment run already skips such a mandate; the daily deadline run also sets it to **Expired** and records this in the log. For further collections, obtain a new mandate.

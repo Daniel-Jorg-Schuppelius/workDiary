@@ -36,7 +36,16 @@
         <x-input-field name="unit" :label="__('Einheit')" type="text" :value="old('unit', $usage?->unit ?? 'Stk.')" required maxlength="20" />
         <x-input-field name="unit_price" :label="__('EP netto')" type="number" step="0.0001" min="0" :value="old('unit_price', $usage?->unit_price?->getAmount())" />
         <x-input-field name="tax_rate" :label="__('USt %')" type="number" step="0.01" min="0" max="100" :value="old('tax_rate', $usage?->tax_rate?->getNumericValue())" />
+        {{-- Lagergeführter Artikel ohne ausreichenden Bestand im Standardlager (MVP-1679). --}}
+        @can(\App\Enums\User\Permission::InventoryNegative->value)
+            <x-checkbox-field span="2" name="allow_negative" :toggle="false" :label="__('inventory.field.allow_negative')"
+                              :hint="__('material.stock.allow_negative_hint')" :checked="(bool) old('allow_negative', false)" />
+        @endcan
     </x-form-group>
+
+    @if ($usage?->stockNotice())
+        <p class="text-sm text-muted">{{ __('material.stock.current', ['notice' => $usage->stockNotice()]) }}</p>
+    @endif
 
     <x-validation-errors />
 </x-modal>

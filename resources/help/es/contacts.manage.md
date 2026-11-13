@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 17
+version: 18
 keywords:
     - Vista previa como cliente
     - Contraseña inicial
@@ -116,11 +116,18 @@ sección **Facturación y presentación**:
   o **ZUGFeRD (PDF híbrido)**; **Sin estándar (PDF)** mantiene el PDF.
 - **Leitweg-ID / referencia del comprador (BT-10)**: dato obligatorio de la
   XRechnung: la Leitweg-ID para las administraciones; en otro caso, una
-  referencia indicada por el cliente.
+  referencia indicada por el cliente. Si el valor parece una Leitweg-ID o el
+  cliente es una administración pública, el diálogo lo guarda normalizado
+  (mayúsculas, sin espacios) y comprueba su estructura y su dígito de control
+  según la especificación de formato de la KoSIT. Una Leitweg-ID no válida se
+  guarda igualmente; el diálogo avisa e indica el motivo, por ejemplo un dígito
+  de control erróneo.
 - **Identificador de participante Peppol**: identificador del destinatario para
   el envío por Peppol con la forma esquema:identificador, por ejemplo con el
   NIF-IVA o la Leitweg-ID; vacío significa que no hay envío por Peppol a este
-  cliente.
+  cliente. Con el esquema 0204 debe seguir una Leitweg-ID válida; de lo
+  contrario, el diálogo rechaza el identificador, porque a una dirección
+  errónea no se puede entregar nada.
 - **Perfil de destinatario de la factura electrónica**: **Administración
   pública** envía solo el XML por correo electrónico, exige la Leitweg-ID,
   incrusta los documentos y adjunta automáticamente el justificante de
@@ -137,6 +144,12 @@ sección **Facturación y presentación**:
   envía la factura con los justificantes; en ese caso desactive el envío
   automático en el sistema de facturación. Solo ve este campo con el permiso
   **Gestionar la configuración financiera**.
+
+En la sección **Portal y otros**, junto al NIF-IVA, figura el **número de
+registro (registro mercantil)**, por ejemplo «Amtsgericht Musterstadt HRB
+12345». La factura electrónica lo indica como identificador de registro del
+cliente (BT-47). Si el cliente es el sujeto pasivo (§ 13b UStG) y no tiene
+NIF-IVA, basta el número de registro para la factura electrónica.
 
 Cómo llegan los documentos a la factura electrónica y qué rige para los
 clientes de la administración lo describe el tema de ayuda **Facturas &

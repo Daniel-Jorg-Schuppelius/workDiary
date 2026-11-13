@@ -2401,6 +2401,16 @@ return [
             'pending' => 'Offen',
             'approved' => 'Freigegeben',
             'rejected' => 'Abgelehnt',
+            'withdrawn' => 'Zurückgezogen',
+        ],
+    ],
+    'material' => [
+        'material-stock-status' => [
+            'booked' => 'Vom Bestand abgebucht',
+            'requested' => 'Negativbestand beantragt',
+            'rejected' => 'Negativbestand abgelehnt – nicht gebucht',
+            'no_warehouse' => 'Nicht gebucht – kein Standardlager',
+            'read_only' => 'Nicht gebucht – Bestand extern, nur lesend',
         ],
     ],
 ];

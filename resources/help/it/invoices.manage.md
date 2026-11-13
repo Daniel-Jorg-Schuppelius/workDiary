@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 17
+version: 20
 keywords:
     - creare fattura
     - emettere fattura
@@ -138,6 +138,22 @@ totale la liberano di nuovo e l'origine resta visibile sul documento. Le note
 di credito parziali non liberano nulla; il magazzino resta invariato in tutte
 le operazioni di fattura.
 
+## Forfait dai tempi
+
+Se a un tipo di attività è associata una prestazione con l'unità «forfait» o
+«Pauschale» — ad esempio un articolo nella regola di fatturazione del progetto o
+come prestazione predefinita dell'organizzazione —, la fatturazione, il
+trasferimento e il giustificativo dei tempi Lexoffice fatturano **una riga con
+quantità 1 per ordine** al prezzo di tale prestazione, indipendentemente da quanti
+tempi sono stati registrati. I tempi senza ordine danno un forfait per progetto e
+tipo di attività. I tempi restano collegati alla riga come giustificativo e
+risultano fatturati. L'arrotondamento, i minuti di trasferta della condizione
+cliente e l'integrazione fino alle ore concordate non valgono per i forfait. Se la
+prestazione non ha un prezzo, il forfait compare con 0,00 nell'anteprima. Valgono
+come forfait «forfait», «forf.», «Pauschale» e «pauschal», oltre agli equivalenti
+nelle altre lingue come «flat». Qualsiasi altra unità — vuota, «ora», «giorno»,
+«pz.», «km» o testo libero — continua a fatturare in base alla durata.
+
 ## Pagamento online
 
 Se un fornitore di pagamento (Stripe, Mollie o SumUp) è configurato come
@@ -270,7 +286,9 @@ l’attestazione la integra.
 Nella scheda del cliente impostare il **profilo destinatario della fattura
 elettronica** su «Pubblica amministrazione». Allora:
 
-- La Leitweg-ID (riferimento dell’acquirente) è obbligatoria.
+- La Leitweg-ID (riferimento dell’acquirente) è obbligatoria. Se struttura o
+  cifra di controllo sono errate, il controllo prima dell'invio avvisa; lo stesso
+  vale per i clienti indirizzati tramite Peppol con lo schema 0204.
 - Via e-mail parte solo la XRechnung, senza PDF accanto; il dialogo d’invio
   offre solo questi formati. L’invio elettronico emette prima la bozza, così
   l’XML porta i documenti fissati.
@@ -313,8 +331,10 @@ nuovo regime. Se emette una bozza con un regime fiscale superato, workDiary la
 adegua e interrompe l'emissione: verifichi gli importi ed emetta di nuovo.
 
 Con l'**inversione contabile**, la fattura elettronica richiede la partita IVA del
-cliente (regola BR-AE-02), anche per l'inversione nazionale ai sensi del § 13b UStG;
-il controllo prima dell'invio segnala se manca. Tutte le posizioni compaiono allora
+cliente (regola BR-AE-02); per l'inversione nazionale ai sensi del § 13b UStG
+basta il suo numero di registro. Il controllo prima dell'invio segnala se manca il
+dato necessario. Il numero di registro compare nella fattura elettronica come
+identificativo di registrazione dell'acquirente (BT-47). Tutte le posizioni compaiono allora
 allo 0 % con la dicitura «Inversione contabile» nella XRechnung.
 
 Il **testo di avviso** segue il regime fiscale: se l'avviso automatico del regime
@@ -335,14 +355,25 @@ norma di esenzione come testo di avviso del giustificativo, ad esempio «Cure me
 esenti (§ 4 n. 14 UStG)»; senza regola compare solo «Operazione esente» e il
 controllo prima dell'invio avvisa.
 
+**Paesi terzi:** le merci per clienti fuori dall'UE sono esportazioni (G) con
+il motivo «Cessione all'esportazione esente». Le prestazioni a imprese fuori
+dall'UE non sono imponibili in Germania (§ 3a co. 2 UStG) e figurano come «non
+imponibile» (O) nella fattura elettronica, nel PDF della fattura e nella
+contabilità: senza partite IVA, con il codice fiscale dell'organizzazione e
+senza altre categorie accanto. Senza codice fiscale il controllo prima
+dell'invio si blocca. Le fatture emesse in precedenza con la categoria G vengono
+ristampate senza modifiche.
+
 Il controllo prima dell'invio segnala inoltre: partita IVA del cliente mancante nelle
 cessioni intracomunitarie, partita IVA dell'organizzazione mancante nelle cessioni
 verso altri paesi UE e nelle esportazioni, «non imponibile» accanto ad altre
 categorie e una posizione di categoria senza imposta con aliquota superiore allo 0 %.
 Con «non imponibile» la fattura elettronica non riporta partite IVA; basta il codice
-fiscale. Alla fattura elettronica mancano ancora due dati (avviso): il paese di
-consegna nelle cessioni intracomunitarie e l'omissione dell'aliquota per posizione in
-«non imponibile».
+fiscale. Nelle cessioni intracomunitarie la fattura
+elettronica indica l'indirizzo del cliente come indirizzo di consegna con il paese
+di consegna (regola BR-IC-12); la XRechnung vi richiede CAP e città, altrimenti il
+controllo prima dell'invio si ferma. Le posizioni «non imponibile» compaiono
+senza aliquota nella fattura elettronica.
 
 ## Indicazione di esenzione nel PDF della fattura
 
@@ -373,6 +404,21 @@ attuali del cliente. Il documento di storno e la fattura correttiva congelano il
 destinatario alla propria emissione. L'indirizzo di recapito elettronico
 (identificativo Peppol o e-mail) e i solleciti seguono invece i dati attuali del
 cliente, perché vengono recapitati oggi.
+
+Insieme al destinatario, l'emissione blocca anche i **dati
+dell'organizzazione**: ragione sociale, indirizzo, codice fiscale, partita IVA,
+recapiti, coordinate bancarie (blocco bancario e codice QR per il bonifico), il
+regime dei piccoli imprenditori e la **lingua del documento**. La ristampa, la
+XRechnung e lo ZUGFeRD di una fattura emessa restano come sono stati emessi —
+anche dopo un cambio di banca, un nuovo indirizzo o un'altra lingua del documento
+del cliente; le bozze e le nuove fatture usano i dati attuali. I testi della
+fattura elettronica sono nella lingua del documento, non in quella della sua
+interfaccia. I solleciti indicano le coordinate bancarie attuali.
+
+Se il cliente non ha più una partita IVA registrata, la fattura di storno e la
+fattura di rettifica relative a reverse charge o a una cessione intracomunitaria
+riprendono la partita IVA della fattura originale e un numero di registro
+mancante; il controllo prima dell'invio non si blocca più.
 
 Se per il cliente è registrata una partita IVA, compare nell'intestazione della
 fattura («Vostra partita IVA»). Per le cessioni intracomunitarie e l'inversione

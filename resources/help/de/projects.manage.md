@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 7
+version: 9
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -100,6 +100,12 @@ Auffüllung nur einmal, entweder in einer Rechnung oder in einer Übergabe; eine
 Nachbuchung auf diesen Tag ist dann nicht abrechenbar. Ein Storno der Rechnung oder der
 Übergabe, das Entfernen der Position oder das Verwerfen des Entwurfs gibt die Auffüllung
 wieder frei.
+
+Nennt die Abrechnungsregel des Projekts die Einheit „Pauschale“, rechnet jeder
+Auftrag eine Position mit Menge 1 zum Preis der Regel; die Auffüllung auf
+vereinbarte Stunden entfällt dann, weil die Pauschale den Auftrag unabhängig von
+der Dauer abdeckt. Alle anderen Einheiten, etwa Stunde, Tag oder Stk, rechnen
+nach Dauer.
 
 ## Typische Fehler
 

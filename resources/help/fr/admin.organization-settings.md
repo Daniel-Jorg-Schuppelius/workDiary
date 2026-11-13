@@ -1,7 +1,7 @@
 ---
 title: "Organisation et paramètres"
 topic: admin.organization-settings
-version: 8
+version: 10
 keywords:
     - paramètres de l'entreprise
     - réglages du locataire
@@ -284,7 +284,9 @@ l'exploitation de la plateforme est un paramètre système sous **Paramètres
 - **Prestation par défaut (article)** : fournit le libellé, l'unité, le texte
   standard et – si aucun taux n'est trouvé – le prix des positions de
   transfert. Les règles de facturation du projet priment. Sans articles dans
-  le fichier articles, la liste reste vide.
+  le fichier articles, la liste reste vide. Une prestation avec l'unité
+  « forfait » ou « Pauschale » facture une ligne de quantité 1 par commande ; les
+  autres unités comptent selon la durée.
 - **Modèle : texte d’introduction du transfert** et **Modèle : remarque finale
   du transfert** (2000 caractères au plus chacun) : copiés dans le
   justificatif à la création d'un transfert et modifiables sur place.

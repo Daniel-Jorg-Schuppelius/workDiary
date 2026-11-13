@@ -11,7 +11,8 @@
 return [
     'field' => [
         'participant_id' => 'Identificativo partecipante Peppol',
-        'participant_id_hint' => 'Forma <ICD>:<identificativo>, ad es. 9930:DE123456789 (partita IVA) o 0204:991-12345-67 (Leitweg-ID). Vuoto = nessun invio Peppol a questo cliente.',
+        'participant_id_hint' => 'Forma <ICD>:<identificativo>, ad es. 9930:DE123456789 (partita IVA) o 0204:991-12345-73 (Leitweg-ID). Vuoto = nessun invio Peppol a questo cliente.',
+        'participant_id_leitweg_invalid' => 'Un identificativo partecipante Peppol con lo schema 0204 deve contenere un Leitweg-ID valido: :reason',
     ],
     'action' => [
         'send' => 'Invia via Peppol',

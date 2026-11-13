@@ -118,9 +118,9 @@ class BillingPositionBuilder {
         $positions = new Collection;
         $index = 0;
 
-        foreach ($this->aggregator->aggregate($entries) as $block) {
-            $hours = $block->billedHours();
-            if ($hours <= 0) {
+        foreach ($this->aggregator->aggregate($entries, $transfer->organization) as $block) {
+            $quantity = $block->quantity();
+            if ($quantity <= 0) {
                 continue;
             }
 
@@ -159,11 +159,11 @@ class BillingPositionBuilder {
                 'primary_source_id' => $block->primaryEntryId,
                 'name' => $this->positionName($block, $transfer, $service?->name, $endCustomer),
                 'description' => $this->positionText($service?->standardText, $blockEntries, $from, $to, (int) $transfer->organization_id, $endCustomer),
-                'quantity' => round($hours, 3),
+                'quantity' => round($quantity, 3),
                 'unit_name' => $service?->unitName ?: $this->timeUnit($transfer),
                 'unit_price' => round($price->rate, 4),
                 'vat_rate' => $service?->vatRate,
-                'amount' => DocumentTotalsCalculator::lineNet($hours, $price->rate)->withScale(2)->toFloat(),
+                'amount' => DocumentTotalsCalculator::lineNet($quantity, $price->rate)->withScale(2)->toFloat(),
                 'article_ref' => $service?->articleRef,
                 'service_source' => $service?->source,
                 'price_source' => $price->source,
@@ -299,12 +299,16 @@ class BillingPositionBuilder {
 
     /**
      * Bezeichnung: Name der Standardleistung, sonst wie bisher
-     * Projekt + Tätigkeitsart + Zeitraum. Hat das Projekt einen Fremdkunden,
-     * wird der Endkunde vorangestellt (analog {@see \App\Services\Invoicing\InvoiceGenerator}).
+     * Projekt + Tätigkeitsart + Zeitraum; eine Pauschale nennt ihren Auftrag.
+     * Hat das Projekt einen Fremdkunden, wird der Endkunde vorangestellt
+     * (analog {@see \App\Services\Invoicing\InvoiceGenerator}).
      */
     private function positionName(\App\Services\Invoicing\BillingBlock $block, BillingTransfer $transfer, ?string $serviceName, ?string $endCustomer): string {
         $serviceName = trim((string) $serviceName);
         $name = $serviceName !== '' ? $serviceName : $block->displayName($transfer);
+        if ($block->orderTitle !== null) {
+            $name .= ' · ' . $block->orderTitle;
+        }
 
         return $endCustomer !== null ? __('Endkunde :name', ['name' => $endCustomer]) . ' · ' . $name : $name;
     }

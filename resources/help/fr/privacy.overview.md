@@ -1,7 +1,7 @@
 ---
 title: "Aperçu de la gestion de la protection des données"
 topic: privacy.overview
-version: 5
+version: 6
 keywords:
     - RGPD
     - registre des traitements
@@ -173,6 +173,13 @@ organisation (par exemple DE), qui détermine les délais.
   l'**Échéance** en années ou en jours et la **Base juridique**. Les domaines
   portant la mention « inscription au registre uniquement, sans scan » ne
   documentent que le délai ; aucune proposition n'est créée pour eux.
+- **Violations de données** : votre organisation fixe elle-même le délai
+  pour les incidents clôturés (1 à 10 ans) ; vide, la valeur par défaut du
+  ressort s'applique – 3 ans, 5 ans en Suisse. Peuvent le modifier toutes les
+  personnes qui peuvent lancer le scan et confirmer les propositions ici ; le
+  scan de suppression utilise la valeur saisie. Ne descendez sous la valeur
+  par défaut que si vous conservez autrement la preuve pour l'autorité de
+  contrôle.
 - **Scanner maintenant** recherche les enregistrements dont le délai est
   expiré et crée des **Propositions de suppression**. Le scan s'exécute aussi
   automatiquement à intervalles réguliers (par défaut chaque semaine). Les

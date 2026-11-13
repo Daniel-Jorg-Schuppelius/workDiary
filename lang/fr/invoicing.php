@@ -15,6 +15,7 @@ return [
     'unit_hour' => 'h',
     'unit_flat' => 'forfait',
     'unit_piece' => 'pce',
+    'unit_flat_rate_hint' => 'L’unité « forfait » facture par commande et par facturation une ligne de quantité 1 au prix de la prestation. Vide ou toute autre unité, par exemple heure, jour ou pièce : les temps comptent selon leur durée.',
     'tax_rate' => 'Taux de TVA',
     'currency' => 'Devise',
     'totals' => [
@@ -25,7 +26,16 @@ return [
 
     // Facturation électronique (fonctionnalité 045, section 8) : XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Leitweg-ID / référence acheteur (BT-10)',
-    'buyer_reference_hint' => 'Obligatoire pour la XRechnung (facture électronique) : le Leitweg-ID pour les administrations, sinon une référence fournie par le client.',
+    'buyer_reference_hint' => 'Obligatoire pour la XRechnung (facture électronique) : le Leitweg-ID pour les administrations (normalisé et contrôlé sur sa clé de contrôle à l\'enregistrement), sinon une référence fournie par le client.',
+    'buyer_reference_leitweg_invalid' => 'Enregistré. La référence acheteur n\'est cependant pas un Leitweg-ID valide : :reason Veuillez vérifier auprès du donneur d\'ordre — les factures aux acheteurs publics seraient rejetées.',
+    // Grund einer ungültigen Leitweg-ID (MVP-1687); die Toolkit-Meldungen sind nur deutsch.
+    'leitweg_reason' => [
+        'form' => 'Il n\'a pas la forme adressage principal[-adressage détaillé]-chiffres de contrôle.',
+        'structure' => 'L\'adressage principal comporte 2, 3, 5, 8, 9 ou 12 chiffres et commence par le code d\'un Land (01–16) ou de l\'État fédéral (99) ; l\'adressage détaillé compte au plus 30 caractères.',
+        'check_digits' => 'Les chiffres de contrôle :given sont incorrects, attendu : :expected.',
+    ],
+    'register_number' => 'Numéro d\'immatriculation (registre du commerce)',
+    'register_number_hint' => 'Par exemple « Amtsgericht Musterstadt HRB 12345 ». La facture électronique l\'indique comme identifiant d\'immatriculation du client (BT-47) ; si un client national est redevable de la taxe (§ 13b UStG), il remplace un numéro de TVA manquant.',
     // Numéro de TVA du client sur la facture PDF (§ 14a UStG, MVP-1623).
     'buyer_vat_id' => 'Votre n° de TVA intracommunautaire',
     'einvoice' => [
@@ -61,8 +71,9 @@ return [
             'missing_buyer_reference' => 'Le Leitweg-ID/la référence acheteur (BT-10) manque chez le client.',
             'missing_seller_field' => 'Donnée vendeur manquante : :field (paramètres de l\'organisation → facturation).',
             'missing_tax_id' => 'Ni numéro de TVA intracommunautaire ni numéro fiscal configuré dans les paramètres de l\'organisation.',
-            'reverse_charge_buyer_vat_id' => 'L\'autoliquidation (catégorie AE) exige le numéro de TVA du client (BR-AE-02) — veuillez le renseigner chez le client.',
+            'reverse_charge_buyer_vat_id' => 'L\'autoliquidation (catégorie AE) exige le numéro de TVA du client ; pour un client national (§ 13b UStG), son numéro d\'immatriculation suffit (BR-AE-02, § 14a al. 1 UStG) — veuillez le renseigner chez le client.',
             'intra_community_buyer_vat_id' => 'La livraison intracommunautaire (catégorie K) exige le numéro de TVA du client (BR-IC-02) — veuillez le renseigner chez le client.',
+            'intra_community_delivery_address' => 'Livraison intracommunautaire (catégorie K) : la facture électronique indique l\'adresse du client comme adresse de livraison avec le pays de livraison (BT-80, BR-IC-12) ; la XRechnung exige en outre le code postal et la ville (BR-DE-10, BR-DE-11) — veuillez renseigner le pays, le code postal et la ville chez le client.',
             'seller_vat_id_required' => 'Les livraisons intracommunautaires et les exportations (catégories K et G) exigent le numéro de TVA de l’organisation (BR-IC-02, BR-G-02) — veuillez le renseigner dans les paramètres de l’organisation.',
             'not_subject_mixed' => 'Les positions non imposables (catégorie O) ne peuvent pas figurer à côté d’autres catégories de TVA dans une facture électronique (BR-O-11) — veuillez les facturer séparément.',
             'not_subject_tax_number' => 'Les opérations non imposables (catégorie O) ne portent pas de numéro de TVA (BR-O-02) ; la facture électronique a donc besoin du numéro fiscal dans les paramètres de l’organisation.',
@@ -79,9 +90,8 @@ return [
             'missing_buyer_email' => 'L\'e-mail du client manque (adresse électronique de réception BT-49).',
             'missing_due_date' => 'Date d\'échéance manquante — le délai de paiement par défaut est utilisé.',
             'service_date_fallback' => 'Aucune position n’indique de date ou de période de prestation ; la date de facture vaut date de prestation (§ 14 al. 4 n° 6 UStG).',
-            'intra_community_delivery_country' => 'Livraison intracommunautaire (catégorie K) : la facture électronique ne contient pas encore de pays de livraison (BT-80, règle BR-IC-12) — les destinataires stricts la rejettent.',
-            'not_subject_line_rate' => 'Opérations non imposables (catégorie O) : la facture électronique indique encore un taux de 0 % dans les positions (règle BR-O-05) — les destinataires stricts la rejettent.',
             'exemption_unspecified' => 'Positions exonérées (catégorie E) : aucun motif d’exonération n’est enregistré, la facture électronique indique seulement « Opération exonérée ». Créez dans la matrice des règles fiscales une règle avec le type de taux « Exonéré » et saisissez la disposition d’exonération comme mention sur le justificatif (§ 14 al. 4 n° 8 UStG).',
+            'invalid_leitweg_id' => 'Leitweg-ID non valide (:terms) : :reason Les plateformes de réception des administrations rejettent la facture — veuillez demander le Leitweg-ID au donneur d\'ordre.',
             'activity_report_missing' => 'Ce destinataire attend un justificatif de prestations, mais la facture ne porte aucune pièce.',
             'near_limit' => 'La facture électronique avec pièces pèse :size, proche de la limite du destinataire (:limit).',
         ],

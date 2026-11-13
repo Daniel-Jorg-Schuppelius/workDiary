@@ -18,4 +18,15 @@ return [
         'link_hint' => 'Materialien ohne Artikel über gleiche SKU bzw. Artikelnummer zuordnen; mehrdeutige Treffer bleiben offen.',
         'linked' => ':count Materialien einem Artikel zugeordnet.',
     ],
+    'stock' => [
+        'insufficient' => 'Im Lager „:warehouse“ sind nur :available :unit verfügbar. Für einen Abgang in den Negativbestand „Negativen Bestand zulassen“ wählen.',
+        'negative_forbidden' => 'Einen Abgang in den Negativbestand darf nur buchen, wer das Recht „Negative Bestände freigeben“ hat.',
+        'serial_required' => 'Der Artikel ist seriennummernpflichtig. Entnehmen Sie ihn über das Lager mit Seriennummer, oder erfassen Sie den Verbrauch ohne Materialstamm.',
+        'booking_failed' => 'Der Lagerabgang ließ sich nicht buchen: :reason',
+        'return_failed' => 'Die Rückbuchung ins Lager ließ sich nicht buchen: :reason',
+        'usage_gone' => 'Den Materialverbrauch zu diesem Antrag gibt es nicht mehr.',
+        'allow_negative_hint' => 'Nur nötig, wenn ein lagergeführter Artikel im Standardlager nicht genug Bestand hat.',
+        'notice' => ':status · Lager „:warehouse“',
+        'current' => 'Bestand: :notice',
+    ],
 ];

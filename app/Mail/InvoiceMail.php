@@ -43,9 +43,9 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         public ?int $dispatchId = null,
         public InvoiceDeliveryFormat $deliveryFormat = InvoiceDeliveryFormat::Pdf,
     ) {
-        // Belegsprache je Kunde (Feature 034, MVP-721): Mailable::send()
-        // rendert Inhalt UND Anhänge innerhalb dieser Locale.
-        $this->locale(\App\Support\DocumentLocale::for($invoice->customer, $invoice->organization));
+        // Belegsprache je Kunde (Feature 034, MVP-721), ausgestellt die eingefrorene (MVP-1680):
+        // Mailable::send() rendert Inhalt UND Anhänge innerhalb dieser Locale.
+        $this->locale($invoice->documentLocale());
     }
 
     public function envelope(): Envelope {

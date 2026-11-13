@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 17
+version: 20
 keywords:
     - create invoice
     - write invoice
@@ -129,6 +129,20 @@ item, discarding the draft or a full cancellation release it again, and the
 origin stays visible on the document. Partial credit notes release nothing;
 stock stays untouched by all invoice operations.
 
+## Flat rates from times
+
+If an activity type is linked to a service with the unit "flat" or "Pauschale" —
+for example an article in the project's billing rule or as the organisation's
+default service —, the invoice run, the transfer and the Lexoffice time voucher
+bill **one line with quantity 1 per order** at the price of that service, however
+many times were booked. Times without an order give one flat rate per project and
+activity type. The times stay attached to the line as proof and count as billed.
+Rounding increments, travel minutes from the customer terms and the top-up to
+agreed hours do not apply to flat rates. If the service has no price, the flat
+rate shows 0.00 in the preview. "flat", "Pauschale" and "pauschal" count as a flat
+rate, as do the counterparts in the other languages such as "forfait". Any other
+unit — empty, "hour", "day", "pcs", "km" or free text — keeps billing by duration.
+
 ## Online payment
 
 If a payment provider (Stripe, Mollie or SumUp) is set up as a plugin,
@@ -254,7 +268,9 @@ of services stays in the items; the report adds to it.
 In the customer record, set the **E-invoice recipient profile** to “Public
 authority”. Then:
 
-- The routing ID (buyer reference) is required.
+- The routing ID (buyer reference) is required. If its structure or check
+  digits are wrong, the check before sending warns; this also applies to
+  customers addressed via Peppol with scheme 0204.
 - Email carries only the XRechnung, no PDF next to it; the send dialog only
   offers these formats. Electronic sending issues a draft first so that the XML
   carries the fixed documents.
@@ -295,9 +311,10 @@ next edit of the draft applies the new case. If you issue a draft with an outdat
 tax case, workDiary adjusts it and stops the issue: check the totals and issue
 again.
 
-With **reverse charge**, the e-invoice needs the customer's VAT ID (rule BR-AE-02),
-also for domestic reverse charge under § 13b UStG; the check before sending reports
-a missing one. All line items then appear with 0 % and the note "Reverse charge"
+With **reverse charge**, the e-invoice needs the customer's VAT ID (rule
+BR-AE-02); for domestic reverse charge under § 13b UStG the register number will
+do instead. The check before sending reports when the required detail is missing. The register number appears
+in the e-invoice as the buyer's legal registration identifier (BT-47). All line items then appear with 0 % and the note "Reverse charge"
 in the XRechnung.
 
 The **notice text** follows the tax case: if the automatic notice of the old case
@@ -316,13 +333,23 @@ enter the exemption provision as its document notice text, for example "Tax-exem
 medical treatment (§ 4 no. 14 UStG)"; without a rule only "Tax-exempt supply" appears
 and the check before sending warns.
 
+**Non-EU countries:** goods for customers outside the EU are exports (G) with
+the reason "Tax-exempt export supply". Services to businesses outside the EU are
+not subject to German VAT (§ 3a (2) UStG) and appear as "not subject to VAT" (O)
+in the e-invoice, the invoice PDF and the accounting: without VAT IDs, with the
+organisation's tax number and not next to other categories. Without a tax number
+the check before sending stops. Invoices issued earlier with category G are
+reprinted unchanged.
+
 The check before sending also reports: a missing customer VAT ID for intra-Community
 supplies, a missing organisation VAT ID for supplies to other EU countries and
 exports, "not subject to VAT" next to other categories, and an item without tax in
 its category but with a tax rate above 0 %. With "not subject to VAT" the e-invoice
-carries no VAT IDs; the tax number is enough. Two details are still missing from the
-e-invoice (warning): the delivery country for intra-Community supplies and the
-omission of the item rate for "not subject to VAT".
+carries no VAT IDs; the tax number is enough. For intra-Community supplies the
+e-invoice states the customer's address as the delivery address with the
+delivery country (rule BR-IC-12); the XRechnung needs postcode and city there,
+otherwise the check before sending stops. Items "not subject to VAT" appear in
+the e-invoice without a tax rate.
 
 ## Exemption note in the invoice PDF
 
@@ -349,6 +376,20 @@ draft always shows the current customer data. Cancellation documents and
 corrective invoices freeze the recipient when they are issued themselves. The
 electronic delivery address (Peppol ID or e-mail) and dunning letters, by
 contrast, follow the current customer data because they are delivered today.
+
+Together with the recipient, issuing freezes the **organisation's details**:
+company name, address, tax number, VAT ID, contact details, bank details (bank
+block and payment QR code), the small business scheme and the **document
+language**. Reprints, XRechnung and ZUGFeRD of an issued invoice stay as they
+were issued — also after a change of bank, a new address or another document
+language of the customer; drafts and new invoices use today's data. The texts of
+the e-invoice are in the document language, not in the language of your user
+interface. Dunning letters show today's bank details.
+
+If the customer no longer has a VAT ID on file, cancellation and corrective
+invoices for reverse charge or intra-Community supplies take over the VAT ID of
+the original invoice, as well as a missing register number; the check before
+sending no longer stops.
 
 If a VAT ID is stored for the customer, it appears in the invoice header ("Your
 VAT ID"). For intra-Community supplies and reverse charge it is mandatory

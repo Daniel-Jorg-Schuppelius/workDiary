@@ -120,8 +120,14 @@ class CustomerController extends Controller {
         $customer->syncCustomFields($custom);
         $customer->syncClassificationDomain(\App\Enums\Classification\ClassificationDomain::CustomerGroup, $customerGroupId !== null ? [(int) $customerGroupId] : []);
 
-        return redirect()->route('customers.show', $customer)
-            ->with($this->issueContactNumber($customer) + ['success' => __('Kunde angelegt.')]);
+        $flash = $this->issueContactNumber($customer) + ['success' => __('Kunde angelegt.')];
+        // Leitweg-ID (MVP-1687): gespeichert wird trotzdem, die Warnung steht neben einer Nummernwarnung.
+        $leitwegWarning = $request->leitwegIdWarning();
+        if ($leitwegWarning !== null) {
+            $flash['warning'] = trim(($flash['warning'] ?? '') . ' ' . $leitwegWarning);
+        }
+
+        return redirect()->route('customers.show', $customer)->with($flash);
     }
 
     public function edit(Customer $customer): View {
@@ -173,8 +179,10 @@ class CustomerController extends Controller {
             $message .= ' ' . trans_choice(':count offener Zeiteintrag an die neue Abrechenbarkeit angepasst.|:count offene Zeiteinträge an die neue Abrechenbarkeit angepasst.', $syncedBillable, ['count' => $syncedBillable]);
         }
 
-        return redirect()->route('customers.show', $customer)
-            ->with('success', $message);
+        $redirect = redirect()->route('customers.show', $customer)->with('success', $message);
+        $leitwegWarning = $request->leitwegIdWarning();
+
+        return $leitwegWarning !== null ? $redirect->with('warning', $leitwegWarning) : $redirect;
     }
 
     public function destroy(Customer $customer): RedirectResponse {

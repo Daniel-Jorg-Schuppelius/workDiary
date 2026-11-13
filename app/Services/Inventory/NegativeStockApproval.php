@@ -18,10 +18,12 @@ use App\Models\Approval\Approval;
 use App\Models\Article\ArticleVariant;
 use App\Models\Audit\AuditLog;
 use App\Models\Inventory\{NegativeStockRequest, StockLot, Warehouse, WarehouseBin};
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\{Organization, User};
 use App\Services\Approval\ApprovalService;
 use App\Settings\SettingsRegistry;
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Gate};
 use RuntimeException;
@@ -45,8 +47,9 @@ final class NegativeStockApproval {
         return (bool) $this->settings->effective(self::SETTING, $organization)->value;
     }
 
-    public function request(ArticleVariant $variant, Warehouse $warehouse, EnteredQuantity $entered, OwnershipType $ownership, User $requester, ?WarehouseBin $bin = null, ?StockLot $lot = null): NegativeStockRequest {
-        return DB::transaction(function () use ($variant, $warehouse, $entered, $ownership, $requester, $bin, $lot): NegativeStockRequest {
+    /** `$source` ist der fachliche Beleg (Materialverbrauch, MVP-1679); die Freigabe bucht dann über ihn. */
+    public function request(ArticleVariant $variant, Warehouse $warehouse, EnteredQuantity $entered, OwnershipType $ownership, User $requester, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Model $source = null): NegativeStockRequest {
+        return DB::transaction(function () use ($variant, $warehouse, $entered, $ownership, $requester, $bin, $lot, $source): NegativeStockRequest {
             $request = NegativeStockRequest::query()->create([
                 'organization_id' => $variant->organization_id,
                 'article_variant_id' => $variant->id,
@@ -57,6 +60,8 @@ final class NegativeStockApproval {
                 'quantity' => $entered->base,
                 'entered_qty' => $entered->originalQty,
                 'entered_unit' => $entered->originalUnit,
+                'source_type' => $source?->getMorphClass(),
+                'source_id' => $source?->getKey(),
                 'status' => NegativeStockRequestStatus::Pending,
                 'requested_by' => $requester->id,
             ]);
@@ -95,11 +100,40 @@ final class NegativeStockApproval {
             } elseif ($result === 'rejected') {
                 $request->forceFill(['status' => NegativeStockRequestStatus::Rejected, 'decided_by' => $actor->id, 'decided_at' => Carbon::now(), 'note' => $reason])->save();
                 $this->auditDecision($request, $actor, 'inventory.negativeRejected');
+                if ($this->fromMaterialUsage($request)) {
+                    app(MaterialUsageStockBooking::class)->rejected($request);
+                }
             }
         });
     }
 
+    /**
+     * Zieht einen offenen Antrag zurück, weil seine Quelle sich geändert hat
+     * oder gelöscht wird (MVP-1679); im Eingang steht er danach nicht mehr.
+     */
+    public function withdraw(NegativeStockRequest $request, ?User $actor): void {
+        DB::transaction(function () use ($request, $actor): void {
+            $locked = NegativeStockRequest::query()->withoutGlobalScopes()->whereKey($request->id)->lockForUpdate()->first();
+            if (! $locked instanceof NegativeStockRequest || ! $locked->status->canTransitionTo(NegativeStockRequestStatus::Withdrawn)) {
+                return;
+            }
+            $locked->forceFill(['status' => NegativeStockRequestStatus::Withdrawn, 'decided_by' => $actor?->id, 'decided_at' => Carbon::now()])->save();
+            $this->auditDecision($locked, $actor, 'inventory.negativeWithdrawn');
+        });
+    }
+
+    private function fromMaterialUsage(NegativeStockRequest $request): bool {
+        return $request->source_type !== null && MorphMap::is($request->source_type, MaterialUsage::class);
+    }
+
     private function book(NegativeStockRequest $request): void {
+        // Der Verbrauch bucht selbst: Bewertung, Beleg und Stand am Verbrauch (MVP-1679).
+        if ($this->fromMaterialUsage($request)) {
+            app(MaterialUsageStockBooking::class)->bookApproved($request);
+
+            return;
+        }
+
         $variant = $request->variant()->with('article')->firstOrFail();
         $warehouse = $request->warehouse()->firstOrFail();
         $entered = EnteredQuantity::of($variant, (string) ($request->entered_qty ?? $request->quantity), $request->entered_unit);
@@ -119,10 +153,10 @@ final class NegativeStockApproval {
     }
 
     /** Antragsteller und Freigebende ins Audit (Feature 048: „Grenzwerte und Genehmigende“). */
-    private function auditDecision(NegativeStockRequest $request, User $actor, string $event): void {
+    private function auditDecision(NegativeStockRequest $request, ?User $actor, string $event): void {
         AuditLog::query()->create([
             'organization_id' => $request->organization_id,
-            'user_id' => $actor->id,
+            'user_id' => $actor?->id,
             'event' => $event,
             'auditable_type' => MorphMap::stableKey(ArticleVariant::class),
             'auditable_id' => $request->article_variant_id,
@@ -131,7 +165,7 @@ final class NegativeStockApproval {
                 'qty' => (string) $request->quantity,
                 'four_eyes' => true,
                 'requested_by' => $request->requested_by,
-                'decided_by' => $actor->id,
+                'decided_by' => $actor?->id,
                 'request_id' => $request->id,
             ],
         ]);

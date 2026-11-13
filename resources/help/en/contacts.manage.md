@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 17
+version: 18
 keywords:
     - Preview as customer
     - Start password
@@ -113,10 +113,16 @@ display**:
   default (PDF)** keeps the PDF.
 - **Routing ID / buyer reference (BT-10)**: mandatory in the XRechnung – the
   routing ID (Leitweg-ID) for public authorities, otherwise a reference set by
-  the customer.
+  the customer. If the value looks like a routing ID or the customer is a
+  public authority, the dialog stores it normalised (capital letters, no
+  spaces) and checks structure and check digits against the KoSIT format
+  specification. An invalid routing ID is stored anyway; the dialog warns and
+  names the reason, such as a wrong check digit.
 - **Peppol participant ID**: recipient identifier for sending via Peppol in the
   form scheme:identifier, for example with the VAT ID or the routing ID; empty
-  means no Peppol dispatch to this customer.
+  means no Peppol dispatch to this customer. With scheme 0204 a valid routing ID
+  must follow, otherwise the dialog rejects the identifier – nothing can be
+  delivered to a wrong address.
 - **E-invoice recipient profile**: **Public authority** sends only the XML by
   email, requires the routing ID, embeds the documents and attaches the
   activity report automatically; **Standard** applies to all other customers,
@@ -132,6 +138,12 @@ display**:
   delivers it or WorkDiary sends the invoice with the supporting documents – in
   that case switch off automatic dispatch in the invoicing system. You only see
   this field with the right **Manage finance configuration**.
+
+In the section **Portal & miscellaneous**, next to the VAT ID, there is the
+**Register number (commercial register)**, for example “Amtsgericht
+Musterstadt HRB 12345”. The e-invoice states it as the customer's legal
+registration identifier (BT-47). If the customer owes the tax (§ 13b UStG) and
+has no VAT ID, the register number is enough for the e-invoice.
 
 How documents get into the e-invoice and what applies to public-authority
 customers is described in the help topic **Invoices & documents**.

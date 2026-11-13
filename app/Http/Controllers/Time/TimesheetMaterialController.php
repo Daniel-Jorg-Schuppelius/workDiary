@@ -42,9 +42,9 @@ class TimesheetMaterialController extends Controller {
     public function store(Project $project, Timesheet $timesheet, SaveMaterialUsageRequest $request, MaterialUsageRecorder $recorder): RedirectResponse {
         Gate::authorize('update', $timesheet);
 
-        $recorder->record($timesheet, $request->validated());
+        $usage = $recorder->record($timesheet, $request->validated(), $this->authUser());
 
-        return back()->with('success', __('Material erfasst.'));
+        return back()->with('success', $this->withStock(__('Material erfasst.'), $usage));
     }
 
     /**
@@ -56,26 +56,33 @@ class TimesheetMaterialController extends Controller {
         $data = $request->validated();
         $project = Project::query()->findOrFail((int) $data['project_id']);
 
-        $recorder->recordForDay($this->authUser(), $project, CarbonImmutable::parse((string) $data['date']), Arr::except($data, ['project_id', 'date']));
+        $usage = $recorder->recordForDay($this->authUser(), $project, CarbonImmutable::parse((string) $data['date']), Arr::except($data, ['project_id', 'date']));
 
-        return back()->with('success', __('Material erfasst.'));
+        return back()->with('success', $this->withStock(__('Material erfasst.'), $usage));
     }
 
-    public function update(Project $project, Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request): RedirectResponse {
+    public function update(Project $project, Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request, MaterialUsageRecorder $recorder): RedirectResponse {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
 
-        $usage->update($request->validated());
+        $usage = $recorder->update($usage, $request->validated(), $this->authUser());
 
-        return back()->with('success', __('Material aktualisiert.'));
+        return back()->with('success', $this->withStock(__('Material aktualisiert.'), $usage));
     }
 
-    public function destroy(Project $project, Timesheet $timesheet, MaterialUsage $usage): RedirectResponse {
+    public function destroy(Project $project, Timesheet $timesheet, MaterialUsage $usage, MaterialUsageRecorder $recorder): RedirectResponse {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
 
-        $usage->delete();
+        $recorder->delete($usage, $this->authUser());
 
         return back()->with('success', __('Material entfernt.'));
+    }
+
+    /** Meldung mit der Bestandswirkung (MVP-1679), damit eine Lagerbuchung nie unbemerkt geschieht. */
+    private function withStock(string $message, MaterialUsage $usage): string {
+        $notice = $usage->stockNotice();
+
+        return $notice !== null ? $message . ' ' . $notice . '.' : $message;
     }
 }

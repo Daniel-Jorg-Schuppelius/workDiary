@@ -107,6 +107,31 @@ class SepaMandateTest extends TestCase {
         $this->assertDatabaseHas('audit_logs', ['event' => 'sepaMandate.expired', 'auditable_id' => $dormant->id]);
     }
 
+    /** MVP-1682: ein nie genutztes Mandat verfällt 36 Monate nach der Unterschrift. */
+    public function test_never_used_mandate_expires_36_months_after_signature(): void {
+        $stale = $this->mandate(['signed_on' => CarbonImmutable::today()->subMonths(37)->toDateString()]);
+        $fresh = $this->mandate(['signed_on' => CarbonImmutable::today()->subMonths(35)->toDateString()]);
+        $usedRecently = $this->mandate([
+            'signed_on' => CarbonImmutable::today()->subMonths(40)->toDateString(),
+            'last_collected_on' => CarbonImmutable::today()->subMonths(2)->toDateString(),
+        ]);
+
+        $this->assertFalse($stale->isUsable());
+        $this->assertTrue($fresh->isUsable());
+        $this->assertTrue($usedRecently->isUsable(), 'Nach einem Einzug zählt der Einzug, nicht die Unterschrift.');
+        $this->assertTrue($stale->isUsable(CarbonImmutable::parse((string) $stale->signed_on)->addMonths(36)), 'Am letzten Tag der Frist noch einziehbar.');
+
+        $scan = app(\App\Services\Finance\DeadlineScans\SepaMandateExpiryScan::class);
+        $scan->run(app(\App\Services\Notification\NotificationDispatcher::class), new \App\Services\Notification\DeadlineScans\DeadlineScanOptions(7, 30));
+
+        $this->assertSame(MandateStatus::Expired, $stale->fresh()?->status);
+        $this->assertSame(MandateStatus::Active, $fresh->fresh()?->status);
+        $this->assertSame(MandateStatus::Active, $usedRecently->fresh()?->status);
+        $audit = \App\Models\Audit\AuditLog::query()->where('event', 'sepaMandate.expired')->where('auditable_id', $stale->id)->sole();
+        $this->assertNull($audit->changes['last_collected_on']);
+        $this->assertSame(CarbonImmutable::parse((string) $stale->signed_on)->toDateString(), $audit->changes['signed_on']);
+    }
+
     public function test_first_collection_has_the_longer_lead_time(): void {
         $first = $this->mandate();
         $recurring = $this->mandate(['last_collected_on' => CarbonImmutable::today()->subMonth()->toDateString()]);

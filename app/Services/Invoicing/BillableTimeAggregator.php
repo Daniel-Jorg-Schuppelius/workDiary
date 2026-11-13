@@ -10,6 +10,7 @@
 
 namespace App\Services\Invoicing;
 
+use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use Illuminate\Support\Collection;
@@ -29,18 +30,25 @@ use Illuminate\Support\Collection;
  *
  * Default (Taktung 1, Lücke 0) ⇒ keine Verkettung, Aufrundung auf 1 Min ist
  * ein No-op ⇒ Verhalten identisch zur minutengenauen Abrechnung.
+ *
+ * Pauschal-Leistung (MVP-1678): Nennt die Standardleistung der Gruppe die
+ * Einheit „Pauschale“ ({@see ResolvedService::isHourly()}), wird je Auftrag
+ * ein Block mit Menge 1 gebildet — ohne Taktung, Lücken und Anfahrt. Übergabe,
+ * Rechnungslauf und Lexoffice-Zeitbeleg erhalten die Regel von hier.
  */
 class BillableTimeAggregator {
+    public function __construct(private readonly ServiceDefaultResolver $services) {}
+
     /**
      * @param  Collection<int, TimeEntry>  $entries
      * @return Collection<int, BillingBlock>
      */
-    public function aggregate(Collection $entries): Collection {
+    public function aggregate(Collection $entries, ?Organization $organization = null): Collection {
         /** @var Collection<int, BillingBlock> $blocks */
         $blocks = new Collection;
 
         if ($entries instanceof \Illuminate\Database\Eloquent\Collection) {
-            $entries->loadMissing('serviceTicket:id,ticket_no');
+            $entries->loadMissing(['serviceTicket:id,ticket_no', 'diaryEntry:id,title']);
         }
         // Zeiten verschiedener Tickets bleiben getrennte Positionen (MVP-1259).
         $grouped = $entries->groupBy(fn(TimeEntry $e): string => $e->project_id . '|' . $e->kind->value . '|' . $e->service_ticket_id);
@@ -49,6 +57,14 @@ class BillableTimeAggregator {
             /** @var TimeEntry $first */
             $first = $group->first();
             $project = $first->project;
+            $service = $this->services->resolve($organization, $project, $first->kind->value);
+            if ($service !== null && ! $service->isHourly()) {
+                foreach ($group->groupBy(fn(TimeEntry $e): int => (int) $e->diary_entry_id) as $order) {
+                    $blocks->push($this->makeFlatBlock($order->values(), $project, $service));
+                }
+
+                continue;
+            }
             $increment = $project?->effectiveBillingIncrement() ?? 1;
             $gap = $project?->effectiveBillingGroupingGap() ?? 0;
 
@@ -120,6 +136,42 @@ class BillableTimeAggregator {
         }
 
         return $blocks;
+    }
+
+    /**
+     * Pauschale eines Auftrags: alle Zeiten als Nachweis, Leistungszeitraum vom
+     * ersten bis zum letzten Eintrag.
+     *
+     * @param  Collection<int, TimeEntry>  $order
+     */
+    private function makeFlatBlock(Collection $order, ?Project $project, ResolvedService $service): BillingBlock {
+        $ordered = $order->sortBy(fn(TimeEntry $e): int => ($e->started_at ?? $e->date)?->getTimestamp() ?? 0)->values();
+        /** @var TimeEntry $first */
+        $first = $ordered->first();
+        /** @var TimeEntry $last */
+        $last = $ordered->sortBy(fn(TimeEntry $e): int => ($e->ended_at ?? $e->date)?->getTimestamp() ?? 0)->last();
+        $workedMinutes = (int) $order->sum(fn(TimeEntry $e): int => (int) $e->minutes);
+        $travelMinutes = (int) $order->sum(fn(TimeEntry $e): int => (int) $e->billing_travel_minutes);
+        $description = $order->count() === 1 && $first->description !== null ? trim((string) $first->description) : null;
+        $title = $first->diaryEntry !== null ? trim((string) $first->diaryEntry->title) : '';
+
+        return new BillingBlock(
+            project: $project,
+            kind: $first->kind,
+            entryIds: array_values($ordered->map(fn(TimeEntry $e): int => (int) $e->id)->all()),
+            primaryEntryId: (int) $first->id,
+            workedMinutes: $workedMinutes,
+            rawMinutes: $workedMinutes + $travelMinutes,
+            billedMinutes: $workedMinutes + $travelMinutes,
+            revenue: round((float) $order->sum(fn(TimeEntry $e): float => $e->rate?->toFloat() ?? 0.0), 2),
+            firstStart: ($first->started_at ?? $first->date)?->copy(),
+            lastEnd: ($last->ended_at ?? $last->date)?->copy(),
+            description: $description !== '' ? $description : null,
+            travelMinutes: $travelMinutes,
+            ticketNo: $first->serviceTicket?->ticket_no,
+            flatService: $service,
+            orderTitle: $title !== '' ? $title : null,
+        );
     }
 
     /**

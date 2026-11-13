@@ -74,7 +74,7 @@ class SupportingDocumentTest extends TestCase {
             'address_zip' => '54321',
             'address_city' => 'Musterhausen',
             'country' => 'DE',
-            'buyer_reference' => '991-12345-67',
+            'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
         $this->project = Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);

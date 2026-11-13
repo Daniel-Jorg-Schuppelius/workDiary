@@ -165,7 +165,7 @@
             // § 19 UStG (MVP-163, Restpaket): Fußtext auf dem PDF, wenn die
             // Kleinunternehmer-Regelung greift (0 %, kein RC) — auch bei
             // manuell angelegten Belegen ohne TaxResolver-Notiz.
-            $smallBusiness = (string) data_get((array) ($invoice->organization?->settings ?? []), 'einvoice.small_business', '0') === '1'
+            $smallBusiness = ($smallBusiness ?? false)
                 && ! $invoice->is_reverse_charge
                 && ($invoice->tax_rate?->isZero() ?? true)
                 && ! str_contains((string) $invoice->notes, '§ 19');

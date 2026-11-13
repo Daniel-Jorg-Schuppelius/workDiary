@@ -60,7 +60,7 @@ class CustomerMergeService extends AbstractEntityMergeService {
      * @var list<string>
      */
     private const array FILLABLE_FROM_SOURCE = [
-        'company', 'vat_id', 'tax_number',
+        'company', 'vat_id', 'tax_number', 'register_number',
         'contact_name', 'contact_persons', 'email', 'phone', 'mobile', 'fax',
         'homepage', 'address', 'address_street', 'address_zip', 'address_city',
         'country', 'timezone', 'color', 'hourly_rate', 'internal_rate', 'comment',

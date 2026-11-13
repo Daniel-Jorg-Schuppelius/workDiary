@@ -41,5 +41,10 @@
         <x-input-field name="quantity" id="today-material-quantity" :label="__('Menge')" type="number" value="1" required step="0.001" min="0.001" />
         <x-input-field name="unit" id="today-material-unit" :label="__('Einheit')" type="text" value="Stk." required maxlength="20"
                        data-prefill-from="material_id" data-prefill-key="unit" data-prefill-default="Stk." />
+        {{-- Lagergeführter Artikel ohne ausreichenden Bestand im Standardlager (MVP-1679). --}}
+        @can(\App\Enums\User\Permission::InventoryNegative->value)
+            <x-checkbox-field span="2" name="allow_negative" id="today-material-allow-negative" :toggle="false" :label="__('inventory.field.allow_negative')"
+                              :hint="__('material.stock.allow_negative_hint')" />
+        @endcan
     </x-form-group>
 </x-modal>

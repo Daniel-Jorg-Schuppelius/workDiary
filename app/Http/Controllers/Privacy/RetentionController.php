@@ -13,11 +13,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Privacy;
 
 use App\Enums\Privacy\RetentionProposalStatus;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Privacy\{ComplianceFinding, RetentionProposal};
 use App\Services\Retention\{RetentionRegistry, RetentionScanService};
+use App\Settings\{SettingScope, SettingsRegistry};
 use App\Support\ErrorText;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -30,6 +33,8 @@ use RuntimeException;
  * (Datenschutz-Rolle).
  */
 class RetentionController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly RetentionScanService $scanner,
         private readonly RetentionRegistry $registry,
@@ -44,7 +49,7 @@ class RetentionController extends Controller {
             ->orderBy('retention_until')
             ->paginate(50);
 
-        $organization = Auth::user()?->organization;
+        $organization = $this->currentOrganizationOrUserOrganization();
 
         // Alle Katalog-Bereiche (Feature 130): auch reine Ausweis-Bereiche
         // ohne Scan-Policy (time_records, location_points, documents_general)
@@ -56,6 +61,10 @@ class RetentionController extends Controller {
             'days' => $this->registry->daysFor($area),
             'basis' => $organization !== null ? $this->registry->basisFor($organization, $area) : null,
             'scanned' => $this->registry->policy($area) !== null,
+            // Je Organisation einstellbare Frist (MVP-1683): eigener Wert und Vorgabe des Rechtsraums.
+            'adjustable' => $this->registry->yearsSettingFor($area) !== null,
+            'own_years' => $organization !== null ? $this->registry->organizationYearsFor($organization, $area) : null,
+            'default_years' => $organization !== null ? $this->registry->defaultYearsFor($organization, $area) : null,
         ])->values();
 
         return view('privacy.retention.index', [
@@ -67,11 +76,34 @@ class RetentionController extends Controller {
         ]);
     }
 
+    /**
+     * Eigene Frist eines einstellbaren Bereichs (MVP-1683); leer setzt auf die
+     * Vorgabe des Rechtsraums zurück. Grenzen und Audit liefert die Registry.
+     */
+    public function updateYears(Request $request, SettingsRegistry $settings): RedirectResponse {
+        Gate::authorize('manage', ComplianceFinding::class);
+
+        $organization = $this->currentOrganizationOrAbort(404);
+
+        $data = $request->validate(['area' => ['required', 'string', 'max:40']]);
+        $key = $this->registry->yearsSettingFor((string) $data['area']);
+        abort_if($key === null, 404);
+
+        $request->validate(['years' => ['nullable', ...$settings->definition($key)->validationRules()]]);
+        $years = NumberHelper::toIntOrNull($request->input('years'));
+        if ($years === null) {
+            $settings->reset($key, SettingScope::Organization, $organization);
+        } else {
+            $settings->set($key, $years, SettingScope::Organization, $organization, (int) $this->authUser()->id);
+        }
+
+        return back()->with('status', __('privacy.retention.years_saved', ['area' => $this->registry->labelFor((string) $data['area'])]));
+    }
+
     public function scan(Request $request): RedirectResponse {
         Gate::authorize('manage', ComplianceFinding::class);
 
-        $organization = $request->user()?->organization;
-        abort_unless($organization !== null, 404);
+        $organization = $this->currentOrganizationOrAbort(404);
 
         $result = $this->scanner->scan($organization);
 

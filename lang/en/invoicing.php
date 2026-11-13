@@ -15,6 +15,7 @@ return [
     'unit_hour' => 'h',
     'unit_flat' => 'flat',
     'unit_piece' => 'pc',
+    'unit_flat_rate_hint' => 'The unit “flat” bills one line with quantity 1 at the service price per order and billing run. Empty or any other unit, such as hour, day or pcs: times count by duration.',
     'tax_rate' => 'Tax rate',
     'currency' => 'Currency',
     'totals' => [
@@ -25,7 +26,16 @@ return [
 
     // E-invoicing (feature 045, section 8): XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Routing ID / buyer reference (BT-10)',
-    'buyer_reference_hint' => 'Required for XRechnung (e-invoice): the Leitweg-ID for public authorities, otherwise a reference provided by the customer.',
+    'buyer_reference_hint' => 'Required for XRechnung (e-invoice): the Leitweg-ID for public authorities (normalised and checked for its check digits on saving), otherwise a reference provided by the customer.',
+    'buyer_reference_leitweg_invalid' => 'Saved. However, the buyer reference is not a valid Leitweg-ID: :reason Please check it with the contracting authority — invoices to public-sector customers would be rejected.',
+    // Grund einer ungültigen Leitweg-ID (MVP-1687); die Toolkit-Meldungen sind nur deutsch.
+    'leitweg_reason' => [
+        'form' => 'It does not have the form coarse address[-fine address]-check digits.',
+        'structure' => 'The coarse address needs 2, 3, 5, 8, 9 or 12 digits and starts with the code of a federal state (01–16) or the federal government (99); the fine address has at most 30 characters.',
+        'check_digits' => 'The check digits :given are wrong, expected :expected.',
+    ],
+    'register_number' => 'Register number (commercial register)',
+    'register_number_hint' => 'For example “Amtsgericht Musterstadt HRB 12345”. The e-invoice states it as the customer\'s legal registration identifier (BT-47); if a domestic customer owes the tax (§ 13b UStG), it replaces a missing VAT ID.',
     // Customer VAT ID on the invoice PDF (section 14a UStG, MVP-1623).
     'buyer_vat_id' => 'Your VAT ID',
     'einvoice' => [
@@ -61,8 +71,9 @@ return [
             'missing_buyer_reference' => 'The customer is missing the routing ID/buyer reference (BT-10).',
             'missing_seller_field' => 'Seller detail missing: :field (organisation settings → invoicing).',
             'missing_tax_id' => 'Neither VAT ID nor tax number is configured in the organisation settings.',
-            'reverse_charge_buyer_vat_id' => 'Reverse charge (category AE) requires the customer\'s VAT ID (BR-AE-02) — please add it to the customer.',
+            'reverse_charge_buyer_vat_id' => 'Reverse charge (category AE) requires the customer\'s VAT ID; for a domestic customer (§ 13b UStG) the register number will do instead (BR-AE-02, § 14a (1) UStG) — please add it to the customer.',
             'intra_community_buyer_vat_id' => 'An intra-Community supply (category K) requires the customer\'s VAT ID (BR-IC-02) — please add it to the customer.',
+            'intra_community_delivery_address' => 'Intra-Community supply (category K): the e-invoice states the customer\'s address as the delivery address with the delivery country (BT-80, BR-IC-12); XRechnung also requires postcode and city there (BR-DE-10, BR-DE-11) — please add country, postcode and city to the customer.',
             'seller_vat_id_required' => 'Intra-Community supplies and exports (categories K and G) require the organisation\'s VAT ID (BR-IC-02, BR-G-02) — please add it in the organisation settings.',
             'not_subject_mixed' => 'Items not subject to VAT (category O) must not appear next to other VAT categories in an e-invoice (BR-O-11) — please invoice them separately.',
             'not_subject_tax_number' => 'Supplies not subject to VAT (category O) carry no VAT ID (BR-O-02); the e-invoice therefore needs the tax number in the organisation settings.',
@@ -79,9 +90,8 @@ return [
             'missing_buyer_email' => 'Customer email is missing (electronic delivery address BT-49).',
             'missing_due_date' => 'Due date missing — the default payment term is used.',
             'service_date_fallback' => 'No item states a date of supply or a period; the invoice date counts as the time of supply (§ 14 (4) no. 6 UStG).',
-            'intra_community_delivery_country' => 'Intra-Community supply (category K): the e-invoice does not yet contain a delivery country (BT-80, rule BR-IC-12) — strict recipients will reject it.',
-            'not_subject_line_rate' => 'Supplies not subject to VAT (category O): the e-invoice still states a tax rate of 0 % on its items (rule BR-O-05) — strict recipients will reject it.',
             'exemption_unspecified' => 'Tax-exempt items (category E): no exemption reason is stored, so the e-invoice only states “Tax-exempt supply”. Create a rule with the rate type “Exempt” in the tax rule matrix and enter the exemption provision as its document notice text (§ 14 (4) no. 8 UStG).',
+            'invalid_leitweg_id' => 'Not a valid Leitweg-ID (:terms): :reason Public-sector invoice portals will reject the invoice — please ask the contracting authority for its Leitweg-ID.',
             'activity_report_missing' => 'This recipient expects an activity report, but the invoice carries no documents.',
             'near_limit' => 'The e-invoice with documents is :size and close to the recipient’s limit (:limit).',
         ],

@@ -44,7 +44,7 @@ class BillableTimeAggregatorTest extends TestCase {
     }
 
     public function test_ceil_to_increment(): void {
-        $agg = new BillableTimeAggregator;
+        $agg = app(BillableTimeAggregator::class);
 
         $this->assertSame(30, $agg->ceilToIncrement(16, 15));
         $this->assertSame(15, $agg->ceilToIncrement(1, 15));
@@ -193,6 +193,6 @@ class BillableTimeAggregatorTest extends TestCase {
             ->with(['project.parent', 'project.customer'])
             ->get();
 
-        return (new BillableTimeAggregator)->aggregate($entries);
+        return app(BillableTimeAggregator::class)->aggregate($entries);
     }
 }

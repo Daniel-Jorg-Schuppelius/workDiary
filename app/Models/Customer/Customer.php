@@ -42,6 +42,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $company
  * @property string|null $vat_id
  * @property string|null $tax_number
+ * @property string|null $register_number Handelsregister (BT-47 der E-Rechnung, MVP-1686)
  * @property string|null $contact_name Ansprechpartner zur Anzeige, gebildet aus den Teilen (MVP-1136)
  * @property \App\Enums\Stammdaten\ContactSalutation|null $contact_salutation
  * @property string|null $contact_title
@@ -123,6 +124,8 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         'company',
         'vat_id',
         'tax_number',
+        // Registerangabe (BT-47): ersetzt bei § 13b die fehlende USt-IdNr. (MVP-1686).
+        'register_number',
         // Leistungsempfänger schuldet die Steuer (§ 13b UStG, MVP-1622).
         'is_reverse_charge_recipient',
         'contact_name',

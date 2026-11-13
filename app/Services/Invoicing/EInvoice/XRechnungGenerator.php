@@ -10,15 +10,17 @@
 
 namespace App\Services\Invoicing\EInvoice;
 
-use App\Enums\Invoicing\{InvoiceStatus, XRechnungSyntax};
+use App\Enums\Invoicing\{EInvoiceRecipientProfile, InvoiceStatus, XRechnungSyntax};
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\Organization;
 use App\Services\Billing\DocumentTotalsCalculator;
-use CommonToolkit\Enums\CurrencyCode;
+use App\Services\Peppol\PeppolParticipantService;
+use App\Support\DocumentLocale;
+use CommonToolkit\Enums\{CountryCode, CurrencyCode};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Builders\ERechnungDocumentBuilder;
-use ERechnungToolkit\Entities\{Document, PaymentTerms, Period, TaxSubtotal, TaxTotal};
+use ERechnungToolkit\Entities\{Document, LeitwegId, PaymentTerms, Period};
 use ERechnungToolkit\Enums\{ERechnungProfile, InvoiceType, PaymentMeansCode, TaxCategory, UnitCode};
 use ERechnungToolkit\Generators\ZugferdPdfGenerator;
 use ERechnungToolkit\Validators\DocumentRulesValidator;
@@ -103,6 +105,7 @@ class XRechnungGenerator {
                 $warnings[] = (string) __('invoicing.einvoice.error.missing_buyer_reference');
             }
         }
+        array_push($warnings, ...$this->leitwegIdWarnings($invoice, $recipient));
 
         // Verkäuferanschrift (BG-5): Name fällt auf den Org-Namen zurück.
         if ($seller['name'] === '') {
@@ -138,16 +141,21 @@ class XRechnungGenerator {
             }
         }
         $buyerVatId = trim($buyer['vat_id']);
-        // BR-AE-02 bis -04: Reverse Charge verlangt die USt-IdNr. des Käufers (BT-48), auch im Inland nach § 13b.
-        if ($has(TaxCategory::REVERSE_CHARGE) && $buyerVatId === '') {
+        // BR-AE-02 bis -04: USt-IdNr. (BT-48) oder Registerkennung (BT-47) des Käufers. Die Registerkennung genügt nur im
+        // Inland (§ 13b Abs. 5 UStG); grenzüberschreitend verlangt § 14a Abs. 1 UStG die USt-IdNr. des Empfängers.
+        $domesticBuyer = $this->deliveryCountry($buyer)?->value === strtoupper(trim($seller['country']));
+        if ($has(TaxCategory::REVERSE_CHARGE) && $buyerVatId === '' && (! $domesticBuyer || trim($buyer['register_number']) === '')) {
             $errors[] = (string) __('invoicing.einvoice.error.reverse_charge_buyer_vat_id');
         }
         if ($has(TaxCategory::INTRA_COMMUNITY)) {
             if ($buyerVatId === '') {
                 $errors[] = (string) __('invoicing.einvoice.error.intra_community_buyer_vat_id');
             }
-            // BR-IC-12: Das Toolkit gibt das Lieferland (BT-80) noch nicht aus.
-            $warnings[] = (string) __('invoicing.einvoice.warning.intra_community_delivery_country');
+            // BR-IC-12: Lieferanschrift mit Lieferland ist die Kundenanschrift; XRechnung verlangt dort PLZ und Ort (BR-DE-10/11).
+            if ($this->deliveryCountry($buyer) === null
+                || ($profile->isXRechnung() && (trim($buyer['zip']) === '' || trim($buyer['city']) === ''))) {
+                $errors[] = (string) __('invoicing.einvoice.error.intra_community_delivery_address');
+            }
         }
         // BR-IC-02, BR-G-02: innergemeinschaftliche Lieferung und Ausfuhr nennen die USt-IdNr. des Verkäufers.
         if (($has(TaxCategory::INTRA_COMMUNITY) || $has(TaxCategory::EXPORT)) && $seller['vat_id'] === '') {
@@ -161,8 +169,6 @@ class XRechnungGenerator {
             if ($seller['tax_number'] === '') {
                 $errors[] = (string) __('invoicing.einvoice.error.not_subject_tax_number');
             }
-            // BR-O-05: Das Toolkit schreibt den Positionssatz (BT-152) auch bei „nicht steuerbar“.
-            $warnings[] = (string) __('invoicing.einvoice.warning.not_subject_line_rate');
         }
         // § 14 Abs. 4 Nr. 8 UStG: Steuerbefreiung nach § 4 UStG mit Grund; ohne Regel steht nur „steuerfrei“ im Aufriss.
         if ($has(TaxCategory::EXEMPT) && ! $seller['small_business'] && $this->exemptionRuleNote($invoice) === null) {
@@ -297,10 +303,14 @@ class XRechnungGenerator {
         }
 
         foreach ((new DocumentRulesValidator)->validate($built)->getMessages() as $message) {
+            // Die Leitweg-ID prüft der Preflight selbst, auch ohne Unterlagen ({@see leitwegIdWarnings()}).
+            if ($message->getCode() === 'TK-LEITWEG-ID') {
+                continue;
+            }
             $text = (string) __('invoicing.einvoice.rule_violation', ['code' => $message->getCode(), 'text' => $message->getText()]);
             if ($message->isError()) {
                 $errors[] = $text;
-            } elseif ($message->getSeverity() === \ERechnungToolkit\Enums\ValidationSeverity::WARNING || $recipient === \App\Enums\Invoicing\EInvoiceRecipientProfile::PublicSector) {
+            } elseif ($message->getSeverity() === \ERechnungToolkit\Enums\ValidationSeverity::WARNING || $recipient === EInvoiceRecipientProfile::PublicSector) {
                 $warnings[] = $text;
             }
         }
@@ -336,7 +346,8 @@ class XRechnungGenerator {
             throw ValidationException::withMessages(['einvoice' => $result['errors']]);
         }
 
-        $document = $this->buildDocument($invoice, ERechnungProfile::XRECHNUNG);
+        // Texte der XML (Befreiungsgründe, Hinweise) in der Belegsprache, wie im PDF (MVP-1680).
+        $document = DocumentLocale::run($invoice->documentLocale(), fn (): Document => $this->buildDocument($invoice, ERechnungProfile::XRECHNUNG));
 
         return ($syntax ?? $this->syntaxFor($invoice)) === XRechnungSyntax::Cii
             ? $document->toCiiXml()
@@ -376,14 +387,14 @@ class XRechnungGenerator {
             throw ValidationException::withMessages(['einvoice' => $result['errors']]);
         }
 
-        $document = $this->buildDocument($invoice, ERechnungProfile::EN16931);
+        $document = DocumentLocale::run($invoice->documentLocale(), fn (): Document => $this->buildDocument($invoice, ERechnungProfile::EN16931));
 
         return (new ZugferdPdfGenerator())->generate($document, $visualHtml);
     }
 
     /**
      * Gemeinsamer Dokument-Aufbau für XRechnung (UBL) und ZUGFeRD (CII):
-     * Org-Settings ⇒ Seller, {@see Invoice::recipient()} ⇒ Buyer, Items ⇒ Lines. Das Toolkit
+     * {@see sellerData()} ⇒ Seller, {@see Invoice::recipient()} ⇒ Buyer, Items ⇒ Lines. Das Toolkit
      * berechnet TaxTotal/LegalMonetaryTotal selbst aus den Lines — die
      * Betragstreue gegenüber den Invoice-Feldern sichert der Preflight.
      */
@@ -402,6 +413,7 @@ class XRechnungGenerator {
         // Käufer wie auf dem Beleg: ausgestellt der eingefrorene Stand (MVP-1624); Name wie displayLabel(): Firma, sonst Name.
         $buyer = $invoice->recipient();
         $buyerVatId = trim($buyer['vat_id']);
+        $buyerName = $buyer['company'] ?: $buyer['name'];
 
         $issuedOn = $invoice->issued_on ?? now();
         $dueOn = $invoice->due_on ?? $issuedOn->copy()->addDays($invoice->effectivePaymentTermsDays());
@@ -413,7 +425,7 @@ class XRechnungGenerator {
             ->withDueDate(new \DateTimeImmutable($dueOn->toDateString()))
             ->withSeller($seller['name'], $seller['vat_id'], $seller['tax_number'] !== '' ? $seller['tax_number'] : null)
             ->withSellerAddress($seller['street'], $seller['zip'], $seller['city'], $seller['country'])
-            ->withBuyer($buyer['company'] ?: $buyer['name'], $buyerVatId !== '' && ! $notSubject ? $buyerVatId : null)
+            ->withBuyer($buyerName, $buyerVatId !== '' && ! $notSubject ? $buyerVatId : null)
             ->withBuyerAddress(
                 trim($buyer['street']),
                 trim($buyer['zip']),
@@ -422,6 +434,24 @@ class XRechnungGenerator {
             )
             ->withPaymentMeans(PaymentMeansCode::SEPA_CREDIT_TRANSFER)
             ->withPaymentTerms($this->paymentTerms($invoice, $invoice->effectivePaymentTermsDays()));
+
+        // BT-47: Registerkennung des Käufers; bei § 13b ohne USt-IdNr. ersetzt sie BT-48 (BR-AE-02).
+        $buyerRegister = trim($buyer['register_number']);
+        if ($buyerRegister !== '') {
+            $builder->withBuyerLegalRegistration($buyerRegister);
+        }
+
+        // BR-IC-12: Bei innergemeinschaftlicher Lieferung geht die Ware an den Empfänger; seine Anschrift nennt das Lieferland (BT-80).
+        $deliveryCountry = $this->deliveryCountry($buyer);
+        if ($deliveryCountry !== null && in_array(TaxCategory::INTRA_COMMUNITY, $this->lineCategories($invoice, $category), true)) {
+            $builder->withDeliveryAddress(
+                trim($buyer['street']) ?: null,
+                trim($buyer['zip']) ?: null,
+                trim($buyer['city']) ?: null,
+                $deliveryCountry,
+                name: $buyerName,
+            );
+        }
 
         // 381 = Gutschrift (Korrekturrechnung); BT-25 verweist aufs Original.
         if ($invoice->isCreditNote()) {
@@ -465,7 +495,7 @@ class XRechnungGenerator {
         // prüft BT-49 gegen den Umschlag. Schema ist der ICD (z. B. 9930),
         // nicht „EM". Ohne Kennung bleibt es bei der E-Mail. Als Zustelladresse
         // aus dem heutigen Kunden: der Umschlag adressiert den heutigen Teilnehmer.
-        $buyerParticipant = \App\Services\Peppol\PeppolParticipantService::forCustomer($customer);
+        $buyerParticipant = PeppolParticipantService::forCustomer($customer);
         $buyerEmail = trim((string) $customer->email);
         if ($buyerParticipant !== null) {
             $builder->withBuyerEndpoint($buyerParticipant->getIdentifier(), $buyerParticipant->getIcd());
@@ -566,6 +596,14 @@ class XRechnungGenerator {
             $builder->addInvoiceLine($line);
         }
 
+        // Befreiungsgrund je Steueraufriss (BT-120/BT-121, MVP-1623): auch für die Kopfkategorie, die ein Belegrabatt tragen kann.
+        foreach ([...$this->lineCategories($invoice, $category), $category] as $exemptCategory) {
+            $reason = $this->exemptionReason($exemptCategory, $invoice, $seller);
+            if ($reason !== null) {
+                $builder->withTaxExemptionReasonFor($exemptCategory, $reason[0], $reason[1]);
+            }
+        }
+
         $document = $builder->build();
 
         // MVP-416: Belegrabatt als Document-Allowance (BG-20) — je Steuersatz
@@ -590,20 +628,6 @@ class XRechnungGenerator {
                     taxPercent: $allowanceCategory->isTaxable() ? $group['rate'] : 0.0,
                 ));
             }
-        }
-
-        // Befreiungsgrund je Steueraufriss (BT-120/BT-121): Der Builder kennt nur einen Grund für alle
-        // Kategorien ohne Steuer (auch Z, dort verboten), das Entity-Modell einen je Aufriss (MVP-1623).
-        if ($document->getTaxTotal() !== null) {
-            $subtotals = array_map(
-                function (TaxSubtotal $s) use ($invoice, $seller): TaxSubtotal {
-                    [$reason, $code] = $this->exemptionReason($s->getCategory(), $invoice, $seller) ?? [null, null];
-
-                    return new TaxSubtotal($s->getTaxableAmount(), $s->getTaxAmount(), $s->getCategory(), $s->getPercent(), $reason, $code);
-                },
-                $document->getTaxTotal()->getSubtotals(),
-            );
-            $document->setTaxTotal(TaxTotal::fromSubtotals($subtotals, $currency));
         }
 
         return $document;
@@ -683,8 +707,10 @@ class XRechnungGenerator {
     }
 
     /**
-     * Verkäuferstammdaten aus organizations.settings['einvoice'] mit
-     * Fallbacks (Name ⇒ Org-Name, Land ⇒ DE, Zahlungsziel ⇒ 14 Tage).
+     * Verkäuferdaten des Belegs: ausgestellt der beim Ausstellen eingefrorene
+     * Stand (MVP-1680) — spätere Änderungen an Anschrift, Steuerangaben, Bank
+     * oder § 19 ändern den Nachdruck nicht —, als Entwurf die heutigen
+     * Stammdaten. Felder, die ein älterer Snapshot nicht führt, kommen aus heute.
      *
      * @return array{name: string, street: string, zip: string, city: string, country: string,
      *               vat_id: string, tax_number: string, contact_name: string, contact_email: string,
@@ -692,7 +718,30 @@ class XRechnungGenerator {
      *               payment_terms_days: int, small_business: bool}
      */
     public function sellerData(Invoice $invoice): array {
-        return $this->sellerDataFor($invoice->organization);
+        $seller = $this->sellerDataFor($invoice->organization);
+        $frozen = is_array($invoice->party_snapshot) ? ($invoice->party_snapshot['seller'] ?? null) : null;
+        if (! is_array($frozen)) {
+            return $seller;
+        }
+        $text = static fn (string $field, string $current): string => array_key_exists($field, $frozen) && is_scalar($frozen[$field]) ? (string) $frozen[$field] : $current;
+
+        return [
+            'name' => $text('name', $seller['name']),
+            'street' => $text('street', $seller['street']),
+            'zip' => $text('zip', $seller['zip']),
+            'city' => $text('city', $seller['city']),
+            'country' => $text('country', $seller['country']),
+            'vat_id' => $text('vat_id', $seller['vat_id']),
+            'tax_number' => $text('tax_number', $seller['tax_number']),
+            'contact_name' => $text('contact_name', $seller['contact_name']),
+            'contact_email' => $text('contact_email', $seller['contact_email']),
+            'contact_phone' => $text('contact_phone', $seller['contact_phone']),
+            'iban' => $text('iban', $seller['iban']),
+            'bic' => $text('bic', $seller['bic']),
+            'account_holder' => $text('account_holder', $seller['account_holder']),
+            'payment_terms_days' => array_key_exists('payment_terms_days', $frozen) && is_numeric($frozen['payment_terms_days']) ? (int) $frozen['payment_terms_days'] : $seller['payment_terms_days'],
+            'small_business' => array_key_exists('small_business', $frozen) && is_bool($frozen['small_business']) ? $frozen['small_business'] : $seller['small_business'],
+        ];
     }
 
     /**
@@ -877,6 +926,49 @@ class XRechnungGenerator {
         return $invoiceReference !== ''
             ? $invoiceReference
             : trim($invoice->recipient()['buyer_reference']);
+    }
+
+    /**
+     * Leitweg-ID (MVP-1687): Behördenempfänger und Peppol-Empfänger mit Schema
+     * 0204 brauchen in BT-10 (und bei 0204 in BT-49) eine gültige Leitweg-ID.
+     * Nur eine Warnung — der KoSIT-Validator prüft die Prüfziffer nicht, die
+     * Eingangsplattform weist die Rechnung aber ab. Fehlt BT-10, meldet das die
+     * Pflichtprüfung.
+     *
+     * @return list<string>
+     */
+    private function leitwegIdWarnings(Invoice $invoice, EInvoiceRecipientProfile $recipient): array {
+        $participant = PeppolParticipantService::forCustomer($invoice->customer);
+        $viaLeitwegId = $participant !== null && $participant->getIcd() === LeitwegId::ICD;
+        if ($recipient !== EInvoiceRecipientProfile::PublicSector && ! $viaLeitwegId) {
+            return [];
+        }
+
+        $values = [];
+        foreach (['BT-10' => $this->buyerReference($invoice), 'BT-49' => $viaLeitwegId ? $participant->getIdentifier() : ''] as $term => $value) {
+            if ($value !== '') {
+                $values[LeitwegId::normalize($value)][] = $term;
+            }
+        }
+        $warnings = [];
+        foreach ($values as $value => $terms) {
+            $problem = LeitwegIdCheck::problem((string) $value);
+            if ($problem !== null) {
+                $warnings[] = (string) __('invoicing.einvoice.warning.invalid_leitweg_id', ['terms' => implode(', ', $terms), 'reason' => $problem]);
+            }
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Lieferland (BT-80) aus der Anschrift des Empfängers; ohne Land wie die Käuferanschrift Deutschland,
+     * null bei einem Wert, der kein ISO-3166-Code ist.
+     *
+     * @param array<string, string> $buyer
+     */
+    private function deliveryCountry(array $buyer): ?CountryCode {
+        return CountryCode::tryFrom(strtoupper(trim($buyer['country']) ?: 'DE'));
     }
 
     /**

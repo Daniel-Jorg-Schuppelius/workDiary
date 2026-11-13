@@ -1,7 +1,7 @@
 ---
 title: "Data protection management at a glance"
 topic: privacy.overview
-version: 5
+version: 6
 keywords:
     - GDPR
     - ROPA
@@ -185,6 +185,12 @@ the periods.
   applications or the learning platform – the **Deadline** in years or days
   and the **Legal basis**. Areas marked “catalog entry only, no scan” only
   document the period; no proposals arise for them.
+- **Data breaches**: your organisation sets the period for closed
+  incidents itself (1 to 10 years); left empty, the jurisdiction's default
+  applies – 3 years, 5 years in Switzerland. Anyone who may scan here and
+  confirm proposals may change it; the deletion scan uses the value entered.
+  Only go below the default if you secure the evidence for the supervisory
+  authority in another way.
 - **Scan now** looks for records whose period has expired and creates
   **Deletion suggestions**. The scan also runs automatically at regular
   intervals (weekly by default). Records under legal hold and specialist

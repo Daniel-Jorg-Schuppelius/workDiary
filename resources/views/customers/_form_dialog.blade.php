@@ -51,6 +51,7 @@
         $miscValues = [
             old('matchcode', $customer?->matchcode),
             old('vat_id', $customer?->vat_id),
+            old('register_number', $customer?->register_number),
             (bool) old('is_reverse_charge_recipient', $customer?->is_reverse_charge_recipient ?? false),
             $customerGroupSqid,
             old('timezone', $customer?->timezone),
@@ -202,11 +203,14 @@
     </x-form-group-collapsible>
 
     <x-form-group-collapsible :legend="__('Portal & Sonstiges')" icon="tune" tone="ghost" cols="2"
-                              :fields="['matchcode', 'vat_id', 'is_reverse_charge_recipient', 'customer_group_id', 'timezone', 'homepage', 'address', 'exclude_from_reports', 'no_bulk_mail', 'survey_opt_out', 'comment', 'tag_ids']"
+                              :fields="['matchcode', 'vat_id', 'register_number', 'is_reverse_charge_recipient', 'customer_group_id', 'timezone', 'homepage', 'address', 'exclude_from_reports', 'no_bulk_mail', 'survey_opt_out', 'comment', 'tag_ids']"
                               :values="$miscValues">
         <x-input-field name="matchcode" :label="__('Kürzel (Matchcode)')" maxlength="16" :value="old('matchcode', $customer?->matchcode)"
                        :hint="__('Für den Alias-Abgleich der Fernwartungs-Inbox, z. B. GSL.')" />
         <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $customer?->vat_id)" />
+        {{-- MVP-1686: Registerkennung (BT-47) der E-Rechnung; ersetzt bei § 13b die fehlende USt-IdNr. --}}
+        <x-input-field name="register_number" :label="__('invoicing.register_number')" maxlength="200"
+                       :value="old('register_number', $customer?->register_number)" :hint="__('invoicing.register_number_hint')" />
         {{-- MVP-1622: Inländischer Leistungsempfänger schuldet die Steuer (§ 13b UStG), etwa bei Bauleistungen an Bauleistende. --}}
         <x-checkbox-field name="is_reverse_charge_recipient" :label="__('invoicing.reverse_charge_recipient.label')"
                           :hint="__('invoicing.reverse_charge_recipient.hint')"

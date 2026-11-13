@@ -11,7 +11,8 @@
 return [
     'field' => [
         'participant_id' => 'Peppol participant ID',
-        'participant_id_hint' => 'Format <ICD>:<identifier>, e.g. 9930:DE123456789 (VAT ID) or 0204:991-12345-67 (Leitweg-ID). Empty = no Peppol delivery to this customer.',
+        'participant_id_hint' => 'Format <ICD>:<identifier>, e.g. 9930:DE123456789 (VAT ID) or 0204:991-12345-73 (Leitweg-ID). Empty = no Peppol delivery to this customer.',
+        'participant_id_leitweg_invalid' => 'A Peppol participant ID with scheme 0204 must carry a valid Leitweg-ID: :reason',
     ],
     'action' => [
         'send' => 'Send via Peppol',

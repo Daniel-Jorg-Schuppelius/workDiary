@@ -97,7 +97,7 @@ class OfflineMaterialUsageTest extends TestCase {
         $this->assertSame((int) $this->user->id, (int) $timesheet->user_id);
         // Preis und Steuer aus dem Materialstamm wie im Dialog am Zettel.
         $this->assertSame('18.00', $usage->line_total_net?->getAmount());
-        // Der Verbrauch am Stundenzettel ist kein Lagerbeleg — online wie offline.
+        // Ohne lagergeführten Artikel kein Lagerbeleg (MVP-1679) — online wie offline.
         $this->assertSame(0, StockMovement::query()->count());
     }
 

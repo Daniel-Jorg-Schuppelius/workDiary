@@ -96,7 +96,7 @@ return [
         'assembly_hourly_rate_hint' => 'Valora el tiempo de montaje del artículo en la propuesta de PV; vacío = tarifa estándar.',
         'default_service_article' => 'Servicio estándar (artículo)',
         'default_service_none' => '— sin servicio estándar —',
-        'default_service_hint' => 'Aporta denominación, unidad, texto estándar y —si no se encuentra ninguna tarifa— el precio de las posiciones del traspaso. Las reglas de facturación del proyecto lo sobrescriben.',
+        'default_service_hint' => 'Aporta denominación, unidad, texto estándar y —si no se encuentra ninguna tarifa— el precio de las posiciones del traspaso. Las reglas de facturación del proyecto lo sobrescriben. Con la unidad «global», cada pedido genera una línea con cantidad 1 por facturación; las demás unidades cuentan por duración.',
         'transfer_intro_text' => 'Plantilla: texto de introducción del traspaso',
         'transfer_closing_text' => 'Plantilla: observación final del traspaso',
         'transfer_text_hint' => 'Se copia en el justificante al crear el traspaso y allí es editable. Marcadores: :customer, :from, :to, :channel. Vacío = el texto estándar del destino.',

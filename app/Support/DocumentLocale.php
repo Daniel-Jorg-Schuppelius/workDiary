@@ -21,8 +21,9 @@ use Illuminate\Support\Facades\App;
 /**
  * Belegsprache (Feature 034, MVP-721; Vollscan H19): Kunde → Organisation →
  * aktive Anzeige-Sprache. Reine Darstellungsregel für Rechnung/Angebot/AB/
- * Mahnung/Lieferschein und den Belegversand — Snapshots, Hash-Ketten und
- * tax_context kennen keine Sprache und bleiben unberührt.
+ * Mahnung/Lieferschein und den Belegversand — Hash-Ketten und tax_context
+ * kennen keine Sprache. Eine ausgestellte Rechnung führt ihre Sprache im
+ * Partei-Snapshot ({@see \App\Models\Invoicing\Invoice::documentLocale()}).
  */
 final class DocumentLocale {
     public static function for(?Customer $customer, ?Organization $organization = null): string {
@@ -51,7 +52,19 @@ final class DocumentLocale {
      * @return T
      */
     public static function within(?Customer $customer, ?Organization $organization, Closure $callback): mixed {
-        $locale = self::for($customer, $organization);
+        return self::run(self::for($customer, $organization), $callback);
+    }
+
+    /**
+     * Führt den Callback in einer festen Belegsprache aus, etwa der beim
+     * Ausstellen eingefrorenen einer Rechnung (MVP-1680).
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public static function run(string $locale, Closure $callback): mixed {
         $previousApp = App::getLocale();
         $previousCarbon = Carbon::getLocale();
 

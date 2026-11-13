@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 9
+version: 10
 keywords:
     - più aliquote
     - fattura fornitore
@@ -120,6 +120,12 @@ segnalata anche la copia di una propria fattura già registrata.
 tutti i documenti aperti, «Tutti» il periodo selezionato. La voce di menu
 conta i documenti da assegnare. La contabilità riceve una notifica al mattino
 finché resta qualcosa da assegnare.
+
+**Numero di registro del venditore:** se una fattura elettronica indica il
+numero di registro del venditore (registro delle imprese, BT-30), la pagina di
+dettaglio lo mostra con i dati della fattura. Non è un codice fiscale e non
+conta per l'assegnazione; fino a questo aggiornamento WorkDiary lo leggeva dalle
+fatture UBL come codice fiscale.
 
 **Assegnazione:** un documento viene assegnato automaticamente solo se
 esattamente una parte corrisponde a un identificativo esatto del documento:

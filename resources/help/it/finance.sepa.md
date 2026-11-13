@@ -1,7 +1,7 @@
 ---
 title: "Pagamenti in uscita SEPA"
 topic: finance.sepa
-version: 2
+version: 3
 keywords:
     - bonifico cumulativo
     - distinta di pagamento
@@ -71,4 +71,4 @@ come credito aperto.
 
 ## Scadenza dopo 36 mesi
 
-Secondo il regolamento SEPA un mandato decade se per 36 mesi non è stato presentato alcun addebito. Il ciclo di pagamento non utilizza già più tale mandato; il controllo giornaliero delle scadenze lo imposta inoltre su **Scaduto** e lo annota nel registro. Per ulteriori addebiti raccolga un nuovo mandato.
+Secondo il regolamento SEPA un mandato decade se per 36 mesi non è stato presentato alcun addebito. Il termine decorre dall'ultimo addebito; se un mandato non è mai stato utilizzato, decorre dalla data di firma. Il ciclo di pagamento non utilizza già più tale mandato; il controllo giornaliero delle scadenze lo imposta inoltre su **Scaduto** e lo annota nel registro. Per ulteriori addebiti raccolga un nuovo mandato.

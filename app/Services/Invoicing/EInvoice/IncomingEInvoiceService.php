@@ -203,7 +203,7 @@ class IncomingEInvoiceService {
      * Kernfelder für Anzeige/Flash — die Detailseite parst das Original
      * bei jedem Aufruf erneut (kein eigenes Schema, Quelle bleibt die Datei).
      *
-     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, seller_tax_number: ?string, seller_country: ?string, seller_email: ?string, buyer: ?string, buyer_vat: ?string, buyer_country: ?string, seller_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, buyer_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, type_code: string, tax_breakdown: list<array{category: string, percent: float, net: string, tax: string}>, currency: string, net: string, tax: string, gross: string, profile: string, profile_legacy: bool, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string, creditor_iban: ?string, creditor_bic: ?string, discount_percent: ?float, discount_days: ?int}
+     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, seller_tax_number: ?string, seller_register_number: ?string, seller_country: ?string, seller_email: ?string, buyer: ?string, buyer_vat: ?string, buyer_country: ?string, seller_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, buyer_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, type_code: string, tax_breakdown: list<array{category: string, percent: float, net: string, tax: string}>, currency: string, net: string, tax: string, gross: string, profile: string, profile_legacy: bool, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string, creditor_iban: ?string, creditor_bic: ?string, discount_percent: ?float, discount_days: ?int}
      */
     public function summary(EInvoiceDocument $document): array {
         $seller = $document->getSeller();
@@ -217,6 +217,8 @@ class IncomingEInvoiceService {
             'seller_vat' => $seller->getVatId(),
             // MVP-1107: Richtung, Sonderfälle und Positionen je Steuersatz.
             'seller_tax_number' => $seller->getTaxRegistrationId(),
+            // Registerkennung (BT-30); bis php-erechnung-toolkit 0.22 las der Parser sie als Steuernummer (MVP-1686).
+            'seller_register_number' => $seller->getLegalRegistrationId(),
             'seller_country' => $seller->getPostalAddress()?->getCountryCode(),
             'seller_email' => $seller->getContactEmail(),
             'buyer' => $buyer->getName(),

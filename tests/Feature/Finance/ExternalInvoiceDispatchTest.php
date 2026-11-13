@@ -387,7 +387,7 @@ final class ExternalInvoiceDispatchTest extends TestCase {
     }
 
     private function builder(): ERechnungDocumentBuilder {
-        return ERechnungDocumentBuilder::xrechnung('RE-2026-0042', '991-12345-67')
+        return ERechnungDocumentBuilder::xrechnung('RE-2026-0042', '991-12345-73')
             ->withIssueDate(new DateTimeImmutable('2026-10-31'))
             ->withDueDate(new DateTimeImmutable('2026-11-30'))
             ->withSeller('Dienstleister GmbH', 'DE123456789')

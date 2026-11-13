@@ -23,7 +23,7 @@ final class InvoicePdfImportServiceTest extends TestCase {
             Rechnungsnummer: RE-2026-0042
             Rechnungsdatum: 14.08.2026
             Fällig am: 28.08.2026
-            Leitweg-ID: 991-12345-67
+            Leitweg-ID: 991-12345-73
             Nettobetrag 1.000,00 EUR
             Umsatzsteuer 19 % 190,00 EUR
             Gesamtbetrag 1.190,00 EUR
@@ -32,7 +32,7 @@ final class InvoicePdfImportServiceTest extends TestCase {
         self::assertSame('RE-2026-0042', $result['number']);
         self::assertSame('2026-08-14', $result['issued_on']);
         self::assertSame('2026-08-28', $result['due_on']);
-        self::assertSame('991-12345-67', $result['buyer_reference']);
+        self::assertSame('991-12345-73', $result['buyer_reference']);
         self::assertSame('1000.00', $result['net']);
         self::assertSame('190.00', $result['tax']);
         self::assertSame('1190.00', $result['gross']);

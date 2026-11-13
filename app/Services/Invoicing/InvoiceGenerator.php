@@ -87,8 +87,11 @@ class InvoiceGenerator {
                 ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
 
             // Auffüllung auf das Projekt-Soll (Feature 194), wie in der Übergabe.
-            $topUps = $this->targetTopUps->openQuery($customer, $range, $project, $foreignCustomer)
-                ->orderBy('date')->orderBy('user_id')->lockForUpdate()->get();
+            $topUps = $this->targetTopUps->lines(
+                $this->targetTopUps->openQuery($customer, $range, $project, $foreignCustomer)->orderBy('date')->orderBy('user_id')->lockForUpdate()->get(),
+                $customer,
+                $customer->organization,
+            );
 
             if ($entries->isEmpty() && count($charges) === 0 && $topUps->isEmpty()) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
@@ -122,7 +125,7 @@ class InvoiceGenerator {
                 'created_by' => Auth::id(),
             ]);
 
-            $blocks = app(BillableTimeAggregator::class)->aggregate($entries);
+            $blocks = app(BillableTimeAggregator::class)->aggregate($entries, $customer->organization);
             $entriesById = $entries->keyBy('id');
 
             $position = 0;
@@ -136,9 +139,12 @@ class InvoiceGenerator {
                 $item = $invoice->items()->create([
                     'time_entry_id' => $block->primaryEntryId,
                     'service_date' => $line['service_date'],
+                    // Eine Pauschale über mehrere Tage nennt ihren Leistungszeitraum (§ 14 Abs. 4 Nr. 6 UStG, BG-26).
+                    'service_from' => $line['service_to'] !== null ? $line['service_date'] : null,
+                    'service_to' => $line['service_to'],
                     'description' => $line['description'],
-                    'quantity' => (string) $line['hours'],
-                    'unit' => (string) __('invoicing.unit_hour'),
+                    'quantity' => (string) $line['quantity'],
+                    'unit' => $line['unit'],
                     'unit_price' => (string) $line['rate'],
                     'position' => ++$position,
                 ]);
@@ -155,7 +161,7 @@ class InvoiceGenerator {
                 TimeEntry::query()->whereKey(array_unique($billedEntryIds))->update(['exported' => true]);
             }
 
-            foreach ($this->targetTopUps->lines($topUps, $customer, $customer->organization) as $line) {
+            foreach ($topUps as $line) {
                 $item = $invoice->items()->create([
                     'service_date' => $line->shortfall->date->toDateString(),
                     'description' => $this->bookingLine($line->name . ' (' . $line->detail . ')', $line->shortfall->project->foreignCustomer, (int) $customer->organization_id),
@@ -211,14 +217,15 @@ class InvoiceGenerator {
      * Positionsdaten eines Blocks: Stundensatz aus der tatsächlich
      * gearbeiteten Zeit; auf die aufgerundeten billedHours angewendet erhöht
      * die Taktung den Betrag. Fallback auf Eintrags-/Kunden-Stundensatz.
+     * Eine Pauschale (MVP-1678) steht mit Menge 1 und der Einheit ihrer Leistung.
      * NULL bei leerer abrechenbarer Menge.
      *
      * @param  \Illuminate\Support\Collection<int|string, TimeEntry>  $entriesById
-     * @return array{hours: float, rate: float, description: string, service_date: string|null}|null
+     * @return array{quantity: float, unit: string, rate: float, description: string, service_date: string|null, service_to: string|null}|null
      */
     private function blockLine(BillingBlock $block, Customer $customer, \Illuminate\Support\Collection $entriesById): ?array {
-        $hours = $block->billedHours();
-        if ($hours <= 0) {
+        $quantity = $block->quantity();
+        if ($quantity <= 0) {
             return null;
         }
 
@@ -235,14 +242,18 @@ class InvoiceGenerator {
             ->rate;
 
         return [
-            'hours' => $hours,
+            'quantity' => $quantity,
+            'unit' => trim((string) $block->flatService?->unitName) ?: (string) __('invoicing.unit_hour'),
             'rate' => $rate,
             'description' => $this->bookingLine(
                 $this->describeBlock($block, $primary),
                 $block->project?->foreignCustomer,
                 (int) $customer->organization_id,
             ),
-            'service_date' => $block->firstStart?->toDateString() ?? optional($primary?->date)->toDateString(),
+            'service_date' => $serviceDate = $block->firstStart?->toDateString() ?? optional($primary?->date)->toDateString(),
+            'service_to' => $block->isFlatRate() && $serviceDate !== null && $block->lastEnd !== null && $block->lastEnd->toDateString() !== $serviceDate
+                ? $block->lastEnd->toDateString()
+                : null,
         ];
     }
 
@@ -256,7 +267,7 @@ class InvoiceGenerator {
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      * @return array{
      *   entries: \Illuminate\Database\Eloquent\Collection<int, TimeEntry>,
-     *   lines: list<array{description: string, hours: float, rate: float, amount: float, minutes: int, entry_ids: list<int>, project_name: string|null}>,
+     *   lines: list<array{description: string, quantity: float, unit: string, flat: bool, rate: float, amount: float, minutes: int, entry_ids: list<int>, project_name: string|null}>,
      *   travel: array{count: int, amount: float},
      *   target: array{count: int, minutes: int, amount: float},
      *   totals: array{count: int, minutes: int, amount: float},
@@ -271,7 +282,7 @@ class InvoiceGenerator {
         $charges = app(\App\Services\Billing\Travel\TravelChargeService::class)
             ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
 
-        $blocks = app(BillableTimeAggregator::class)->aggregate($entries);
+        $blocks = app(BillableTimeAggregator::class)->aggregate($entries, $customer->organization);
         $entriesById = $entries->keyBy('id');
 
         $lines = [];
@@ -282,11 +293,13 @@ class InvoiceGenerator {
                 continue;
             }
 
-            $lineAmount = DocumentTotalsCalculator::lineNet($line['hours'], $line['rate'])->withScale(2)->toFloat();
+            $lineAmount = DocumentTotalsCalculator::lineNet($line['quantity'], $line['rate'])->withScale(2)->toFloat();
             $amount += $lineAmount;
             $lines[] = [
                 'description' => $line['description'],
-                'hours' => $line['hours'],
+                'quantity' => $line['quantity'],
+                'unit' => $line['unit'],
+                'flat' => $block->isFlatRate(),
                 'rate' => $line['rate'],
                 'amount' => $lineAmount,
                 'minutes' => $block->billedMinutes,
@@ -305,7 +318,9 @@ class InvoiceGenerator {
             $target['amount'] += $lineAmount;
             $lines[] = [
                 'description' => $this->bookingLine($topUp->name . ' (' . $topUp->detail . ')', $topUp->shortfall->project->foreignCustomer, (int) $customer->organization_id),
-                'hours' => $topUp->hours,
+                'quantity' => $topUp->hours,
+                'unit' => (string) __('invoicing.unit_hour'),
+                'flat' => false,
                 'rate' => $topUp->price->rate,
                 'amount' => $lineAmount,
                 'minutes' => $topUp->minutes,
@@ -470,7 +485,7 @@ class InvoiceGenerator {
                 'status' => InvoiceStatus::Draft,
                 'category' => Invoice::CATEGORY_MATERIAL,
                 'currency' => $customer->currency,
-                'tax_rate' => ($materialTax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer))['rate'],
+                'tax_rate' => ($materialTax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer, category: 'goods'))['rate'],
                 'is_reverse_charge' => $materialTax['reverse_charge'],
                 'notes' => trim(($notes !== null ? $notes . "\n" : '') . ($materialTax['note'] ?? '')) ?: null,
                 'created_by' => Auth::id(),
@@ -584,6 +599,9 @@ class InvoiceGenerator {
      * Tätigkeitsart + Datumsspanne.
      */
     private function describeBlock(BillingBlock $block, ?TimeEntry $primary): string {
+        if ($block->flatService !== null) {
+            return $this->describeFlatBlock($block, $block->flatService);
+        }
         if (count($block->entryIds) <= 1) {
             $date = $block->firstStart ?? $primary?->date;
 
@@ -603,6 +621,25 @@ class InvoiceGenerator {
         }
 
         return $block->withTicketPrefix(trim(sprintf('%s%s%s', $projectName, $kindSuffix, $span !== '' ? ' (' . $span . ')' : '')));
+    }
+
+    /**
+     * Pauschale eines Auftrags: Leistung, Auftrag und Leistungszeitraum.
+     */
+    private function describeFlatBlock(BillingBlock $block, ResolvedService $service): string {
+        $label = trim((string) $service->name) ?: (($block->project?->name ?: (string) __('Leistung')) . ($block->kind !== null ? ' [' . $block->kind->label() . ']' : ''));
+        if ($block->orderTitle !== null) {
+            $label .= ' · ' . $block->orderTitle;
+        }
+        $from = $block->firstStart?->format('d.m.Y');
+        $to = $block->lastEnd?->format('d.m.Y');
+        $span = match (true) {
+            $from !== null && $to !== null && $from !== $to => sprintf(' (%s – %s)', $from, $to),
+            $from !== null => sprintf(' (%s)', $from),
+            default => '',
+        };
+
+        return $block->withTicketPrefix($label . $span);
     }
 
     /**

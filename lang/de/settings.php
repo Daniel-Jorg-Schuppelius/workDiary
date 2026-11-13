@@ -99,7 +99,7 @@ return [
         'assembly_hourly_rate_hint' => 'Bewertet die Artikel-Montagezeit im Verkaufspreisvorschlag; leer = Standard-Stundensatz.',
         'default_service_article' => 'Standardleistung (Artikel)',
         'default_service_none' => '— keine Standardleistung —',
-        'default_service_hint' => 'Liefert Bezeichnung, Einheit, Standardtext und — falls kein Satz auffindbar ist — den Preis der Übergabe-Positionen. Abrechnungs-Regeln am Projekt überschreiben sie.',
+        'default_service_hint' => 'Liefert Bezeichnung, Einheit, Standardtext und — falls kein Satz auffindbar ist — den Preis der Übergabe-Positionen. Abrechnungs-Regeln am Projekt überschreiben sie. Mit der Einheit „Pauschale“ entsteht je Auftrag und Abrechnung eine Position mit Menge 1; andere Einheiten rechnen nach Dauer.',
         'transfer_intro_text' => 'Vorlage: Einleitungstext der Übergabe',
         'transfer_closing_text' => 'Vorlage: Schlussbemerkung der Übergabe',
         'transfer_text_hint' => 'Wird beim Anlegen einer Übergabe in den Nachweis kopiert und ist dort bearbeitbar. Platzhalter: :customer, :from, :to, :channel. Leer = der bisherige Standardtext des Ziels.',

@@ -34,7 +34,10 @@ use CommonToolkit\Helper\Data\Validator;
  *    (EN 16931 Kategorie AE) + Pflichthinweis.
  *  - EU-B2C: Verkäuferland-Satz (MVP, bewusst KEIN stiller OSS/IOSS-
  *    Automatismus — MVP-241-Abgrenzung).
- *  - Drittland: 0 % + Export-Hinweis (Kategorie G).
+ *  - Drittland: 0 %; Waren als Ausfuhrlieferung (Kategorie G), Leistungen
+ *    nicht im Inland steuerbar (Kategorie O, § 3a Abs. 2 UStG, MVP-1684).
+ *    Die eingefrorene Kategorie lesen E-Rechnung, Befreiungshinweis und
+ *    Buchhaltung gleichermaßen.
  * Keine Kursumrechnung — Beträge bleiben in der Belegwährung des Kunden.
  */
 class TaxResolver {
@@ -124,15 +127,19 @@ class TaxResolver {
             ];
         }
 
-        // Drittland: nicht im Inland steuerbar (Export, Kategorie G).
+        // Drittland: Ware als Ausfuhr (G), Leistung nicht im Inland steuerbar (O).
+        $goods = $category === 'goods';
         $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'export', $onDate);
-        $note = $rule !== null && $rule->note !== null ? $rule->note : (string) config('taxation.notes.export');
+        // Die Regel „export“ der Leistungen nennt § 3a; Waren brauchen den Ausfuhrhinweis.
+        $note = $rule !== null && $rule->note !== null && (! $goods || $rule->category === $category)
+            ? $rule->note
+            : (string) config($goods ? 'taxation.notes.export_goods' : 'taxation.notes.export');
 
         return [
             'rate' => '0.00',
             'reverse_charge' => false,
             'note' => $note,
-            'category' => 'G',
+            'category' => $goods ? 'G' : 'O',
             'rule' => $rule !== null ? $this->ruleMeta($rule) : null,
         ];
     }

@@ -1,7 +1,7 @@
 ---
 title: "Paiements sortants SEPA"
 topic: finance.sepa
-version: 2
+version: 3
 keywords:
     - virement groupé
     - lot de paiements
@@ -73,4 +73,4 @@ comme créance ouverte.
 
 ## Expiration après 36 mois
 
-Selon le règlement SEPA, un mandat devient caduc si aucun prélèvement n'a été présenté pendant 36 mois. Le traitement des paiements n'utilise déjà plus un tel mandat ; le contrôle quotidien des échéances le passe en outre à **Expiré** et le consigne dans le journal. Pour d'autres prélèvements, obtenez un nouveau mandat.
+Selon le règlement SEPA, un mandat devient caduc si aucun prélèvement n'a été présenté pendant 36 mois. Le délai court à partir du dernier prélèvement ; si un mandat n'a jamais été utilisé, il court à partir de la date de signature. Le traitement des paiements n'utilise déjà plus un tel mandat ; le contrôle quotidien des échéances le passe en outre à **Expiré** et le consigne dans le journal. Pour d'autres prélèvements, obtenez un nouveau mandat.

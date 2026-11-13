@@ -15,7 +15,7 @@ namespace App\Services\Invoicing;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Invoicing\Invoice;
 use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
-use App\Services\UI\BrandingService;
+use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use PDFToolkit\Entities\PDFContent;
 use PDFToolkit\Registries\PDFWriterRegistry;
 use RuntimeException;
@@ -47,8 +47,8 @@ class InvoicePdfRenderer {
     public function composedHtml(Invoice $invoice): string {
         $invoice->loadMissing(['customer', 'organization']);
 
-        // Belegsprache je Kunde (Feature 034, MVP-721): nur Darstellung.
-        return \App\Support\DocumentLocale::within($invoice->customer, $invoice->organization, function () use ($invoice): string {
+        // Belegsprache je Kunde (Feature 034, MVP-721), ausgestellt die eingefrorene (MVP-1680).
+        return \App\Support\DocumentLocale::run($invoice->documentLocale(), function () use ($invoice): string {
             $payload = $this->designPayload($invoice);
             $html = view('invoices.pdf', $this->viewData($invoice, $payload))->render();
 
@@ -62,7 +62,7 @@ class InvoicePdfRenderer {
      * kommen aus dem Design-Payload statt aus invoice_templates).
      *
      * @param array<string, mixed>|null $payload
-     * @return array{invoice: Invoice, orgLegal: mixed, design: \App\Services\DocumentDesign\DesignContext, taxNotes: list<string>, issuer: array<string, mixed>, contactPerson: array<string, mixed>|null, recipient: array<string, string>, buyerVatId: string|null}
+     * @return array{invoice: Invoice, orgLegal: mixed, smallBusiness: bool, design: \App\Services\DocumentDesign\DesignContext, taxNotes: list<string>, issuer: array<string, mixed>, contactPerson: array<string, mixed>|null, recipient: array<string, string>, buyerVatId: string|null}
      */
     public function viewData(Invoice $invoice, ?array $payload = null): array {
         $design = $this->design->contextForDocument(
@@ -76,10 +76,11 @@ class InvoicePdfRenderer {
 
         return [
             'invoice' => $invoice,
-            // Rechtsangaben aus der Org DER RECHNUNG statt aus dem Ambient-
-            // Kontext: im Queue-Worker (Mail-Anhang) gibt es keinen Auth-User —
-            // sonst fehlten die §14-UStG-Pflichtangaben im PDF-Footer.
-            'orgLegal' => app(BrandingService::class)->legalFor($invoice->organization),
+            // Rechts- und Bankangaben der Org DER RECHNUNG statt aus dem Ambient-Kontext (im Queue-Worker
+            // gibt es keinen Auth-User); ausgestellt der beim Ausstellen eingefrorene Stand (MVP-1680).
+            'orgLegal' => $invoice->issuerLegal(),
+            // § 19 UStG wie beim Ausstellen, auch wenn die Organisation die Regelung später verlässt.
+            'smallBusiness' => app(XRechnungGenerator::class)->sellerData($invoice)['small_business'],
             'design' => $design,
             // Ausgestellte Rechnungen älteren Stands bleiben beim Nachdruck ohne ergänzten Hinweis.
             'taxNotes' => $design->predatesExemptionNotes() ? [] : app(TaxExemptionNotes::class)->printed($invoice),

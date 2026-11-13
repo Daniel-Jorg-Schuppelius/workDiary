@@ -48,7 +48,7 @@ class XRechnungGeneratorTest extends TestCase {
             'address_city' => 'Hamburg',
             'country' => 'DE',
             'vat_id' => 'DE987654321',
-            'buyer_reference' => '991-12345-67',
+            'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
     }
@@ -202,7 +202,7 @@ class XRechnungGeneratorTest extends TestCase {
         $this->assertSame('380', $xp->evaluate('string(/ubl:Invoice/cbc:InvoiceTypeCode)'));
         $this->assertSame('EUR', $xp->evaluate('string(/ubl:Invoice/cbc:DocumentCurrencyCode)'));
         // BT-10: Käuferreferenz/Leitweg-ID.
-        $this->assertSame('991-12345-67', $xp->evaluate('string(/ubl:Invoice/cbc:BuyerReference)'));
+        $this->assertSame('991-12345-73', $xp->evaluate('string(/ubl:Invoice/cbc:BuyerReference)'));
     }
 
     public function test_seller_party_contains_vat_id_tax_number_and_address(): void {

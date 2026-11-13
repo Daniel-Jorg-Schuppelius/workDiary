@@ -95,4 +95,11 @@ return [
         'state_save' => 'Stand speichern',
         'state_saved' => 'Umsetzungsstatus und Schutzbedarf gespeichert.',
     ],
+    'retention' => [
+        'years_label' => 'Frist für :area in Jahren',
+        'years_unit' => 'Jahre',
+        'years_default' => 'Leer = Vorgabe des Rechtsraums (:years Jahre)',
+        'years_own' => 'eigene Frist der Organisation',
+        'years_saved' => 'Frist für „:area“ gespeichert.',
+    ],
 ];

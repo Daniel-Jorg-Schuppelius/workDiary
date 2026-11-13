@@ -10,11 +10,15 @@
 
 namespace App\Http\Requests\Customer;
 
+use App\Enums\Invoicing\EInvoiceRecipientProfile;
 use App\Enums\Numbering\NumberScope;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, PartyFormFields};
 use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Services\Invoicing\EInvoice\{LeitwegIdCheck, RecipientProfiles};
 use App\Services\Numbering\NumberAuthority;
+use ERechnungToolkit\Entities\LeitwegId;
 use Illuminate\Validation\Rule;
 
 class SaveCustomerRequest extends BaseFormRequest {
@@ -67,6 +71,8 @@ class SaveCustomerRequest extends BaseFormRequest {
             'is_reverse_charge_recipient' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
+            // Registerangabe (BT-47, MVP-1686), Freitext wie die eigene Angabe der Organisation.
+            'register_number' => ['nullable', 'string', 'max:200'],
             // Kundengruppe (MVP-949).
             'customer_group_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::in(app(\App\Services\Classification\ClassificationResolver::class)->list($organizationId, \App\Enums\Classification\ClassificationDomain::CustomerGroup)->modelKeys())],
             // Peppol-Empfängerkennung (Feature 066, MVP-734): `<ICD>:<Kennung>`.
@@ -145,6 +151,11 @@ class SaveCustomerRequest extends BaseFormRequest {
             $this->merge(['document_locale' => null]);
         }
 
+        // Leitweg-ID (MVP-1687): vereinheitlicht gespeichert; eine ungültige meldet leitwegIdWarning(), sperrt aber nicht.
+        if ($this->buyerReferenceIsLeitwegId()) {
+            $this->merge(['buyer_reference' => LeitwegId::normalize((string) $this->input('buyer_reference'))]);
+        }
+
         $this->merge(array_merge($this->partyNormalizedData(), [
             'billable' => $this->boolean('billable'),
             'exclude_from_reports' => $this->boolean('exclude_from_reports'),
@@ -153,5 +164,35 @@ class SaveCustomerRequest extends BaseFormRequest {
             'is_reverse_charge_recipient' => $this->boolean('is_reverse_charge_recipient'),
             'travel_settings' => $travel === [] ? null : $travel,
         ]));
+    }
+
+    /**
+     * Warnung zur Käuferreferenz (MVP-1687), wenn sie als Leitweg-ID gilt und
+     * Form oder Prüfziffer nicht stimmen; BT-10 bleibt sonst frei, weil private
+     * Kunden dort eigene Referenzen führen.
+     */
+    public function leitwegIdWarning(): ?string {
+        $problem = $this->buyerReferenceIsLeitwegId() ? LeitwegIdCheck::problem((string) $this->input('buyer_reference')) : null;
+
+        return $problem !== null ? (string) __('invoicing.buyer_reference_leitweg_invalid', ['reason' => $problem]) : null;
+    }
+
+    /** Als Leitweg-ID gilt die Käuferreferenz, wenn sie wie eine aussieht oder der Kunde öffentlicher Auftraggeber ist. */
+    private function buyerReferenceIsLeitwegId(): bool {
+        $reference = trim((string) $this->input('buyer_reference', ''));
+        if ($reference === '') {
+            return false;
+        }
+        if (LeitwegIdCheck::looksLike($reference)) {
+            return true;
+        }
+        $customer = $this->route('customer');
+        $organization = $customer instanceof Customer
+            ? $customer->organization
+            : Organization::query()->find($this->currentOrganizationId());
+        $profile = EInvoiceRecipientProfile::tryFrom((string) $this->input('einvoice_recipient_profile', ''))
+            ?? app(RecipientProfiles::class)->for(null, $organization);
+
+        return $profile === EInvoiceRecipientProfile::PublicSector;
     }
 }

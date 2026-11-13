@@ -68,7 +68,7 @@ final class IncomingEInvoiceTest extends TestCase {
             'address_zip' => '54321',
             'address_city' => 'Hamburg',
             'country' => 'DE',
-            'buyer_reference' => '991-12345-67',
+            'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
 

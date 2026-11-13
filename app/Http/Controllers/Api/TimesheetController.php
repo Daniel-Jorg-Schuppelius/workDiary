@@ -16,6 +16,7 @@ use App\Http\Requests\Time\SaveTimesheetRequest;
 use App\Http\Resources\TimesheetResource;
 use App\Models\Project\Project;
 use App\Models\Time\Timesheet;
+use App\Services\Material\MaterialUsageRecorder;
 use App\Services\Timesheet\{PdfRenderer, SignatureService};
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
@@ -144,9 +145,10 @@ class TimesheetController extends Controller {
             new OA\Response(response: 404, description: 'Not Found'),
         ],
     )]
-    public function destroy(Timesheet $timesheet): Response {
+    public function destroy(Timesheet $timesheet, MaterialUsageRecorder $recorder): Response {
         Gate::authorize('delete', $timesheet);
-        $timesheet->delete();
+        // Verbrauch lagergeführter Artikel geht vorher in den Bestand zurück (MVP-1679).
+        $recorder->deleteTimesheet($timesheet, $this->authUser());
 
         return response()->noContent();
     }

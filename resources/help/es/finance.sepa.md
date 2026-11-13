@@ -1,7 +1,7 @@
 ---
 title: "Pagos salientes SEPA"
 topic: finance.sepa
-version: 2
+version: 3
 keywords:
     - transferencia masiva
     - remesa de pagos
@@ -69,4 +69,4 @@ el importe una sola vez: en la remesa y no además como cuenta por cobrar.
 
 ## Caducidad a los 36 meses
 
-Según el reglamento SEPA, un mandato caduca si no se ha presentado ningún cobro durante 36 meses. La remesa de pagos ya no utiliza ese mandato; la revisión diaria de plazos lo pasa además a **Caducado** y lo anota en el registro. Para nuevos cobros, obtenga un nuevo mandato.
+Según el reglamento SEPA, un mandato caduca si no se ha presentado ningún cobro durante 36 meses. El plazo empieza con el último cobro; si un mandato nunca se ha utilizado, empieza con la fecha de firma. La remesa de pagos ya no utiliza ese mandato; la revisión diaria de plazos lo pasa además a **Caducado** y lo anota en el registro. Para nuevos cobros, obtenga un nuevo mandato.

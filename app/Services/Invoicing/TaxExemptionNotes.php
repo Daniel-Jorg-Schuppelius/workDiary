@@ -24,10 +24,10 @@ use App\Services\Invoicing\EInvoice\XRechnungGenerator;
  */
 final class TaxExemptionNotes {
     /** Satzart der Steuerregel, deren Hinweistext der Resolver für die Kategorie einsetzt. */
-    private const array RULE_TYPES = ['AE' => 'reverse_charge', 'G' => 'export', 'E' => 'exempt'];
+    private const array RULE_TYPES = ['AE' => 'reverse_charge', 'G' => 'export', 'O' => 'export', 'E' => 'exempt'];
 
-    /** Hinweistexte aus config/taxation.php je Kategorie. */
-    private const array CONFIG_NOTES = ['AE' => ['reverse_charge', 'reverse_charge_domestic'], 'G' => ['export']];
+    /** Hinweistexte aus config/taxation.php je Kategorie; `export` stand vor MVP-1684 auch an Leistungen unter G. */
+    private const array CONFIG_NOTES = ['AE' => ['reverse_charge', 'reverse_charge_domestic'], 'G' => ['export', 'export_goods'], 'O' => ['export']];
 
     public function __construct(private readonly XRechnungGenerator $einvoice) {}
 
@@ -41,7 +41,7 @@ final class TaxExemptionNotes {
      */
     public function printed(Invoice $invoice): array {
         $organization = $invoice->organization;
-        $smallBusiness = (string) data_get($organization, 'settings.einvoice.small_business', '0') === '1';
+        $smallBusiness = $this->einvoice->sellerData($invoice)['small_business'];
         $text = self::normalized((string) $invoice->notes);
 
         $printed = [];

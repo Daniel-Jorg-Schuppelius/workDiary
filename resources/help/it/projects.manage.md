@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 7
+version: 9
 keywords:
     - creare progetto
     - gestione progetti
@@ -100,6 +100,12 @@ concordato»; l’anteprima della fattura mostra anche queste integrazioni. Ogni
 fatturata una sola volta, in una fattura o in un trasferimento; una registrazione successiva su
 quel giorno non è più fatturabile. L’annullamento della fattura o del trasferimento, la
 rimozione della posizione o l’eliminazione della bozza libera di nuovo l’integrazione.
+
+Se la regola di fatturazione del progetto indica l'unità «forfait» o «Pauschale»,
+ogni ordine fattura una riga con quantità 1 al prezzo della regola;
+l'integrazione fino alle ore concordate viene quindi meno, perché il forfait
+copre l'ordine indipendentemente dalla durata. Tutte le altre unità, ad esempio
+ora, giorno o pz., contano in base alla durata.
 
 ## Errori tipici
 

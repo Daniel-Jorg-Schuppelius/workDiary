@@ -50,6 +50,7 @@ class CustomerMasterDataSection extends AbstractSubjectSection {
             'country' => $this->field(__('Land'), $c->country),
             'vat_id' => $this->field(__('USt-IdNr.'), $c->vat_id),
             'tax_number' => $this->field(__('Steuernummer'), $c->tax_number),
+            'register_number' => $this->field(__('invoicing.register_number'), $c->register_number),
             'bank_account_holder' => $this->field(__('Kontoinhaber'), $c->bank_account_holder),
             'bank_iban' => $this->field(__('IBAN'), $c->bank_iban),
             'bank_bic' => $this->field(__('BIC'), $c->bank_bic),

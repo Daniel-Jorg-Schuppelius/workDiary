@@ -52,7 +52,13 @@
                             @foreach ($preview['lines'] as $line)
                                 <tr>
                                     <td class="max-w-sm truncate" title="{{ $line['description'] }}">{{ $line['description'] }}</td>
-                                    <td class="whitespace-nowrap text-right"><x-duration :minutes="$line['minutes']" /></td>
+                                    <td class="whitespace-nowrap text-right">
+                                        @if ($line['flat'])
+                                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line['quantity'], 0) }} {{ $line['unit'] }}
+                                        @else
+                                            <x-duration :minutes="$line['minutes']" />
+                                        @endif
+                                    </td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line['rate'], 2, withThousandsSeparator: true) }}</td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line['amount'], 2, withThousandsSeparator: true) }}</td>
                                 </tr>

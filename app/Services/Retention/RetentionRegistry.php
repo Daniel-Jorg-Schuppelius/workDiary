@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Retention;
 
 use App\Models\Platform\Organization;
+use App\Settings\SettingsRegistry;
 use App\Support\Trans;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Zentrale Aufbewahrungs-Registry (Restpunkte 66+67): Fristen und
@@ -70,15 +72,46 @@ class RetentionRegistry {
 
     /**
      * Aufbewahrungsdauer in Jahren für Bereich+Rechtsraum (Fallback DE);
-     * null, wenn der Bereich nicht konfiguriert ist.
+     * null, wenn der Bereich nicht konfiguriert ist. Nennt der Bereich eine
+     * Einstellung (`years_setting`), gilt deren Wert der Organisation vor dem
+     * Rechtsraum (MVP-1683).
      */
     public function yearsFor(Organization $organization, string $area): ?int {
+        $own = $this->organizationYearsFor($organization, $area);
+        if ($own !== null) {
+            return $own;
+        }
+
+        return $this->defaultYearsFor($organization, $area);
+    }
+
+    /** Frist des Rechtsraums ohne Einstellung der Organisation. */
+    public function defaultYearsFor(Organization $organization, string $area): ?int {
         $years = (array) config("retention.areas.{$area}.years", []);
         $region = $this->regionFor($organization);
 
         $value = $years[$region] ?? $years['DE'] ?? null;
 
         return $value !== null ? (int) $value : null;
+    }
+
+    /** Registry-Schlüssel, über den die Organisation die Frist des Bereichs setzt; null = nicht einstellbar. */
+    public function yearsSettingFor(string $area): ?string {
+        $key = config("retention.areas.{$area}.years_setting");
+
+        return is_string($key) && $key !== '' ? $key : null;
+    }
+
+    /** Eigene Frist der Organisation in Jahren; null ohne Einstellung. */
+    public function organizationYearsFor(Organization $organization, string $area): ?int {
+        $key = $this->yearsSettingFor($area);
+        if ($key === null) {
+            return null;
+        }
+        // Ohne Override liefert die Registry INF — toIntOrNull nimmt nur endliche Zahlen.
+        $years = NumberHelper::toIntOrNull(SettingsRegistry::organizationValue($organization, $key));
+
+        return $years !== null && $years > 0 ? $years : null;
     }
 
     /**

@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 7
+version: 9
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -99,6 +99,12 @@ servicio acordado»; la vista previa de la factura también muestra estos comple
 complemento se factura una sola vez, en una factura o en una transferencia; un registro
 posterior de ese día deja de ser facturable. La anulación de la factura o de la transferencia,
 la eliminación de la posición o el descarte del borrador vuelve a liberar el complemento.
+
+Si la regla de facturación del proyecto indica la unidad «global» o «Pauschale»,
+cada pedido factura una línea con cantidad 1 al precio de la regla; el complemento
+hasta las horas acordadas se omite entonces, porque la tarifa plana cubre el
+pedido sea cual sea su duración. Todas las demás unidades, por ejemplo hora, día
+o ud., cuentan por duración.
 
 ## Errores habituales
 

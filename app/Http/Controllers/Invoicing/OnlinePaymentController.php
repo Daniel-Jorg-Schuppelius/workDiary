@@ -18,7 +18,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Invoicing\OnlinePayment\Exceptions\OnlinePaymentException;
 use App\Services\Invoicing\OnlinePayment\{InvoicePaymentLinkService, OnlinePaymentService};
-use App\Support\{DocumentLocale, OrganizationContext};
+use App\Support\OrganizationContext;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 
 /**
@@ -67,7 +67,7 @@ class OnlinePaymentController extends Controller {
 
     private function page(Invoice $invoice, string $reason): Response {
         $invoice->loadMissing(['customer', 'organization']);
-        app()->setLocale(DocumentLocale::for($invoice->customer, $invoice->organization));
+        app()->setLocale($invoice->documentLocale());
 
         return response()->view('payments.status', [
             'invoice' => $invoice,

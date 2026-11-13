@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 17
+version: 20
 keywords:
     - créer une facture
     - établir une facture
@@ -136,6 +136,22 @@ ou une annulation totale la libèrent, et l'origine reste visible sur le
 document. Les avoirs partiels ne libèrent rien ; le stock reste inchangé pour
 toutes les opérations de facturation.
 
+## Forfaits à partir des temps
+
+Si un type d'activité est associé à une prestation avec l'unité « forfait » ou
+« Pauschale » — par exemple un article dans la règle de facturation du projet ou
+comme prestation par défaut de l'organisation —, la facturation, le transfert et
+la pièce de temps Lexoffice facturent **une ligne de quantité 1 par commande** au
+prix de cette prestation, quel que soit le nombre de temps saisis. Les temps sans
+commande donnent un forfait par projet et type d'activité. Les temps restent
+rattachés à la ligne comme justificatif et comptent comme facturés. L'arrondi,
+les minutes de déplacement de la condition client et le complément jusqu'aux
+heures convenues ne s'appliquent pas aux forfaits. Si la prestation n'a pas de
+prix, le forfait apparaît à 0,00 dans l'aperçu. Comptent comme forfait
+« forfait », « Pauschale » et « pauschal », ainsi que leurs équivalents dans les
+autres langues comme « flat ». Toute autre unité — vide, « heure », « jour »,
+« pièce », « km » ou texte libre — continue de facturer selon la durée.
+
 ## Paiement en ligne
 
 Si un prestataire de paiement (Stripe, Mollie ou SumUp) est configuré
@@ -267,7 +283,9 @@ complète.
 Dans la fiche client, réglez le **profil de destinataire de la facture
 électronique** sur « Administration publique ». Alors :
 
-- La Leitweg-ID (référence de l’acheteur) est obligatoire.
+- La Leitweg-ID (référence de l’acheteur) est obligatoire. Si sa structure ou
+  sa clé de contrôle est erronée, le contrôle avant l'envoi avertit ; cela vaut
+  aussi pour les clients adressés via Peppol avec le schéma 0204.
 - Par courriel ne part que la XRechnung, sans PDF à côté ; la boîte d’envoi ne
   propose que ces formats. L’envoi électronique émet d’abord le brouillon pour
   que le XML porte les pièces figées.
@@ -310,8 +328,10 @@ le nouveau régime. Si vous émettez un brouillon au régime fiscal dépassé, w
 l'ajuste et interrompt l'émission : vérifiez les montants et émettez de nouveau.
 
 En **autoliquidation**, la facture électronique exige le numéro de TVA du client
-(règle BR-AE-02), y compris pour l'autoliquidation nationale selon le § 13b UStG ;
-le contrôle avant l'envoi signale son absence. Toutes les lignes figurent alors à
+(règle BR-AE-02) ; pour l'autoliquidation nationale selon le § 13b UStG, son
+numéro d'immatriculation suffit. Le contrôle avant l'envoi signale l'absence de
+la donnée requise. Le numéro d'immatriculation figure dans la facture
+électronique comme identifiant d'immatriculation de l'acheteur (BT-47). Toutes les lignes figurent alors à
 0 % avec la mention « Autoliquidation » dans la XRechnung.
 
 Le **texte de mention** suit le régime fiscal : si la mention automatique de l'ancien
@@ -332,14 +352,25 @@ saisissez la disposition d'exonération comme mention sur le justificatif, par e
 « Soins médicaux exonérés (§ 4 n° 14 UStG) » ; sans règle, seule la mention
 « Opération exonérée » apparaît et le contrôle avant l'envoi avertit.
 
+**Pays tiers :** les marchandises livrées à des clients hors UE sont des
+exportations (G) avec le motif « Livraison à l'exportation exonérée ». Les
+prestations à des entreprises hors UE ne sont pas imposables en Allemagne
+(§ 3a al. 2 UStG) et figurent comme « non imposable » (O) dans la facture
+électronique, le PDF de la facture et la comptabilité : sans numéros de TVA,
+avec le numéro fiscal de l'organisation et sans autre catégorie à côté. Sans
+numéro fiscal, le contrôle avant envoi s'arrête. Les factures émises auparavant
+avec la catégorie G sont réimprimées sans changement.
+
 Le contrôle avant l'envoi signale en outre : l'absence du numéro de TVA du client pour
 une livraison intracommunautaire, l'absence du numéro de TVA de l'organisation pour
 les livraisons vers un autre pays de l'UE et les exportations, « non imposable » à
 côté d'autres catégories et une position de catégorie sans taxe avec un taux
 supérieur à 0 %. Avec « non imposable », la facture électronique ne porte aucun numéro
-de TVA ; le numéro fiscal suffit. Deux données manquent encore à la facture
-électronique (avertissement) : le pays de livraison pour les livraisons
-intracommunautaires et l'absence du taux par ligne pour « non imposable ».
+de TVA ; le numéro fiscal suffit. Pour les livraisons intracommunautaires, la
+facture électronique indique l'adresse du client comme adresse de livraison avec
+le pays de livraison (règle BR-IC-12) ; la XRechnung y exige le code postal et la
+ville, sinon le contrôle avant l'envoi s'arrête. Les positions « non imposable »
+figurent sans taux dans la facture électronique.
 
 ## Mention d'exonération dans le PDF de la facture
 
@@ -370,6 +401,22 @@ les données actuelles du client. La pièce d'annulation et la facture rectifica
 figent le destinataire lors de leur propre émission. L'adresse de remise
 électronique (identifiant Peppol ou e-mail) et les lettres de relance suivent en
 revanche les données actuelles du client, car elles sont remises aujourd'hui.
+
+Avec le destinataire, l'émission fige aussi les **données de
+l'organisation** : raison sociale, adresse, numéro fiscal, numéro de TVA,
+coordonnées, coordonnées bancaires (bloc bancaire et code QR de virement), le
+régime des petites entreprises et la **langue du document**. La réimpression,
+la XRechnung et le ZUGFeRD d'une facture émise restent tels qu'ils ont été
+émis — même après un changement de banque, une nouvelle adresse ou une autre
+langue de document du client ; les brouillons et les nouvelles factures
+reprennent l'état actuel. Les textes de la facture électronique sont dans la
+langue du document, pas dans celle de votre interface. Les lettres de relance
+indiquent les coordonnées bancaires actuelles.
+
+Si le client n'a plus de numéro de TVA enregistré, la facture d'annulation et
+la facture rectificative relatives à une autoliquidation ou à une livraison
+intracommunautaire reprennent le numéro de TVA de la facture d'origine, ainsi
+qu'un numéro d'immatriculation manquant ; le contrôle avant envoi ne s'arrête plus.
 
 Si un numéro de TVA est enregistré pour le client, il figure dans l'en-tête de la
 facture (« Votre n° de TVA intracommunautaire »). Il est obligatoire pour les

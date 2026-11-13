@@ -1,7 +1,7 @@
 ---
 title: "Transfert de facturation"
 topic: finance.transfers
-version: 5
+version: 7
 keywords:
     - transfert vers Lexoffice
     - transfert DATEV
@@ -78,6 +78,13 @@ séparément (**Préparer et transférer les temps facturables** ou
 disposant de **Consulter les justificatifs de transfert** voient la
 liste ; extourner et corriger exigent en plus **Gérer la configuration
 financière**.
+
+**Forfaits :** si la règle de facturation du projet ou la prestation par défaut
+de l'organisation indique l'unité « forfait » ou « Pauschale », chaque commande
+donne une ligne de quantité 1 au prix de la prestation ; les temps de la commande
+restent les sources de la ligne. Toutes les autres unités, par exemple heure, jour
+ou pièce, comptent selon la durée. L'arrondi et les heures convenues ne
+s'appliquent pas aux forfaits.
 
 ## Documents liés
 

@@ -48,7 +48,7 @@ class XRechnungTest extends TestCase {
             'address_zip' => '54321',
             'address_city' => 'Hamburg',
             'country' => 'DE',
-            'buyer_reference' => '991-12345-67',
+            'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
     }
@@ -114,7 +114,7 @@ class XRechnungTest extends TestCase {
         $this->assertStringContainsString('XRechnung_' . $invoice->number . '.xml', (string) $response->headers->get('Content-Disposition'));
         // Korrekte XRechnung-3.0-Kennung (xeinkauf.de) seit Toolkit v0.1.12.
         $this->assertStringContainsString(\ERechnungToolkit\Enums\ERechnungProfile::XRECHNUNG->value, $response->getContent());
-        $this->assertStringContainsString('<cbc:BuyerReference>991-12345-67</cbc:BuyerReference>', $response->getContent());
+        $this->assertStringContainsString('<cbc:BuyerReference>991-12345-73</cbc:BuyerReference>', $response->getContent());
     }
 
     public function test_download_redirects_with_error_when_buyer_reference_missing(): void {

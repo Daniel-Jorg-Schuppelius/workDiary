@@ -184,6 +184,9 @@
                         <x-detail-grid.row :label="__('Fällig am')">{{ $summary['due_date'] ?? '—' }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('Verkäufer')">{{ $summary['seller'] ?? '—' }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('USt-IdNr.')">{{ $summary['seller_vat'] ?? '—' }}</x-detail-grid.row>
+                        @if (! empty($summary['seller_register_number']))
+                            <x-detail-grid.row :label="__('invoicing.register_number')">{{ $summary['seller_register_number'] }}</x-detail-grid.row>
+                        @endif
                         <x-detail-grid.row :label="__('Netto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['net'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('Steuer')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['tax'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('Brutto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['gross'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>

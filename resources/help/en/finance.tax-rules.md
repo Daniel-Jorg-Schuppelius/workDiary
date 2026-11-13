@@ -1,7 +1,7 @@
 ---
 title: "Tax rule matrix"
 topic: finance.tax-rules
-version: 2
+version: 3
 keywords:
     - tax rates
     - VAT
@@ -65,6 +65,12 @@ organisation takes precedence over the matrix for domestic invoices. EU
 customers with a formally valid VAT ID automatically receive reverse
 charge (0 %), non-EU customers the export note (0 %) — matching matrix
 rows provide the note text shown on the document.
+
+For non-EU customers the tax case distinguishes goods from services: material
+is an export (category G) with the note "Tax-exempt export supply"; a service to
+a business outside the EU is not subject to German VAT (category O, § 3a (2)
+UStG) and carries the note of the export rate type. The e-invoice, the exemption
+note in the PDF and the accounting read the same category frozen at issue.
 
 A row with the rate type **Exempt** names the exemption provision for
 tax-exempt supplies under § 4 UStG: its note text appears in the e-invoice

@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 17
+version: 18
 keywords:
     - Anteprima come cliente
     - Password iniziale
@@ -116,11 +116,17 @@ sezione **Fatturazione e visualizzazione**:
   **ZUGFeRD (PDF ibrido)**; **Nessuno standard (PDF)** mantiene il PDF.
 - **Leitweg-ID / riferimento acquirente (BT-10)**: dato obbligatorio della
   XRechnung – per le amministrazioni la Leitweg-ID, altrimenti un riferimento
-  indicato dal cliente.
+  indicato dal cliente. Se il valore sembra una Leitweg-ID o il cliente è un
+  committente pubblico, la finestra lo salva normalizzato (maiuscole, senza
+  spazi) e ne verifica struttura e cifra di controllo secondo la specifica di
+  formato della KoSIT. Una Leitweg-ID non valida viene salvata comunque; la
+  finestra avvisa indicando il motivo, ad esempio una cifra di controllo errata.
 - **Identificativo partecipante Peppol**: identificativo del destinatario per
   l'invio tramite Peppol nella forma schema:identificativo, ad esempio con la
   partita IVA o la Leitweg-ID; vuoto significa nessun invio Peppol a questo
-  cliente.
+  cliente. Con lo schema 0204 deve seguire una Leitweg-ID valida, altrimenti la
+  finestra rifiuta l'identificativo: a un indirizzo errato non si può
+  recapitare nulla.
 - **Profilo destinatario della fattura elettronica**: **Pubblica
   amministrazione** invia solo l'XML via e-mail, richiede la Leitweg-ID,
   incorpora i documenti e allega automaticamente l'attestazione delle
@@ -137,6 +143,13 @@ sezione **Fatturazione e visualizzazione**:
   WorkDiary invia la fattura con le attestazioni – in tal caso disattivi l'invio
   automatico nel sistema di fatturazione. Vede questo campo solo con il permesso
   **Gestire la configurazione finanziaria**.
+
+Nella sezione **Portale e altro**, accanto alla partita IVA, si trova il
+**numero di registro (registro delle imprese)**, ad esempio «Amtsgericht
+Musterstadt HRB 12345». La fattura elettronica lo riporta come identificativo di
+registrazione del cliente (BT-47). Se il cliente è debitore dell'imposta (§ 13b
+UStG) e non ha una partita IVA, il numero di registro basta per la fattura
+elettronica.
 
 Come i documenti entrano nella fattura elettronica e cosa vale per i clienti
 della pubblica amministrazione lo descrive l'argomento di aiuto **Fatture &

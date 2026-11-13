@@ -1,7 +1,7 @@
 ---
 title: "Transferencia a facturación"
 topic: finance.transfers
-version: 5
+version: 7
 keywords:
     - traspaso a Lexoffice
     - traspaso a DATEV
@@ -76,6 +76,13 @@ separado (**Preparar y traspasar los tiempos facturables** o
 **Preparar y traspasar el material facturable**). La lista la ven las
 personas con **Consultar los justificantes de traspaso**; cancelar y
 corregir requieren además **Gestionar la configuración financiera**.
+
+**Tarifas planas:** si la regla de facturación del proyecto o el servicio
+estándar de la organización indican la unidad «global» o «Pauschale», cada pedido
+genera una línea con cantidad 1 al precio del servicio; los tiempos del pedido
+siguen siendo las fuentes de la línea. Todas las demás unidades, por ejemplo hora,
+día o ud., cuentan por duración. El redondeo y las horas acordadas no se aplican
+a las tarifas planas.
 
 ## Documentos relacionados
 

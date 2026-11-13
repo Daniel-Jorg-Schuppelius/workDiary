@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 7
+version: 9
 keywords:
     - create project
     - project management
@@ -95,6 +95,11 @@ the missing time as a position “Agreed service time”; the invoice preview li
 well. Each top-up is billed only once, either in an invoice or in a transfer; a later booking on
 that day is then not billable. Cancelling the invoice or the transfer, removing the position or
 discarding the draft releases the top-up again.
+
+If the project's billing rule names the unit "flat" or "Pauschale", each order
+bills one line with quantity 1 at the rule's price; the top-up to agreed hours does
+not apply then, because the flat rate covers the order regardless of its duration.
+All other units, such as hour, day or pcs, bill by duration.
 
 ## Common mistakes
 

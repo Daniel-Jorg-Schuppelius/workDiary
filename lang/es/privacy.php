@@ -93,4 +93,11 @@ return [
         'state_save' => 'Guardar estado',
         'state_saved' => 'Estado de implantación y necesidad de protección guardados.',
     ],
+    'retention' => [
+        'years_label' => 'Plazo de conservación para :area en años',
+        'years_unit' => 'años',
+        'years_default' => 'Vacío = valor por defecto de la jurisdicción (:years años)',
+        'years_own' => 'plazo propio de la organización',
+        'years_saved' => 'Plazo de conservación para «:area» guardado.',
+    ],
 ];

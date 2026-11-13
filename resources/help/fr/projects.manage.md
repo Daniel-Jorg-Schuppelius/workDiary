@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 7
+version: 9
 keywords:
     - créer un projet
     - gestion de projet
@@ -102,6 +102,12 @@ de la facture affiche aussi ces compléments. Chaque complément n’est factur�
 dans une facture, soit dans un transfert ; une saisie ultérieure sur ce jour n’est alors plus
 facturable. L’annulation de la facture ou du transfert, la suppression de la position ou
 l’abandon du brouillon libère à nouveau le complément.
+
+Si la règle de facturation du projet indique l'unité « forfait » ou « Pauschale »,
+chaque commande facture une ligne de quantité 1 au prix de la règle ; le
+complément jusqu'aux heures convenues est alors supprimé, car le forfait couvre la
+commande quelle que soit sa durée. Toutes les autres unités, par exemple heure,
+jour ou pièce, comptent selon la durée.
 
 ## Erreurs fréquentes
 

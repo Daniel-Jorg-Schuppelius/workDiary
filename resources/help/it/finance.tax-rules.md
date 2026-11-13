@@ -1,7 +1,7 @@
 ---
 title: "Matrice delle regole fiscali"
 topic: finance.tax-rules
-version: 2
+version: 3
 keywords:
     - aliquote IVA
     - IVA
@@ -72,6 +72,13 @@ partita IVA formalmente valida ricevono automaticamente il reverse
 charge (0 %), i clienti di paesi terzi la dicitura di esportazione
 (0 %) — le righe corrispondenti della matrice forniscono a tal fine il
 testo informativo sul documento.
+
+Per i paesi terzi il regime fiscale distingue merci e prestazioni: il materiale
+è un'esportazione (categoria G) con la dicitura «Cessione all'esportazione
+esente»; una prestazione a un'impresa fuori dall'UE non è imponibile in Germania
+(categoria O, § 3a co. 2 UStG) e riporta la dicitura del tipo Esportazione. La
+fattura elettronica, l'indicazione di esenzione nel PDF e la contabilità leggono
+la stessa categoria, bloccata all'emissione.
 
 Una riga con il tipo **Esente** indica la norma di esenzione delle
 operazioni esenti ai sensi del § 4 UStG: il suo testo informativo compare

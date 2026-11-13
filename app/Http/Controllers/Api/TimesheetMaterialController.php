@@ -54,6 +54,7 @@ class TimesheetMaterialController extends Controller {
             new OA\Property(property: 'unit', type: 'string', maxLength: 20),
             new OA\Property(property: 'unit_price', type: 'number', minimum: 0, nullable: true),
             new OA\Property(property: 'tax_rate', type: 'number', minimum: 0, maximum: 100, nullable: true),
+            new OA\Property(property: 'allow_negative', type: 'boolean', description: 'Lagergeführter Artikel: Abgang in den Negativbestand zulassen (Recht inventory.negative)', nullable: true),
         ])),
         responses: [
             new OA\Response(response: 201, description: 'Created'),
@@ -66,7 +67,7 @@ class TimesheetMaterialController extends Controller {
     public function store(Timesheet $timesheet, SaveMaterialUsageRequest $request, MaterialUsageRecorder $recorder): MaterialUsageResource {
         Gate::authorize('update', $timesheet);
 
-        return new MaterialUsageResource($recorder->record($timesheet, $request->validated()));
+        return new MaterialUsageResource($recorder->record($timesheet, $request->validated(), $this->authUser()));
     }
 
     #[OA\Put(
@@ -85,6 +86,7 @@ class TimesheetMaterialController extends Controller {
             new OA\Property(property: 'unit', type: 'string', maxLength: 20),
             new OA\Property(property: 'unit_price', type: 'number', minimum: 0, nullable: true),
             new OA\Property(property: 'tax_rate', type: 'number', minimum: 0, maximum: 100, nullable: true),
+            new OA\Property(property: 'allow_negative', type: 'boolean', description: 'Lagergeführter Artikel: Abgang in den Negativbestand zulassen (Recht inventory.negative)', nullable: true),
         ])),
         responses: [
             new OA\Response(response: 200, description: 'OK'),
@@ -94,12 +96,11 @@ class TimesheetMaterialController extends Controller {
             new OA\Response(response: 422, description: 'Validation error'),
         ],
     )]
-    public function update(Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request): MaterialUsageResource {
+    public function update(Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request, MaterialUsageRecorder $recorder): MaterialUsageResource {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
-        $usage->update($request->validated());
 
-        return new MaterialUsageResource($usage);
+        return new MaterialUsageResource($recorder->update($usage, $request->validated(), $this->authUser()));
     }
 
     #[OA\Delete(
@@ -118,10 +119,10 @@ class TimesheetMaterialController extends Controller {
             new OA\Response(response: 404, description: 'Not Found'),
         ],
     )]
-    public function destroy(Timesheet $timesheet, MaterialUsage $usage): Response {
+    public function destroy(Timesheet $timesheet, MaterialUsage $usage, MaterialUsageRecorder $recorder): Response {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
-        $usage->delete();
+        $recorder->delete($usage, $this->authUser());
 
         return response()->noContent();
     }

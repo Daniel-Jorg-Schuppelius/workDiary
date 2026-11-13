@@ -96,13 +96,6 @@ class IncomingInvoiceTaxCaseResolver {
             (string) data_get($incoming->summary, 'seller_country', ''),
             (string) ($supplier->country ?? ''),
         ];
-        $vatId = trim((string) ($incoming->seller_vat_id ?? $supplier->vat_id ?? ''));
-        if ($vatId !== '') {
-            $prefix = VatNumberHelper::extractCountryCode(VatNumberHelper::normalize($vatId));
-            // Griechenland führt EL als Präfix der USt-IdNr.
-            $candidates[] = $prefix === 'EL' ? 'GR' : (string) $prefix;
-        }
-
         foreach ($candidates as $candidate) {
             $country = CountryCode::tryFrom(strtoupper(trim($candidate)));
             if ($country !== null) {
@@ -110,6 +103,10 @@ class IncomingInvoiceTaxCaseResolver {
             }
         }
 
-        return null;
+        $vatId = trim((string) ($incoming->seller_vat_id ?? $supplier->vat_id ?? ''));
+
+        return $vatId !== ''
+            ? VatNumberHelper::getCountryForVatPrefix((string) VatNumberHelper::extractCountryCode(VatNumberHelper::normalize($vatId)))
+            : null;
     }
 }

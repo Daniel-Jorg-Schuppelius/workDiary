@@ -1,7 +1,7 @@
 ---
 title: "Giacenze e scansione"
 topic: inventory.stock
-version: 6
+version: 7
 keywords:
     - magazzino
     - carico merce
@@ -93,6 +93,8 @@ segnala soltanto il lotto; i lotti bloccati solo dopo lo sblocco.
 **SKU e GTIN.** Le impostazioni di magazzino mostrano chi gestisce numero articolo, SKU delle varianti e GTIN. La scelta avviene nella pagina «Numerazioni», numerazione «Articolo». Se un gestionale di magazzino gestisce i numeri, i campi sono bloccati nell’anagrafica articoli e arrivano con la sincronizzazione.
 
 **Giacenza negativa a quattro occhi:** se l’organizzazione richiede nelle impostazioni di magazzino un’approvazione a quattro occhi per i prelievi in giacenza negativa, un prelievo con «Consenti giacenza negativa» diventa una richiesta nella casella delle approvazioni. Viene registrato solo quando un’altra persona con il diritto «Autorizzare giacenze negative» acconsente; richiedente e approvatore compaiono nel protocollo di audit.
+
+**Consumo di materiale sul foglio ore:** il materiale collegato a un articolo gestito a magazzino registra, quando viene inserito sul foglio ore o in «Oggi», il prelievo dal magazzino contrassegnato come «Predefinito» (se ce ne sono più, il primo per nome). Il movimento compare nel giornale di magazzino con la quantità e l’unità inserite; una modifica registra la differenza, l’eliminazione lo riporta in giacenza. Valgono le regole di questa pagina: giacenza negativa solo con il permesso ed eventualmente quattro occhi, lotti per data di scadenza, numeri di serie solo tramite il magazzino. Il materiale che finora prelevava anche qui, d’ora in poi lo registri solo sul foglio ore, altrimenti il prelievo conta due volte.
 
 **Ridistribuire le prenotazioni:** nella finestra «Modifica prenotazione» cedete la quantità aperta a un’altra prenotazione dello stesso articolo, magazzino e proprietà, ad esempio a un ordine con priorità più alta. Una prenotazione più recente non ne scalza mai una più vecchia in silenzio; la ridistribuzione compare nel protocollo di audit e la riga materiale di un ordine di produzione la segue.
 

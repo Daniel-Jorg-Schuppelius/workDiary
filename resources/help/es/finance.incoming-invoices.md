@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 9
+version: 10
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -120,6 +120,12 @@ una factura propia ya registrada.
 todos los documentos abiertos; «Todos», el período seleccionado. La entrada
 del menú cuenta los documentos por asignar. Contabilidad recibe una
 notificación por la mañana mientras quede algo por asignar.
+
+**Número de registro del vendedor:** Si una factura electrónica indica el
+número de registro del vendedor (registro mercantil, BT-30), la página de
+detalle lo muestra con los datos de la factura. No es un número fiscal y no
+cuenta para la asignación; hasta esta actualización, WorkDiary lo leía de las
+facturas UBL como número fiscal.
 
 **Asignación:** Un documento se asigna automáticamente solo si exactamente
 una parte coincide con un identificador exacto del documento: NIF-IVA,

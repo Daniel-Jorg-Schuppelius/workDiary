@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 17
+version: 18
 keywords:
     - Aperçu en tant que client
     - Mot de passe initial
@@ -120,11 +120,18 @@ trouvent dans la section **Facturation et affichage** :
   **ZUGFeRD (PDF hybride)** ; **Aucun standard (PDF)** conserve le PDF.
 - **Leitweg-ID / référence acheteur (BT-10)** : mention obligatoire de la
   XRechnung – la Leitweg-ID pour les administrations, sinon une référence
-  imposée par le client.
+  imposée par le client. Si la valeur ressemble à une Leitweg-ID ou si le client
+  est un acheteur public, la boîte de dialogue l'enregistre normalisée
+  (majuscules, sans espaces) et contrôle sa structure et sa clé de contrôle
+  selon la spécification de format de la KoSIT. Une Leitweg-ID non valide est
+  tout de même enregistrée ; la boîte de dialogue avertit en indiquant le
+  motif, par exemple une clé de contrôle erronée.
 - **Identifiant de participant Peppol** : identifiant du destinataire pour
   l'envoi via Peppol sous la forme schéma:identifiant, par exemple avec le
   numéro de TVA ou la Leitweg-ID ; vide signifie pas d'envoi Peppol à ce
-  client.
+  client. Avec le schéma 0204, une Leitweg-ID valide doit suivre, sinon la boîte
+  de dialogue refuse l'identifiant – rien ne peut être remis à une adresse
+  erronée.
 - **Profil de destinataire de la facture électronique** : **Administration
   publique** n'envoie que le XML par e-mail, exige la Leitweg-ID, intègre les
   pièces et joint automatiquement le justificatif de prestations ;
@@ -141,6 +148,13 @@ trouvent dans la section **Facturation et affichage** :
   l'envoie, soit WorkDiary envoie la facture avec les justificatifs – désactivez
   alors l'envoi automatique dans le système de facturation. Vous ne voyez ce
   champ qu'avec le droit **Gérer la configuration financière**.
+
+Dans la section **Portail et divers**, à côté du numéro de TVA, figure le
+**numéro d'immatriculation (registre du commerce)**, par exemple « Amtsgericht
+Musterstadt HRB 12345 ». La facture électronique l'indique comme identifiant
+d'immatriculation du client (BT-47). Si le client est redevable de la taxe
+(§ 13b UStG) et n'a pas de numéro de TVA, le numéro d'immatriculation suffit
+pour la facture électronique.
 
 La manière dont les pièces entrent dans la facture électronique et les règles
 pour les administrations sont décrites dans la rubrique d'aide **Factures &

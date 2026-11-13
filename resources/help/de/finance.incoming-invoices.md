@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 9
+version: 10
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -111,6 +111,11 @@ bereits erfassten eigenen Rechnung wird ebenfalls gemeldet.
 Eingänge, „Alle“ den gewählten Zeitraum. Der Menüeintrag zählt die
 zuzuordnenden Eingänge. Die Buchhaltung erhält morgens eine Benachrichtigung,
 solange etwas zuzuordnen ist.
+
+**Registernummer des Verkäufers:** Nennt eine E-Rechnung die Registernummer
+des Verkäufers (Handelsregister, BT-30), zeigt die Detailseite sie bei den
+Rechnungsdaten. Sie ist keine Steuernummer und zählt nicht für die Zuordnung;
+bis zu diesem Update las WorkDiary sie aus UBL-Rechnungen als Steuernummer.
 
 **Zuordnung:** Automatisch zugeordnet wird nur, wenn genau eine Partei über
 ein exaktes Merkmal des Belegs trifft: USt-IdNr., Steuernummer oder IBAN.

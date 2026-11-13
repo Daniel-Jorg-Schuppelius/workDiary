@@ -1,7 +1,7 @@
 ---
 title: "Organisation und Einstellungen"
 topic: admin.organization-settings
-version: 8
+version: 10
 keywords:
     - Firmeneinstellungen
     - Mandanteneinstellungen
@@ -260,7 +260,8 @@ Plattformbetriebs ist eine Systemeinstellung unter **Einstellungen
 - **Standardleistung (Artikel)**: liefert Bezeichnung, Einheit, Standardtext
   und – falls kein Satz auffindbar ist – den Preis der Übergabe-Positionen.
   Abrechnungsregeln am Projekt gehen vor. Ohne Artikel im Artikelstamm bleibt
-  die Auswahl leer.
+  die Auswahl leer. Eine Leistung mit der Einheit „Pauschale“ rechnet je
+  Auftrag eine Position mit Menge 1; andere Einheiten rechnen nach Dauer.
 - **Vorlage: Einleitungstext der Übergabe** und **Vorlage: Schlussbemerkung
   der Übergabe** (je bis 2000 Zeichen): werden beim Anlegen einer Übergabe in
   den Nachweis kopiert und sind dort bearbeitbar. Platzhalter: :customer,

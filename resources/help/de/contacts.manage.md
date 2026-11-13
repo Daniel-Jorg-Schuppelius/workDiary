@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 17
+version: 18
 keywords:
     - Vorschau als Kunde
     - Startpasswort
@@ -116,10 +116,17 @@ Darstellung**:
   Datei-Import dieses Kunden, etwa **XRechnung (XML)** oder **ZUGFeRD
   (Hybrid-PDF)**; **Kein Standard (PDF)** belässt es beim PDF.
 - **Leitweg-ID / Käuferreferenz (BT-10)**: Pflichtangabe der XRechnung – bei
-  Behörden die Leitweg-ID, sonst eine Referenz, die der Kunde vorgibt.
+  Behörden die Leitweg-ID, sonst eine Referenz, die der Kunde vorgibt. Sieht die
+  Angabe wie eine Leitweg-ID aus oder ist der Kunde öffentlicher Auftraggeber,
+  speichert der Dialog sie vereinheitlicht (Großbuchstaben, ohne Leerzeichen)
+  und prüft Aufbau und Prüfziffer nach der Formatspezifikation der KoSIT. Eine
+  ungültige Leitweg-ID wird trotzdem gespeichert; der Dialog warnt mit dem
+  Grund, etwa einer falschen Prüfziffer.
 - **Peppol-Teilnehmer-ID**: Empfängerkennung für den Versand über Peppol in der
   Form Kennzahl:Kennung, etwa mit der USt-IdNr. oder der Leitweg-ID; leer heißt
-  kein Peppol-Versand an diesen Kunden.
+  kein Peppol-Versand an diesen Kunden. Mit der Kennzahl 0204 muss eine gültige
+  Leitweg-ID folgen, sonst lehnt der Dialog die Kennung ab – an eine falsche
+  Adresse lässt sich nichts zustellen.
 - **Empfängerprofil der E-Rechnung**: **Öffentlicher Auftraggeber (Behörde)**
   verschickt nur die XML per E-Mail, verlangt die Leitweg-ID, bettet die
   Unterlagen ein und legt den Leistungsnachweis automatisch bei; **Standard**
@@ -136,6 +143,12 @@ Darstellung**:
   WorkDiary versendet die Rechnung mit den Nachweisen – schalten Sie dann den
   automatischen Versand im Fakturasystem ab. Das Feld sehen Sie nur mit dem
   Recht **Finanzkonfiguration verwalten**.
+
+Im Abschnitt **Portal & Sonstiges** steht neben der USt-IdNr. die
+**Registernummer (Handelsregister)**, etwa „Amtsgericht Musterstadt HRB
+12345“. Die E-Rechnung nennt sie als Registerkennung des Kunden (BT-47).
+Schuldet der Kunde die Steuer (§ 13b UStG) und hat er keine USt-IdNr., genügt
+die Registernummer für die E-Rechnung.
 
 Wie Unterlagen in die E-Rechnung kommen und was bei Behördenkunden gilt,
 beschreibt das Hilfethema **Rechnungen & Belege**.

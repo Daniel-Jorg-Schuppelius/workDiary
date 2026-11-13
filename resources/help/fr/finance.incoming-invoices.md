@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 9
+version: 10
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -124,6 +124,12 @@ nous » ; la copie d’une de vos propres factures déjà enregistrée est
 tous les documents ouverts, « Tous » la période choisie. L’entrée de menu
 compte les documents à attribuer. La comptabilité reçoit une notification le
 matin tant qu’il reste quelque chose à attribuer.
+
+**Numéro d'immatriculation du vendeur :** Si une facture électronique indique
+le numéro d'immatriculation du vendeur (registre du commerce, BT-30), la page de
+détail l'affiche avec les données de la facture. Ce n'est pas un numéro fiscal
+et il ne compte pas pour l'attribution ; jusqu'à cette mise à jour, WorkDiary le
+lisait dans les factures UBL comme numéro fiscal.
 
 **Attribution :** Un document n’est attribué automatiquement que si une seule
 partie correspond à un identifiant exact du document : numéro de TVA,

@@ -93,4 +93,11 @@ return [
         'state_save' => 'Enregistrer l\'état',
         'state_saved' => 'Statut de mise en œuvre et besoin de protection enregistrés.',
     ],
+    'retention' => [
+        'years_label' => 'Durée de conservation pour :area en années',
+        'years_unit' => 'ans',
+        'years_default' => 'Vide = valeur par défaut de la juridiction (:years ans)',
+        'years_own' => 'durée propre à l\'organisation',
+        'years_saved' => 'Durée de conservation pour « :area » enregistrée.',
+    ],
 ];

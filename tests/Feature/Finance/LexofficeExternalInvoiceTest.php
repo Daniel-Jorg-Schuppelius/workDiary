@@ -111,7 +111,7 @@ final class LexofficeExternalInvoiceTest extends TestCase {
         $this->assertCount(1, $sent, 'Behörden erhalten genau eine XML');
         $document = (new ERechnungParser)->parse($sent[0]['content']);
         $this->assertSame('RE-2030-0007', $document->getId());
-        $this->assertSame('991-12345-67', $document->getBuyerReference());
+        $this->assertSame('991-12345-73', $document->getBuyerReference());
         $this->assertSame('RE-2030-0007-A1', $document->getSupportingDocuments()[0]->getReference());
         $this->assertSame($invoices, Invoice::query()->count(), 'Keine lokale Rechnung, keine Nummer');
         Mail::assertQueued(ExternalInvoiceMail::class, fn (ExternalInvoiceMail $mail): bool => $mail->hasTo('rechnung@landesamt.example'));
@@ -166,7 +166,7 @@ final class LexofficeExternalInvoiceTest extends TestCase {
     }
 
     private function xrechnung(): string {
-        return ERechnungDocumentBuilder::xrechnung('RE-2030-0007', '991-12345-67')
+        return ERechnungDocumentBuilder::xrechnung('RE-2030-0007', '991-12345-73')
             ->withIssueDate(new DateTimeImmutable('2030-04-30'))
             ->withDueDate(new DateTimeImmutable('2030-05-30'))
             ->withSeller('Dienstleister GmbH', 'DE123456789')

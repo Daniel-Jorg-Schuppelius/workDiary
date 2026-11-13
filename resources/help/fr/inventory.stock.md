@@ -1,7 +1,7 @@
 ---
 title: "Stocks et scan"
 topic: inventory.stock
-version: 6
+version: 7
 keywords:
     - état des stocks
     - entrée de marchandises
@@ -93,6 +93,8 @@ seulement le lot ; les lots bloqués seulement après leur libération.
 **SKU et GTIN.** Les paramètres du stock indiquent qui gère le numéro d’article, le SKU des variantes et le GTIN. Le choix se fait sur la page « Plages de numéros », plage « Article ». Si une gestion commerciale gère les numéros, les champs sont verrouillés dans la fiche article et arrivent avec la synchronisation.
 
 **Stock négatif à quatre yeux :** si l’organisation exige, dans les paramètres de stock, une validation à quatre yeux pour les sorties en stock négatif, une sortie avec « Autoriser le stock négatif » devient une demande dans la boîte des validations. Elle n’est comptabilisée qu’après l’accord d’une autre personne disposant du droit « Autoriser les stocks négatifs » ; demandeur et valideur figurent dans le journal d’audit.
+
+**Consommation de matériel sur la feuille de temps :** le matériel lié à un article géré en stock comptabilise, lors de sa saisie sur la feuille de temps ou dans « Aujourd’hui », la sortie depuis l’entrepôt marqué « Par défaut » (s’il y en a plusieurs, le premier par nom). Le mouvement figure dans le journal de stock avec la quantité et l’unité saisies ; une modification comptabilise la différence, la suppression la remet en stock. Les règles de cette page s’appliquent : stock négatif uniquement avec le droit et, le cas échéant, quatre yeux, lots selon la date limite, numéros de série uniquement via l’entrepôt. Le matériel que vous sortiez jusqu’ici en plus ici ne se saisit désormais que sur la feuille de temps — sinon la sortie compte deux fois.
 
 **Redistribuer des réservations :** dans la boîte de dialogue « Modifier la réservation », vous cédez une quantité ouverte à une autre réservation du même article, entrepôt et propriété, par exemple à un ordre plus prioritaire. Une réservation plus récente n’en évince jamais une plus ancienne en silence ; la redistribution figure dans le journal d’audit et la ligne de matière d’un ordre de fabrication la suit.
 

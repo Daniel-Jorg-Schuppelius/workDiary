@@ -1,7 +1,7 @@
 ---
 title: "Datenschutzmanagement im Überblick"
 topic: privacy.overview
-version: 5
+version: 6
 keywords:
     - DSGVO
     - Verarbeitungsverzeichnis
@@ -185,6 +185,12 @@ Fristen richten.
   Bewerbungen oder Lernplattform – die **Frist** in Jahren oder Tagen und die
   **Rechtsgrundlage**. Bereiche mit dem Vermerk „nur Ausweis, ohne Scan“
   dokumentieren nur die Frist; für sie entstehen keine Vorschläge.
+- **Datenschutzvorfälle**: Die Frist für abgeschlossene Vorfälle legt Ihre
+  Organisation selbst fest (1 bis 10 Jahre); leer gilt die Vorgabe des
+  Rechtsraums – 3 Jahre, in der Schweiz 5 Jahre. Ändern dürfen sie alle, die
+  hier scannen und Vorschläge bestätigen; der Löschscan rechnet mit dem
+  eingetragenen Wert. Kürzer als die Vorgabe sollten Sie die Frist nur
+  setzen, wenn Sie den Nachweis gegenüber der Aufsichtsbehörde anders sichern.
 - **Jetzt scannen** sucht Datensätze mit abgelaufener Frist und legt
   **Lösch-Vorschläge** an. Der Scan läuft zusätzlich regelmäßig automatisch
   (standardmäßig wöchentlich). Datensätze unter Legal Hold und fachliche

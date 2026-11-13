@@ -20,8 +20,7 @@ use App\Plugins\Contracts\OnlinePaymentProvider;
 use App\Plugins\Support\Payments\{OnlinePaymentRequest, OnlinePaymentSnapshot};
 use App\Services\Invoicing\{DunningService, InvoiceSettlement};
 use App\Services\Invoicing\OnlinePayment\Exceptions\OnlinePaymentException;
-use App\Support\CanonicalUrl;
-use App\Support\{DocumentLocale, OrganizationContext};
+use App\Support\{CanonicalUrl, OrganizationContext};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -99,7 +98,7 @@ class OnlinePaymentService {
             // Der Aufruf ist anonym: Rücksprung und Webhook nie aus dem Host-Header bilden (pub-1).
             returnUrl: CanonicalUrl::route('payments.done', $token),
             webhookUrl: CanonicalUrl::route('payments.webhook', $provider->onlinePaymentProviderId()),
-            locale: DocumentLocale::for($invoice->customer, $organization),
+            locale: $invoice->documentLocale(),
             customerEmail: $invoice->customer->email,
         ));
     }

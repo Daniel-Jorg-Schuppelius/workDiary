@@ -11,7 +11,8 @@
 return [
     'field' => [
         'participant_id' => 'Peppol-Teilnehmer-ID',
-        'participant_id_hint' => 'Form <ICD>:<Kennung>, z. B. 9930:DE123456789 (USt-IdNr.) oder 0204:991-12345-67 (Leitweg-ID). Leer = kein Peppol-Versand an diesen Kunden.',
+        'participant_id_hint' => 'Form <ICD>:<Kennung>, z. B. 9930:DE123456789 (USt-IdNr.) oder 0204:991-12345-73 (Leitweg-ID). Leer = kein Peppol-Versand an diesen Kunden.',
+        'participant_id_leitweg_invalid' => 'Die Peppol-Teilnehmer-ID mit Schema 0204 muss eine gültige Leitweg-ID tragen: :reason',
     ],
     'action' => [
         'send' => 'Per Peppol senden',

@@ -2396,6 +2396,16 @@ return [
             'pending' => 'Ouverte',
             'approved' => 'Validée',
             'rejected' => 'Refusée',
+            'withdrawn' => 'Retirée',
+        ],
+    ],
+    'material' => [
+        'material-stock-status' => [
+            'booked' => 'Sorti du stock',
+            'requested' => 'Stock négatif demandé',
+            'rejected' => 'Stock négatif refusé – non comptabilisé',
+            'no_warehouse' => 'Non comptabilisé – aucun entrepôt par défaut',
+            'read_only' => 'Non comptabilisé – stock géré en externe, lecture seule',
         ],
     ],
 ];

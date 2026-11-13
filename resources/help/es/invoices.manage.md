@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 17
+version: 20
 keywords:
     - crear factura
     - emitir factura
@@ -135,6 +135,23 @@ la liberan de nuevo, y el origen sigue visible en el documento. Los abonos
 parciales no liberan nada; las existencias no cambian con ninguna operación de
 factura.
 
+## Tarifas planas a partir de tiempos
+
+Si un tipo de actividad tiene asignado un servicio con la unidad «global» o
+«Pauschale» — por ejemplo un artículo en la regla de facturación del proyecto o
+como servicio estándar de la organización —, la facturación, el traspaso y el
+comprobante de tiempos de Lexoffice facturan **una línea con cantidad 1 por
+pedido** al precio de ese servicio, sin importar cuántos tiempos se registraron.
+Los tiempos sin pedido generan una tarifa plana por proyecto y tipo de actividad.
+Los tiempos quedan vinculados a la línea como justificante y cuentan como
+facturados. El redondeo, los minutos de desplazamiento de la condición del
+cliente y el complemento hasta las horas acordadas no se aplican a las tarifas
+planas. Si el servicio no tiene precio, la tarifa plana aparece con 0,00 en la
+vista previa. Cuentan como tarifa plana «global», «Pauschale» y «pauschal», así
+como sus equivalentes en los demás idiomas, como «flat» o «forfait». Cualquier
+otra unidad — vacía, «hora», «día», «ud.», «km» o texto libre — sigue facturando
+por duración.
+
 ## Pago en línea
 
 Si hay un proveedor de pagos (Stripe, Mollie o SumUp) configurado como
@@ -265,7 +282,9 @@ justificante la complementa.
 En la ficha del cliente, ponga el **perfil de destinatario de la factura
 electrónica** en «Administración pública». Entonces:
 
-- La Leitweg-ID (referencia del comprador) es obligatoria.
+- La Leitweg-ID (referencia del comprador) es obligatoria. Si su estructura o
+  su dígito de control son erróneos, la comprobación previa al envío avisa; lo
+  mismo rige para los clientes direccionados por Peppol con el esquema 0204.
 - Por correo solo va la XRechnung, sin PDF al lado; el diálogo de envío solo
   ofrece estos formatos. El envío electrónico emite antes el borrador para que
   el XML lleve los documentos fijados.
@@ -307,9 +326,11 @@ o un nuevo NIF-IVA—, la siguiente edición del borrador aplica el nuevo supues
 emite un borrador con un supuesto fiscal desactualizado, workDiary lo ajusta y
 detiene la emisión: compruebe los importes y vuelva a emitir.
 
-Con **inversión del sujeto pasivo**, la factura electrónica necesita el NIF-IVA del
-cliente (regla BR-AE-02), también en la inversión nacional según el § 13b UStG; la
-comprobación previa al envío indica si falta. Todas las posiciones figuran entonces
+Con **inversión del sujeto pasivo**, la factura electrónica necesita el NIF-IVA
+del cliente (regla BR-AE-02); en la inversión nacional según el § 13b UStG basta
+su número de registro. La comprobación previa al envío indica si falta el dato
+necesario. El número de registro figura en la factura electrónica como identificador
+de registro del comprador (BT-47). Todas las posiciones figuran entonces
 con un 0 % y la mención «Inversión del sujeto pasivo» en la XRechnung.
 
 El **texto de aviso** sigue al supuesto fiscal: si el aviso automático del supuesto
@@ -329,13 +350,24 @@ una regla con el tipo «Exento» e indique el supuesto de exención como texto d
 del justificante, por ejemplo «Tratamiento médico exento (§ 4 n.º 14 UStG)»; sin
 regla solo figura «Operación exenta» y la comprobación previa al envío avisa.
 
+**Terceros países:** las mercancías para clientes fuera de la UE son
+exportaciones (G) con el motivo «Entrega de exportación exenta». Los servicios a
+empresas fuera de la UE no están sujetos al IVA alemán (§ 3a apdo. 2 UStG) y
+figuran como «no sujeto» (O) en la factura electrónica, el PDF de la factura y la
+contabilidad: sin NIF-IVA, con el número fiscal de la organización y sin otras
+categorías al lado. Sin número fiscal, la comprobación previa al envío se
+detiene. Las facturas emitidas antes con la categoría G se reimprimen sin
+cambios.
+
 La comprobación previa al envío indica además: falta del NIF-IVA del cliente en
 entregas intracomunitarias, falta del NIF-IVA de la organización en entregas a otros
 países de la UE y exportaciones, «no sujeto» junto a otras categorías y una posición
 de categoría sin impuesto con un tipo superior al 0 %. Con «no sujeto» la factura
-electrónica no lleva NIF-IVA; basta el número fiscal. A la factura electrónica le
-faltan aún dos datos (aviso): el país de entrega en entregas intracomunitarias y la
-omisión del tipo por posición en «no sujeto».
+electrónica no lleva NIF-IVA; basta el número fiscal. En las entregas intracomunitarias, la
+factura electrónica indica la dirección del cliente como dirección de entrega con
+el país de entrega (regla BR-IC-12); la XRechnung exige allí código postal y
+localidad; de lo contrario, la comprobación previa al envío se detiene. Las
+posiciones «no sujeto» figuran sin tipo en la factura electrónica.
 
 ## Nota de exención en el PDF de la factura
 
@@ -364,6 +396,21 @@ cliente. El documento de anulación y la factura rectificativa fijan el destinat
 al emitirse ellos mismos. En cambio, la dirección de entrega electrónica
 (identificador Peppol o correo electrónico) y las cartas de reclamación siguen los
 datos actuales del cliente, porque se entregan hoy.
+
+Junto con el destinatario, la emisión congela también los **datos de la
+organización**: razón social, dirección, número fiscal, NIF-IVA, datos de
+contacto, datos bancarios (bloque bancario y código QR de transferencia), el
+régimen de pequeñas empresas y el **idioma del documento**. La reimpresión, la
+XRechnung y el ZUGFeRD de una factura emitida se mantienen tal como se emitieron
+— también tras un cambio de banco, una nueva dirección u otro idioma de documento
+del cliente; los borradores y las facturas nuevas toman los datos actuales. Los
+textos de la factura electrónica están en el idioma del documento, no en el de
+su interfaz. Las cartas de reclamación indican los datos bancarios actuales.
+
+Si el cliente ya no tiene NIF-IVA registrado, la factura de anulación y la
+factura rectificativa de una inversión del sujeto pasivo o de una entrega
+intracomunitaria toman el NIF-IVA de la factura original, así como un número de
+registro ausente; la comprobación previa al envío ya no se detiene.
 
 Si el cliente tiene un NIF-IVA registrado, aparece en la cabecera de la factura
 («Su NIF-IVA»). En entregas intracomunitarias y en la inversión del sujeto pasivo

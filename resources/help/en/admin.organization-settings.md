@@ -1,7 +1,7 @@
 ---
 title: "Organization and settings"
 topic: admin.organization-settings
-version: 8
+version: 10
 keywords:
     - company settings
     - tenant settings
@@ -253,7 +253,8 @@ the platform operations' organization overview is a system setting under
 - **Default service (article)**: provides name, unit, standard text and – if
   no rate can be found – the price of the transfer positions. Billing rules on
   the project take precedence. Without articles in the article master the
-  list stays empty.
+  list stays empty. A service with the unit "flat" or "Pauschale" bills one
+  line with quantity 1 per order; other units bill by duration.
 - **Template: transfer introduction** and **Template: transfer closing
   remark** (up to 2000 characters each): copied into the receipt when a
   transfer is created and editable there. Placeholders: :customer, :from,

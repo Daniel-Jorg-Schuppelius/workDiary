@@ -127,6 +127,7 @@ final class InventoryManifest extends Manifest {
         return [
             \App\Services\Claims\Contracts\RmaStockHandler::class => \App\Services\Inventory\Claims\InventoryRmaStockHandler::class,
             \App\Services\Article\Contracts\ArticleValuation::class => \App\Services\Inventory\ValuationMethodSwitch::class,
+            \App\Services\Material\Contracts\MaterialStockBooking::class => \App\Services\Inventory\MaterialUsageStockBooking::class,
         ];
     }
 

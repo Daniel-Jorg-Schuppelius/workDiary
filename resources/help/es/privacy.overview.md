@@ -1,7 +1,7 @@
 ---
 title: "Resumen de la gestión de protección de datos"
 topic: privacy.overview
-version: 5
+version: 6
 keywords:
     - RGPD
     - registro de actividades de tratamiento
@@ -167,6 +167,12 @@ confirmación en dos pasos. Arriba figura la jurisdicción de su organización
   años o días y la **Base jurídica**. Las áreas con la indicación «solo
   registro, sin escaneo» solo documentan el plazo; para ellas no se generan
   propuestas.
+- **Brechas de datos**: su organización fija ella misma el plazo para las
+  incidencias cerradas (de 1 a 10 años); si se deja vacío, rige el valor por
+  defecto de la jurisdicción: 3 años, 5 años en Suiza. Puede cambiarlo quien
+  pueda escanear aquí y confirmar propuestas; el escaneo de borrado usa el
+  valor introducido. Solo quede por debajo del valor por defecto si asegura
+  de otro modo la prueba ante la autoridad de control.
 - **Escanear ahora** busca registros con el plazo vencido y crea
   **Propuestas de eliminación**. El escaneo también se ejecuta
   automáticamente a intervalos regulares (por defecto, cada semana). Los

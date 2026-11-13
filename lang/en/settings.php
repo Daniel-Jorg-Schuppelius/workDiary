@@ -96,7 +96,7 @@ return [
         'assembly_hourly_rate_hint' => 'Values the article assembly time in the sale price suggestion; empty = default hourly rate.',
         'default_service_article' => 'Default service (article)',
         'default_service_none' => '— no default service —',
-        'default_service_hint' => 'Provides name, unit, standard text and — when no rate can be resolved — the price of the handover positions. Billing rules on the project override it.',
+        'default_service_hint' => 'Provides name, unit, standard text and — when no rate can be resolved — the price of the handover positions. Billing rules on the project override it. With the unit “flat”, each order gets one line with quantity 1 per billing run; other units bill by duration.',
         'transfer_intro_text' => 'Template: transfer introduction',
         'transfer_closing_text' => 'Template: transfer closing remark',
         'transfer_text_hint' => 'Copied into the receipt when a transfer is created and editable there. Placeholders: :customer, :from, :to, :channel. Empty = the target’s previous default text.',

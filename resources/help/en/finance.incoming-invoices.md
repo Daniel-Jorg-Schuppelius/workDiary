@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 9
+version: 10
 keywords:
     - several tax rates
     - supplier invoice
@@ -113,6 +113,11 @@ is reported as well.
 “All” shows the selected period. The menu entry counts the documents to
 assign. Accounting receives a notification in the morning as long as
 something is left to assign.
+
+**Seller's register number:** If an e-invoice states the seller's register
+number (commercial register, BT-30), the detail page shows it with the invoice
+data. It is not a tax number and does not count for the assignment; until this
+update WorkDiary read it from UBL invoices as the tax number.
 
 **Assignment:** A document is assigned automatically only if exactly one
 party matches an exact identifier of the document: VAT ID, tax number or

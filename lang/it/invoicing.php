@@ -15,6 +15,7 @@ return [
     'unit_hour' => 'h',
     'unit_flat' => 'forf.',
     'unit_piece' => 'pz',
+    'unit_flat_rate_hint' => 'L’unità «forfait» (o «forf.») fattura per ordine e fatturazione una riga con quantità 1 al prezzo della prestazione. Vuoto o qualsiasi altra unità, ad esempio ora, giorno o pz.: i tempi contano in base alla durata.',
     'tax_rate' => 'Aliquota fiscale',
     'currency' => 'Valuta',
     'totals' => [
@@ -25,7 +26,16 @@ return [
 
     // Fatturazione elettronica (funzionalità 045, sezione 8): XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Leitweg-ID / riferimento acquirente (BT-10)',
-    'buyer_reference_hint' => 'Obbligatorio per la XRechnung (fattura elettronica): il Leitweg-ID per le amministrazioni, altrimenti un riferimento fornito dal cliente.',
+    'buyer_reference_hint' => 'Obbligatorio per la XRechnung (fattura elettronica): il Leitweg-ID per le amministrazioni (normalizzato e verificato nella cifra di controllo al salvataggio), altrimenti un riferimento fornito dal cliente.',
+    'buyer_reference_leitweg_invalid' => 'Salvato. Tuttavia il riferimento dell\'acquirente non è un Leitweg-ID valido: :reason Verifichi con il committente: le fatture ad acquirenti pubblici verrebbero respinte.',
+    // Grund einer ungültigen Leitweg-ID (MVP-1687); die Toolkit-Meldungen sind nur deutsch.
+    'leitweg_reason' => [
+        'form' => 'Non ha la forma indirizzamento generale[-indirizzamento dettagliato]-cifre di controllo.',
+        'structure' => 'L\'indirizzamento generale richiede 2, 3, 5, 8, 9 o 12 cifre e inizia con il codice di un Land (01–16) o della Federazione (99); l\'indirizzamento dettagliato ha al massimo 30 caratteri.',
+        'check_digits' => 'Le cifre di controllo :given non sono corrette, previste :expected.',
+    ],
+    'register_number' => 'Numero di registro (registro delle imprese)',
+    'register_number_hint' => 'Ad esempio «Amtsgericht Musterstadt HRB 12345». La fattura elettronica lo riporta come identificativo di registrazione del cliente (BT-47); se un cliente nazionale è debitore dell\'imposta (§ 13b UStG), sostituisce la partita IVA mancante.',
     // Partita IVA del cliente nella fattura PDF (§ 14a UStG, MVP-1623).
     'buyer_vat_id' => 'Vostra partita IVA',
     'einvoice' => [
@@ -61,8 +71,9 @@ return [
             'missing_buyer_reference' => 'Al cliente manca il Leitweg-ID/riferimento acquirente (BT-10).',
             'missing_seller_field' => 'Dato del venditore mancante: :field (impostazioni dell\'organizzazione → fatturazione).',
             'missing_tax_id' => 'Né partita IVA né codice fiscale configurati nelle impostazioni dell\'organizzazione.',
-            'reverse_charge_buyer_vat_id' => 'L\'inversione contabile (categoria AE) richiede la partita IVA del cliente (BR-AE-02): la inserisca nel cliente.',
+            'reverse_charge_buyer_vat_id' => 'L\'inversione contabile (categoria AE) richiede la partita IVA del cliente; per un cliente nazionale (§ 13b UStG) basta il suo numero di registro (BR-AE-02, § 14a c. 1 UStG): lo inserisca nel cliente.',
             'intra_community_buyer_vat_id' => 'La cessione intracomunitaria (categoria K) richiede la partita IVA del cliente (BR-IC-02): la inserisca nel cliente.',
+            'intra_community_delivery_address' => 'Cessione intracomunitaria (categoria K): la fattura elettronica indica l\'indirizzo del cliente come indirizzo di consegna con il paese di consegna (BT-80, BR-IC-12); la XRechnung richiede inoltre CAP e città (BR-DE-10, BR-DE-11): inserisca paese, CAP e città nel cliente.',
             'seller_vat_id_required' => 'Le cessioni intracomunitarie e le esportazioni (categorie K e G) richiedono la partita IVA dell’organizzazione (BR-IC-02, BR-G-02): la inserisca nelle impostazioni dell’organizzazione.',
             'not_subject_mixed' => 'Le posizioni non imponibili (categoria O) non possono stare accanto ad altre categorie IVA in una fattura elettronica (BR-O-11): le fatturi separatamente.',
             'not_subject_tax_number' => 'Le operazioni non imponibili (categoria O) non riportano la partita IVA (BR-O-02); la fattura elettronica richiede quindi il codice fiscale nelle impostazioni dell’organizzazione.',
@@ -79,9 +90,8 @@ return [
             'missing_buyer_email' => 'Manca l\'e-mail del cliente (indirizzo elettronico di ricezione BT-49).',
             'missing_due_date' => 'Data di scadenza mancante — viene usato il termine di pagamento predefinito.',
             'service_date_fallback' => 'Nessuna posizione indica data o periodo della prestazione; vale la data della fattura (§ 14 c. 4 n. 6 UStG).',
-            'intra_community_delivery_country' => 'Cessione intracomunitaria (categoria K): la fattura elettronica non contiene ancora il paese di consegna (BT-80, regola BR-IC-12): i destinatari rigorosi la respingono.',
-            'not_subject_line_rate' => 'Operazioni non imponibili (categoria O): la fattura elettronica riporta ancora un’aliquota dello 0 % nelle posizioni (regola BR-O-05): i destinatari rigorosi la respingono.',
             'exemption_unspecified' => 'Posizioni esenti (categoria E): non è registrato alcun motivo di esenzione, la fattura elettronica riporta solo «Operazione esente». Crei nella matrice delle regole fiscali una regola con il tipo di aliquota «Esente» e inserisca la norma di esenzione come testo di avviso del giustificativo (§ 14 c. 4 n. 8 UStG).',
+            'invalid_leitweg_id' => 'Leitweg-ID non valido (:terms): :reason Le piattaforme di ricezione delle amministrazioni respingono la fattura: chieda il Leitweg-ID al committente.',
             'activity_report_missing' => 'Questo destinatario si aspetta un’attestazione delle prestazioni, ma la fattura non ha documenti.',
             'near_limit' => 'La fattura elettronica con documenti pesa :size ed è vicina al limite del destinatario (:limit).',
         ],

@@ -2396,6 +2396,16 @@ return [
             'pending' => 'Aperta',
             'approved' => 'Approvata',
             'rejected' => 'Respinta',
+            'withdrawn' => 'Ritirata',
+        ],
+    ],
+    'material' => [
+        'material-stock-status' => [
+            'booked' => 'Scaricato dalla giacenza',
+            'requested' => 'Giacenza negativa richiesta',
+            'rejected' => 'Giacenza negativa respinta – non registrato',
+            'no_warehouse' => 'Non registrato – nessun magazzino predefinito',
+            'read_only' => 'Non registrato – giacenza gestita esternamente, sola lettura',
         ],
     ],
 ];

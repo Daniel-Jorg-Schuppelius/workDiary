@@ -654,6 +654,7 @@ return [
     'inventory' => [
         'negativeRequested' => 'Giacenza negativa richiesta',
         'negativeRejected' => 'Giacenza negativa respinta',
+        'negativeWithdrawn' => 'Richiesta di giacenza negativa ritirata',
         'reservationRedistributed' => 'Prenotazione ridistribuita',
         'mode_changed' => 'Modalità di gestione scorte modificata',
         'negativeApproved' => 'Scorta negativa approvata',

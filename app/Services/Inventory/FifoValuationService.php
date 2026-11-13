@@ -84,16 +84,56 @@ class FifoValuationService implements InventoryValuationStrategy {
      * Teil verbraucht zuerst die Schichten seiner Charge — der Teil ohne
      * Charge die chargenlosen —, danach die übrigen in Verfahrensfolge.
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null): StockIssue {
         return $this->ledger->issue(
             $variant, $warehouse, $qty,
             entered: $entered,
             allowNegative: $allowNegative,
+            idempotencyKey: $idempotencyKey,
             actorUserId: $actorUserId,
             lot: $lot,
             costing: fn (?StockLot $partLot, string $partQty): array => $this->consumeLayers($variant, $warehouse, $partLot, $partQty),
             requireLot: $requireLot,
+            source: $source,
         );
+    }
+
+    /**
+     * Rückbuchung eines Abgangs: Return-Bewegung in die Charge des Abgangs
+     * (gesperrte Charge hält die Menge mit) und eine neue Schicht zum
+     * Stückkostenwert des Abgangs. Eine wiederholte Buchung mit demselben
+     * Schlüssel legt keine zweite Schicht an.
+     */
+    public function returnToStock(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?StockLot $lot = null, ?string $idempotencyKey = null): StockMovement {
+        $qty = DecimalQty::positive($qty);
+        $unitCost = DecimalQty::positive($unitCost);
+
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $lot, $idempotencyKey): StockMovement {
+            // LotService hängt selbst an FEFO — erst hier auflösen, sonst kreist der Container.
+            $movement = app(LotService::class)->holdArrival($lot, fn (): StockMovement => $this->ledger->post(new StockPosting(
+                $variant, $warehouse, StockState::Physical, $qty, StockMovementType::Return, OwnershipType::Own,
+                idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, source: $source,
+                costUnit: $unitCost, costTotal: bcmul($qty, $unitCost, self::SCALE), currency: $currency,
+                stockLotId: $lot?->id,
+            )));
+
+            if ($movement->wasRecentlyCreated) {
+                StockValuationLayer::query()->create([
+                    'organization_id' => $variant->organization_id,
+                    'article_variant_id' => $variant->id,
+                    'warehouse_id' => $warehouse->id,
+                    'stock_lot_id' => $lot?->id,
+                    'qty_remaining' => $qty,
+                    'unit_cost' => $unitCost,
+                    'currency' => $currency,
+                    'source_movement_id' => $movement->id,
+                    'acquired_at' => Carbon::now(),
+                    'best_before' => $lot?->best_before,
+                ]);
+            }
+
+            return $movement;
+        });
     }
 
     /**

@@ -55,7 +55,7 @@ final class XRechnungCiiTest extends TestCase {
             'address_zip' => '54321',
             'address_city' => 'Musterstadt',
             'country' => 'DE',
-            'buyer_reference' => '04011000-12345-67',
+            'buyer_reference' => '04011000-12345-03',
             'created_by' => $this->admin->id,
         ]);
     }

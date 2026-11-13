@@ -2396,6 +2396,16 @@ return [
             'pending' => 'Abierta',
             'approved' => 'Aprobada',
             'rejected' => 'Rechazada',
+            'withdrawn' => 'Retirada',
+        ],
+    ],
+    'material' => [
+        'material-stock-status' => [
+            'booked' => 'Descontado de las existencias',
+            'requested' => 'Existencias negativas solicitadas',
+            'rejected' => 'Existencias negativas rechazadas – no registrado',
+            'no_warehouse' => 'No registrado – sin almacén predeterminado',
+            'read_only' => 'No registrado – existencias gestionadas externamente, solo lectura',
         ],
     ],
 ];

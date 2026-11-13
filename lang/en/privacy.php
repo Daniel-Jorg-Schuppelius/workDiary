@@ -93,4 +93,11 @@ return [
         'state_save' => 'Save status',
         'state_saved' => 'Implementation status and protection requirement saved.',
     ],
+    'retention' => [
+        'years_label' => 'Retention period for :area in years',
+        'years_unit' => 'years',
+        'years_default' => 'Empty = default of the legal region (:years years)',
+        'years_own' => 'organization\'s own period',
+        'years_saved' => 'Retention period for “:area” saved.',
+    ],
 ];

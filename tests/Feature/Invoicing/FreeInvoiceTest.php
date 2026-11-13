@@ -195,7 +195,7 @@ final class FreeInvoiceTest extends TestCase {
             'contact_phone' => '+49 221 55555', 'iban' => 'DE89370400440532013000', 'bic' => 'COBADEFFXXX', 'account_holder' => 'Anna Muster', 'payment_terms_days' => 14,
         ]]]);
         app()->instance('currentOrganization', $this->organization->fresh());
-        $invoice->update(['buyer_reference' => '04011000-12345-67']);
+        $invoice->update(['buyer_reference' => '04011000-12345-03']);
 
         $this->actingAs($this->admin)->post(route('invoices.issue', $invoice))->assertSessionMissing('error');
         $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);

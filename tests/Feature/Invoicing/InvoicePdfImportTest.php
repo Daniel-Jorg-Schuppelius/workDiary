@@ -62,7 +62,7 @@ final class InvoicePdfImportTest extends TestCase {
         $this->assertSame('2026-08-14', $invoice->issued_on?->toDateString());
         $this->assertSame('2026-08-28', $invoice->due_on?->toDateString());
         $this->assertSame(InvoiceDeliveryFormat::Zugferd, $invoice->delivery_format);
-        $this->assertSame('991-12345-67', $invoice->buyer_reference);
+        $this->assertSame('991-12345-73', $invoice->buyer_reference);
         $this->assertSame('1000.00', $invoice->subtotal?->getAmount());
         $this->assertSame('1190.00', $invoice->total?->getAmount());
         $this->assertSame(1, $invoice->items()->count());
@@ -266,7 +266,7 @@ final class InvoicePdfImportTest extends TestCase {
         $this->assertSame('file_import', $invoice->number_source);
         $this->assertSame('2026-06-01', $invoice->issued_on?->toDateString());
         $this->assertSame('2026-06-15', $invoice->due_on?->toDateString());
-        $this->assertSame('991-12345-67', $invoice->buyer_reference);
+        $this->assertSame('991-12345-73', $invoice->buyer_reference);
         $this->assertTrue((bool) data_get($invoice->import_metadata, 'extraction.structured'));
         $this->assertSame('xrechnung_xml', data_get($invoice->import_metadata, 'extraction.source_format'));
 
@@ -390,7 +390,7 @@ final class InvoicePdfImportTest extends TestCase {
             'address_zip' => '54321',
             'address_city' => 'Hamburg',
             'country' => 'DE',
-            'buyer_reference' => '991-12345-67',
+            'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
         $invoice = Invoice::query()->create([
@@ -439,7 +439,7 @@ final class InvoicePdfImportTest extends TestCase {
             <p>Rechnungsnummer: PDF-2026-17</p>
             <p>Rechnungsdatum: 14.08.2026</p>
             <p>Fällig am: 28.08.2026</p>
-            <p>Leitweg-ID: 991-12345-67</p>
+            <p>Leitweg-ID: 991-12345-73</p>
             <p>Nettobetrag 1.000,00 EUR</p>
             <p>Umsatzsteuer 19 % 190,00 EUR</p>
             <p>Gesamtbetrag 1.190,00 EUR</p>

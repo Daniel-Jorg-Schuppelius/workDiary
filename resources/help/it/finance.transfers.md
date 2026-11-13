@@ -1,7 +1,7 @@
 ---
 title: "Trasferimento fatturazione"
 topic: finance.transfers
-version: 5
+version: 7
 keywords:
     - trasferimento a Lexoffice
     - trasferimento DATEV
@@ -78,6 +78,13 @@ separatamente (**Preparare e trasferire i tempi fatturabili** oppure
 visibile a chi ha **Consultare le ricevute di trasferimento**; stornare
 e correggere richiedono inoltre **Gestire la configurazione
 finanziaria**.
+
+**Forfait:** se la regola di fatturazione del progetto o la prestazione
+predefinita dell'organizzazione indicano l'unità «forfait» o «Pauschale», ogni
+ordine genera una riga con quantità 1 al prezzo della prestazione; i tempi
+dell'ordine restano le fonti della riga. Tutte le altre unità, ad esempio ora,
+giorno o pz., contano in base alla durata. L'arrotondamento e le ore concordate
+non valgono per i forfait.
 
 ## Documenti collegati
 

@@ -46,7 +46,7 @@ class SepaMandate extends Model {
     use HasFactory;
     use HasSqid;
 
-    /** Nach 36 Monaten ohne Einzug verfällt ein Mandat (SEPA-Regelwerk). */
+    /** Nach 36 Monaten ohne Einzug verfällt ein Mandat (SEPA-Regelwerk); ein nie genutztes zählt ab der Unterschrift (MVP-1682). */
     public const int DORMANT_MONTHS = 36;
 
     protected $fillable = [
@@ -80,19 +80,26 @@ class SepaMandate extends Model {
 
     /**
      * Einziehbar? Ein widerrufenes Mandat nie, ein 36 Monate unbenutztes auch
-     * nicht — die Bank weist den Einzug sonst zurück.
+     * nicht — die Bank weist den Einzug sonst zurück. Die Frist läuft ab dem
+     * letzten Einzug, bei einem nie genutzten Mandat ab der Unterschrift.
      */
     public function isUsable(?CarbonImmutable $on = null): bool {
         if ($this->status !== MandateStatus::Active) {
             return false;
         }
-        $reference = $on ?? CarbonImmutable::now();
-        $last = $this->last_collected_on;
-        if ($last === null) {
+        $anchor = $this->dormancyAnchor();
+        if ($anchor === null) {
             return true;
         }
 
-        return CarbonImmutable::parse($last)->addMonths(self::DORMANT_MONTHS)->greaterThanOrEqualTo($reference);
+        return $anchor->addMonths(self::DORMANT_MONTHS)->greaterThanOrEqualTo($on ?? CarbonImmutable::now());
+    }
+
+    /** Beginn der 36-Monats-Frist: letzter Einzug, sonst Unterschrift; ohne beides läuft keine Frist. */
+    public function dormancyAnchor(): ?CarbonImmutable {
+        $anchor = $this->last_collected_on ?? $this->signed_on;
+
+        return $anchor !== null ? CarbonImmutable::parse($anchor) : null;
     }
 
     /** Erst- oder Folgelastschrift — bestimmt die Vorlauffrist. */

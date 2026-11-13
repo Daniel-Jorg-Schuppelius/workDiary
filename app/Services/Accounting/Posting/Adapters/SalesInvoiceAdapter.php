@@ -20,6 +20,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\{FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine, PostingRuleResolver, PrepaymentAdvance};
+use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use App\Services\Invoicing\Import\InvoiceSpec;
 use App\Services\Invoicing\TaxResolver;
 use App\Support\MorphMap;
@@ -293,19 +294,22 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
 
     /**
      * Steuerkategorie eines Umsatzes ohne Steuer (EN 16931) aus dem
-     * eingefrorenen Steuerkontext des Belegs: EU-B2B ist bei Material eine
+     * eingefrorenen Steuerkontext des Belegs — dieselbe Kategorie, die
+     * E-Rechnung und Befreiungshinweis lesen: EU-B2B ist bei Material eine
      * innergemeinschaftliche Lieferung (K), sonst eine sonstige Leistung mit
      * Steuerschuld des Empfängers (AE); Drittland ist bei Material eine Ausfuhr
-     * (G), sonst nicht steuerbar (O); alles andere steuerfrei (E). `AE` an einen
+     * (G), sonst nicht steuerbar (O, seit MVP-1684 vom TaxResolver eingefroren;
+     * ältere Belege tragen dort G). Alles andere steuerfrei (E). `AE` an einen
      * Kunden im Inland ist ein steuerpflichtiger Umsatz, für den der Empfänger
      * die Steuer schuldet (§ 13b Abs. 5 UStG, Kennziffer 60, MVP-1622).
-     * Kleinunternehmer melden keine Kennziffern (null). Der belegbasierte
-     * DATEV-Export wählt Konto und Schlüssel über dieselbe Kategorie (MVP-1623).
+     * Kleinunternehmer melden keine Kennziffern (null), maßgeblich ist der Stand
+     * beim Ausstellen. Der belegbasierte DATEV-Export wählt Konto und Schlüssel
+     * über dieselbe Kategorie (MVP-1623).
      *
      * @return array{category: string, domestic: bool}|null
      */
     public function zeroRatedCategory(Organization $organization, Invoice $invoice): ?array {
-        if ((string) data_get((array) ($organization->settings ?? []), 'einvoice.small_business', '0') === '1') {
+        if (app(XRechnungGenerator::class)->sellerData($invoice)['small_business']) {
             return null;
         }
 
@@ -356,9 +360,10 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             return $customer instanceof Customer;
         }
         $vatId = trim((string) $customer->vat_id);
-        $prefix = $vatId !== '' ? VatNumberHelper::extractCountryCode(VatNumberHelper::normalize($vatId)) : null;
-        // Griechenland führt EL als Präfix der USt-IdNr.
-        $country = $prefix !== null ? ($prefix === 'EL' ? 'GR' : $prefix) : strtoupper(trim((string) $customer->country));
+        $country = $vatId !== ''
+            ? VatNumberHelper::getCountryForVatPrefix((string) VatNumberHelper::extractCountryCode(VatNumberHelper::normalize($vatId)))?->value
+            : null;
+        $country ??= strtoupper(trim((string) $customer->country));
 
         return $country === '' || $country === app(TaxResolver::class)->sellerCountry($organization);
     }

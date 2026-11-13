@@ -46,6 +46,13 @@ final class MaterialManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Material\Contracts\MaterialStockBooking::class => \App\Services\Material\Contracts\NullMaterialStockBooking::class,
+        ];
+    }
+
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [

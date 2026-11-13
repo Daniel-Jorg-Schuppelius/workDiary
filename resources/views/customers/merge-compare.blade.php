@@ -25,6 +25,7 @@
         'company' => __('Firma'),
         'vat_id' => __('USt-IdNr.'),
         'tax_number' => __('Steuernr.'),
+        'register_number' => __('invoicing.register_number'),
         'contact_name' => __('Ansprechpartner'),
         'email' => __('E-Mail'),
         'phone' => __('Telefon'),

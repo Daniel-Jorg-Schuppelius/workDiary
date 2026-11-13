@@ -33,6 +33,8 @@ class SaveMaterialUsageRequest extends BaseFormRequest {
             'unit' => ['required', 'string', 'max:20'],
             'unit_price' => ['nullable', 'numeric', 'min:0', 'max:99999.9999'],
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            // Lagergeführter Artikel ohne ausreichenden Bestand (MVP-1679); das Recht prüft die Lagerbuchung.
+            'allow_negative' => ['sometimes', 'boolean'],
         ];
     }
 

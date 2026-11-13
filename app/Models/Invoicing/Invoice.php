@@ -675,7 +675,7 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
      * @return Buyer
      */
     public function recipient(): array {
-        $current = \App\Services\Invoicing\InvoicePartySnapshot::buyer($this->customer);
+        $current = \App\Services\Invoicing\InvoicePartySnapshot::buyerFor($this);
         $frozen = is_array($this->party_snapshot) ? ($this->party_snapshot['buyer'] ?? null) : null;
         if (! is_array($frozen)) {
             return $current;
@@ -687,6 +687,40 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
         }
 
         return $current;
+    }
+
+    /**
+     * Belegsprache (MVP-1680): ausgestellt die beim Ausstellen eingefrorene,
+     * als Entwurf und bei älteren Snapshots die heutige des Kunden.
+     */
+    public function documentLocale(): string {
+        $frozen = is_array($this->party_snapshot) ? ($this->party_snapshot['locale'] ?? null) : null;
+
+        return is_string($frozen) && \App\Support\Locales::isSupported($frozen)
+            ? $frozen
+            : \App\Support\DocumentLocale::for($this->customer, $this->organization);
+    }
+
+    /**
+     * Rechts- und Bankangaben des Ausstellers wie auf dem Beleg (MVP-1680):
+     * ausgestellt der eingefrorene Stand — auch leere Felder —, Felder, die ein
+     * älterer Snapshot nicht führt, aus dem heutigen Branding.
+     *
+     * @return array<string, ?string>
+     */
+    public function issuerLegal(): array {
+        $legal = app(\App\Services\UI\BrandingService::class)->legalFor($this->organization);
+        $frozen = is_array($this->party_snapshot) ? ($this->party_snapshot['legal'] ?? null) : null;
+        if (! is_array($frozen)) {
+            return $legal;
+        }
+        foreach ($frozen as $field => $value) {
+            if (is_string($field) && ($value === null || is_scalar($value))) {
+                $legal[$field] = $value === null ? null : (string) $value;
+            }
+        }
+
+        return $legal;
     }
 
     /** Überfällig = ausgestellt/teilbezahlt und Fälligkeit überschritten. */

@@ -18,4 +18,15 @@ return [
         'link_hint' => 'Assign materials without an article via the same SKU or article number; ambiguous matches remain open.',
         'linked' => ':count materials assigned to an article.',
     ],
+    'stock' => [
+        'insufficient' => 'Only :available :unit are available in warehouse “:warehouse”. To issue into negative stock, select “Allow negative stock”.',
+        'negative_forbidden' => 'Only users with the “Approve negative stock” permission may issue into negative stock.',
+        'serial_required' => 'This item requires serial numbers. Issue it from the warehouse with a serial number, or record the usage without the material master.',
+        'booking_failed' => 'The stock issue could not be posted: :reason',
+        'return_failed' => 'The return to stock could not be posted: :reason',
+        'usage_gone' => 'The material usage of this request no longer exists.',
+        'allow_negative_hint' => 'Only needed if a stock-managed item has insufficient stock in the default warehouse.',
+        'notice' => ':status · warehouse “:warehouse”',
+        'current' => 'Stock: :notice',
+    ],
 ];

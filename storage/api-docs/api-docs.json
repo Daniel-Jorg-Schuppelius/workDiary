@@ -5208,6 +5208,11 @@
                                         "nullable": true,
                                         "maximum": 100,
                                         "minimum": 0
+                                    },
+                                    "allow_negative": {
+                                        "description": "Lagergeführter Artikel: Abgang in den Negativbestand zulassen (Recht inventory.negative)",
+                                        "type": "boolean",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -5310,6 +5315,11 @@
                                         "nullable": true,
                                         "maximum": 100,
                                         "minimum": 0
+                                    },
+                                    "allow_negative": {
+                                        "description": "Lagergeführter Artikel: Abgang in den Negativbestand zulassen (Recht inventory.negative)",
+                                        "type": "boolean",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"

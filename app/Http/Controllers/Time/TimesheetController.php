@@ -19,7 +19,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\{TimeEntry, Timesheet};
-use App\Services\Material\MaterialProviderRegistry;
+use App\Services\Material\{MaterialProviderRegistry, MaterialUsageRecorder};
 use App\Services\Timesheet\{Stopwatch, TimesheetResolver};
 use App\Services\UI\DateRangeContext;
 use App\Support\{Setting, SortableQuery};
@@ -189,7 +189,7 @@ class TimesheetController extends Controller {
 
     public function show(Project $project, Timesheet $timesheet, MaterialProviderRegistry $registry): View {
         Gate::authorize('view', $timesheet);
-        $timesheet->load(['entries.task', 'entries.tags:id,name,color', 'materialUsages.material', 'signatureAttachment']);
+        $timesheet->load(['entries.task', 'entries.tags:id,name,color', 'materialUsages.material', 'materialUsages.stockWarehouse', 'signatureAttachment']);
 
         $tasks = $project->tasks()->orderBy('title')->get(['id', 'title']);
         $materials = $registry->get('local')?->search('', 50) ?? collect();
@@ -226,9 +226,10 @@ class TimesheetController extends Controller {
             ->with('success', __('Stundenzettel aktualisiert.'));
     }
 
-    public function destroy(Project $project, Timesheet $timesheet): RedirectResponse {
+    public function destroy(Project $project, Timesheet $timesheet, MaterialUsageRecorder $recorder): RedirectResponse {
         Gate::authorize('delete', $timesheet);
-        $timesheet->delete();
+        // Verbrauch lagergeführter Artikel geht vorher in den Bestand zurück (MVP-1679).
+        $recorder->deleteTimesheet($timesheet, $this->authUser());
 
         return redirect()->route('projects.show', $project)
             ->with('success', __('Stundenzettel gelöscht.'));

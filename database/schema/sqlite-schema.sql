@@ -1815,34 +1815,6 @@ CREATE INDEX "classification_requirements_lookup_idx" on "classification_require
   "entry_type_code",
   "enforce_phase"
 );
-CREATE TABLE IF NOT EXISTS "material_usages"(
-  "id" integer primary key autoincrement not null,
-  "timesheet_id" integer not null,
-  "material_id" integer,
-  "description" varchar not null,
-  "quantity" numeric not null,
-  "unit" varchar not null default('Stk.'),
-  "unit_price" numeric,
-  "tax_rate" numeric,
-  "line_total_net" numeric not null default('0'),
-  "created_at" datetime,
-  "updated_at" datetime,
-  "organization_id" integer,
-  "asset_id" integer,
-  "billed" tinyint(1) not null default '0',
-  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
-  foreign key("timesheet_id") references "timesheets"("id") on delete cascade on update no action,
-  foreign key("material_id") references "materials"("id") on delete set null on update no action,
-  foreign key("asset_id") references "assets"("id") on delete set null
-);
-CREATE INDEX "idx_material_usages_org" on "material_usages"("organization_id");
-CREATE INDEX "material_usages_timesheet_id_index" on "material_usages"(
-  "timesheet_id"
-);
-CREATE INDEX "material_usages_org_asset_idx" on "material_usages"(
-  "organization_id",
-  "asset_id"
-);
 CREATE TABLE IF NOT EXISTS "teams"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -5640,7 +5612,6 @@ CREATE UNIQUE INDEX "iite_item_entry_unique" on "invoice_item_time_entries"(
 CREATE INDEX "invoice_item_time_entries_time_entry_id_index" on "invoice_item_time_entries"(
   "time_entry_id"
 );
-CREATE INDEX "material_usages_billed_index" on "material_usages"("billed");
 CREATE TABLE IF NOT EXISTS "plugin_states"(
   "id" integer primary key autoincrement not null,
   "plugin_id" varchar not null,
@@ -16571,6 +16542,7 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "einvoice_attachment_limit_mb" integer,
   "einvoice_dispatch_route" varchar,
   "is_reverse_charge_recipient" tinyint(1) not null default '0',
+  "register_number" varchar,
   foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("document_render_profile_id") references "document_render_profiles"("id") on delete set null on update no action
@@ -25484,6 +25456,8 @@ CREATE TABLE IF NOT EXISTS "negative_stock_requests"(
   "note" varchar,
   "created_at" datetime,
   "updated_at" datetime,
+  "source_type" varchar,
+  "source_id" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("article_variant_id") references "article_variants"("id") on delete restrict,
   foreign key("warehouse_id") references "warehouses"("id") on delete restrict,
@@ -25558,6 +25532,42 @@ CREATE INDEX "asset_comp_org_asset_status_idx" on "asset_components"(
   "organization_id",
   "asset_id",
   "status"
+);
+CREATE TABLE IF NOT EXISTS "material_usages"(
+  "id" integer primary key autoincrement not null,
+  "timesheet_id" integer not null,
+  "material_id" integer,
+  "description" varchar not null,
+  "quantity" numeric not null,
+  "unit" varchar not null default('Stk.'),
+  "unit_price" numeric,
+  "tax_rate" numeric,
+  "line_total_net" numeric not null default('0'),
+  "created_at" datetime,
+  "updated_at" datetime,
+  "organization_id" integer,
+  "asset_id" integer,
+  "billed" tinyint(1) not null default('0'),
+  "stock_status" varchar,
+  "stock_warehouse_id" integer,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("material_id") references "materials"("id") on delete set null on update no action,
+  foreign key("timesheet_id") references "timesheets"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("stock_warehouse_id") references "warehouses"("id") on delete set null
+);
+CREATE INDEX "idx_material_usages_org" on "material_usages"("organization_id");
+CREATE INDEX "material_usages_billed_index" on "material_usages"("billed");
+CREATE INDEX "material_usages_org_asset_idx" on "material_usages"(
+  "organization_id",
+  "asset_id"
+);
+CREATE INDEX "material_usages_timesheet_id_index" on "material_usages"(
+  "timesheet_id"
+);
+CREATE INDEX "negative_stock_requests_source_idx" on "negative_stock_requests"(
+  "source_type",
+  "source_id"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -26676,3 +26686,6 @@ INSERT INTO migrations VALUES(1113,'2027_04_17_350200_add_material_usage_to_asse
 INSERT INTO migrations VALUES(1114,'2027_04_17_360000_remap_status_cases_without_setter',1);
 INSERT INTO migrations VALUES(1115,'2027_04_17_360100_mark_customerless_deliveries_not_required',1);
 INSERT INTO migrations VALUES(1116,'2027_04_17_370000_drop_unused_columns_of_projects_teams_timesheets_and_vehicle_profiles',1);
+INSERT INTO migrations VALUES(1117,'2027_04_18_110000_add_stock_booking_to_material_usages',1);
+INSERT INTO migrations VALUES(1118,'2027_04_18_110100_add_source_to_negative_stock_requests',1);
+INSERT INTO migrations VALUES(1119,'2027_04_18_120000_add_register_number_to_customers',1);

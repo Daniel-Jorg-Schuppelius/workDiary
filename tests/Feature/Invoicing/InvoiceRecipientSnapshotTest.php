@@ -107,7 +107,7 @@ final class InvoiceRecipientSnapshotTest extends TestCase {
         $ubl = $generator->generate($invoice, XRechnungSyntax::Ubl);
         $cii = $generator->generate($invoice, XRechnungSyntax::Cii);
 
-        $customer->update(self::MOVED + ['vat_id' => 'DE811907980', 'buyer_reference' => '991-99999-99']);
+        $customer->update(self::MOVED + ['vat_id' => 'DE811907980', 'buyer_reference' => '991-99999-78']);
         $invoice = Invoice::query()->findOrFail($invoice->id);
 
         $this->assertSame($ubl, $generator->generate($invoice, XRechnungSyntax::Ubl));
@@ -115,7 +115,7 @@ final class InvoiceRecipientSnapshotTest extends TestCase {
         foreach ([$ubl, $cii] as $xml) {
             $this->assertStringContainsString('Kunde Beispiel GmbH', $xml);
             $this->assertStringContainsString('DE811569869', $xml);
-            $this->assertStringContainsString('991-12345-67', $xml);
+            $this->assertStringContainsString('991-12345-73', $xml);
             $this->assertStringNotContainsString('Neuer Weg 1', $xml);
             $this->assertStringNotContainsString('Umfirmiert', $xml);
             $this->assertStringNotContainsString('DE811907980', $xml);
@@ -168,13 +168,13 @@ final class InvoiceRecipientSnapshotTest extends TestCase {
         $snapshot['buyer'] = ['name' => 'Kunde Beispiel DE', 'street' => 'Kundenweg 7', 'zip' => '54321', 'city' => 'Kundenstadt', 'country' => 'DE', 'vat_id' => '', 'email' => 'buchhaltung@kunde.example'];
         $invoice->forceFill(['party_snapshot' => $snapshot])->saveQuietly();
 
-        $customer->update(self::MOVED + ['buyer_reference' => '991-99999-99']);
+        $customer->update(self::MOVED + ['buyer_reference' => '991-99999-78']);
         $recipient = Invoice::query()->findOrFail($invoice->id)->recipient();
 
         $this->assertSame('Kunde Beispiel DE', $recipient['name']);
         $this->assertSame('Kundenweg 7', $recipient['street']);
         $this->assertSame('Umfirmiert AG', $recipient['company']);
-        $this->assertSame('991-99999-99', $recipient['buyer_reference']);
+        $this->assertSame('991-99999-78', $recipient['buyer_reference']);
     }
 
     /**
@@ -207,6 +207,45 @@ final class InvoiceRecipientSnapshotTest extends TestCase {
         }
     }
 
+    /**
+     * MVP-1681: Hat der Kunde seine USt-IdNr. inzwischen verloren, übernehmen
+     * Storno und Gutschrift zu Reverse Charge oder innergemeinschaftlicher
+     * Lieferung die USt-IdNr. des Originals — die Prüfung hält nicht mehr an.
+     */
+    public function test_cancellation_and_credit_note_keep_the_vat_id_of_the_original(): void {
+        $customer = $this->customer('AT', 'ATU12345675', 'Kunde Beispiel GmbH');
+        $reverseCharge = $this->issue($this->draft($customer, [['Fernwartung', null, null]]));
+        $intraCommunity = $this->issue($this->draft($customer, [['Steuermodul S7', 'K', '0.00']]));
+        $intraCommunity->forceFill(['status' => InvoiceStatus::Paid, 'paid_on' => now()])->saveQuietly();
+        $this->assertTrue((bool) $reverseCharge->is_reverse_charge);
+
+        $customer->update(['vat_id' => null]);
+        $cancellation = app(InvoiceGenerator::class)->cancellationFor(Invoice::query()->findOrFail($reverseCharge->id), null, $this->admin->id);
+        $credit = app(InvoiceGenerator::class)->creditNoteFor(Invoice::query()->findOrFail($intraCommunity->id), $this->admin->id);
+        $this->assertSame('ATU12345675', $cancellation->recipient()['vat_id'], 'Entwurf: USt-IdNr. des Originals');
+
+        $generator = app(XRechnungGenerator::class);
+        $vatIdErrors = [(string) __('invoicing.einvoice.error.reverse_charge_buyer_vat_id'), (string) __('invoicing.einvoice.error.intra_community_buyer_vat_id')];
+        foreach ([[$cancellation, 'ATU12345675'], [$credit, 'ATU12345675']] as [$document, $vatId]) {
+            $document = $this->issue($document);
+            $this->assertSame($vatId, data_get($document->party_snapshot, 'buyer.vat_id'), $document->type);
+            $this->assertSame([], array_values(array_intersect($vatIdErrors, $generator->preflight($document)['errors'])), $document->type);
+            $this->assertStringContainsString($vatId, $generator->generate($document, XRechnungSyntax::Ubl));
+            $this->assertStringContainsString((string) __('invoicing.buyer_vat_id') . ': ' . $vatId, app(InvoicePdfRenderer::class)->composedHtml($document));
+        }
+    }
+
+    /** Ohne Reverse Charge und innergemeinschaftliche Lieferung bleibt es beim heutigen Kunden. */
+    public function test_domestic_cancellation_does_not_revive_a_removed_vat_id(): void {
+        $customer = $this->customer('DE', 'DE811569869');
+        $original = $this->issue($this->draft($customer, [['Montage', null, null]]));
+
+        $customer->update(['vat_id' => null]);
+        $cancellation = app(InvoiceGenerator::class)->cancellationFor(Invoice::query()->findOrFail($original->id), null, $this->admin->id);
+
+        $this->assertSame('', $this->issue($cancellation)->recipient()['vat_id']);
+    }
+
     /** @return array<string, mixed> */
     private function viewData(Invoice $invoice): array {
         return app(InvoicePdfRenderer::class)->viewData($invoice->loadMissing(['items', 'customer', 'organization']));
@@ -224,7 +263,7 @@ final class InvoiceRecipientSnapshotTest extends TestCase {
             'address_city' => 'Kundenstadt',
             'country' => $country,
             'vat_id' => $vatId,
-            'buyer_reference' => '991-12345-67',
+            'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
     }

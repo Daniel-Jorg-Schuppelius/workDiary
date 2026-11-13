@@ -35,7 +35,7 @@
     </x-form-group>
 
     <x-form-group :legend="__('Preis & Priorität')" icon="payments" tone="info" cols="2">
-        <x-input-field name="unit_name" :label="__('Einheit')" type="text" placeholder="Stunde" :value="$rule->unit_name" />
+        <x-input-field name="unit_name" :label="__('Einheit')" type="text" placeholder="Stunde" :value="$rule->unit_name" :hint="__('invoicing.unit_flat_rate_hint')" />
         <x-input-field name="vat_rate"
                        :label="__('VAT %')"
                        type="number"

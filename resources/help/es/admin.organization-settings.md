@@ -1,7 +1,7 @@
 ---
 title: "Organización y configuración"
 topic: admin.organization-settings
-version: 8
+version: 10
 keywords:
     - configuración de la empresa
     - ajustes del inquilino
@@ -278,7 +278,9 @@ ajuste del sistema en **Configuración (registro)**.
 - **Servicio estándar (artículo)**: aporta denominación, unidad, texto
   estándar y – si no se encuentra ninguna tarifa – el precio de las posiciones
   del traspaso. Las reglas de facturación del proyecto tienen prioridad. Sin
-  artículos en el maestro de artículos, la lista queda vacía.
+  artículos en el maestro de artículos, la lista queda vacía. Un servicio con la
+  unidad «global» o «Pauschale» factura una línea con cantidad 1 por pedido; las
+  demás unidades cuentan por duración.
 - **Plantilla: texto de introducción del traspaso** y **Plantilla:
   observación final del traspaso** (hasta 2000 caracteres cada una): se
   copian en el justificante al crear un traspaso y allí son editables.

@@ -18,6 +18,7 @@ use App\Models\Inventory\{StockLot, StockMovement, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use Closure;
 use CommonToolkit\Helper\Data\NumberHelper;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
@@ -363,15 +364,16 @@ class InventoryLedger {
      * Wiederholung liefert den früheren Abgang, statt neu zuzuteilen.
      * `$costing` bewertet jeden Teil vor seiner Buchung (Bewertungsverfahren).
      * `$requireLot` (chargenpflichtiger Artikel) weist eine Zuteilung mit
-     * einem Teil ohne Charge ab, bevor etwas gebucht ist.
+     * einem Teil ohne Charge ab, bevor etwas gebucht ist. `$source` ist der
+     * fachliche Beleg jeder Teilbewegung (z. B. der Materialverbrauch).
      *
      * @param  (Closure(StockLot|null, numeric-string): array{unit: numeric-string, total: numeric-string})|null  $costing
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Closure $costing = null, bool $requireLot = false, ?EnteredQuantity $entered = null): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Closure $costing = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?Model $source = null): StockIssue {
         $qty = DecimalQty::positive($qty);
 
         // Prüfung, Zuteilung und Buchung in einer Transaktion: availableForUpdate() und die Zuteilung sperren den Bestand gegen parallele Abgänge.
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin, $lot, $costing, $requireLot, $entered): StockIssue {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin, $lot, $costing, $requireLot, $entered, $source): StockIssue {
             $orgId = $variant->organization_id;
             if ($idempotencyKey !== null && $orgId !== null) {
                 $earlier = $this->findByIdempotencyKey($orgId, $idempotencyKey, lock: true);
@@ -399,6 +401,7 @@ class InventoryLedger {
                     originalQty: $entered?->originalFor($partQty),
                     originalUnit: $entered?->originalUnit,
                     actorUserId: $actorUserId,
+                    source: $source,
                     costUnit: $cost['unit'] ?? null,
                     costTotal: $cost['total'] ?? null,
                     stockLotId: $partLot?->id,

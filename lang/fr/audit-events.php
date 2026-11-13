@@ -654,6 +654,7 @@ return [
     'inventory' => [
         'negativeRequested' => 'Stock négatif demandé',
         'negativeRejected' => 'Stock négatif refusé',
+        'negativeWithdrawn' => 'Demande de stock négatif retirée',
         'reservationRedistributed' => 'Réservation redistribuée',
         'mode_changed' => 'Mode de gestion des stocks modifié',
         'negativeApproved' => 'Stock négatif approuvé',

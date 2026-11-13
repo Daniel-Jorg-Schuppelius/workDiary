@@ -2396,6 +2396,16 @@ return [
             'pending' => 'Open',
             'approved' => 'Approved',
             'rejected' => 'Rejected',
+            'withdrawn' => 'Withdrawn',
+        ],
+    ],
+    'material' => [
+        'material-stock-status' => [
+            'booked' => 'Issued from stock',
+            'requested' => 'Negative stock requested',
+            'rejected' => 'Negative stock rejected – not posted',
+            'no_warehouse' => 'Not posted – no default warehouse',
+            'read_only' => 'Not posted – stock managed externally, read-only',
         ],
     ],
 ];

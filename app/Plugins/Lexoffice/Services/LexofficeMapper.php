@@ -252,7 +252,8 @@ class LexofficeMapper {
     /**
      * Build a Lexoffice voucher payload (type=salesinvoice) summarising all
      * billable time entries of the given customer in [$from, $to], grouped
-     * by project. Each project becomes one voucher item.
+     * by project. Each project becomes one voucher item; a flat-rate service
+     * (MVP-1678) becomes one item with quantity 1 per order.
      *
      * @param  Collection<int, TimeEntry>  $entries
      * @param  array<string, mixed>  $defaults
@@ -273,17 +274,18 @@ class LexofficeMapper {
         if ($entries instanceof \Illuminate\Database\Eloquent\Collection) {
             $entries->loadMissing(['project.parent', 'project.customer', 'project.foreignCustomer']);
         }
-        $blocks = app(\App\Services\Invoicing\BillableTimeAggregator::class)->aggregate($entries);
+        $blocks = app(\App\Services\Invoicing\BillableTimeAggregator::class)->aggregate($entries, $customer->organization);
 
         $items = $blocks
-            ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project->id ?? 0) . '|' . ($b->kind->value ?? ''))
+            // Pauschalen bleiben je Auftrag eine eigene Position.
+            ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project->id ?? 0) . '|' . ($b->kind->value ?? '') . ($b->isFlatRate() ? '|flat|' . $b->primaryEntryId : ''))
             ->map(function (Collection $group) use ($vatRate, $from, $to, $customer) {
                 /** @var \App\Services\Invoicing\BillingBlock $first */
                 $first = $group->first();
                 $project = $first->project;
                 $kind = $first->kind;
                 $projectName = $project !== null ? $project->name : (string) __('Leistung');
-                $hours = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->billedHours()), 2);
+                $hours = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->quantity()), 2);
                 $revenue = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->revenue), 2);
                 // Stundensatz aus der gearbeiteten Zeit (ohne Lücken), damit die
                 // Taktung über die aufgerundeten $hours den Betrag erhöht.
@@ -292,7 +294,7 @@ class LexofficeMapper {
 
                 // Standardleistung (MVP-486): Projekt-Regel → Org-Einstellung.
                 $service = app(\App\Services\Invoicing\ServiceDefaultResolver::class)
-                    ->resolve($project?->organization, $project, $kind?->value);
+                    ->resolve($customer->organization, $project, $kind?->value);
 
                 $type = $service?->itemType ?: 'service';
                 $unitName = $service?->unitName ?: 'Stunde';
@@ -300,11 +302,13 @@ class LexofficeMapper {
                 // Ein an der Projektregel gepflegter Preis ist eine bewusste
                 // Festlegung und gewinnt; sonst zählt der aus den Zeiten
                 // errechnete Satz, und der Listenpreis der Leistung füllt nur
-                // die Lücke (sonst 0,00 €).
+                // die Lücke (sonst 0,00 €). Eine Pauschale kostet den Preis ihrer Leistung.
                 $servicePrice = $service !== null ? $service->netPrice : null;
-                $netAmount = $service?->priceIsExplicit === true && ($servicePrice ?? 0.0) > 0.0
-                    ? (float) $servicePrice
-                    : ($unitPrice > 0.0 ? $unitPrice : ($servicePrice ?? 0.0));
+                $netAmount = match (true) {
+                    $first->isFlatRate() => app(\App\Services\Invoicing\BlockPriceResolver::class)->resolve($first, null, $customer, $first->flatService)->rate,
+                    $service?->priceIsExplicit === true && ($servicePrice ?? 0.0) > 0.0 => (float) $servicePrice,
+                    default => $unitPrice > 0.0 ? $unitPrice : ($servicePrice ?? 0.0),
+                };
 
                 $kindSuffix = $kind !== null ? ' [' . $kind->value . ']' : '';
                 // Endkunde (Fremdkunde) mit in die Buchungszeile übernehmen.
@@ -312,7 +316,8 @@ class LexofficeMapper {
                 $prefix = $endkunde !== null
                     ? (string) __('Endkunde :name', ['name' => trim((string) ($endkunde->displayLabel()))]) . ' · '
                     : '';
-                $name = sprintf('%s%s%s (%s – %s)', $prefix, $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
+                $order = $first->orderTitle !== null ? ' · ' . $first->orderTitle : '';
+                $name = sprintf('%s%s%s%s (%s – %s)', $prefix, $projectName, $kindSuffix, $order, $from->format('d.m.Y'), $to->format('d.m.Y'));
 
                 $item = [
                     'type' => $type,

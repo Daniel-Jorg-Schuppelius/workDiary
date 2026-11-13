@@ -56,7 +56,7 @@ final class XRechnungReverseChargeTest extends TestCase {
         $this->actingAs($this->admin);
     }
 
-    private function customer(?string $vatId): Customer {
+    private function customer(?string $vatId, ?string $registerNumber = null): Customer {
         return Customer::query()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Generalunternehmer Beispiel GmbH',
@@ -67,8 +67,9 @@ final class XRechnungReverseChargeTest extends TestCase {
             'address_city' => 'Hamburg',
             'country' => 'DE',
             'vat_id' => $vatId,
+            'register_number' => $registerNumber,
             'is_reverse_charge_recipient' => true,
-            'buyer_reference' => '991-12345-67',
+            'buyer_reference' => '991-12345-73',
             'created_by' => $this->admin->id,
         ]);
     }
@@ -105,12 +106,54 @@ final class XRechnungReverseChargeTest extends TestCase {
         $this->assertTrue($result->isAccepted(), implode("\n", array_map('strval', $result->getErrors())));
     }
 
-    /** BR-AE-02: ohne USt-IdNr. des Käufers (und ohne Registerkennung) keine gültige AE-Rechnung — der Preflight sagt es vor dem Versand. */
+    /** BR-AE-02: ohne USt-IdNr. und ohne Registerkennung des Käufers keine gültige AE-Rechnung — der Preflight sagt es vor dem Versand. */
     public function test_reverse_charge_without_buyer_vat_id_fails_the_preflight(): void {
         $invoice = $this->issuedInvoice($this->customer(null));
 
         $report = app(EInvoiceValidationService::class)->validate($invoice);
 
         $this->assertContains((string) __('invoicing.einvoice.error.reverse_charge_buyer_vat_id'), $report['preflight_errors']);
+    }
+
+    /** Grenzüberschreitend verlangt § 14a Abs. 1 UStG die USt-IdNr. des Empfängers; die Registernummer ersetzt sie dort nicht. */
+    public function test_a_register_number_does_not_replace_the_vat_id_of_a_customer_abroad(): void {
+        $customer = $this->customer(null, 'Firmenbuch FN 123456a');
+        $customer->update(['country' => 'AT', 'is_reverse_charge_recipient' => false]);
+        $invoice = app(InvoiceGenerator::class)->emptyDraft($customer->refresh());
+        $invoice->items()->create(['organization_id' => $this->organization->id, 'description' => 'Beratung', 'quantity' => '2', 'unit' => 'Std.', 'unit_price' => '60.00', 'tax_category' => 'AE', 'tax_rate' => '0.00', 'service_date' => '2026-10-15', 'position' => 1]);
+        $invoice->load('items');
+        $invoice->recalculate();
+        $invoice->save();
+        $invoice = app(InvoiceIssueService::class)->issue($invoice->refresh())->refresh();
+
+        $this->assertContains((string) __('invoicing.einvoice.error.reverse_charge_buyer_vat_id'), app(XRechnungGenerator::class)->preflight($invoice)['errors']);
+    }
+
+    /**
+     * MVP-1686: Ohne USt-IdNr. genügt die Registerkennung des Käufers (BT-47,
+     * BR-AE-02). Sie geht aus dem eingefrorenen Empfänger in UBL und CII.
+     */
+    public function test_reverse_charge_with_register_number_instead_of_vat_id_passes_the_kosit_rules(): void {
+        $customer = $this->customer(null, 'Amtsgericht Musterstadt HRB 12345');
+        $invoice = $this->issuedInvoice($customer);
+        $customer->update(['register_number' => 'HRB 99999']);
+        $generator = app(XRechnungGenerator::class);
+
+        $this->assertSame([], $generator->preflight($invoice->refresh())['errors']);
+        $this->assertSame('Amtsgericht Musterstadt HRB 12345', $invoice->recipient()['register_number']);
+
+        $kosit = new KositValidator;
+        foreach ([\App\Enums\Invoicing\XRechnungSyntax::Ubl, \App\Enums\Invoicing\XRechnungSyntax::Cii] as $syntax) {
+            $xml = $generator->generate($invoice, $syntax);
+            $buyer = (new \ERechnungToolkit\Parsers\ERechnungParser)->parse($xml)->getBuyer();
+            $this->assertNull($buyer->getVatId(), $syntax->value);
+            $this->assertSame('Amtsgericht Musterstadt HRB 12345', $buyer->getLegalRegistrationId(), $syntax->value);
+            $this->assertStringContainsString('VATEX-EU-AE', $xml);
+            if (! $kosit->isAvailable()) {
+                $this->markTestSkipped('KoSIT-Validator (Java + JAR) ist nicht verfügbar.');
+            }
+            $result = $kosit->validate($xml);
+            $this->assertTrue($result->isAccepted(), $syntax->value . ': ' . implode("\n", array_map('strval', $result->getErrors())));
+        }
     }
 }

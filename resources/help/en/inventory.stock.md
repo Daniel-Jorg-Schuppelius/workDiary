@@ -1,7 +1,7 @@
 ---
 title: "Stock levels & scanning"
 topic: inventory.stock
-version: 6
+version: 7
 keywords:
     - inventory
     - stock on hand
@@ -95,6 +95,8 @@ blocked lots only after their release.
 **SKU and GTIN.** The inventory settings show who maintains article number, variant SKU and GTIN. This is chosen on the “Number ranges” page at the range “Article”. If a merchandise management system maintains the numbers, the fields are locked in the article master and arrive with the synchronisation.
 
 **Negative stock with four eyes:** If the organisation requires four-eyes approval for issues into negative stock in the inventory settings, an issue with “Allow negative stock” becomes a request in the approval inbox. It is posted only once another person with the “Approve negative stock” permission agrees; requester and approver are recorded in the audit log.
+
+**Material usage on timesheets:** Material linked to a stock-managed item posts the withdrawal from the warehouse marked “Default” (if there are several, the first by name) when it is recorded on a timesheet or on “Today”. The movement appears in the stock journal with the quantity and unit entered; a change posts the difference, deleting returns it. The rules of this page apply: negative stock only with the permission and, if required, four eyes, batches by best-before date, serial numbers only via the warehouse. Material you have so far also withdrawn here should in future only be recorded on the timesheet — otherwise the withdrawal counts twice.
 
 **Redistributing reservations:** In the “Edit reservation” dialog you hand over open quantity to another reservation of the same article, warehouse and ownership, for example to an order with higher priority. A newer reservation never silently displaces an older one; the redistribution is recorded in the audit log and the material line of a manufacturing order follows it.
 

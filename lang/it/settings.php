@@ -96,7 +96,7 @@ return [
         'assembly_hourly_rate_hint' => 'Valuta il tempo di montaggio dell\'articolo nella proposta di PV; vuoto = tariffa standard.',
         'default_service_article' => 'Prestazione predefinita (articolo)',
         'default_service_none' => '— nessuna prestazione predefinita —',
-        'default_service_hint' => 'Fornisce denominazione, unità, testo standard e — se non si trova alcuna tariffa — il prezzo delle posizioni di trasferimento. Le regole di fatturazione del progetto la sovrascrivono.',
+        'default_service_hint' => 'Fornisce denominazione, unità, testo standard e — se non si trova alcuna tariffa — il prezzo delle posizioni di trasferimento. Le regole di fatturazione del progetto la sovrascrivono. Con l’unità «forfait» (o «forf.»), ogni ordine genera una riga con quantità 1 per fatturazione; le altre unità contano in base alla durata.',
         'transfer_intro_text' => 'Modello: testo introduttivo del trasferimento',
         'transfer_closing_text' => 'Modello: nota finale del trasferimento',
         'transfer_text_hint' => 'Viene copiato nella ricevuta alla creazione del trasferimento ed è lì modificabile. Segnaposto: :customer, :from, :to, :channel. Vuoto = il testo predefinito della destinazione.',

@@ -654,6 +654,7 @@ return [
     'inventory' => [
         'negativeRequested' => 'Negativbestand beantragt',
         'negativeRejected' => 'Negativbestand abgelehnt',
+        'negativeWithdrawn' => 'Negativbestand-Antrag zurückgezogen',
         'reservationRedistributed' => 'Reservierung umverteilt',
         'mode_changed' => 'Bestandsführungs-Modus geändert',
         'negativeApproved' => 'Negativbestand genehmigt',

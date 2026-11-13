@@ -40,5 +40,7 @@ return [
         // Inland (§ 13b Abs. 2 und 5 UStG), Pflichtangabe nach § 14a Abs. 5 UStG (MVP-1622).
         'reverse_charge_domestic' => 'Steuerschuldnerschaft des Leistungsempfängers (§ 13b UStG).',
         'export' => 'Nicht im Inland steuerbare Leistung (Leistungsort beim Empfänger, §3a UStG).',
+        // Ausfuhr von Waren ins Drittland (Kategorie G, MVP-1684); Leistungen dorthin tragen den Hinweis oben (Kategorie O).
+        'export_goods' => 'Steuerfreie Ausfuhrlieferung (§4 Nr. 1 Buchstabe a i. V. m. §6 UStG).',
     ],
 ];

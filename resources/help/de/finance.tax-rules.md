@@ -1,7 +1,7 @@
 ---
 title: "Steuerregelmatrix"
 topic: finance.tax-rules
-version: 2
+version: 3
 keywords:
     - Steuersätze
     - Mehrwertsteuer
@@ -66,6 +66,13 @@ Standardsteuersatz der Organisation geht der Matrix im Inland vor.
 EU-Kunden mit formal gültiger USt-IdNr. erhalten automatisch Reverse
 Charge (0 %), Drittlandskunden den Export-Hinweis (0 %) — passende
 Matrix-Zeilen liefern dafür den Hinweistext auf dem Beleg.
+
+Beim Drittland unterscheidet der Steuerfall Ware und Leistung: Material geht als
+Ausfuhr (Kategorie G) mit dem Hinweis „Steuerfreie Ausfuhrlieferung“, eine
+Leistung an ein Unternehmen außerhalb der EU ist im Inland nicht steuerbar
+(Kategorie O, § 3a Abs. 2 UStG) und trägt den Hinweis der Satzart Export. E-Rechnung,
+Befreiungshinweis im PDF und Buchhaltung lesen dieselbe beim Ausstellen
+eingefrorene Kategorie.
 
 Eine Zeile mit der Satzart **Befreit** nennt den Befreiungstatbestand
 steuerfreier Umsätze nach § 4 UStG: Ihr Hinweistext steht in der

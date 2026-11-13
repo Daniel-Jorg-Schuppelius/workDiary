@@ -1,7 +1,7 @@
 ---
 title: "Matriz de reglas fiscales"
 topic: finance.tax-rules
-version: 2
+version: 3
 keywords:
     - tipos de IVA
     - IVA
@@ -70,6 +70,13 @@ formalmente válido reciben automáticamente inversión del sujeto pasivo
 (reverse charge, 0 %), y los clientes de terceros países la indicación
 de exportación (0 %) — las filas correspondientes de la matriz aportan
 para ello el texto indicativo en el documento.
+
+En terceros países, el supuesto fiscal distingue mercancía y servicio: el
+material es una exportación (categoría G) con la indicación «Entrega de
+exportación exenta»; un servicio a una empresa fuera de la UE no está sujeto al
+IVA alemán (categoría O, § 3a apdo. 2 UStG) y lleva la indicación del tipo
+Exportación. La factura electrónica, la nota de exención del PDF y la
+contabilidad leen la misma categoría, congelada al emitir.
 
 Una fila con el tipo **Exento** indica el supuesto de exención de las
 operaciones exentas según el § 4 UStG: su texto indicativo figura en la

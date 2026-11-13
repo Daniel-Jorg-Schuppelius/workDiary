@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 17
+version: 20
 keywords:
     - Rechnung erstellen
     - Rechnung schreiben
@@ -134,6 +134,21 @@ Entwurfs oder ein Vollstorno geben sie wieder frei, die Herkunft bleibt am
 Beleg sichtbar. Teilgutschriften geben nichts frei; der Lagerbestand bleibt bei
 allen Rechnungsvorgängen unverändert.
 
+## Pauschalen aus Zeiten
+
+Ist einer Tätigkeitsart eine Leistung mit der Einheit „Pauschale“ zugeordnet —
+etwa ein Artikel in der Abrechnungsregel des Projekts oder als Standardleistung
+der Organisation —, rechnen Rechnungslauf, Übergabe und Lexoffice-Zeitbeleg
+**je Auftrag eine Position mit Menge 1** zum Preis dieser Leistung, gleich wie
+viele Zeiten gebucht sind. Zeiten ohne Auftrag ergeben je Projekt und
+Tätigkeitsart eine Pauschale. Die Zeiten hängen als Nachweis an der Position und
+gelten als abgerechnet. Taktung, Anfahrtsminuten der Kundenkondition und die
+Auffüllung auf vereinbarte Stunden gelten nicht für Pauschalen. Fehlt der
+Leistung ein Preis, steht die Pauschale mit 0,00 € in der Vorschau. Als Pauschale
+zählen „Pauschale“, „pauschal“ und „pausch.“, ebenso die Gegenstücke der anderen
+Sprachen wie „flat“ oder „forfait“. Jede andere Einheit — leer, „Stunde“, „Tag“,
+„Stk“, „km“ oder Freitext — rechnet weiter nach Dauer.
+
 ## Online-Zahlung
 
 Ist ein Zahlungsanbieter (Stripe, Mollie oder SumUp) als Plugin
@@ -263,7 +278,9 @@ Leistungsbeschreibung bleibt in den Positionen; der Nachweis ergänzt sie.
 Im Kundenstamm stellen Sie das **Empfängerprofil der E-Rechnung** auf
 „Öffentlicher Auftraggeber (Behörde)“. Dann gilt:
 
-- Die Leitweg-ID (Käuferreferenz) ist Pflicht.
+- Die Leitweg-ID (Käuferreferenz) ist Pflicht. Verfehlt sie Aufbau oder
+  Prüfziffer, warnt die Prüfung vor dem Versand; das gilt auch für Kunden, die
+  per Peppol mit der Kennzahl 0204 adressiert sind.
 - Per E-Mail geht nur die XRechnung, ohne PDF daneben; der Versanddialog bietet
   nur diese Formate an. Elektronischer Versand stellt einen Entwurf zuerst,
   damit die XML die festgeschriebenen Unterlagen trägt.
@@ -306,8 +323,9 @@ Stellen Sie einen Entwurf mit veraltetem Steuerfall, passt workDiary ihn an und
 hält die Ausstellung an: Prüfen Sie die Summen und stellen Sie erneut.
 
 Bei **Reverse Charge** braucht die E-Rechnung die USt-IdNr. des Kunden (Regel
-BR-AE-02), auch bei § 13b UStG im Inland; die Prüfung vor dem Versand meldet eine
-fehlende. Alle Positionen stehen dann mit 0 % und dem Hinweis
+BR-AE-02); bei § 13b UStG im Inland genügt ersatzweise seine Registernummer. Die
+Prüfung vor dem Versand meldet, wenn die nötige Angabe fehlt. Die Registernummer steht als
+Registerkennung des Käufers (BT-47) in der E-Rechnung. Alle Positionen stehen dann mit 0 % und dem Hinweis
 „Steuerschuldnerschaft des Leistungsempfängers“ in der XRechnung.
 
 Mit dem Steuerfall zieht der Entwurf den **Hinweistext** mit: Steht der
@@ -328,14 +346,24 @@ Befreiungstatbestand als Beleg-Hinweistext ein, etwa „Steuerfreie Heilbehandlu
 (§ 4 Nr. 14 UStG)“; ohne Regel steht nur „Steuerfreier Umsatz“, und die Prüfung vor
 dem Versand warnt.
 
+**Drittland:** Waren an Kunden außerhalb der EU gehen als Ausfuhr (G) mit dem
+Grund „Steuerfreie Ausfuhrlieferung“. Leistungen an Unternehmen außerhalb der
+EU sind im Inland nicht steuerbar (§ 3a Abs. 2 UStG) und stehen in
+E-Rechnung, Rechnungs-PDF und Buchhaltung als „nicht steuerbar“ (O): ohne
+USt-IdNrn., mit der Steuernummer der Organisation und nicht neben anderen
+Kategorien. Fehlt die Steuernummer, hält die Prüfung vor dem Versand an.
+Rechnungen, die vorher mit Kategorie G ausgestellt wurden, bleiben beim
+Nachdruck unverändert.
+
 Die Prüfung vor dem Versand meldet außerdem: fehlende USt-IdNr. des Kunden bei
 innergemeinschaftlicher Lieferung, fehlende USt-IdNr. der Organisation bei
 Lieferung ins EU-Ausland und Ausfuhr, „nicht steuerbar“ neben anderen Kategorien
 und eine Position ohne Steuerkategorie mit Steuersatz über 0 %. Bei „nicht
 steuerbar“ stehen keine USt-IdNrn. in der E-Rechnung, es genügt die Steuernummer.
-Zwei Angaben fehlen der E-Rechnung noch (Warnung): das Lieferland bei
-innergemeinschaftlicher Lieferung und der Verzicht auf den Positionssatz bei
-„nicht steuerbar“.
+Bei innergemeinschaftlicher Lieferung nennt die E-Rechnung die Anschrift des
+Kunden als Lieferanschrift mit Lieferland (Regel BR-IC-12); die XRechnung
+braucht dort PLZ und Ort, sonst hält die Prüfung vor dem Versand an. Positionen
+„nicht steuerbar“ stehen ohne Steuersatz in der E-Rechnung.
 
 ## Befreiungshinweis im Rechnungs-PDF
 
@@ -366,6 +394,21 @@ Kundendaten. Stornobeleg und Korrekturrechnung frieren den Empfänger beim
 eigenen Ausstellen ein. Die elektronische Zustelladresse (Peppol-Kennung oder
 E-Mail) und Mahnschreiben folgen dagegen den aktuellen Kundendaten, weil sie
 heute zugestellt werden.
+
+Mit dem Empfänger friert die Ausstellung auch die **Angaben der
+Organisation** ein: Firmenname, Anschrift, Steuernummer, USt-IdNr.,
+Kontaktdaten, Bankverbindung (Bankblock und QR-Code zur Überweisung), die
+Kleinunternehmerregelung und die **Belegsprache**. Nachdruck, XRechnung und
+ZUGFeRD einer ausgestellten Rechnung bleiben so, wie sie ausgestellt wurden —
+auch nach einem Bankwechsel, einer neuen Anschrift oder einer anderen
+Belegsprache des Kunden; Entwürfe und neue Rechnungen nehmen den heutigen
+Stand. Die Texte der E-Rechnung stehen in der Belegsprache, nicht in der
+Sprache Ihrer Oberfläche. Mahnschreiben nennen die heutige Bankverbindung.
+
+Hat der Kunde seine USt-IdNr. inzwischen nicht mehr hinterlegt, übernehmen
+Stornorechnung und Korrekturrechnung zu Reverse Charge oder
+innergemeinschaftlicher Lieferung die USt-IdNr. der Originalrechnung, ebenso
+eine fehlende Registernummer; die Prüfung vor dem Versand hält dann nicht mehr an.
 
 Ist beim Kunden eine USt-IdNr. hinterlegt, steht sie im Kopf der Rechnung
 („Ihre USt-IdNr.“). Bei innergemeinschaftlicher Lieferung und Reverse Charge ist

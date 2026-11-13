@@ -16,6 +16,7 @@ use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\Timesheet;
+use App\Services\Material\Contracts\MaterialStockBooking;
 use App\Services\Timesheet\TimesheetResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{DB, Gate};
@@ -24,14 +25,21 @@ use Illuminate\Validation\ValidationException;
 /**
  * Materialverbrauch am Stundenzettel (MVP-1594): Dialog am Zettel, API,
  * „Heute“ und Offline-Befehl `material.usage` schreiben hierüber. Leere Felder
- * kommen aus dem Materialstamm. Ein Lagerabgang entsteht dabei nicht — der
- * Verbrauch am Zettel ist Abrechnungs- und Nachweisposten, kein Lagerbeleg.
+ * kommen aus dem Materialstamm. Ist das Material ein lagergeführter Artikel,
+ * bucht der Verbrauch den Bestand mit (MVP-1679, {@see MaterialStockBooking}):
+ * Anlegen, Ändern und Löschen in einer Transaktion mit der Lagerbuchung —
+ * verhindert eine Lagerregel die Buchung, wird auch der Verbrauch nicht
+ * gespeichert.
  */
 final class MaterialUsageRecorder {
-    public function __construct(private readonly TimesheetResolver $timesheets) {}
+    public function __construct(
+        private readonly TimesheetResolver $timesheets,
+        private readonly MaterialStockBooking $stock,
+    ) {}
 
     /** @param  array<string, mixed>  $data  geprüfte Felder des SaveMaterialUsageRequest */
-    public function record(Timesheet $timesheet, array $data): MaterialUsage {
+    public function record(Timesheet $timesheet, array $data, User $actor): MaterialUsage {
+        [$data, $allowNegative] = $this->split($data);
         if (! empty($data['material_id'])) {
             $material = Material::query()->find((int) $data['material_id']);
             if ($material instanceof Material) {
@@ -47,7 +55,12 @@ final class MaterialUsageRecorder {
             throw ValidationException::withMessages(['quantity' => (string) __('Menge × Einzelpreis übersteigt die höchste speicherbare Summe des Stundenzettels.')]);
         }
 
-        return $timesheet->materialUsages()->create($data);
+        return DB::transaction(function () use ($timesheet, $data, $actor, $allowNegative): MaterialUsage {
+            $usage = $timesheet->materialUsages()->create($data);
+            $this->stock->sync($usage, $actor, $allowNegative);
+
+            return $usage->refresh();
+        });
     }
 
     /**
@@ -62,7 +75,59 @@ final class MaterialUsageRecorder {
             [$timesheet] = $this->timesheets->openOrCreate($project, (int) $user->id, $day);
             Gate::forUser($user)->authorize('update', $timesheet);
 
-            return $this->record($timesheet, $data);
+            return $this->record($timesheet, $data, $user);
         });
+    }
+
+    /**
+     * Änderung einer Zeile: eine geänderte Menge bucht die Differenz, ein
+     * anderes Material bucht den alten Artikel zurück.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function update(MaterialUsage $usage, array $data, User $actor): MaterialUsage {
+        [$data, $allowNegative] = $this->split($data);
+
+        return DB::transaction(function () use ($usage, $data, $actor, $allowNegative): MaterialUsage {
+            $usage->update($data);
+            $this->stock->sync($usage, $actor, $allowNegative);
+
+            return $usage->refresh();
+        });
+    }
+
+    /** Löschen bucht den abgebuchten Bestand zurück. */
+    public function delete(MaterialUsage $usage, ?User $actor): void {
+        DB::transaction(function () use ($usage, $actor): void {
+            $this->stock->release($usage, $actor);
+            $usage->delete();
+        });
+    }
+
+    /**
+     * Ein gelöschter Stundenzettel nimmt seine Verbräuche per Fremdschlüssel
+     * mit; vorher bucht jeder seinen Bestand zurück.
+     */
+    public function deleteTimesheet(Timesheet $timesheet, ?User $actor): void {
+        DB::transaction(function () use ($timesheet, $actor): void {
+            foreach ($timesheet->materialUsages()->get() as $usage) {
+                $this->stock->release($usage, $actor);
+            }
+            $timesheet->delete();
+        });
+    }
+
+    /**
+     * „Negativen Bestand zulassen“ ist eine Anweisung an die Lagerbuchung,
+     * kein Feld der Zeile.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{0: array<string, mixed>, 1: bool}
+     */
+    private function split(array $data): array {
+        $allowNegative = (bool) ($data['allow_negative'] ?? false);
+        unset($data['allow_negative']);
+
+        return [$data, $allowNegative];
     }
 }

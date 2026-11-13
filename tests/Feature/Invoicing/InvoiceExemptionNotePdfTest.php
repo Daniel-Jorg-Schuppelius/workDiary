@@ -65,7 +65,8 @@ final class InvoiceExemptionNotePdfTest extends TestCase {
     public function test_the_automatic_note_of_the_category_counts_as_present(): void {
         $customer = $this->customer('CH');
         $withNote = app(InvoiceIssueService::class)->issue($this->draft($customer, [['Wartung Steuerungsanlage', null, null]]))->refresh();
-        $this->assertSame('G', data_get($withNote->tax_context, 'category'));
+        // Leistung ins Drittland: nicht im Inland steuerbar (MVP-1684).
+        $this->assertSame('O', data_get($withNote->tax_context, 'category'));
         $this->assertStringContainsString((string) config('taxation.notes.export'), (string) $withNote->notes);
 
         $this->assertSame([], $this->taxNotes($withNote));
@@ -73,7 +74,7 @@ final class InvoiceExemptionNotePdfTest extends TestCase {
         $draft = $this->draft($customer, [['Wartung Steuerungsanlage', null, null]]);
         $draft->update(['notes' => null]);
         $withoutNote = app(InvoiceIssueService::class)->issue($draft->refresh())->refresh();
-        $this->assertSame([(string) __('invoicing.einvoice.exemption_export_services')], $this->taxNotes($withoutNote));
+        $this->assertSame([(string) __('invoicing.einvoice.exemption_not_subject')], $this->taxNotes($withoutNote));
     }
 
     public function test_reverse_charge_and_small_business_keep_their_own_line(): void {
@@ -139,9 +140,9 @@ final class InvoiceExemptionNotePdfTest extends TestCase {
         $paid->forceFill(['status' => InvoiceStatus::Paid, 'paid_on' => now()])->saveQuietly();
         $credit = app(InvoiceGenerator::class)->creditNoteFor($paid->refresh(), $this->admin->id);
 
-        // Ohne Positionskategorie gilt die eingefrorene Kategorie des Originals (Drittland: G).
-        $this->assertSame(['G'], $credit->items()->pluck('tax_category')->all());
-        $this->assertSame([(string) __('invoicing.einvoice.exemption_export_services')], $this->taxNotes($credit));
+        // Ohne Positionskategorie gilt die eingefrorene Kategorie des Originals (Drittland-Leistung: O).
+        $this->assertSame(['O'], $credit->items()->pluck('tax_category')->all());
+        $this->assertSame([(string) __('invoicing.einvoice.exemption_not_subject')], $this->taxNotes($credit));
     }
 
     /** @return list<string> */

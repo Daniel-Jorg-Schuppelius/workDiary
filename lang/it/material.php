@@ -18,4 +18,15 @@ return [
         'link_hint' => 'Assegnare i materiali senza articolo tramite lo stesso SKU o numero articolo; le corrispondenze ambigue restano aperte.',
         'linked' => ':count materiali assegnati a un articolo.',
     ],
+    'stock' => [
+        'insufficient' => 'Nel magazzino «:warehouse» sono disponibili solo :available :unit. Per un prelievo in giacenza negativa selezioni «Consenti giacenza negativa».',
+        'negative_forbidden' => 'Solo chi ha il permesso «Autorizzare giacenze negative» può registrare un prelievo in giacenza negativa.',
+        'serial_required' => 'L\'articolo richiede il numero di serie. Lo prelevi dal magazzino con il numero di serie oppure registri il consumo senza anagrafica materiale.',
+        'booking_failed' => 'Non è stato possibile registrare il prelievo dal magazzino: :reason',
+        'return_failed' => 'Non è stato possibile registrare il reso in magazzino: :reason',
+        'usage_gone' => 'Il consumo di materiale di questa richiesta non esiste più.',
+        'allow_negative_hint' => 'Necessario solo se un articolo gestito a magazzino non ha giacenza sufficiente nel magazzino predefinito.',
+        'notice' => ':status · magazzino «:warehouse»',
+        'current' => 'Giacenza: :notice',
+    ],
 ];

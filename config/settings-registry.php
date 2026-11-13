@@ -266,6 +266,10 @@ return [
     'reports.csv_meta_lines' => ['type' => 'boolean', 'scopes' => ['organization']],
     // Löschfrist abgelehnter und zurückgezogener Bewerbungen in Monaten (Default config/applications.php).
     'applications.rejected_retention_months' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:36'],
+    // Aufbewahrung abgeschlossener Datenschutzvorfälle in Jahren (MVP-1683); leer = Vorgabe des Rechtsraums
+    // aus config/retention.php. 1 bis 10 Jahre: Art. 33 Abs. 5 DSGVO nennt keine Frist, mehr als die längste
+    // gesetzliche Aufbewahrung (§ 147 AO) trägt die Speicherbegrenzung nicht.
+    'privacy.incident_retention_years' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:10'],
     // Prioritätsmatrix des Helpdesks: Auswirkung (1–3) × Dringlichkeit (1–3) → Priorität; leere Zelle = Standard.
     'helpdesk.priority_matrix.1.1' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
     'helpdesk.priority_matrix.1.2' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],

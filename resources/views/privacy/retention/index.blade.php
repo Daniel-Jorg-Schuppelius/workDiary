@@ -51,8 +51,26 @@
                         @endunless
                     </td>
                     <td class="text-right tabular-nums">
-                        @if ($area['years'] !== null)
+                        @if ($area['adjustable'] && $canManage)
+                            {{-- Eigene Frist der Organisation (MVP-1683); leer = Vorgabe des Rechtsraums. --}}
+                            <form method="POST" action="{{ route('dataprotection.retention.years') }}" class="inline-flex items-center justify-end gap-1">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="area" value="{{ $area['area'] }}">
+                                <input type="number" name="years" min="1" max="10" step="1"
+                                       class="input input-bordered input-xs w-16 text-right"
+                                       aria-label="{{ __('privacy.retention.years_label', ['area' => $area['label']]) }}"
+                                       value="{{ $area['own_years'] }}"
+                                       placeholder="{{ $area['default_years'] }}">
+                                <span>{{ __('privacy.retention.years_unit') }}</span>
+                                <x-icon-btn icon="save" tone="ghost" size="xs" type="submit" :label="__('Speichern')" />
+                            </form>
+                            <div class="text-xs text-muted">{{ __('privacy.retention.years_default', ['years' => $area['default_years']]) }}</div>
+                        @elseif ($area['years'] !== null)
                             {{ trans_choice(':count Jahr|:count Jahre', $area['years']) }}
+                            @if ($area['own_years'] !== null)
+                                <div class="text-xs text-muted">{{ __('privacy.retention.years_own') }}</div>
+                            @endif
                         @elseif ($area['days'] !== null)
                             {{ trans_choice(':count Tag|:count Tage', $area['days']) }}
                         @else

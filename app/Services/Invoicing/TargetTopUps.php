@@ -76,7 +76,8 @@ final class TargetTopUps {
     /**
      * Je Befund eine Zeile mit der fehlenden Zeit; Preis über den
      * BlockPriceResolver wie bei einem Zeitblock ohne Einträge (Projektregel,
-     * Kundensatz, Standardleistung, Org-Standard).
+     * Kundensatz, Standardleistung, Org-Standard). Rechnet das Projekt die
+     * Arbeit pauschal ab, entfällt die Zeile; der Befund bleibt offen.
      *
      * @param  EloquentCollection<int, ProjectTimeShortfall>  $shortfalls
      * @return Collection<int, TargetTopUpLine>
@@ -90,8 +91,12 @@ final class TargetTopUps {
                 continue;
             }
             $project = $shortfall->project;
-            $block = new BillingBlock($project, TimeEntryKind::Work, [], 0, $minutes, $minutes, $minutes, 0.0, null, null, null);
             $service = $this->services->resolve($organization, $project, TimeEntryKind::Work->value);
+            // Eine Pauschale deckt den Auftrag unabhängig von der Dauer (MVP-1678): kein Auffüllen auf Soll-Stunden.
+            if ($service !== null && ! $service->isHourly()) {
+                continue;
+            }
+            $block = new BillingBlock($project, TimeEntryKind::Work, [], 0, $minutes, $minutes, $minutes, 0.0, null, null, null);
             $price = $this->prices->resolve($block, null, $customer, $service, $organization !== null ? (int) $organization->id : (int) $shortfall->organization_id);
             $lines->push(new TargetTopUpLine(
                 $shortfall,

@@ -22,9 +22,10 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Verfall unbenutzter SEPA-Mandate (MVP-1620): 36 Monate nach dem letzten
- * Einzug ist ein Mandat nach dem SEPA-Regelwerk erloschen. Der Zahlungslauf
- * nimmt es schon über {@see SepaMandate::isUsable()} nicht mehr; der Lauf
- * schreibt den Stand fest, damit Liste und Filter ihn zeigen.
+ * Einzug ist ein Mandat nach dem SEPA-Regelwerk erloschen, ein nie genutztes
+ * 36 Monate nach der Unterschrift (MVP-1682). Der Zahlungslauf nimmt es schon
+ * über {@see SepaMandate::isUsable()} nicht mehr; der Lauf schreibt den Stand
+ * fest, damit Liste und Filter ihn zeigen.
  */
 class SepaMandateExpiryScan extends AbstractDeadlineScan {
     public function key(): string {
@@ -38,8 +39,9 @@ class SepaMandateExpiryScan extends AbstractDeadlineScan {
 
         SepaMandate::query()
             ->where('status', MandateStatus::Active->value)
-            ->whereNotNull('last_collected_on')
-            ->where('last_collected_on', '<', $threshold)
+            ->where(fn ($query) => $query
+                ->where(fn ($used) => $used->whereNotNull('last_collected_on')->where('last_collected_on', '<', $threshold))
+                ->orWhere(fn ($unused) => $unused->whereNull('last_collected_on')->whereNotNull('signed_on')->where('signed_on', '<', $threshold)))
             ->orderBy('id')
             ->pluck('organization_id', 'id')
             ->each(function (mixed $organizationId, int $id) use ($today, &$expired): void {
@@ -52,7 +54,11 @@ class SepaMandateExpiryScan extends AbstractDeadlineScan {
                         return;
                     }
                     $mandate->forceFill(['status' => MandateStatus::Expired->value])->save();
-                    $mandate->audit('sepaMandate.expired', ['reference' => $mandate->reference, 'last_collected_on' => $mandate->last_collected_on?->toDateString()]);
+                    $mandate->audit('sepaMandate.expired', [
+                        'reference' => $mandate->reference,
+                        'last_collected_on' => $mandate->last_collected_on?->toDateString(),
+                        'signed_on' => $mandate->signed_on?->toDateString(),
+                    ]);
                     $expired++;
                 });
             });

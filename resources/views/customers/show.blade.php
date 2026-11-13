@@ -141,6 +141,9 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Abrechenbar')" :value="$customer->billable ? __('Ja') : __('Nein')" />
                 <x-detail-grid.row :label="__('USt-IdNr.')" :value="$customer->vat_id" />
+                @if ($customer->register_number)
+                    <x-detail-grid.row :label="__('invoicing.register_number')" :value="$customer->register_number" />
+                @endif
                 @if ($customer->peppol_participant_id)
                     {{-- Peppol (Feature 066, MVP-734): Kennung plus der zuletzt
                          gespeicherte SMP-Befund — die Prüfung löst neu auf. --}}

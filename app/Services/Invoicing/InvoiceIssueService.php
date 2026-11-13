@@ -125,7 +125,7 @@ final class InvoiceIssueService {
         $organization = $invoice->organization;
         $resolvedOn = $invoice->serviceDateTo() ?? now();
         $taxResolution = $organization !== null
-            ? $this->taxResolver->resolve($organization, $invoice->customer, $resolvedOn)
+            ? $this->taxResolver->resolve($organization, $invoice->customer, $resolvedOn, $invoice->isMaterial() ? 'goods' : 'services')
             : null;
 
         $fromFile = $invoice->number_source === 'file_import';
@@ -201,7 +201,7 @@ final class InvoiceIssueService {
             return TaxCaseAlignment::Unchanged;
         }
 
-        $tax = $this->taxResolver->resolve($organization, $invoice->customer, $invoice->serviceDateTo() ?? now());
+        $tax = $this->taxResolver->resolve($organization, $invoice->customer, $invoice->serviceDateTo() ?? now(), $invoice->isMaterial() ? 'goods' : 'services');
         $rate = Percentage::of((string) $tax['rate'], 2);
         // Der Fall zählt, nicht der Satz: Reverse Charge oder steuerfrei gegen steuerpflichtig. Ein anderer Regelsatz bleibt Sache des Entwurfs.
         if ((bool) $invoice->is_reverse_charge === $tax['reverse_charge'] && $rate->isZero() === ($invoice->tax_rate?->isZero() ?? true)) {

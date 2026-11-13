@@ -148,7 +148,7 @@ final class InvoiceImportAiFallbackTest extends TestCase {
             <p>Rechnungsnummer: PDF-2026-31</p>
             <p>Rechnungsdatum: 14.08.2026</p>
             <p>Fällig am: 28.08.2026</p>
-            <p>Leitweg-ID: 991-12345-67</p>
+            <p>Leitweg-ID: 991-12345-73</p>
             <p>Nettobetrag 100,00 EUR</p>
             <p>Umsatzsteuer 19 % 19,00 EUR</p>
             <p>Gesamtbetrag 119,00 EUR</p>

@@ -653,6 +653,7 @@ Route::middleware('auth')->group(function () {
             Route::post('legal-hold/{hold}/aufheben', [\App\Http\Controllers\Privacy\LegalHoldController::class, 'release'])->name('legal-holds.release');
             Route::get('aufbewahrung', [\App\Http\Controllers\Privacy\RetentionController::class, 'index'])->name('retention.index');
             Route::post('aufbewahrung/scan', [\App\Http\Controllers\Privacy\RetentionController::class, 'scan'])->name('retention.scan');
+            Route::put('aufbewahrung-frist', [\App\Http\Controllers\Privacy\RetentionController::class, 'updateYears'])->name('retention.years'); // MVP-1683
             Route::post('aufbewahrung/{proposal}', [\App\Http\Controllers\Privacy\RetentionController::class, 'decide'])->name('retention.decide');
             Route::post('aufbewahrung-bereich/loeschen', [\App\Http\Controllers\Privacy\RetentionController::class, 'purgeArea'])->name('retention.purge-area');
 

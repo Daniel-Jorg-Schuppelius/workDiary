@@ -38,6 +38,9 @@ use App\Services\Billing\OrganizationDefaultRateResolver;
  *
  * Gerätelaufzeit (Feature 193) überspringt den Kundensatz und nimmt in Stufe 4
  * den Gerätesatz der Organisation: beides sind Personensätze, kein Gerätepreis.
+ *
+ * Eine Pauschale (MVP-1678) kostet den Preis ihrer Leistung; Stundensätze
+ * gelten für sie nicht, ohne Preis bleibt sie bei 0,00 € mit Herkunft `none`.
  */
 class BlockPriceResolver {
     public function __construct(
@@ -51,6 +54,14 @@ class BlockPriceResolver {
         ?ResolvedService $service = null,
         ?int $organizationId = null,
     ): BlockPrice {
+        if ($block->flatService !== null) {
+            $flatPrice = $block->flatService->netPrice;
+
+            return $flatPrice !== null && $flatPrice > 0.0
+                ? new BlockPrice(round($flatPrice, 2), BlockPrice::SOURCE_SERVICE)
+                : new BlockPrice(0.0, BlockPrice::SOURCE_NONE);
+        }
+
         // Ein an der Projektregel gepflegter Preis ist eine bewusste Ansage
         // für dieses Projekt und schlägt deshalb den allgemeinen Stundensatz.
         if ($service?->priceIsExplicit === true && $service->netPrice !== null && $service->netPrice > 0.0) {

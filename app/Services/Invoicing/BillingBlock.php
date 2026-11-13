@@ -27,6 +27,8 @@ final class BillingBlock {
      * @param  int  $billedMinutes    auf die Taktung aufgerundete Minuten
      * @param  float  $revenue        Σ der Eintrags-rate (Snapshot-Umsatz inkl. pauschaler Anfahrt)
      * @param  int  $travelMinutes    pauschale Anfahrt der Kundenkondition (steckt bereits im Umsatz)
+     * @param  ResolvedService|null  $flatService  Pauschal-Leistung des Blocks (MVP-1678): Menge 1 statt Stunden
+     * @param  string|null  $orderTitle  Auftrag, dessen Zeiten eine Pauschale bündelt
      */
     public function __construct(
         public readonly ?Project $project,
@@ -42,7 +44,18 @@ final class BillingBlock {
         public readonly ?string $description,
         public readonly int $travelMinutes = 0,
         public readonly ?string $ticketNo = null,
+        public readonly ?ResolvedService $flatService = null,
+        public readonly ?string $orderTitle = null,
     ) {}
+
+    public function isFlatRate(): bool {
+        return $this->flatService !== null;
+    }
+
+    /** Menge der Position: eine Pauschale je Auftrag, sonst die getakteten Stunden. */
+    public function quantity(): float {
+        return $this->isFlatRate() ? 1.0 : $this->billedHours();
+    }
 
     /** Ticketbezug der Zeiten (MVP-1259) vor dem Positionstext. */
     public function withTicketPrefix(string $text): string {

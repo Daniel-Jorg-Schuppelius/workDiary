@@ -261,7 +261,13 @@
             </x-slot:head>
             @forelse($timesheet->materialUsages as $u)
                 <tr>
-                    <td>{{ $u->description }}</td>
+                    <td>
+                        {{ $u->description }}
+                        @if ($u->stockNotice() !== null)
+                            {{-- Bestandswirkung des Verbrauchs (MVP-1679) --}}
+                            <div class="text-xs text-muted">{{ $u->stockNotice() }}</div>
+                        @endif
+                    </td>
                     <td class="text-right tabular-nums" data-sort-value="{{ ($u->quantity?->getValue()->toFloat() ?? 0.0) }}">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->quantity?->getValue()->toFloat() ?? 0.0), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $u->unit }}</td>
                     <td class="text-right tabular-nums" data-sort-value="{{ ($u->unit_price?->toFloat() ?? 0.0) }}">{{ $u->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->unit_price?->toFloat() ?? 0.0), 4, withThousandsSeparator: true).' €' : '—' }}</td>

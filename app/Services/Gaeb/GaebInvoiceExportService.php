@@ -63,7 +63,7 @@ final class GaebInvoiceExportService implements InvoiceGaebExporter {
     }
 
     private function document(Invoice $invoice, CurrencyCode $currency): GaebInvoice {
-        $seller = $this->einvoice->sellerDataFor($invoice->organization);
+        $seller = $this->einvoice->sellerData($invoice);
         $issued = $invoice->issued_on?->format('Y-m-d') ?? now()->format('Y-m-d');
 
         return new GaebInvoice(
@@ -221,7 +221,7 @@ final class GaebInvoiceExportService implements InvoiceGaebExporter {
      */
     private function losses(Invoice $invoice): array {
         $losses = [];
-        $seller = $this->einvoice->sellerDataFor($invoice->organization);
+        $seller = $this->einvoice->sellerData($invoice);
 
         if ($this->taxNumber($invoice, $seller) === null) {
             $losses[] = (string) __('gaeb.invoice.missing_tax_number');
