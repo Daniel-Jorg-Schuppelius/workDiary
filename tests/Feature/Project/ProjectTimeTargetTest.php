@@ -90,7 +90,7 @@ class ProjectTimeTargetTest extends TestCase {
         $rows = $this->project->timeTargets()->get();
         $this->assertCount(7, $rows, 'Fünf Vorgaben, eine Personenzeile, eine Ausnahme; der alte Samstag ist weg');
         $this->assertSame(0, $rows->where('user_id', $stranger->id)->count(), 'Nicht zuweisbare Personen fallen weg');
-        $this->assertSame(240, (int) $rows->firstWhere('user_id', $this->anna->id)->target_minutes);
+        $this->assertSame(240, (int) $rows->whereNull('specific_date')->firstWhere('user_id', $this->anna->id)->target_minutes, 'Personenzeile, nicht die Ausnahme derselben Person');
         $this->assertSame('2030-03-11', $rows->whereNull('user_id')->first()->valid_from?->toDateString());
         $exception = $rows->whereNotNull('specific_date')->first();
         $this->assertSame(0, (int) $exception->target_minutes);

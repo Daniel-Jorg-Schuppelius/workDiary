@@ -134,7 +134,10 @@ class QualificationEnforcementTest extends TestCase {
         $this->expectExceptionMessage('fehlt am 04.05.2030 die Pflichtqualifikation HA');
 
         try {
-            app(ShiftExchangeService::class)->approve($exchange, $this->orgAdmin(), overrideCompliance: true);
+            // Mit Begründung: Meldet die ArbZG-Vorschau je nach Factory-Schicht einen
+            // Verstoß, scheiterte der Test sonst schon an der fehlenden Übersteuerungs-
+            // Begründung statt an der Qualifikationssperre (Befund 2026-11-13, unzuverlässig).
+            app(ShiftExchangeService::class)->approve($exchange, $this->orgAdmin(), overrideCompliance: true, overrideReason: 'Begründung für den Testfall');
         } finally {
             $this->assertSame($qualified->id, (int) $shift->refresh()->user_id);
         }
