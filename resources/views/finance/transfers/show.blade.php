@@ -50,6 +50,10 @@
                     <x-detail-grid.row :label="__('finance.field.position_count') . ':'" class="tabular-nums">{{ $positions->count() }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('finance.field.total_quantity') . ':'" class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('finance.field.total_amount') . ':'" class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['amount'], 2, withThousandsSeparator: true) }}</x-detail-grid.row>
+                    @if (($taxCases ?? []) !== [])
+                        {{-- Steuerfall wie im Rechnungslauf (MVP-1712); das Ziel bekommt ihn als Steuerart. --}}
+                        <x-detail-grid.row :label="__('finance.field.tax_case') . ':'" class="sm:col-span-3">{{ collect($taxCases)->map(fn ($case) => $case->case->label())->implode(', ') }}</x-detail-grid.row>
+                    @endif
                     @if (filled($transfer->correction_reason))
                         <x-detail-grid.row :label="__('finance.field.correction_reason') . ':'" class="sm:col-span-3">{{ $transfer->correction_reason }}</x-detail-grid.row>
                     @endif
@@ -63,6 +67,13 @@
                     <div role="alert" class="alert alert-error mt-3 text-sm">
                         <x-icon name="error" />
                         <span><span class="font-semibold">{{ __('finance.field.failure_reason') }}:</span> {{ $transfer->failure_reason }}</span>
+                    </div>
+                @endif
+
+                @if (($taxCaseBlocker ?? null) !== null)
+                    <div role="alert" class="alert alert-warning mt-3 text-sm">
+                        <x-icon name="warning" />
+                        <span><span class="font-semibold">{{ __('finance.tax_case.blocked_title') }}:</span> {{ $taxCaseBlocker }}</span>
                     </div>
                 @endif
 

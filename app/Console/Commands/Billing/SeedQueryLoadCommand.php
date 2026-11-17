@@ -115,7 +115,8 @@ class SeedQueryLoadCommand extends Command {
             $this->userIds[] = (int) $user->id;
 
             $customer = Customer::withoutGlobalScopes()->where('organization_id', $organizationId)->orderBy('id')->first()
-                ?? Customer::factory()->create(['organization_id' => $organizationId]);
+                // Ohne Anschrift: die Messung braucht nur den Kunden; Anschriften gehen über den ContactDetailsWriter (MVP-1700).
+                ?? Customer::factory()->create(['organization_id' => $organizationId, 'address_street' => null, 'address_zip' => null, 'address_city' => null, 'country' => null]);
             $this->customerIds[] = (int) $customer->id;
         }
 

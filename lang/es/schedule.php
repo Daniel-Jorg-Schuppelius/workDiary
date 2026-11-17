@@ -69,6 +69,7 @@ return [
         'error_override_reason' => 'La excepción necesita un motivo de al menos :n caracteres.',
         'approve_title' => 'Aprobar el intercambio pese a la infracción de reglas',
         'approve_clean' => 'La asignación prevista no infringe ninguna regla de tiempo de trabajo.',
+        'qualification_blocked' => 'No se puede aprobar: bloqueo por cualificación. Una anulación no lo levanta.',
         'approve_override_action' => 'Revisar y aprobar',
         'violation_badge' => 'Infracción de reglas',
         'override_legend' => 'Excepción',

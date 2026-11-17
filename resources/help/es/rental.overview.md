@@ -1,7 +1,7 @@
 ---
 title: "Alquiler de equipos"
 topic: rental.overview
-version: 9
+version: 10
 keywords:
     - arrendador
     - apartamento vacacional
@@ -90,6 +90,12 @@ reserva directa** (o el objeto de alquiler tiene un porcentaje propio), la
 reserva directa en el portal de clientes lleva a la página de pago del
 proveedor de pagos:
 
+- El importe es la parte configurada del precio bruto de la lista de precios
+  estándar. El IVA incluido sigue el lugar de la prestación del servicio
+  estándar de la organización, como la factura posterior del expediente (por
+  ejemplo «Servicio relacionado con un inmueble» para apartamentos vacacionales
+  o «Servicio del catálogo» para equipos alquilados); la contabilidad registra
+  el mismo IVA con el pago.
 - El expediente se reserva de inmediato y retiene el equipo hasta el **plazo de
   pago**. Hasta entonces la reserva figura como **pago pendiente** en
   **Solicitudes de alquiler**.

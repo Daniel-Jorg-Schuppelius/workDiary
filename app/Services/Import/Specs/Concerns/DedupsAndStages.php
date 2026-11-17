@@ -59,16 +59,17 @@ trait DedupsAndStages {
     protected function resolveImport(Organization $organization, array $payload, MatchProfile $profile, string $externalType, bool $inboxFirst): array {
         $modelClass = $profile->targetType();
         $externalId = $this->pullExternalId($payload);
-        // Lieferanschrift (MVP-1689) ist kein Modellfeld, sondern Satellit; die Inbox behält sie im Zeilensatz.
-        $shipping = array_intersect_key($payload, array_flip(ContactDetailsWriter::SHIPPING_FIELDS));
-        $fields = array_diff_key($payload, $shipping);
+        // Anschrift, Bankverbindung und Lieferanschrift gehen über den Satelliten (MVP-1689, MVP-1700);
+        // Abgleich und Inbox behalten sie im Zeilensatz.
+        $fields = $payload;
+        $contact = is_subclass_of($modelClass, ContactDetailsHolder::class) ? ContactDetailsWriter::pullInline($fields) : [];
 
         // 1. Bestehende Fremd-ID-Bindung → reimport-fest aktualisieren.
         if ($externalId !== null) {
             $linked = $this->resolveByExternalId($organization, $externalId, $modelClass, $externalType);
             if ($linked instanceof Model) {
                 $this->applyMatch($linked, $fields, true);
-                $this->writeShippingAddress($linked, $shipping);
+                $this->writeContactFields($linked, $contact);
                 ($this->afterPersist)?->__invoke($linked);
 
                 return [ImportOutcome::Updated, null];
@@ -80,7 +81,7 @@ trait DedupsAndStages {
             $aliased = ExternalReferenceAlias::resolveModel($organization->id, self::CSV_PLUGIN, $externalType, $externalId);
             if ($aliased instanceof Model && $aliased->getMorphClass() === (new $modelClass)->getMorphClass()) {
                 $this->applyMatch($aliased, $fields, false);
-                $this->writeShippingAddress($aliased, $shipping);
+                $this->writeContactFields($aliased, $contact);
                 ($this->afterPersist)?->__invoke($aliased);
 
                 return [ImportOutcome::Updated, null];
@@ -91,7 +92,7 @@ trait DedupsAndStages {
         [$match, $byNumber] = $this->dedupMatch($organization, $payload, $profile);
         if ($match instanceof Model) {
             $this->applyMatch($match, $fields, $byNumber);
-            $this->writeShippingAddress($match, $shipping);
+            $this->writeContactFields($match, $contact);
             if ($externalId !== null) {
                 $this->writeExternalRef($organization, $match, $externalId, $externalType);
             }
@@ -109,7 +110,7 @@ trait DedupsAndStages {
 
         /** @var Model $created */
         $created = $modelClass::create($fields);
-        $this->writeShippingAddress($created, $shipping);
+        $this->writeContactFields($created, $contact);
         if ($externalId !== null) {
             $this->writeExternalRef($organization, $created, $externalId, $externalType);
         }
@@ -158,13 +159,13 @@ trait DedupsAndStages {
     }
 
     /**
-     * Teil-Update der Lieferanschrift über den Writer: nur gelieferte Spalten ändern sich.
+     * Teil-Update der Kontaktdaten über den Writer: nur gelieferte Spalten ändern sich.
      *
-     * @param  array<string, mixed>  $shipping
+     * @param  array<string, mixed>  $contact
      */
-    private function writeShippingAddress(Model $model, array $shipping): void {
-        if ($shipping !== [] && $model instanceof ContactDetailsHolder) {
-            app(ContactDetailsWriter::class)->writeInline($model, $shipping);
+    private function writeContactFields(Model $model, array $contact): void {
+        if ($contact !== [] && $model instanceof ContactDetailsHolder) {
+            app(ContactDetailsWriter::class)->writeInline($model, $contact);
         }
     }
 

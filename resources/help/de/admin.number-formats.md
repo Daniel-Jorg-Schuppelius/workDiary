@@ -1,7 +1,7 @@
 ---
 title: "Nummernformate"
 topic: admin.number-formats
-version: 7
+version: 8
 keywords:
     - Nummernkreis
     - Rechnungsnummer
@@ -103,6 +103,16 @@ Steht der **Fakturierungsweg** in den Einstellungen der Organisation auf
 einem Buchhaltungsprogramm, führt dieses die Rechnungen ganz; die Spalte
 **Vergibt** nennt es. Rechnen einzelne Kunden über einen anderen Weg ab,
 steht darunter, für wie viele Kunden.
+
+Die Rechnung geht mit der Steuerart ihres Steuerfalls hinüber: bei Lexoffice
+als Steuerart (etwa innergemeinschaftliche Lieferung oder Fremdleistungen
+§ 13b), bei sevDesk als Steuerregel, bei easybill als Steueroption, jeweils mit
+0 % je Position. Kann das Programm den Fall nicht abbilden, bleibt die Rechnung
+Entwurf und **Stellen** nennt den Grund: orgaMAX übernimmt nur steuerpflichtige
+Rechnungen und § 19, Lexoffice keine nicht steuerbare Leistung mit Ort in der
+EU, sevDesk mit Buchhaltung 1.0 weder § 13b noch Reverse Charge an
+EU-Unternehmen, Ausfuhr oder § 4. Lexoffice verlangt für die steuerfreien
+Steuerarten außer „steuerfrei“ einen dort angelegten Kontakt.
 
 ## Gesperrte Kreise
 

@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 20
+version: 21
 keywords:
     - consumer
     - private customer
@@ -162,7 +162,14 @@ it (columns `shipping_street`, `shipping_supplement`, `shipping_zip`,
 `shipping_city`, `shipping_country`; headers such as “Lieferstraße”,
 “Liefer-PLZ”, “Lieferort”, “Lieferland”). The customer API and the MCP tool
 `create_customer` accept the register number and the delivery address; an
-update via the API changes only the delivery address fields that are sent.
+update via the API changes only the billing address, bank details and delivery
+address fields that are sent. The CSV list of the customer overview includes the
+register number and the delivery address; the CSV import understands its headers.
+
+**Merging:** When merging, the billing address and the bank details each appear
+as one field. The remaining record keeps its own; if ticked, the one of the
+deleted record applies. The other one is kept as an additional address or bank
+account (for example for a subject access request); an identical one is dropped.
 
 How documents get into the e-invoice and what applies to public-authority
 customers is described in the help topic **Invoices & documents**.

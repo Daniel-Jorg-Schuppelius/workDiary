@@ -69,6 +69,7 @@ return [
         'error_override_reason' => 'The override needs a reason of at least :n characters.',
         'approve_title' => 'Approve swap despite rule violation',
         'approve_clean' => 'The planned assignment violates no working time rule.',
+        'qualification_blocked' => 'Approval not possible: qualification block. An override does not lift it.',
         'approve_override_action' => 'Check and approve',
         'violation_badge' => 'Rule violation',
         'override_legend' => 'Override',

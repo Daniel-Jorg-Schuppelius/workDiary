@@ -1,7 +1,7 @@
 ---
 title: "Transferencia a facturación"
 topic: finance.transfers
-version: 7
+version: 8
 keywords:
     - traspaso a Lexoffice
     - traspaso a DATEV
@@ -83,6 +83,41 @@ genera una línea con cantidad 1 al precio del servicio; los tiempos del pedido
 siguen siendo las fuentes de la línea. Todas las demás unidades, por ejemplo hora,
 día o ud., cuentan por duración. El redondeo y las horas acordadas no se aplican
 a las tarifas planas.
+
+## Caso fiscal
+
+El traspaso transmite el **caso fiscal** al sistema de destino como tipo de
+impuesto. Se determina como en la facturación a partir del cliente (país,
+NIF-IVA, consumidor, indicador § 13b) y del lugar de prestación de las
+posiciones; el material cuenta como mercancía. Hasta el envío, el traspaso
+lo muestra como **Caso fiscal**.
+
+| Caso fiscal | Lexoffice | sevDesk (actualización 2.0) | easybill |
+| --- | --- | --- | --- |
+| sujeto a impuesto | ajuste predeterminado (net/gross) | regla configurada | – |
+| § 13b nacional | obras de construcción § 13b | regla 5 | inversión del sujeto pasivo § 13b (nacional) |
+| servicio a una empresa de la UE | servicios externos § 13b UE | regla 21 (§ 18b) | no sujeto, UE con NIF-IVA |
+| entrega intracomunitaria | entrega intracomunitaria | regla 3 | entrega intracomunitaria |
+| entrega de exportación | entrega de exportación | regla 2 | entrega de exportación |
+| no sujeto en Alemania | servicio a tercer país | regla 17 | no sujeto (tercer país o UE) |
+| pequeña empresa (§ 19) | exento | regla 11 | pequeña empresa |
+
+Las posiciones sin impuesto se envían al 0 % y la mención como nota fiscal
+del documento. El traspaso se **bloquea** antes del envío, con el motivo en
+la página y al pulsar **Traspasar ahora**:
+
+- **orgaMAX** no gestiona un tipo de impuesto en su interfaz; salvo «sujeto
+  a impuesto» y el § 19, el traspaso se queda aquí.
+- **Lexoffice** solo conoce terceros países para servicios no sujetos en
+  Alemania, no por ejemplo un inmueble en otro país de la UE.
+- **sevDesk** con la contabilidad 1.0 no conoce el § 13b, la inversión del
+  sujeto pasivo a empresas de la UE, la exportación ni el § 4.
+- Si las posiciones dan lugar a **varios casos fiscales** (por ejemplo,
+  servicios de catálogo y generales a un consumidor de un tercer país), anule
+  el traspaso y traspase por separado, o facture en WorkDiary.
+
+El **paquete de archivos** indica un caso fiscal sin impuesto en una línea
+de cabecera.
 
 ## Documentos relacionados
 

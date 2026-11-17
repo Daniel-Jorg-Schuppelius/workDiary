@@ -118,6 +118,7 @@ return [
     'error.customer_unmapped' => 'Il cliente ":customer" non è associato a un cliente orgaMAX — lo associ tramite la inbox di integrazione.',
     'error.outcome_unclear' => 'Esito incerto (timeout dopo l’invio) — nessun nuovo tentativo cieco. La prossima esecuzione riconcilia tramite il marcatore origine.',
     'error.token_exchange_failed' => 'Scambio token non riuscito (HTTP :status) — verifichi chiave/segreto API.',
+    'tax_case.unmappable' => 'orgaMAX non può riprendere il caso fiscale «:case»: l’API di orgaMAX non gestisce un tipo d’imposta e un’aliquota dello 0 % arriverebbe come operazione imponibile senza motivo. Fatturi in workDiary o registri il documento manualmente in orgaMAX.',
     'order.internal_note' => 'Consegna WorkDiary :channel :from–:to',
     'relations' => [
         'order' => 'Ordine',

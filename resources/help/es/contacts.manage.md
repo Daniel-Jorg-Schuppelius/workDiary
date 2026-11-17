@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 20
+version: 21
 keywords:
     - consumidor
     - particular
@@ -170,7 +170,15 @@ exportación CSV la incluyen (columnas `shipping_street`, `shipping_supplement`,
 «Lieferstraße», «Liefer-PLZ», «Lieferort», «Lieferland»). La API de clientes y
 la herramienta MCP `create_customer` aceptan el número de registro y la
 dirección de entrega; una actualización por la API solo cambia los campos
-enviados de la dirección de entrega.
+enviados de la dirección de facturación, los datos bancarios y la dirección de
+entrega. La lista CSV de la vista de clientes incluye el número de registro y la
+dirección de entrega; la importación CSV entiende sus encabezados.
+
+**Fusionar:** al fusionar, la dirección de facturación y los datos bancarios
+aparecen cada uno como un solo campo. El registro que permanece conserva los
+suyos; si se marca la casilla, se aplican los del registro eliminado. Los otros
+se conservan como dirección o datos bancarios adicionales (por ejemplo, para
+una solicitud de acceso); unos idénticos se descartan.
 
 Cómo llegan los documentos a la factura electrónica y qué rige para los
 clientes de la administración lo describe el tema de ayuda **Facturas &

@@ -69,6 +69,7 @@ return [
         'error_override_reason' => 'La dérogation exige un motif d’au moins :n caractères.',
         'approve_title' => 'Valider l’échange malgré une infraction aux règles',
         'approve_clean' => 'L’affectation prévue ne viole aucune règle de temps de travail.',
+        'qualification_blocked' => 'Validation impossible : blocage pour qualification. Un forçage ne le lève pas.',
         'approve_override_action' => 'Vérifier et valider',
         'violation_badge' => 'Infraction aux règles',
         'override_legend' => 'Dérogation',

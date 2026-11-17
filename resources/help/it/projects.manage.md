@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 10
+version: 11
 keywords:
     - creare progetto
     - gestione progetti
@@ -107,6 +107,15 @@ l'integrazione fino alle ore concordate viene quindi meno, perché il forfait
 copre l'ordine indipendentemente dalla durata. Tutte le altre unità, ad esempio
 ora, giorno o pz., contano in base alla durata.
 
+Il documento che addebita il forfait chiude lo scostamento di un tale progetto —
+la fattura, il trasferimento al momento dell’invio o il giustificativo dei tempi in
+Lexoffice: compare come risolto nella scheda dei tempi con il numero della fattura
+o del trasferimento, e il controllo notturno non lo riapre. Una registrazione
+successiva su quel giorno resta fatturabile, perché nulla è stato integrato. Se
+rimuove la posizione, scarta la bozza o annulla la fattura o il trasferimento, lo
+scostamento torna aperto. Confermi a mano gli scostamenti il cui forfait è stato
+fatturato in precedenza.
+
 La regola di fatturazione indica anche il **luogo della prestazione** dei suoi
 tempi (§ 3a UStG): **Generale**, **Prestazione del catalogo** o **Prestazione
 relativa a un immobile**. Vuoto significa il luogo della prestazione del suo
@@ -114,6 +123,9 @@ articolo, altrimenti il valore predefinito dell’organizzazione. Per una
 prestazione immobiliare l’immobile si trova nel luogo d’intervento dell’ordine,
 in Germania se non indicato. La tabella delle regole mostra il tipo scelto
 accanto al tipo di elemento.
+
+Per una prestazione immobiliare il paese **Luogo dell’immobile** della fattura
+(finestra **Condizioni** della bozza) prevale sul luogo d’intervento.
 
 ## Errori tipici
 

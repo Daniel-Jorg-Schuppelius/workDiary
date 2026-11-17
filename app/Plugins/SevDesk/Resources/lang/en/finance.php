@@ -9,6 +9,10 @@
  */
 
 return [
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'version_one' => 'The sevDesk account still uses bookkeeping 1.0; it has no tax type for “:case” — only update 2.0 offers the matching tax rule. Please bill in workDiary or switch the account to update 2.0.',
+    ],
     'error' => [
         'sevdesk_not_configured' => 'sevDesk is not configured for this organisation (API token missing).',
         'sevdesk_cancel_not_transferred' => 'Invoice :number is not in sevDesk; the cancellation cannot be created there. Set the range “Cancellation” to WorkDiary to number it locally.',

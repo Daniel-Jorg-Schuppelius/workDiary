@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX comptabilité"
 topic: admin.orgamax
-version: 2
+version: 3
 keywords:
     - API orgaMAX
     - intégration comptable
@@ -46,6 +46,13 @@ de répétitions aveugles). Conversion en facture, verrouillage irréversible,
 envoi et enregistrement des paiements sont des actions séparées, avec
 permissions propres et auditées. Numéro, statut, paiement et PDF proviennent
 visiblement d'orgaMAX.
+
+Cas fiscal : l'API orgaMAX ne gère pas de type de taxe, seulement le taux par
+position. Les transferts et factures ne partent donc qu'en imposable ou en
+petite entreprise (§ 19, 0 %). L'autoliquidation, le § 13b, la livraison
+intracommunautaire, l'exportation et les prestations non imposables en
+Allemagne sont bloquées avant l'envoi, avec le motif — facturez-les dans
+WorkDiary ou saisissez-les dans orgaMAX.
 
 Le polling est budgété avec points de contrôle (horaire, configurable) ;
 « Synchroniser maintenant » respecte les mêmes limites. Le transfert des

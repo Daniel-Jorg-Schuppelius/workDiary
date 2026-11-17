@@ -31,15 +31,16 @@
         'phone' => __('Telefon'),
         'mobile' => __('Mobil'),
         'homepage' => __('Webseite'),
-        'address_street' => __('Straße'),
-        'address_zip' => __('PLZ'),
-        'address_city' => __('Ort'),
-        'country' => __('Land'),
+        // Satelliten als Ganzes (MVP-1701): das Ziel behält seine, ausgewählt gilt die der Quelle.
+        'billing_address' => __('stammdaten.billing.heading'),
         'comment' => __('Notiz'),
-        'bank_account_holder' => __('Kontoinhaber'),
-        'bank_iban' => __('IBAN'),
-        'bank_bic' => __('BIC'),
+        'bank_account' => __('Bankverbindung'),
     ];
+    $valueOf = static fn (\App\Models\Supplier\Supplier $supplier, string $field): mixed => match ($field) {
+        'billing_address' => implode(', ', array_filter([...$supplier->postalAddressLines(), $supplier->postalAddress()['country']])),
+        'bank_account' => implode(', ', array_filter(\Illuminate\Support\Arr::only($supplier->bankDetails(), ['holder', 'iban', 'bic', 'bank']))),
+        default => $supplier->getAttribute($field),
+    };
 @endphp
 
 @section('content')

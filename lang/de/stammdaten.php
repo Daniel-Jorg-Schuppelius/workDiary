@@ -50,4 +50,8 @@ return [
         'description' => 'Nur ausfüllen, wenn Ware an eine andere Anschrift geht als die Rechnung. Leer bleibt die Rechnungsanschrift die Lieferanschrift.',
         'supplement' => 'Adresszusatz',
     ],
+    // Rechnungsanschrift als Ganzes, etwa beim Zusammenführen (MVP-1701).
+    'billing' => [
+        'heading' => 'Rechnungsanschrift',
+    ],
 ];

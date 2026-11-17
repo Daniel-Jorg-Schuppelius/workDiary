@@ -20,6 +20,7 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Settings\SettingsRegistry;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -27,7 +28,8 @@ use Illuminate\Database\Eloquent\Collection;
  * steht dort, wo die Leistung definiert ist: Abrechnungsregel des Projekts →
  * deren Artikel → Standardleistung der Organisation → Einstellung
  * `invoicing.place_of_supply_kind` (ab Werk „allgemein“). Das Grundstück
- * liegt am Einsatzort des Auftrags, ohne Angabe im Inland.
+ * liegt im Land „Ort des Grundstücks“ der Rechnung (MVP-1706), sonst am
+ * Einsatzort des Auftrags, ohne Angabe im Inland.
  */
 final class PlaceOfSupplyResolver {
     public function __construct(private readonly SettingsRegistry $settings) {}
@@ -41,7 +43,8 @@ final class PlaceOfSupplyResolver {
      * Leistungsorte der berechneten Positionen, ohne Doppel. Es zählen Zeiten
      * und Leistungsartikel; Positionen mit eigener Steuerkategorie, Material,
      * Lieferungen, Anfahrt, Auslagen und Abschlagsanrechnungen folgen dem
-     * Beleg. Zählt keine, gilt die Leistung des Projekts.
+     * Beleg. Zählt keine, gilt die Leistung des Projekts. Das Land „Ort des
+     * Grundstücks“ der Rechnung geht dem Einsatzort vor.
      *
      * @return non-empty-list<PlaceOfSupply>
      */
@@ -50,6 +53,7 @@ final class PlaceOfSupplyResolver {
         if (! $organization instanceof Organization) {
             return [new PlaceOfSupply(PlaceOfSupplyKind::General)];
         }
+        $propertyCountry = StringHelper::trimToNull($invoice->property_country);
 
         $items = new Collection($invoice->pricedItems()->filter(static fn (InvoiceItem $item): bool => trim((string) $item->tax_category) === ''
             && $item->settled_invoice_id === null && $item->material_usage_id === null && $item->stock_delivery_id === null
@@ -62,31 +66,54 @@ final class PlaceOfSupplyResolver {
         foreach ($items as $item) {
             $entries = $item->timeEntries->isNotEmpty() ? $item->timeEntries->all() : array_filter([$item->timeEntry]);
             foreach ($entries as $entry) {
-                $place = $this->forTimeEntry($organization, $entry, $services);
+                $place = $this->forTimeEntry($organization, $entry, $services, $propertyCountry);
                 $places[$place->key()] = $place;
             }
             if ($entries === [] && $item->article_id !== null) {
                 $articleIds[] = (int) $item->article_id;
             }
         }
-        foreach ($this->forArticles($organization, $articleIds) as $place) {
+        foreach ($this->forArticles($organization, $articleIds, $propertyCountry) as $place) {
             $places[$place->key()] = $place;
         }
 
-        return $places !== [] ? array_values($places) : [$this->forProject($organization, $invoice->project)];
+        return $places !== [] ? array_values($places) : [$this->forProject($organization, $invoice->project, $propertyCountry)];
     }
 
-    public function forTimeEntry(Organization $organization, TimeEntry $entry, ?ServiceDefaultResolver $services = null): PlaceOfSupply {
+    /** Trägt eine Leistung der Rechnung den Leistungsort „Grundstück“? Nur dann zählt ihr Land „Ort des Grundstücks“ (MVP-1706). */
+    public function includesProperty(Invoice $invoice): bool {
+        foreach ($this->forInvoice($invoice) as $place) {
+            if ($place->kind === PlaceOfSupplyKind::Property) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function forTimeEntry(Organization $organization, TimeEntry $entry, ?ServiceDefaultResolver $services = null, ?string $propertyCountry = null): PlaceOfSupply {
         $service = ($services ?? app(ServiceDefaultResolver::class))->resolve($organization, $entry->project, $entry->kind->value);
 
-        return new PlaceOfSupply($service->placeOfSupplyKind ?? $this->organizationDefault($organization), $entry->diaryEntry?->address_country);
+        return new PlaceOfSupply($service->placeOfSupplyKind ?? $this->organizationDefault($organization), $propertyCountry ?? $entry->diaryEntry?->address_country);
     }
 
     /** Leistung des Projekts ohne Tätigkeitsart (Regel für alle), sonst die Vorgabe der Organisation. */
-    public function forProject(Organization $organization, ?Project $project): PlaceOfSupply {
+    public function forProject(Organization $organization, ?Project $project, ?string $propertyCountry = null): PlaceOfSupply {
         $service = app(ServiceDefaultResolver::class)->resolve($organization, $project, null);
 
-        return new PlaceOfSupply($service->placeOfSupplyKind ?? $this->organizationDefault($organization));
+        return new PlaceOfSupply($service->placeOfSupplyKind ?? $this->organizationDefault($organization), $propertyCountry);
+    }
+
+    /**
+     * Leistungsorte der Leistungsartikel eines Angebots oder einer
+     * Auftragsbestätigung, ohne Leistungsartikel die Leistung des Projekts —
+     * wie die Rechnung, die daraus entsteht (MVP-1705).
+     *
+     * @param  list<int>  $articleIds
+     * @return non-empty-list<PlaceOfSupply>
+     */
+    public function forArticlesOrProject(Organization $organization, array $articleIds, ?Project $project): array {
+        return $this->forArticles($organization, $articleIds) ?: [$this->forProject($organization, $project)];
     }
 
     /**
@@ -95,7 +122,7 @@ final class PlaceOfSupplyResolver {
      * @param  list<int>  $articleIds
      * @return list<PlaceOfSupply>
      */
-    public function forArticles(Organization $organization, array $articleIds): array {
+    public function forArticles(Organization $organization, array $articleIds, ?string $propertyCountry = null): array {
         if ($articleIds === []) {
             return [];
         }
@@ -106,7 +133,7 @@ final class PlaceOfSupplyResolver {
             ->whereKey(array_unique($articleIds))
             ->get(['id', 'place_of_supply_kind']);
         foreach ($articles as $article) {
-            $place = new PlaceOfSupply($article->place_of_supply_kind ?? $this->organizationDefault($organization));
+            $place = new PlaceOfSupply($article->place_of_supply_kind ?? $this->organizationDefault($organization), $propertyCountry);
             $places[$place->key()] = $place;
         }
 

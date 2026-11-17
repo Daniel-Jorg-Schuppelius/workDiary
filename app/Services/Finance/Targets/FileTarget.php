@@ -33,7 +33,8 @@ use RuntimeException;
  * Pfadschema exports/finance/{org}/{Y-m}/...); Download läuft Gate-geprüft
  * über FinanceTransferController::download().
  *
- * Aufbau: kommentierter Kopf (# Übergabepaket, Kunde, Kanal, Zeitraum, Hash),
+ * Aufbau: kommentierter Kopf (# Übergabepaket, Kunde, Kanal, Zeitraum, Hash,
+ * Steuerfall ohne Steuer mit Hinweis, MVP-1712),
  * CSV-Header, eine Zeile je Quelle (Snapshot-Werte der Items), Summenzeile.
  */
 class FileTarget implements FacturationTarget {
@@ -93,6 +94,13 @@ class FileTarget implements FacturationTarget {
             '# ' . __('finance.field.period') . ': ' . ($transfer->period_from?->toDateString() ?? '—') . ' – ' . ($transfer->period_to?->toDateString() ?? '—'),
             '# ' . __('finance.field.payload_hash') . ': ' . $transfer->payload_hash,
         ];
+        // Steuerfall nur, wenn er vom steuerpflichtigen Regelfall abweicht — das Paket hat keine Steuerspalte.
+        foreach (app(TransferTaxCases::class)->for($transfer) as $case) {
+            if ($case->zeroRated()) {
+                $lines[] = '# ' . __('finance.field.tax_case') . ': ' . $case->case->label()
+                    . ($case->note !== null ? ' — ' . TextHelper::normalizeWhitespace($case->note) : '');
+            }
+        }
 
         // Rechnungstexte des Nachweises (MVP-491) als Kopfzeilen — im
         // CSV-Paket gibt es keine Beleg-Textfelder.

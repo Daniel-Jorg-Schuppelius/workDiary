@@ -14,6 +14,7 @@ namespace App\Plugins\OrgaMax\Services;
 
 use APIToolkit\Entities\ID;
 use App\Enums\Numbering\NumberScope;
+use App\Exceptions\UnmappableTaxCaseException;
 use App\Models\Contracts\DocumentLine;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
@@ -21,6 +22,7 @@ use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
+use App\Services\Invoicing\OutgoingTaxCaseResolver;
 use App\Services\Numbering\Contracts\DocumentIssuer;
 use App\Services\Numbering\Dto\IssuedDocument;
 use CommonToolkit\ValueObjects\Percentage;
@@ -39,6 +41,8 @@ use RuntimeException;
  * legt orgaMAX nur aus einem Auftrag an: Auftrag aus den Positionen der
  * Rechnung, Umwandlung, Sperren — die Nummer vergibt orgaMAX beim Sperren.
  * Gutschrift, Storno und Lieferschein kann orgaMAX per API nicht anlegen.
+ * Eine Rechnung mit einem Steuerfall außer dem Standardfall und § 19 bleibt
+ * hier, weil die API keine Steuerart führt ({@see OrgaMaxTaxCase}, MVP-1712).
  */
 final class OrgaMaxDocumentIssuer implements DocumentIssuer {
     public const string EXT_TYPE_OFFER = 'orgamax_offer';
@@ -67,6 +71,13 @@ final class OrgaMaxDocumentIssuer implements DocumentIssuer {
         $reference = ExternalReference::query()->forPlugin($organizationId, OrgaMaxPlugin::ID, $extType)->forReferenceable($document)->first();
         if ($reference instanceof ExternalReference && (string) $reference->external_number !== '') {
             return new IssuedDocument((string) $reference->external_id, (string) $reference->external_number);
+        }
+        if ($document instanceof Invoice && ! $reference instanceof ExternalReference) {
+            $cases = app(OutgoingTaxCaseResolver::class)->forInvoice($document);
+            if (count($cases) !== 1) {
+                throw new UnmappableTaxCaseException((string) __('invoicing.tax_case.place_of_supply_mixed'));
+            }
+            OrgaMaxTaxCase::assertMappable($cases[0]);
         }
 
         $connection = OrgaMaxConnection::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->first();

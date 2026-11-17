@@ -9,6 +9,10 @@
  */
 
 return [
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'version_one' => 'L’account sevDesk usa ancora la contabilità 1.0; non ha un tipo d’imposta per «:case»: solo l’aggiornamento 2.0 offre la regola fiscale adatta. Fatturi in workDiary o passi l’account all’aggiornamento 2.0.',
+    ],
     'error' => [
         'sevdesk_not_configured' => 'sevDesk non è configurato per questa organizzazione (token API mancante).',
         'sevdesk_cancel_not_transferred' => 'La fattura :number non è in sevDesk; lo storno non può essere creato lì. Imposti la serie «Storno» su WorkDiary per numerarlo localmente.',

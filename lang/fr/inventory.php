@@ -103,6 +103,8 @@ return [
         'lot_for_issue' => 'Lot (sortie)',
         'lot_fefo' => 'automatique (FEFO)',
         'unit' => 'Unité',
+        'unit_cost' => 'Coût d\'entrée par unité',
+        'unit_cost_hint' => 'Uniquement pour une entrée en stock propre, dans la devise de la valorisation. Vide : prix d\'achat de la variante, à défaut la moyenne actuelle.',
     ],
     'empty' => [
         'warehouses' => 'Aucun entrepôt créé pour le moment.',

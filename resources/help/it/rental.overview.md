@@ -1,7 +1,7 @@
 ---
 title: "Noleggio attrezzature"
 topic: rental.overview
-version: 9
+version: 10
 keywords:
     - locatore
     - casa vacanze
@@ -90,6 +90,12 @@ prenotazione diretta** (o l’oggetto di noleggio ha una quota propria), la
 prenotazione diretta nel portale clienti porta alla pagina di pagamento del
 fornitore di pagamento:
 
+- L’importo è la quota impostata del prezzo lordo del listino standard.
+  L’IVA inclusa segue il luogo della prestazione della prestazione standard
+  dell’organizzazione, come la successiva fattura della pratica (ad esempio
+  «Prestazione relativa a un immobile» per gli appartamenti per vacanze o
+  «Prestazione del catalogo» per le attrezzature noleggiate); la contabilità
+  registra la stessa IVA con il pagamento.
 - La pratica viene riservata subito e trattiene l’attrezzatura fino al
   **termine di pagamento**. Fino ad allora la prenotazione risulta **pagamento
   in sospeso** in **Richieste di noleggio**.

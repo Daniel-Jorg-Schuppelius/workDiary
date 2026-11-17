@@ -78,9 +78,8 @@ class SupplierMergeService extends AbstractEntityMergeService {
     private const array FILLABLE_FROM_SOURCE = [
         'company', 'vat_id', 'tax_number', 'vendor_number',
         'contact_name', 'contact_persons', 'email', 'phone', 'mobile', 'fax',
-        'homepage', 'address', 'address_street', 'address_zip', 'address_city',
-        'address_lat', 'address_lng', 'country', 'currency', 'timezone', 'color',
-        'comment', 'bank_account_holder', 'bank_iban', 'bank_bic', 'bank_name',
+        // Rechnungsanschrift und Bankverbindung wandern als Satellit (MVP-1701), nicht über die Projektion.
+        'homepage', 'address', 'currency', 'timezone', 'color', 'comment',
     ];
 
     protected function foreignKeyColumn(): string {
@@ -127,6 +126,7 @@ class SupplierMergeService extends AbstractEntityMergeService {
             $this->repointScalarTables($sourceId, $targetId);
             $this->repointExternalReferences($morph, $sourceId, $targetId);
             $this->repointAliases($morph, $sourceId, $targetId);
+            $this->mergeContactSatellites($source, $target, $fieldOverrides);
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
@@ -136,5 +136,24 @@ class SupplierMergeService extends AbstractEntityMergeService {
             // Hartes Löschen (alle Bezüge sind umgehängt); der Audit-Log hält „deleted" fest.
             $source->delete();
         });
+    }
+
+    /**
+     * Genau eine primäre Rechnungsanschrift und Bankverbindung (MVP-1701); die
+     * Koordinaten folgen der geltenden Anschrift.
+     *
+     * @param  array<string, mixed>  $fieldOverrides
+     */
+    private function mergeContactSatellites(Supplier $source, Supplier $target, array $fieldOverrides): void {
+        $sourceWins = app(ContactDetailsWriter::class)->mergeInto(
+            $source,
+            $target,
+            array_key_exists(ContactDetailsWriter::MERGE_BILLING_ADDRESS, $fieldOverrides),
+            array_key_exists(ContactDetailsWriter::MERGE_BANK_ACCOUNT, $fieldOverrides),
+        );
+        if ($sourceWins) {
+            $target->address_lat = $source->address_lat;
+            $target->address_lng = $source->address_lng;
+        }
     }
 }

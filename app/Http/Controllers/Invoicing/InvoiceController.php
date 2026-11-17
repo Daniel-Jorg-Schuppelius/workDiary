@@ -22,13 +22,15 @@ use App\Models\Finance\SepaMandate;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{Invoice, InvoiceItem, InvoiceMailTemplate};
 use App\Models\Project\Project;
-use App\Services\Invoicing\{DunningService, InvoiceIssueException, InvoiceIssueService};
+use App\Services\Invoicing\{DunningService, InvoiceIssueException, InvoiceIssueService, PlaceOfSupplyResolver};
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\UI\DateRangeContext;
-use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
+use CommonToolkit\Enums\CountryCode;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper, StringHelper};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InvoiceController extends Controller {
@@ -925,14 +927,19 @@ class InvoiceController extends Controller {
             session()->flash('warning', (string) __('invoicing.tax_case.note_kept'));
         } elseif ($alignment === \App\Enums\Invoicing\TaxCaseAlignment::Mixed) {
             session()->flash('warning', (string) __('invoicing.tax_case.place_of_supply_mixed'));
+        } elseif ($alignment === \App\Enums\Invoicing\TaxCaseAlignment::LineRates) {
+            session()->flash('warning', (string) __('invoicing.tax_case.line_rates_aligned'));
         }
     }
 
-    /** MVP-416: Rabatt-/Skonto-Konditionen des Entwurfs (Dialog). */
+    /** MVP-416: Rabatt-/Skonto-Konditionen des Entwurfs (Dialog); Ort des Grundstücks nur bei einer Grundstücksleistung (MVP-1706). */
     public function conditionsForm(Invoice $invoice): View {
         Gate::authorize('update', $invoice);
 
-        return view('invoices._conditions_dialog', ['invoice' => $invoice]);
+        return view('invoices._conditions_dialog', [
+            'invoice' => $invoice,
+            'propertyPlace' => $invoice->organization !== null && app(PlaceOfSupplyResolver::class)->includesProperty($invoice),
+        ]);
     }
 
     /** MVP-416: Belegrabatt (Prozent XOR Betrag) + Skonto-Kondition — nur vor Ausstellung. */
@@ -940,7 +947,13 @@ class InvoiceController extends Controller {
         Gate::authorize('update', $invoice);
         abort_if($invoice->party_snapshot !== null, 403, (string) __('Ausgestellte Belege sind unveränderlich.'));
 
+        $propertyCountry = $request->input('property_country');
+        if (is_string($propertyCountry)) {
+            $request->merge(['property_country' => StringHelper::trimToNull(strtoupper($propertyCountry))]);
+        }
         $data = $request->validate([
+            // MVP-1706: leer = Einsatzort des Auftrags bzw. Inland.
+            'property_country' => ['sometimes', 'nullable', 'string', Rule::enum(CountryCode::class)],
             'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100', 'prohibits:discount_amount'],
             'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'skonto_percent' => ['nullable', 'numeric', 'min:0.01', 'max:100', 'required_with:skonto_days'],
@@ -956,6 +969,9 @@ class InvoiceController extends Controller {
             'skonto_days' => $data['skonto_days'] ?? null,
             'is_labour_cost_disclosed' => isset($data['labour_cost_disclosure']) ? $data['labour_cost_disclosure'] === '1' : null,
         ]);
+        if (array_key_exists('property_country', $data)) {
+            $invoice->property_country = $data['property_country'];
+        }
         $invoice->load(['items', 'customer', 'organization']);
         $this->flashTaxCaseAlignment(app(\App\Services\Invoicing\InvoiceIssueService::class)->alignTaxCase($invoice));
         $invoice->recalculate();

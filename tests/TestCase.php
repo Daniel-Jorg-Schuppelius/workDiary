@@ -15,7 +15,7 @@ use Database\Seeders\TestingSeeder;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Foundation\Testing\{RefreshDatabaseState, TestCase as BaseTestCase};
 use Illuminate\Support\Facades\Event;
-use Tests\Support\{CacheValueGuard, PersistedTestDatabase};
+use Tests\Support\{CacheValueGuard, ContactProjectionGuard, PersistedTestDatabase};
 
 abstract class TestCase extends BaseTestCase {
     /**
@@ -82,6 +82,14 @@ abstract class TestCase extends BaseTestCase {
                 throw new \LogicException(sprintf('Cache-Schlüssel „%s“ hält ein Objekt der Klasse %s; der Cache nimmt nur Arrays, Skalare und Enums (CLAUDE.md „Cache“).', $event->key, $class));
             }
         });
+
+        // Anschrift und Bank von Kunde und Lieferant schreibt nur der Satellit (MVP-1700); die
+        // Projektion zieht der Observer still nach. Ein direkter Schreibweg aus app/ bricht hier ab.
+        foreach ([\App\Models\Customer\Customer::class, \App\Models\Supplier\Supplier::class] as $party) {
+            Event::listen('eloquent.saving: ' . $party, static function (\Illuminate\Database\Eloquent\Model $model): void {
+                ContactProjectionGuard::check($model, base_path());
+            });
+        }
     }
 
     /**

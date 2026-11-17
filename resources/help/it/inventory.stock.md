@@ -1,7 +1,7 @@
 ---
 title: "Giacenze e scansione"
 topic: inventory.stock
-version: 8
+version: 9
 keywords:
     - magazzino
     - carico merce
@@ -15,6 +15,7 @@ keywords:
     - FEFO
     - scansionare codice a barre
     - valore di magazzino
+    - costo di carico
 audience: []
 modules:
     - module.lager
@@ -98,7 +99,9 @@ segnala soltanto il lotto; i lotti bloccati solo dopo lo sblocco.
 
 **Variante del consumo di materiale:** se l’articolo ha più varianti attive, il consumo registra la variante scelta sul foglio ore, senza scelta la variante predefinita. Un cambio di variante riporta in giacenza la precedente e preleva la nuova.
 
-**Valorizzazione dei prelievi:** i prelievi dalla giacenza propria — nel modulo di registrazione, tramite scansione e dopo un’approvazione a quattro occhi — sono valorizzati secondo il metodo dell’articolo, come consegne e consumo di materiale: FIFO e FEFO consumano gli strati di valorizzazione, il costo medio ponderato riduce il libro delle medie al prezzo medio attuale. I prelievi da giacenza di terzi (cliente, conto deposito, fornitore, progetto) restano non valorizzati. Anche il prelievo di magazzino nella scheda cliente registra secondo il metodo dell’articolo; eliminare l’assegnazione lo riporta in giacenza come nuovo strato al costo unitario del prelievo con FIFO e FEFO, e nel libro delle medie con il costo medio ponderato. L’entrata manuale non ha prezzo unitario e resta non valorizzata.
+**Valorizzazione dei prelievi:** i prelievi dalla giacenza propria — nel modulo di registrazione, tramite scansione, dopo un’approvazione a quattro occhi, nel consumo di materiale della produzione e all’evasione di una prenotazione — sono valorizzati secondo il metodo dell’articolo, come consegne e consumo di materiale: FIFO e FEFO consumano gli strati di valorizzazione, il costo medio ponderato riduce il libro delle medie al prezzo medio attuale. I prelievi da giacenza di terzi (cliente, conto deposito, fornitore, progetto) restano non valorizzati. Anche il prelievo di magazzino nella scheda cliente registra secondo il metodo dell’articolo; eliminare l’assegnazione lo riporta in giacenza come nuovo strato al costo unitario del prelievo con FIFO e FEFO, e nel libro delle medie con il costo medio ponderato.
+
+**Valorizzazione delle entrate:** un’entrata nella giacenza propria — nel modulo di registrazione e tramite scansione — è valorizzata come il ricevimento merci di un ordine d’acquisto. Nel campo **Costo di carico per unità** indichi il prezzo per unità inserita (ad esempio per cartone), con virgola o punto; viene registrato per unità base. Se vuoto vale il prezzo d’acquisto della variante (in mancanza quello dell’articolo), senza prezzo d’acquisto la media attuale del magazzino e senza alcuna valorizzazione zero. Il prezzo è nella valuta in cui la valorizzazione tiene l’articolo nel magazzino, altrimenti in quella dell’organizzazione; un prezzo d’acquisto in un’altra valuta non viene considerato. Con FIFO e FEFO l’entrata crea uno strato di valorizzazione; con il costo medio ponderato ricalcola la media. Le entrate nella giacenza di terzi restano non valorizzate.
 
 **Ridistribuire le prenotazioni:** nella finestra «Modifica prenotazione» cedete la quantità aperta a un’altra prenotazione dello stesso articolo, magazzino e proprietà, ad esempio a un ordine con priorità più alta. Una prenotazione più recente non ne scalza mai una più vecchia in silenzio; la ridistribuzione compare nel protocollo di audit e la riga materiale di un ordine di produzione la segue.
 

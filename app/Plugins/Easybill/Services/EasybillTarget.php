@@ -20,7 +20,8 @@ use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Finance\BillingPositionBuilder;
 use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ProjectsContactReference, ReconcilesByMarker};
-use App\Services\Finance\Targets\{FacturationTarget, TargetResult};
+use App\Services\Finance\Targets\{FacturationTarget, MapsTaxCases, TargetResult, TransferTaxCases};
+use App\Services\Invoicing\Dto\OutgoingTaxCase;
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
@@ -39,8 +40,10 @@ use RuntimeException;
  *   (= Quellmarker `workdiary:<payload_hash>`) im document_date-Fenster der
  *   letzten Tage — GET /documents kennt keinen external_id-Filter. Ein
  *   Timeout nach dem Senden löst KEINE blinde Wiederholung aus.
+ * - `vat_option` aus dem Steuerfall der Übergabe ({@see EasybillVatOption},
+ *   MVP-1712), steuerfreie Fälle mit 0 % je Position.
  */
-class EasybillTarget implements FacturationTarget {
+class EasybillTarget implements FacturationTarget, MapsTaxCases {
     use LoadsBillingSources;
     use ProjectsContactReference;
     use ReconcilesByMarker;
@@ -58,6 +61,10 @@ class EasybillTarget implements FacturationTarget {
 
     public function supports(TransferTarget $target): bool {
         return $target === TransferTarget::Easybill;
+    }
+
+    public function taxCaseBlocker(int $organizationId, OutgoingTaxCase $case): ?string {
+        return EasybillVatOption::blocker($case);
     }
 
     public function transfer(BillingTransfer $transfer): TargetResult {
@@ -83,10 +90,13 @@ class EasybillTarget implements FacturationTarget {
         }
 
         $transfer->loadMissing(['items', 'customer']);
+        // Vor dem Kunden-Push: ein Fall ohne easybill-Steueroption bricht hier ab.
+        $taxCase = app(TransferTaxCases::class)->single($transfer);
+        $vatOption = EasybillVatOption::for($taxCase);
         $customerReference = $this->resolveCustomerReference($transfer);
 
         $vatRate = (float) $config['default_vat_rate'];
-        $positions = $this->positions($transfer, $vatRate);
+        $positions = $this->positions($transfer, $vatRate, $taxCase->zeroRated() ? 0.0 : null);
         if ($positions === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
@@ -112,6 +122,9 @@ class EasybillTarget implements FacturationTarget {
             'external_id' => $marker,
             'items' => $positions,
         ];
+        if ($vatOption !== null) {
+            $document['vat_option'] = $vatOption;
+        }
 
         // E-Rechnungs-Format des Belegs (bestimmt auch den Rückabruf über
         // /documents/{id}/download): xrechnung3_0_xml bzw. zugferd2_5_en16931.
@@ -200,9 +213,10 @@ class EasybillTarget implements FacturationTarget {
      * (MVP-487). easybill kennt keinen Artikelkatalog in workDiary — Bezeichnung,
      * Einheit, Text und Preis kommen daher aus der Position.
      *
+     * @param  float|null  $fixedRate  Satz aller Positionen (0 % bei steuerfreien Fällen), sonst der der Position
      * @return list<array<string, mixed>>
      */
-    private function positions(BillingTransfer $transfer, float $vatRate): array {
+    private function positions(BillingTransfer $transfer, float $vatRate, ?float $fixedRate = null): array {
         // Vollständigkeits-Guard der Quellen bleibt (M41).
         $transfer->channel === TransferChannel::Time
             ? $this->loadTimeEntries($transfer)
@@ -223,7 +237,7 @@ class EasybillTarget implements FacturationTarget {
                 'quantity' => round($position->quantityFloat(), 2),
                 // easybill-Vertrag: Preise in Cents (150 = 1,50 €).
                 'single_price_net' => round($position->unitPriceFloat() * 100, 2),
-                'vat_percent' => $position->vat_rate !== null ? (float) $position->vat_rate : $vatRate,
+                'vat_percent' => $fixedRate ?? ($position->vat_rate !== null ? (float) $position->vat_rate : $vatRate),
                 'unit' => (string) ($position->unit_name ?: __('easybill::finance.easybill.unit_hour')),
             ];
         }

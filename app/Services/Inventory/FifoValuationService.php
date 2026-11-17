@@ -18,6 +18,7 @@ use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -40,8 +41,8 @@ class FifoValuationService implements InventoryValuationStrategy {
         return ValuationMethod::Fifo;
     }
 
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement {
-        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, null, $source, $entered);
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt): StockMovement {
+        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, null, $source, $entered, $bin, $type);
     }
 
     /** Wareneingang einer konkreten Charge (E2): Schicht trägt Los + Verfallsdatum (FEFO). */
@@ -49,17 +50,17 @@ class FifoValuationService implements InventoryValuationStrategy {
         return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, null, $entered);
     }
 
-    private function applyReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency, ?int $actorUserId, ?StockLot $lot, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement {
+    private function applyReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency, ?int $actorUserId, ?StockLot $lot, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt): StockMovement {
         $qty = DecimalQty::positive($qty);
         $unitCost = DecimalQty::positive($unitCost);
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, $source, $entered): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, $source, $entered, $bin, $type): StockMovement {
             $movement = $this->ledger->post(new StockPosting(
-                $variant, $warehouse, StockState::Physical, $qty, StockMovementType::Receipt,
+                $variant, $warehouse, StockState::Physical, $qty, $type,
                 OwnershipType::Own, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit,
                 actorUserId: $actorUserId, source: $source,
                 costUnit: $unitCost, costTotal: bcmul($qty, $unitCost, self::SCALE), currency: $currency,
-                stockLotId: $lot?->id,
+                stockLotId: $lot?->id, bin: $bin,
             ));
 
             StockValuationLayer::query()->create([
@@ -181,6 +182,32 @@ class FifoValuationService implements InventoryValuationStrategy {
         }
 
         return ['unit' => NumberHelper::divideOrDefault($costTotal, $qty, self::SCALE), 'total' => $costTotal];
+    }
+
+    /** Wert der Restschichten durch ihre Menge, ohne Rest die jüngste Schicht; nur Schichten in der Währung der jüngsten. */
+    public function averageCost(ArticleVariant $variant, Warehouse $warehouse): ?Money {
+        $layers = StockValuationLayer::query()
+            ->where('article_variant_id', $variant->id)
+            ->where('warehouse_id', $warehouse->id)
+            ->orderByDesc('acquired_at')
+            ->orderByDesc('id')
+            ->get(['id', 'qty_remaining', 'unit_cost', 'currency']);
+        $latest = $layers->first();
+        if (! $latest instanceof StockValuationLayer) {
+            return null;
+        }
+
+        $currency = $latest->currency;
+        $open = $layers->filter(static fn (StockValuationLayer $layer): bool => $layer->currency === $currency
+            && NumberHelper::isPositivePrecise(NumberHelper::normalizeDecimalString((string) $layer->qty_remaining), self::SCALE));
+        if ($open->isEmpty()) {
+            return $latest->unit_cost ?? Money::zero($currency, self::SCALE);
+        }
+
+        $qty = Decimal::sum($open->map(static fn (StockValuationLayer $layer): Decimal => Decimal::of((string) $layer->qty_remaining, self::SCALE))->all(), self::SCALE);
+        $value = Money::sum($open->map(static fn (StockValuationLayer $layer): Money => ($layer->unit_cost ?? Money::zero($currency, self::SCALE))->times((string) $layer->qty_remaining))->all(), $currency, self::SCALE);
+
+        return $value->dividedBy($qty->getValue());
     }
 
     /** Ist-Stückkosten = Kosten der nächsten zu entnehmenden Schicht (FIFO/FEFO). @return numeric-string */

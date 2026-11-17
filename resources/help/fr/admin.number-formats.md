@@ -1,7 +1,7 @@
 ---
 title: "Formats de numérotation"
 topic: admin.number-formats
-version: 7
+version: 8
 keywords:
     - plage de numéros
     - numéro de facture
@@ -99,6 +99,17 @@ Si la **voie de facturation** des paramètres de l'organisation est réglée sur
 un logiciel de comptabilité, celui-ci tient entièrement les factures ; la
 colonne **Attribué par** le nomme. Si certains clients facturent par une autre
 voie, leur nombre figure en dessous.
+
+La facture part avec le type de taxe de son cas fiscal : vers Lexoffice comme
+type de taxe (par exemple livraison intracommunautaire ou prestations
+externes § 13b), vers sevDesk comme règle fiscale, vers easybill comme option
+fiscale, chaque fois à 0 % par position. Si le logiciel ne peut pas
+représenter le cas, la facture reste un brouillon et **Émettre** indique le
+motif : orgaMAX ne reprend que les factures imposables et le § 19, Lexoffice
+aucune prestation non imposable en Allemagne dont le lieu est dans l'UE,
+sevDesk avec la comptabilité 1.0 ni le § 13b, ni l'autoliquidation envers
+des entreprises de l'UE, ni l'exportation, ni le § 4. Pour les types de taxe
+exonérés autres que « exonéré », Lexoffice exige un contact créé chez lui.
 
 ## Plages verrouillées
 

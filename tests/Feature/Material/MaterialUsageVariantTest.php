@@ -133,6 +133,24 @@ final class MaterialUsageVariantTest extends TestCase {
         return $this->actingAs($this->user)->post(route('projects.timesheets.materials.store', [$this->project, $this->timesheet]), $this->line($overrides));
     }
 
+    public function test_an_inactive_material_of_the_row_stays_selected_in_the_edit_dialog(): void {
+        // MVP-1714: Ohne das Material in der Liste stünde die Auswahl auf „frei“, Speichern entfernte es samt Buchung.
+        $this->store()->assertSessionHasNoErrors();
+        $usage = MaterialUsage::query()->where('timesheet_id', $this->timesheet->id)->sole();
+        $this->material->update(['is_active' => false]);
+
+        $this->actingAs($this->user)
+            ->get(route('projects.timesheets.materials.edit', [$this->project, $this->timesheet, $usage]))
+            ->assertOk()
+            ->assertSee('<option value="' . $this->material->sqid . '" selected', false);
+
+        // Gegenprobe: Für eine neue Zeile bleibt das inaktive Material ausgeblendet.
+        $this->actingAs($this->user)
+            ->get(route('projects.timesheets.materials.create', [$this->project, $this->timesheet]))
+            ->assertOk()
+            ->assertDontSee('value="' . $this->material->sqid . '"', false);
+    }
+
     public function test_dialogs_offer_variants_only_for_stocked_articles_with_several_variants(): void {
         $single = Article::factory()->create(['organization_id' => $this->organization->id, 'stockable' => true]);
         $only = $this->variant($single, 'einzig', 'EZ-1', default: true);
@@ -287,5 +305,60 @@ final class MaterialUsageVariantTest extends TestCase {
         $items = $invoice->items()->orderBy('position')->get();
         $this->assertSame(['Abzweigdose – weiß (AD-W)', 'Abzweigdose weiß', 'Abzweigdose'], $items->pluck('description')->all());
         $this->assertSame([(int) $this->white->id, (int) $this->white->id, null], $items->map(fn ($item): ?int => $item->article_variant_id !== null ? (int) $item->article_variant_id : null)->all(), 'Ohne Wahl nennt die Position keine Variante.');
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
+     */
+    private function updateUsage(MaterialUsage $usage, array $overrides): \Illuminate\Testing\TestResponse {
+        return $this->actingAs($this->user)->put(route('projects.timesheets.materials.update', [$this->project, $this->timesheet, $usage]), $this->line($overrides));
+    }
+
+    /** MVP-1711: Hat der Artikel nur noch eine aktive Variante, zeigt der Dialog die gespeicherte gesperrt an, und das Speichern behält sie. */
+    public function test_a_variant_without_choice_is_shown_read_only_and_kept(): void {
+        $this->store(['article_variant_id' => $this->white->sqid])->assertSessionHasNoErrors();
+        $usage = MaterialUsage::query()->sole();
+        $this->grey->forceFill(['status' => ArticleStatus::Retired])->save();
+
+        $this->actingAs($this->user)->get(route('projects.timesheets.materials.edit', [$this->project, $this->timesheet, $usage]))->assertOk()
+            ->assertSee('id="article_variant_id-kept"', false)
+            ->assertSee('data-depends-readonly="1"', false)
+            ->assertSee('AD-W · weiß (' . __('material.variant.not_selectable') . ')')
+            ->assertSee(__('material.variant.kept_hint'))
+            ->assertDontSee('id="article_variant_id"', false);
+
+        // Das gesperrte Feld sendet nichts: die Variante bleibt, eine Mengenänderung bucht auf sie.
+        $this->updateUsage($usage, ['quantity' => '4', 'unit_price' => '4'])->assertSessionHasNoErrors();
+        $this->assertSame((int) $this->white->id, (int) $usage->fresh()?->article_variant_id);
+        $this->assertSame(['10.0000', '6.0000'], [$this->available($this->grey), $this->available($this->white)]);
+
+        // Gegenprobe: ein anderes Material lässt sie wie bisher fallen und bucht zurück.
+        $free = Material::create(['organization_id' => $this->organization->id, 'name' => 'Kleinteile', 'unit' => 'Stk.', 'is_active' => true]);
+        $this->updateUsage($usage, ['material_id' => $free->sqid, 'quantity' => '4', 'unit_price' => '4'])->assertSessionHasNoErrors();
+        $this->assertNull($usage->fresh()?->article_variant_id);
+        $this->assertSame('10.0000', $this->available($this->white));
+    }
+
+    /** MVP-1711: Eine stillgelegte Variante steht bei weiterer Auswahl als gewählte Option da und bleibt beim Speichern. */
+    public function test_a_retired_variant_stays_selected_among_the_remaining_choices(): void {
+        $this->variant($this->article, 'schwarz', 'AD-S');
+        $this->store(['article_variant_id' => $this->white->sqid])->assertSessionHasNoErrors();
+        $usage = MaterialUsage::query()->sole();
+        $this->white->forceFill(['status' => ArticleStatus::Retired])->save();
+
+        $dialog = $this->actingAs($this->user)->get(route('projects.timesheets.materials.edit', [$this->project, $this->timesheet, $usage]))->assertOk()
+            ->assertSee('id="article_variant_id"', false)
+            ->assertSee('AD-S · schwarz')
+            ->assertSee('AD-W · weiß (' . __('material.variant.not_selectable') . ')')
+            ->assertDontSee('id="article_variant_id-kept"', false);
+        $this->assertMatchesRegularExpression(
+            '/<option value="' . preg_quote((string) $this->white->sqid, '/') . '" data-parent="' . preg_quote((string) $this->material->sqid, '/') . '"\s+selected>/',
+            (string) $dialog->getContent(),
+        );
+
+        $this->updateUsage($usage, ['article_variant_id' => $this->white->sqid, 'unit_price' => '4'])->assertSessionHasNoErrors();
+        $this->assertSame((int) $this->white->id, (int) $usage->fresh()?->article_variant_id);
+        $this->assertSame(['10.0000', '7.0000'], [$this->available($this->grey), $this->available($this->white)], 'Nichts umgebucht.');
     }
 }

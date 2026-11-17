@@ -37,10 +37,14 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'is_consumer', type: 'boolean', description: 'Verbraucher statt Unternehmen (Leistungsort nach § 3a UStG); fehlt das Feld, bleibt der Wert, neu angelegt gilt Unternehmen'),
         new OA\Property(property: 'email', type: 'string', format: 'email', nullable: true),
         new OA\Property(property: 'phone', type: 'string', maxLength: 64, nullable: true),
-        new OA\Property(property: 'address_street', type: 'string', maxLength: 255, nullable: true),
+        new OA\Property(property: 'address_street', type: 'string', maxLength: 255, nullable: true, description: 'Rechnungsanschrift; fehlende Felder bleiben unverändert'),
         new OA\Property(property: 'address_zip', type: 'string', maxLength: 32, nullable: true),
         new OA\Property(property: 'address_city', type: 'string', maxLength: 128, nullable: true),
         new OA\Property(property: 'country', type: 'string', description: 'ISO 3166-1 alpha-2', nullable: true),
+        new OA\Property(property: 'bank_account_holder', type: 'string', maxLength: 200, nullable: true, description: 'Bankverbindung; fehlende Felder bleiben unverändert'),
+        new OA\Property(property: 'bank_iban', type: 'string', maxLength: 64, nullable: true),
+        new OA\Property(property: 'bank_bic', type: 'string', maxLength: 32, nullable: true),
+        new OA\Property(property: 'bank_name', type: 'string', maxLength: 200, nullable: true),
         new OA\Property(property: 'shipping_street', type: 'string', maxLength: 255, nullable: true, description: 'Abweichende Lieferanschrift; fehlende Felder bleiben unverändert, alle leer = keine'),
         new OA\Property(property: 'shipping_supplement', type: 'string', maxLength: 255, nullable: true),
         new OA\Property(property: 'shipping_zip', type: 'string', maxLength: 32, nullable: true),
@@ -88,14 +92,15 @@ class CustomerController extends Controller {
     public function store(SaveCustomerRequest $request): CustomerResource {
         Gate::authorize('create', Customer::class);
         $data = $request->validated();
-        $shipping = $this->pullShippingAddress($data);
+        $contact = ContactDetailsWriter::pullInline($data);
         $customer = Customer::create($data + [
             'created_by' => Auth::id(),
             'organization_id' => $this->currentOrganization()->id,
         ]);
-        app(ContactDetailsWriter::class)->writeInline($customer, $shipping);
+        app(ContactDetailsWriter::class)->writeInline($customer, $contact);
 
-        return new CustomerResource($customer);
+        // refresh() statt fresh(): die Projektion ist nachgezogen, und die Instanz bleibt „neu“ (201).
+        return new CustomerResource($customer->refresh());
     }
 
     #[OA\Get(
@@ -124,9 +129,11 @@ class CustomerController extends Controller {
     public function update(Customer $customer, SaveCustomerRequest $request): CustomerResource {
         Gate::authorize('update', $customer);
         $data = $request->validated();
-        $shipping = $this->pullShippingAddress($data);
+        // Anschrift, Bank und Lieferanschrift über den Satelliten (MVP-1694, MVP-1700): nur gesendete
+        // Felder ändern sich, Altbestand ohne Satellit bekommt ihn vorher aus der Projektion.
+        $contact = ContactDetailsWriter::pullInline($data);
         $customer->update($data);
-        app(ContactDetailsWriter::class)->writeInline($customer, $shipping);
+        app(ContactDetailsWriter::class)->writeInline($customer, $contact);
 
         return new CustomerResource($customer->fresh() ?? $customer);
     }
@@ -149,20 +156,6 @@ class CustomerController extends Controller {
         }
 
         return response()->noContent();
-    }
-
-    /**
-     * Lieferanschrift aus den validierten Daten (MVP-1694): Satellit statt Spalte, und nur gesendete Felder
-     * ändern sich — ein PUT ohne sie lässt die Lieferanschrift stehen.
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function pullShippingAddress(array &$data): array {
-        $shipping = array_intersect_key($data, array_flip(ContactDetailsWriter::SHIPPING_FIELDS));
-        $data = array_diff_key($data, $shipping);
-
-        return $shipping;
     }
 
     /**

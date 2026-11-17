@@ -36,5 +36,7 @@ return [
         'label' => 'Variante: :variant',
         'mismatch' => 'Die Variante gehört nicht zum Artikel des gewählten Materials.',
         'inactive' => 'Diese Variante ist nicht aktiv und kann nicht neu gewählt werden.',
+        'not_selectable' => 'nicht mehr wählbar',
+        'kept_hint' => 'Die gespeicherte Variante ist nicht mehr wählbar. Sie bleibt beim Speichern erhalten, solange das Material gleich bleibt.',
     ],
 ];

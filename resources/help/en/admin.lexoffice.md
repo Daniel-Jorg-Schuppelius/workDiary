@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 8
+version: 9
 keywords:
     - Lexware Office
     - sync conflict
@@ -59,6 +59,25 @@ it.
 The conflict strategy applies to contacts. Lexoffice leads the articles:
 the article sync takes over every newer Lexoffice version, so there are no
 article conflicts.
+
+**Addresses with “Lexoffice wins”:** Lexoffice keeps addresses without an ID of
+their own; WorkDiary matches them by type and order. A billing or delivery
+address created in WorkDiary takes over the matching Lexoffice address on the
+first sync instead of being created a second time: the primary billing address
+takes the first one from Lexoffice. Afterwards only that one is primary; further
+addresses in WorkDiary remain as additional ones.
+
+**Tax type on transfer:** invoices and invoice drafts from the invoicing
+handover carry the tax type of their tax case: service to an EU business as
+“external services § 13b EU”, § 13b domestic as “construction services
+§ 13b”, intra-Community supply, export delivery, service not taxable in
+Germany as “service to third country”, small business as “tax-free” — with
+0 % per position and the note as tax note. Lexoffice accepts these tax types
+other than “tax-free” only with a contact created there. If a service not
+taxable in Germany lies in the EU (for example a property in another EU
+country), Lexoffice has no matching tax type: the transfer is blocked with
+the reason. The voucher from times on the customer only transfers taxable
+times; other cases go through the invoicing handover.
 
 Voucher mirror: the voucher sync mirrors the Lexoffice vouchers into
 WorkDiary. Vouchers of Lexoffice contacts that are not yet linked to a

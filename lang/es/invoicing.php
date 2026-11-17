@@ -169,7 +169,7 @@ return [
     'labour_costs' => [
         'disclosure' => [
             'off' => 'No indicar nunca',
-            'private_customers' => 'Indicar para clientes particulares (sin empresa ni NIF-IVA)',
+            'private_customers' => 'Indicar para clientes particulares (marca «consumidor»; si no, sin empresa ni NIF-IVA)',
             'always' => 'Indicar siempre',
         ],
         'share' => 'Parte de mano de obra § 35a EStG (%)',
@@ -571,7 +571,7 @@ return [
     // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
     'consumer' => [
         'label' => 'Consumidor (no empresa)',
-        'hint' => 'Particular u otro no empresario. Determina el lugar de la prestación según el § 3a UStG: para consumidores fuera de la UE, los servicios del catálogo (asesoramiento, tratamiento de datos, derechos, publicidad, alquiler de bienes muebles, etc.) no tributan en Alemania; los demás servicios llevan IVA alemán. Sin marcar, el cliente se considera empresa.',
+        'hint' => 'Particular u otro no empresario. Determina el lugar de la prestación según el § 3a UStG: para consumidores fuera de la UE, los servicios del catálogo (asesoramiento, tratamiento de datos, derechos, publicidad, alquiler de bienes muebles, etc.) no tributan en Alemania; los demás servicios llevan IVA alemán. Sin marcar, el cliente se considera empresa. Con la regla «Indicar para clientes particulares», la factura indica los costes de mano de obra según el § 35a EStG.',
         'recipient' => 'Destinatario',
         'yes' => 'Consumidor',
         'no' => 'Empresa',
@@ -589,5 +589,20 @@ return [
         'changed_on_issue' => 'El supuesto fiscal del cliente ha cambiado desde la última edición del borrador (inversión del sujeto pasivo, exportación o exención). El borrador se ha ajustado: compruebe los importes y vuelva a emitir la factura.',
         'note_kept' => 'El texto de la factura se modificó manualmente y por eso no se ha ajustado: compruebe usted mismo la indicación del supuesto fiscal (p. ej., inversión del sujeto pasivo, exportación o exención).',
         'place_of_supply_mixed' => 'Las posiciones de esta factura tienen distintos lugares de prestación (§ 3a UStG) y, por tanto, distintos supuestos fiscales. Divida la factura: una factura por supuesto fiscal, por ejemplo los servicios inmobiliarios o del catálogo por separado de los demás.',
+        'line_rates_aligned' => 'Las líneas sin categoría de IVA propia siguen el supuesto fiscal de la factura: su tipo se ha ajustado (0 % sin impuesto; tras un cambio a sujeto, el tipo del supuesto fiscal). Para un tipo distinto, elija una categoría de IVA en la línea.',
+        'line_rates_on_issue' => 'Algunas líneas sin categoría de IVA propia tenían un tipo que no corresponde al supuesto fiscal de la factura. Su tipo se ha ajustado: compruebe los importes y vuelva a emitir la factura.',
+    ],
+    // Ort des Grundstücks an der Rechnung (MVP-1706).
+    'property_country' => [
+        'legend' => 'Lugar de la prestación',
+        'label' => 'Lugar del inmueble (país, ISO 2)',
+        'hint' => 'Solo para servicios relacionados con inmuebles (§ 3a, apdo. 3, n.º 1 UStG). Prevalece sobre el lugar de intervención del pedido; si está vacío, se aplica ese lugar y, sin él, Alemania. Si el inmueble está en el extranjero, el servicio no tributa en Alemania.',
+        'shown' => 'Lugar del inmueble',
+    ],
+    // Soll-Befund bei Pauschal-Abrechnung (MVP-1708).
+    'target_settlement' => [
+        'flat_rate' => 'Liquidado con la tarifa plana de la factura :number — sin complemento',
+        'flat_rate_transfer' => 'Liquidado con la tarifa plana de la transferencia n.º :id — sin complemento',
+        'flat_rate_voucher' => 'Liquidado con la tarifa plana del justificante de tiempos en el programa de contabilidad — sin complemento',
     ],
 ];

@@ -100,6 +100,7 @@ final class InventoryDemoBlock implements DemoBlock {
             ]);
 
             $key = 'demo:' . $material['sku'];
+            // Demo-Artikel haben keinen Einkaufspreis: Zu- und Abgänge bleiben gemeinsam unbewertet, das Bewertungsbuch leer.
             $this->ledger->receipt($variant, $main, $receipt, idempotencyKey: $key . ':receipt', actorUserId: $admin->id);
             $this->ledger->issue($variant, $main, $issue, idempotencyKey: $key . ':issue', actorUserId: $admin->id);
             $this->ledger->receipt($variant, $vehicle, $vehicleReceipt, idempotencyKey: $key . ':vehicle', actorUserId: $admin->id);

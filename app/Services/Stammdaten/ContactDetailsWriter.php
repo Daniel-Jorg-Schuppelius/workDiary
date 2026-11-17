@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
-use App\Models\Contacts\ContactAddress;
+use App\Models\Contacts\{ContactAddress, ContactBankAccount};
 use App\Models\Contracts\ContactDetailsHolder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -72,6 +72,11 @@ class ContactDetailsWriter {
         'bank_name' => 'bank_name',
     ];
 
+    /** Auswahlfelder der Zusammenführung: Rechnungsanschrift und Bankverbindung als Ganzes (MVP-1701). */
+    public const string MERGE_BILLING_ADDRESS = 'billing_address';
+
+    public const string MERGE_BANK_ACCOUNT = 'bank_account';
+
     /**
      * Nimmt die Inline-Kontaktfelder und die Lieferanschrift aus einem
      * Wertesatz heraus (Referenz wird um sie erleichtert) und gibt sie zurück —
@@ -94,15 +99,17 @@ class ContactDetailsWriter {
 
     /**
      * Teil-Update über die Inline-Spaltennamen: NUR übergebene Schlüssel
-     * ändern sich, fehlende behalten den Stand der primären Adresse/Bank.
-     * Importe liefern immer nur die abweichenden Felder — ein Voll-Overwrite
-     * (wie im Formularpfad) würde den Rest der Adresse leeren.
+     * ändern sich, fehlende behalten den Stand der primären Adresse/Bank
+     * (Altbestand ohne Satellit: den der Projektion). Importe und API liefern
+     * nur die abweichenden Felder — ein Voll-Overwrite (wie im Formularpfad)
+     * würde den Rest der Adresse leeren.
      *
      * @param  array<string, mixed>  $fields
      */
     public function writeInline(Model&ContactDetailsHolder $contact, array $fields): void {
         $address = $this->mapPresent($fields, self::ADDRESS_MAP);
         if ($address !== []) {
+            $this->adoptProjectedAddress($contact);
             $primary = $contact->primaryAddress();
             $this->writeAddress($contact, $address + [
                 'street' => $primary?->street,
@@ -115,6 +122,7 @@ class ContactDetailsWriter {
 
         $bank = $this->mapPresent($fields, self::BANK_MAP);
         if ($bank !== []) {
+            $this->adoptProjectedBankAccount($contact);
             $primary = $contact->primaryBankAccount();
             $this->writeBankAccount($contact, $bank + [
                 'account_holder' => $primary?->account_holder,
@@ -135,6 +143,146 @@ class ContactDetailsWriter {
                 'country' => $current?->country_code,
             ]);
         }
+    }
+
+    /**
+     * Altbestand mit Projektion, aber ohne Satellit (vor MVP-869 angelegt oder am
+     * Satelliten vorbei geschrieben): Satelliten aus der Projektion anlegen. Sonst
+     * leerte ein Teil-Update die nicht gelieferten Felder, weil der neue Satellit
+     * die Projektion überschreibt (MVP-1700).
+     */
+    public function adoptProjection(Model&ContactDetailsHolder $contact): void {
+        $this->adoptProjectedAddress($contact);
+        $this->adoptProjectedBankAccount($contact);
+    }
+
+    private function adoptProjectedAddress(Model&ContactDetailsHolder $contact): void {
+        if ($contact->primaryAddress() !== null) {
+            return;
+        }
+        $this->writeAddress($contact, [
+            'street' => $this->projected($contact, 'address_street'),
+            'zip' => $this->projected($contact, 'address_zip'),
+            'city' => $this->projected($contact, 'address_city'),
+            'country' => $this->projected($contact, 'country'),
+        ]);
+    }
+
+    private function adoptProjectedBankAccount(Model&ContactDetailsHolder $contact): void {
+        if ($contact->primaryBankAccount() !== null) {
+            return;
+        }
+        $this->writeBankAccount($contact, [
+            'account_holder' => $this->projected($contact, 'bank_account_holder'),
+            'iban' => $this->projected($contact, 'bank_iban'),
+            'bic' => $this->projected($contact, 'bank_bic'),
+            'bank_name' => $this->projected($contact, 'bank_name'),
+        ]);
+    }
+
+    /**
+     * Zusammenführen (MVP-1701): die Satelliten der Quelle wandern zum Ziel, danach
+     * trägt es genau eine primäre Rechnungsanschrift und eine primäre Bankverbindung —
+     * die eigene, ausgewählt oder ohne eigene die der Quelle. Die andere bleibt als
+     * weitere stehen (Auskunft, Buchhaltungsprogramm), eine gleichlautende der Quelle
+     * entfällt. Die Projektion folgt der primären. Lieferanschriften ordnet der
+     * Aufrufer vorher.
+     *
+     * @return bool true, wenn die Rechnungsanschrift der Quelle gilt
+     */
+    public function mergeInto(Model&ContactDetailsHolder $source, Model&ContactDetailsHolder $target, bool $preferSourceAddress, bool $preferSourceBank): bool {
+        $this->adoptProjection($source);
+        $this->adoptProjection($target);
+
+        $targetAddress = $target->primaryAddress();
+        $sourceAddress = $source->primaryAddress();
+        if ($targetAddress !== null && $sourceAddress !== null && self::sameAddress($targetAddress, $sourceAddress)) {
+            $sourceAddress->delete();
+            $sourceAddress = null;
+        }
+        $address = $sourceAddress !== null && ($preferSourceAddress || $targetAddress === null) ? $sourceAddress : $targetAddress;
+
+        $targetBank = $target->primaryBankAccount();
+        $sourceBank = $source->primaryBankAccount();
+        if ($targetBank !== null && $sourceBank !== null && self::sameBankAccount($targetBank, $sourceBank)) {
+            $sourceBank->delete();
+            $sourceBank = null;
+        }
+        $bank = $sourceBank !== null && ($preferSourceBank || $targetBank === null) ? $sourceBank : $targetBank;
+
+        $this->moveSatellites($source, $target);
+        $this->settlePrimary($target, $address);
+        $this->settlePrimary($target, $bank);
+
+        return $address !== null && $address->getKey() === $sourceAddress?->getKey();
+    }
+
+    /**
+     * Hängt Anschriften und Bankverbindungen um. Die Fremd-ID einer Anschrift
+     * (Lexoffice `billing-0` …) gehört zum Kontakt im Buchhaltungsprogramm; trägt das
+     * Ziel dieselbe schon, verliert die der Quelle sie, damit der Abgleich eindeutig bleibt.
+     */
+    private function moveSatellites(Model $source, Model $target): void {
+        $morph = $source->getMorphClass();
+        $targetExternal = ContactAddress::query()->withoutGlobalScopes()
+            ->where('addressable_type', $morph)->where('addressable_id', $target->getKey())
+            ->whereNotNull('external_id')->get(['kind', 'external_id'])
+            ->map(static fn (ContactAddress $a): string => $a->kind . '|' . $a->external_id)->all();
+        $sourceAddresses = ContactAddress::query()->withoutGlobalScopes()
+            ->where('addressable_type', $morph)->where('addressable_id', $source->getKey());
+        foreach ((clone $sourceAddresses)->whereNotNull('external_id')->get(['id', 'kind', 'external_id']) as $address) {
+            if (in_array($address->kind . '|' . $address->external_id, $targetExternal, true)) {
+                ContactAddress::query()->withoutGlobalScopes()->whereKey($address->id)->update(['external_id' => null]);
+            }
+        }
+        $sourceAddresses->update(['addressable_id' => $target->getKey()]);
+        ContactBankAccount::query()->withoutGlobalScopes()
+            ->where('accountable_type', $morph)->where('accountable_id', $source->getKey())
+            ->update(['accountable_id' => $target->getKey()]);
+    }
+
+    /** Genau ein primärer Satellit je Partei; das Speichern des gewählten löst die Projektion aus. */
+    private function settlePrimary(Model&ContactDetailsHolder $party, ContactAddress|ContactBankAccount|null $keep): void {
+        if ($keep === null) {
+            return;
+        }
+        $others = $keep instanceof ContactAddress
+            ? $party->addresses()->where('kind', '!=', ContactAddress::KIND_SHIPPING)
+            : $party->bankAccounts();
+        $others->where('is_primary', true)->whereKeyNot($keep->getKey())->update(['is_primary' => false]);
+
+        // refresh(): nach dem Umhängen zeigt der Satellit auf das Ziel.
+        $keep->refresh()->forceFill(['is_primary' => true])->save();
+    }
+
+    private static function sameAddress(ContactAddress $a, ContactAddress $b): bool {
+        foreach (['street', 'supplement', 'zip', 'city', 'country_code'] as $field) {
+            if (mb_strtolower(trim((string) $a->getAttribute($field))) !== mb_strtolower(trim((string) $b->getAttribute($field)))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static function sameBankAccount(ContactBankAccount $a, ContactBankAccount $b): bool {
+        foreach (['account_holder', 'iban', 'bic', 'bank_name'] as $field) {
+            if (trim((string) $a->getAttribute($field)) !== trim((string) $b->getAttribute($field))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /** Projektionsspalte, sofern die Partei sie führt (nur Kunde und Lieferant). */
+    private function projected(Model $contact, string $column): ?string {
+        if (! array_key_exists($column, $contact->getAttributes())) {
+            return null;
+        }
+        $value = $contact->getAttribute($column);
+
+        return is_scalar($value) ? (string) $value : null;
     }
 
     /**

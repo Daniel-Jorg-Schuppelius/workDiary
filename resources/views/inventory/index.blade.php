@@ -119,6 +119,14 @@
                                 </select>
                             </div>
                         @endif
+                        {{-- Einstandspreis je erfasster Einheit (MVP-1709); wirkt nur beim Eingang in Eigenbestand. --}}
+                        @if ($canPost)
+                            <div class="fieldset">
+                                <label for="movement-unit-cost" class="fieldset-label">{{ __('inventory.field.unit_cost') }}</label>
+                                <input id="movement-unit-cost" name="unit_cost" type="text" inputmode="decimal" autocomplete="off" maxlength="30"
+                                       value="{{ old('unit_cost') }}" aria-describedby="movement-unit-cost-hint" class="input input-sm input-bordered w-32">
+                            </div>
+                        @endif
                         <div class="fieldset">
                             <label for="ownership" class="fieldset-label">{{ __('inventory.field.ownership') }}</label>
                             <select id="ownership" name="ownership" class="select select-sm select-bordered">
@@ -142,6 +150,9 @@
                             <span class="label-text">{{ __('inventory.field.allow_negative') }}</span>
                         </label>
                         <x-button type="submit" tone="primary" size="sm">{{ __('inventory.action.book') }}</x-button>
+                        @if ($canPost)
+                            <p id="movement-unit-cost-hint" class="basis-full text-xs text-muted">{{ __('inventory.field.unit_cost_hint') }}</p>
+                        @endif
                     </form>
                 </x-card>
             @endif

@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 22
+version: 23
 keywords:
     - lugar de la prestación
     - servicio del catálogo
@@ -326,6 +326,15 @@ o un nuevo NIF-IVA—, la siguiente edición del borrador aplica el nuevo supues
 emite un borrador con un supuesto fiscal desactualizado, workDiary lo ajusta y
 detiene la emisión: compruebe los importes y vuelva a emitir.
 
+**Las líneas sin categoría de IVA propia** siguen el supuesto fiscal de la
+factura, aunque traigan un tipo de un plan de facturación, un presupuesto o una
+proforma: con un supuesto sin impuesto (inversión del sujeto pasivo, no sujeto,
+exportación, exento, § 19) pasan al 0 %; tras un cambio a sujeto, al tipo del
+supuesto fiscal. Otro tipo con sujeción, por ejemplo uno reducido, se mantiene.
+Si así cambian los importes, workDiary lo indica o detiene la emisión. Las líneas
+con categoría de IVA propia conservan su tipo; las facturas emitidas no cambian
+nunca.
+
 Con **inversión del sujeto pasivo**, la factura electrónica necesita el NIF-IVA
 del cliente (regla BR-AE-02); en la inversión nacional según el § 13b UStG basta
 su número de registro. La comprobación previa al envío indica si falta el dato
@@ -371,6 +380,24 @@ indica, la factura no puede emitirse y la comprobación antes del envío la
 rechaza (con «no sujeto» según la regla BR-O-11): divida la factura, una por
 supuesto fiscal. La anulación y la factura rectificativa adoptan el supuesto
 fiscal del original.
+
+**Lugar del inmueble.** Si una posición lleva un servicio relacionado con un
+inmueble (por su artículo o la regla de facturación), el diálogo
+**Condiciones** muestra el campo **Lugar del inmueble** (país como código ISO,
+por ejemplo AT). Prevalece sobre el lugar de intervención del pedido y sirve
+sobre todo para facturas sin pedido; si está vacío, se aplica ese lugar y, sin
+él, Alemania. La emisión fija el país; la factura de anulación y la factura
+rectificativa lo adoptan; factura electrónica, PDF y contabilidad siguen el
+supuesto fiscal fijado.
+
+Las facturas de **plan de facturación, alquiler, contadores, reventa, anticipos
+y cuotas mensuales** determinan también el supuesto fiscal al crearse según el
+lugar de prestación de sus posiciones o el servicio del proyecto; por eso la
+primera emisión ya no se detiene con «supuesto fiscal modificado».
+**Presupuestos y confirmaciones de pedido** aplican a las posiciones sin tipo
+propio el tipo resultante del lugar de prestación de sus artículos de servicio
+o, en su defecto, del servicio del proyecto, como la factura que se genera a
+partir de ellos.
 
 ## Motivos de exención en la factura electrónica
 
@@ -459,3 +486,8 @@ reimprimen sin esa línea.
 La emisión también fija la indicación de los costes de mano de obra según el
 § 35a EStG: un cambio posterior de la regla de la organización o del tipo de
 cliente ya no modifica una factura emitida.
+
+Con la regla **Indicar para clientes particulares**, un cliente con la marca
+**Consumidor** se considera particular. Sin la marca, como hasta ahora, se
+considera particular el cliente sin empresa ni NIF-IVA, de modo que los
+clientes existentes conservan la indicación.

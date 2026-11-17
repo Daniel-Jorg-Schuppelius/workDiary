@@ -325,7 +325,6 @@ class QuoteService {
             // hartkodierter 19 % — sonst unrichtiger Steuerausweis nach § 14c UStG (Whitebox 2026-07-10, G3).
             // Leistungsort der angenommenen Leistungsartikel (MVP-1688); ergeben sie verschiedene Fälle, hält das Ausstellen an.
             $organization = $quote->organization()->firstOrFail();
-            $places = app(PlaceOfSupplyResolver::class);
             $articleIds = array_values(array_filter(array_map(
                 static fn (mixed $item): ?int => is_array($item) && ($item['accepted'] ?? false) && isset($item['article_id']) ? (int) $item['article_id'] : null,
                 (array) ($quote->decision_snapshot['items'] ?? []),
@@ -336,7 +335,7 @@ class QuoteService {
                 $quote->customer()->firstOrFail(),
                 null,
                 'services',
-                $places->forArticles($organization, $articleIds) ?: [$places->forProject($organization, $project)],
+                app(PlaceOfSupplyResolver::class)->forArticlesOrProject($organization, $articleIds, $project),
             )[0];
             $notes = (string) __('Gemäß Angebot :number (Version :version)', ['number' => $quote->number, 'version' => $quote->version]);
             if ($tax['note'] !== null) {
@@ -423,6 +422,7 @@ class QuoteService {
                 'type' => Invoice::TYPE_INVOICE,
                 'tax_rate' => $proforma->tax_rate,
                 'is_reverse_charge' => (bool) $proforma->is_reverse_charge,
+                'property_country' => $proforma->property_country,
                 'is_labour_cost_disclosed' => $proforma->is_labour_cost_disclosed,
                 'notes' => (string) __('Aus Pro-forma :number', ['number' => $proforma->number]),
                 'created_by' => $actor->id,
@@ -445,7 +445,9 @@ class QuoteService {
                 ]);
             }
 
-            $invoice->load('items');
+            // Steuerfall über den Leistungsort der Positionen wie im Rechnungslauf (MVP-1704).
+            $invoice->load(['items', 'customer', 'organization']);
+            app(InvoiceIssueService::class)->alignTaxCase($invoice);
             $invoice->recalculate();
             $invoice->save();
 

@@ -36,5 +36,7 @@ return [
         'label' => 'Variante: :variant',
         'mismatch' => 'La variante non appartiene all\'articolo del materiale selezionato.',
         'inactive' => 'Questa variante non è attiva e non può essere scelta di nuovo.',
+        'not_selectable' => 'non più selezionabile',
+        'kept_hint' => 'La variante salvata non è più selezionabile. Viene mantenuta al salvataggio finché il materiale resta lo stesso.',
     ],
 ];

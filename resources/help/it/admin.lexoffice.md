@@ -1,7 +1,7 @@
 ---
 title: "Conflitti Lexoffice"
 topic: admin.lexoffice
-version: 8
+version: 9
 keywords:
     - Lexware Office
     - conflitto di sincronizzazione
@@ -57,6 +57,27 @@ esterno – WorkDiary vi trasmette i dati.
 La strategia di conflitto vale per i contatti. Gli articoli li gestisce
 Lexoffice: la sincronizzazione applica ogni versione più recente di
 Lexoffice, quindi non esistono conflitti di articoli.
+
+**Indirizzi con «Vince Lexoffice»:** Lexoffice gestisce gli indirizzi senza un
+identificativo proprio; WorkDiary li abbina per tipo e ordine. Un indirizzo di
+fatturazione o di consegna creato in WorkDiary riprende alla prima
+sincronizzazione l’indirizzo Lexoffice corrispondente invece di essere creato
+una seconda volta: l’indirizzo di fatturazione principale riprende il primo di
+Lexoffice. Dopo, solo quello è principale; gli altri indirizzi di WorkDiary
+restano come aggiuntivi.
+
+**Tipo d'imposta al trasferimento:** fatture e bozze di fattura della
+consegna fatturazione portano il tipo d'imposta del loro caso fiscale:
+prestazione a un'impresa UE come «prestazioni esterne § 13b UE», § 13b
+nazionale come «lavori edili § 13b», cessione intracomunitaria, cessione
+all'esportazione, prestazione non imponibile in Germania come «servizio verso
+paese terzo», piccola impresa come «esente», con lo 0 % per posizione e la
+dicitura come nota fiscale. Tranne «esente», Lexoffice accetta questi tipi
+d'imposta solo con un contatto creato lì. Se una prestazione non imponibile
+si trova nell'UE (ad esempio un immobile in un altro paese UE), Lexoffice non
+ha un tipo d'imposta adatto: il trasferimento viene bloccato con il motivo. Il
+giustificativo dai tempi sul cliente trasferisce solo tempi imponibili; gli
+altri casi passano per la consegna fatturazione.
 
 Specchio documenti: il sync dei documenti rispecchia i documenti di
 Lexoffice in WorkDiary. Vengono rispecchiati anche i documenti di contatti

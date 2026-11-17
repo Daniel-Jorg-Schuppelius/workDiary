@@ -63,10 +63,9 @@ class CustomerMergeService extends AbstractEntityMergeService {
     private const array FILLABLE_FROM_SOURCE = [
         'company', 'vat_id', 'tax_number', 'register_number',
         'contact_name', 'contact_persons', 'email', 'phone', 'mobile', 'fax',
-        'homepage', 'address', 'address_street', 'address_zip', 'address_city',
-        'country', 'timezone', 'color', 'hourly_rate', 'internal_rate', 'comment',
-        'invoice_text', 'bank_account_holder', 'bank_iban', 'bank_bic', 'bank_name',
-        'buyer_reference', 'debtor_no',
+        // Rechnungsanschrift und Bankverbindung wandern als Satellit (MVP-1701), nicht über die Projektion.
+        'homepage', 'address', 'timezone', 'color', 'hourly_rate', 'internal_rate', 'comment',
+        'invoice_text', 'buyer_reference', 'debtor_no',
         // Wahrheitswert: nie „leer“, also nur übernommen, wenn ausgewählt (MVP-1688).
         'is_consumer',
     ];
@@ -124,6 +123,7 @@ class CustomerMergeService extends AbstractEntityMergeService {
             $this->repointExternalReferences($morph, $sourceId, $targetId);
             $this->repointAliases($morph, $sourceId, $targetId);
             $this->keepOneShippingAddress($morph, $sourceId, $targetId, array_key_exists('shipping_address', $fieldOverrides));
+            $this->mergeContactSatellites($source, $target, $fieldOverrides);
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
@@ -176,6 +176,25 @@ class CustomerMergeService extends AbstractEntityMergeService {
             $shipping($targetId)->delete();
         } elseif ($shipping($targetId)->exists()) {
             $shipping($sourceId)->delete();
+        }
+    }
+
+    /**
+     * Genau eine primäre Rechnungsanschrift und Bankverbindung (MVP-1701); die
+     * Koordinaten folgen der geltenden Anschrift.
+     *
+     * @param  array<string, mixed>  $fieldOverrides
+     */
+    private function mergeContactSatellites(Customer $source, Customer $target, array $fieldOverrides): void {
+        $sourceWins = app(ContactDetailsWriter::class)->mergeInto(
+            $source,
+            $target,
+            array_key_exists(ContactDetailsWriter::MERGE_BILLING_ADDRESS, $fieldOverrides),
+            array_key_exists(ContactDetailsWriter::MERGE_BANK_ACCOUNT, $fieldOverrides),
+        );
+        if ($sourceWins) {
+            $target->address_lat = $source->address_lat;
+            $target->address_lng = $source->address_lng;
         }
     }
 

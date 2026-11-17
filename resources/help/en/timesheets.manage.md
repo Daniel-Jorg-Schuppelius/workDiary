@@ -1,7 +1,7 @@
 ---
 title: "Managing timesheets"
 topic: timesheets.manage
-version: 5
+version: 6
 keywords:
     - timesheet
     - time report
@@ -37,7 +37,7 @@ data source.
 
 **Stock withdrawal:** If the material is linked to a stock-managed item (item marked “Stockable”) and the inventory module is active, the usage posts the withdrawal from the organisation's default warehouse — in the unit entered and valued with the warehouse's valuation method. If you change the quantity, only the difference is posted; another material returns the previous item, and deleting the line or the whole timesheet returns the withdrawal. Below the description the line shows whether and from which warehouse stock was posted. If the stock is insufficient, the entry is rejected; with the “Approve negative stock” permission you select “Allow negative stock”. If the organisation requires four eyes for this, the withdrawal waits for approval in the approval inbox (“Negative stock requested”). Withdraw items requiring serial numbers via the warehouse; items requiring batches are taken from batches, earliest best-before date first. Without a default warehouse the line shows “Not posted – no default warehouse”; if stock is kept read-only in another system, WorkDiary does not post. If another system manages the stock, every movement is also sent there. The same applies offline: if stock prevents the posting, the entry ends up as a conflict under “Offline changes”.
 
-**Variant:** If the material's stock-managed item has several active variants (for example colours or sizes), select the variant used in the timesheet dialog and on “Today”; the field only appears for such materials. Without a selection, the usage posts the default variant as before. If you leave the unit price empty, the variant's own sales price applies, otherwise the material's price. Changing the variant returns the previous one and withdraws the new one. Line, PDF, invoice and the transfer to the accounting program name the variant after the description, as with a delivery.
+**Variant:** If the material's stock-managed item has several active variants (for example colours or sizes), select the variant used in the timesheet dialog and on “Today”; the field only appears for such materials. Without a selection, the usage posts the default variant as before. If you leave the unit price empty, the variant's own sales price applies, otherwise the material's price. Changing the variant returns the previous one and withdraws the new one. If the saved variant can no longer be selected (retired, or the item has only one active variant left), the dialog shows it marked “no longer selectable”: as the selected option if other variants remain, otherwise as a locked field. Saving keeps it as long as the material stays the same; another material drops it. Line, PDF, invoice and the transfer to the accounting program name the variant after the description, as with a delivery.
 
 **Offline with too little stock:** If only stock is missing for material recorded offline, “Edit” under “Offline changes” offers the “Allow negative stock” checkbox with the “Approve negative stock” permission. Sending works as online: if four eyes are required, a request is created in the approval inbox.
 

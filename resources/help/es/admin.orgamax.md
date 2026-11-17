@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX contabilidad"
 topic: admin.orgamax
-version: 2
+version: 3
 keywords:
     - API de orgaMAX
     - integración contable
@@ -45,6 +45,13 @@ crean como máximo UN pedido orgaMAX (marcador de origen + conciliación en
 lugar de reintentos ciegos). Convertir en factura, bloqueo irreversible,
 envío y registro de pagos son acciones separadas, con permisos propios y
 auditadas. Número, estado, pago y PDF provienen visiblemente de orgaMAX.
+
+Caso fiscal: la API de orgaMAX no gestiona un tipo de impuesto, solo el tipo
+por posición. Por eso los traspasos y las facturas solo se envían sujetos a
+impuesto o como pequeña empresa (§ 19, 0 %). La inversión del sujeto pasivo,
+el § 13b, la entrega intracomunitaria, la exportación y los servicios no
+sujetos en Alemania se bloquean antes del envío, con el motivo: factúrelos en
+WorkDiary o regístrelos en orgaMAX.
 
 El sondeo se ejecuta con presupuesto y puntos de control (cada hora,
 configurable); «Sincronizar ahora» respeta los mismos límites. El traspaso

@@ -20983,6 +20983,7 @@ CREATE TABLE IF NOT EXISTS "invoices"(
   "bill_of_quantity_id" integer,
   "sales_agent_id" integer,
   "is_labour_cost_disclosed" tinyint(1),
+  "property_country" varchar,
   foreign key("bill_of_quantity_id") references "bill_of_quantities"("id") on delete set null on update no action,
   foreign key("quote_id") references "quotes"("id") on delete set null on update no action,
   foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null on update no action,
@@ -24708,6 +24709,7 @@ CREATE TABLE IF NOT EXISTS "project_time_shortfalls"(
   "created_at" datetime,
   "updated_at" datetime,
   "invoice_item_id" integer,
+  "external_reference_id" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("project_id") references "projects"("id") on delete cascade,
   foreign key("user_id") references "users"("id") on delete cascade,
@@ -25573,6 +25575,9 @@ CREATE INDEX "material_usages_org_asset_idx" on "material_usages"(
 );
 CREATE INDEX "material_usages_timesheet_id_index" on "material_usages"(
   "timesheet_id"
+);
+CREATE INDEX "pts_external_reference_idx" on "project_time_shortfalls"(
+  "external_reference_id"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -26697,3 +26702,5 @@ INSERT INTO migrations VALUES(1119,'2027_04_18_120000_add_register_number_to_cus
 INSERT INTO migrations VALUES(1120,'2027_04_19_110000_add_article_variant_to_material_usages',1);
 INSERT INTO migrations VALUES(1121,'2027_04_19_120000_add_is_consumer_to_customers',1);
 INSERT INTO migrations VALUES(1122,'2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules',1);
+INSERT INTO migrations VALUES(1123,'2027_04_20_120000_add_property_country_to_invoices',1);
+INSERT INTO migrations VALUES(1124,'2027_04_20_140000_add_external_reference_to_project_time_shortfalls',1);

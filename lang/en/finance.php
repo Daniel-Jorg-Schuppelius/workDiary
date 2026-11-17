@@ -45,6 +45,7 @@ return [
         'total_amount' => 'Total amount (net)',
         'total_quantity' => 'Total quantity',
         'payload_hash' => 'Payload hash',
+        'tax_case' => 'Tax case',
         'transferred_at' => 'Transferred at',
         'failure_reason' => 'Failure reason',
         'customer' => 'Customer',
@@ -170,6 +171,12 @@ return [
         'cancelled' => 'Transfer cancelled — sources have been released again.',
     ],
 
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'mixed' => 'The positions of this transfer result in different tax cases (:cases), for example because of different places of supply (§ 3a UStG). A document carries one tax case: please void the transfer and transfer each tax case separately, for example by period, or bill the services in workDiary.',
+        'blocked_title' => 'Transfer blocked (tax case)',
+        'confirm_warning' => 'The transfer cannot be sent like this: :reason',
+    ],
     'error' => [
         'local_invoicing_locked' => 'Invoicing is led by :program; local invoice creation is locked.',
         'sources_already_reserved' => ':count source(s) of this record are already part of another confirmed record — please create the record anew.',

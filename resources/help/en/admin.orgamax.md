@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX accounting"
 topic: admin.orgamax
-version: 2
+version: 3
 keywords:
     - orgaMAX API
     - accounting integration
@@ -46,6 +46,12 @@ most ONE orgaMAX order (source marker + reconciliation instead of blind
 retries). Converting to an invoice, irreversible locking, sending and
 recording payments are separate, individually permissioned and audited
 actions. Invoice number, status, payment and PDF visibly come from orgaMAX.
+
+Tax case: the orgaMAX API has no tax type, only the rate per position.
+Transfers and invoices are therefore only sent as taxable or as a small
+business (§ 19, 0 %). Reverse charge, § 13b, intra-Community supply, export
+and services not taxable in Germany are blocked before sending, with the
+reason — bill them in WorkDiary or enter them in orgaMAX.
 
 Polling runs budgeted with checkpoints (hourly, configurable); "Sync now"
 respects the same limits. Expense/receipt hand-over stays blocked until the

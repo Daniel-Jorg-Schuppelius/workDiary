@@ -234,6 +234,40 @@ class LabourCostDisclosureTest extends TestCase {
         $this->assertSame('833.00', $quote->fresh('items')->labourCosts()['gross']->getAmount());
     }
 
+    /**
+     * MVP-1707: Das Merkmal „Verbraucher“ macht den Kunden zum Privatkunden, auch
+     * mit Firmenname oder USt-IdNr.; ohne Merkmal gilt die bisherige Erkennung,
+     * damit Bestandskunden den Ausweis behalten.
+     */
+    public function test_rule_private_customers_takes_the_consumer_flag_first(): void {
+        $this->setRule('private_customers');
+        $consumerWithCompany = Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Familie Beispiel',
+            'company' => 'Familie Beispiel Ferienhaus',
+            'vat_id' => 'DE136695976',
+            'is_consumer' => true,
+            'currency' => 'EUR',
+            'created_by' => $this->admin->id,
+        ]);
+        $business = Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Hausverwaltung',
+            'company' => 'Hausverwaltung GmbH',
+            'currency' => 'EUR',
+            'created_by' => $this->admin->id,
+        ]);
+        $items = [['unit_price' => '100.00', 'labour_share_percent' => '100']];
+
+        $this->assertTrue($this->invoice($items, [], $consumerWithCompany)->disclosesLabourCosts(), 'Merkmal gesetzt: Privatkunde trotz Firma und USt-IdNr.');
+        $this->assertFalse($this->invoice($items, [], $business)->disclosesLabourCosts(), 'Gegenprobe: Unternehmen mit Firma bleibt ohne Ausweis.');
+        $this->assertFalse((bool) $this->privateCustomer->is_consumer, 'Bestandskunde ohne Merkmal …');
+        $this->assertTrue($this->invoice($items)->disclosesLabourCosts(), '… behält den Ausweis über die bisherige Erkennung.');
+
+        $quote = Quote::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $consumerWithCompany->id]);
+        $this->assertTrue($quote->fresh(['organization', 'customer'])?->disclosesLabourCosts(), 'Das Angebot folgt derselben Regel.');
+    }
+
     public function test_profile_settings_step_never_overrides_an_own_choice(): void {
         $step = app(SettingDefaultsInstallStep::class);
 

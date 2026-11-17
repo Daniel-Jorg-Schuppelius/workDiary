@@ -169,7 +169,7 @@ return [
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Non indicare mai',
-            'private_customers' => 'Indicare per i clienti privati (senza ragione sociale né partita IVA)',
+            'private_customers' => 'Indicare per i clienti privati (contrassegno «consumatore», altrimenti senza ragione sociale né partita IVA)',
             'always' => 'Indicare sempre',
         ],
         'share' => 'Quota manodopera § 35a EStG (%)',
@@ -571,7 +571,7 @@ return [
     // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
     'consumer' => [
         'label' => 'Consumatore (non impresa)',
-        'hint' => 'Privato o altro soggetto non imprenditore. Determina il luogo della prestazione secondo il § 3a UStG: per i consumatori extra UE le prestazioni del catalogo (consulenza, elaborazione dati, diritti, pubblicità, noleggio di beni mobili ecc.) non sono imponibili in Germania; le altre prestazioni portano l’IVA tedesca. Senza spunta il cliente è considerato un’impresa.',
+        'hint' => 'Privato o altro soggetto non imprenditore. Determina il luogo della prestazione secondo il § 3a UStG: per i consumatori extra UE le prestazioni del catalogo (consulenza, elaborazione dati, diritti, pubblicità, noleggio di beni mobili ecc.) non sono imponibili in Germania; le altre prestazioni portano l’IVA tedesca. Senza spunta il cliente è considerato un’impresa. Con la regola «Indicare per i clienti privati», la fattura indica i costi di manodopera secondo il § 35a EStG.',
         'recipient' => 'Destinatario',
         'yes' => 'Consumatore',
         'no' => 'Impresa',
@@ -589,5 +589,20 @@ return [
         'changed_on_issue' => 'Il regime fiscale del cliente è cambiato dall\'ultima modifica della bozza (inversione contabile, esportazione o esenzione). La bozza è stata adeguata: verifichi gli importi ed emetta di nuovo la fattura.',
         'note_kept' => 'Il testo della fattura è stato modificato a mano e quindi non è stato adeguato: verifichi personalmente l’indicazione sul regime fiscale (ad esempio inversione contabile, esportazione o esenzione).',
         'place_of_supply_mixed' => 'Le posizioni di questa fattura hanno luoghi della prestazione diversi (§ 3a UStG) e quindi regimi fiscali diversi. Divida la fattura: una fattura per regime fiscale, ad esempio le prestazioni immobiliari o del catalogo separate dalle altre.',
+        'line_rates_aligned' => 'Le righe senza una propria categoria IVA seguono il regime fiscale della fattura: la loro aliquota è stata adeguata (0 % senza imposta; dopo un passaggio all’imponibilità, l’aliquota del regime fiscale). Per un’aliquota diversa, scelga una categoria IVA sulla riga.',
+        'line_rates_on_issue' => 'Alcune righe senza una propria categoria IVA avevano un’aliquota non conforme al regime fiscale della fattura. L’aliquota è stata adeguata: verifichi gli importi ed emetta di nuovo la fattura.',
+    ],
+    // Ort des Grundstücks an der Rechnung (MVP-1706).
+    'property_country' => [
+        'legend' => 'Luogo della prestazione',
+        'label' => 'Luogo dell’immobile (paese, ISO 2)',
+        'hint' => 'Solo per prestazioni relative a immobili (§ 3a, comma 3, n. 1 UStG). Prevale sul luogo d’intervento dell’ordine; se vuoto vale tale luogo, in mancanza la Germania. Se l’immobile si trova all’estero, la prestazione non è imponibile in Germania.',
+        'shown' => 'Luogo dell’immobile',
+    ],
+    // Soll-Befund bei Pauschal-Abrechnung (MVP-1708).
+    'target_settlement' => [
+        'flat_rate' => 'Regolato con il forfait della fattura :number — nessuna integrazione',
+        'flat_rate_transfer' => 'Regolato con il forfait del trasferimento n. :id — nessuna integrazione',
+        'flat_rate_voucher' => 'Regolato con il forfait del giustificativo dei tempi nel programma di contabilità — nessuna integrazione',
     ],
 ];

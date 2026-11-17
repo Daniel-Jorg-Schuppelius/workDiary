@@ -95,7 +95,21 @@
                             <td class="text-right">{{ $fmt((int) $shortfall->target_minutes) }}</td>
                             <td class="text-right">{{ $fmt((int) $shortfall->booked_minutes) }}</td>
                             <td class="text-right">{{ $fmt((int) $shortfall->shortfall_minutes) }}</td>
-                            <td><x-status-badge :tone="$shortfall->status->tone()">{{ $shortfall->status->label() }}</x-status-badge></td>
+                            <td>
+                                <x-status-badge :tone="$shortfall->status->tone()">{{ $shortfall->status->label() }}</x-status-badge>
+                                {{-- MVP-1708/1716: mit der Pauschale des Projekts abgerechnet, keine Auffüllung --}}
+                                @if ($shortfall->isSettledByFlatRate())
+                                    <div class="text-xs text-muted">
+                                        @if ($shortfall->invoice_item_id !== null)
+                                            {{ __('invoicing.target_settlement.flat_rate', ['number' => $shortfall->invoiceItem?->invoice?->number ?? '—']) }}
+                                        @elseif ($shortfall->billing_transfer_position_id !== null)
+                                            {{ __('invoicing.target_settlement.flat_rate_transfer', ['id' => $shortfall->billingTransferPosition?->billing_transfer_id ?? '—']) }}
+                                        @else
+                                            {{ __('invoicing.target_settlement.flat_rate_voucher') }}
+                                        @endif
+                                    </div>
+                                @endif
+                            </td>
                             <td class="text-right whitespace-nowrap">
                                 @if ($canManageTargets && $shortfall->status === \App\Enums\Project\ShortfallStatus::Open)
                                     <x-action-form :action="route('projects.time-shortfalls.acknowledge', [$project, $shortfall])">

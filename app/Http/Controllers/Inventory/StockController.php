@@ -17,9 +17,11 @@ use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockLevelSetting, StockLot, StockMovement, StockReservation, Warehouse, WarehouseBin};
 use App\Models\Platform\Organization;
-use App\Services\Inventory\{CustomerStockAllocationService, EnteredQuantity, InventoryLedger, InventoryValuationManager, LotStockReader, NegativeStockApproval, ReservationService, StockLevelService};
+use App\Rules\NonNegativeDecimal;
+use App\Services\Inventory\{CustomerStockAllocationService, EnteredQuantity, InventoryLedger, InventoryValuationManager, LotStockReader, ManualStockReceipt, NegativeStockApproval, ReservationService, StockLevelService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\MorphMap;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -40,6 +42,7 @@ class StockController extends Controller {
         private readonly ReservationService $reservations,
         private readonly StockLevelService $levels,
         private readonly LotStockReader $lotStock,
+        private readonly ManualStockReceipt $receipts,
     ) {}
 
     public function index(Request $request): View {
@@ -254,6 +257,8 @@ class StockController extends Controller {
             'cost_customer' => ['nullable', 'string'],
             'bin' => ['nullable', 'string'],
             'lot' => ['nullable', 'string'],
+            // Einstandspreis je erfasster Einheit (MVP-1709), nur für den Eingang in Eigenbestand.
+            'unit_cost' => ['nullable', 'string', 'max:30', new NonNegativeDecimal()],
         ]);
 
         $warehouse = Warehouse::query()->findOrFail(Sqid::decodeOrNumeric(Warehouse::class, $data['warehouse']));
@@ -346,7 +351,7 @@ class StockController extends Controller {
 
         try {
             match ((string) $data['movement']) {
-                'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin, entered: $entered),
+                'receipt' => $this->receipts->book($variant, $warehouse, $entered, $ownership, StringHelper::trimToNull($data['unit_cost'] ?? null), $bin, $actor),
                 // Eigenbestand bewertet nach dem Verfahren der Variante wie Auslieferung und Verbrauch (MVP-1692);
                 // Fremdbestand (Kunde, Kommission, Lieferant, Projekt) hat keinen eigenen Bewertungsstand.
                 'issue' => match (true) {

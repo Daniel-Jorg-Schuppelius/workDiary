@@ -45,6 +45,7 @@ return [
         'total_amount' => 'Montant total (net)',
         'total_quantity' => 'Quantité totale',
         'payload_hash' => 'Hash de la charge utile',
+        'tax_case' => 'Cas fiscal',
         'transferred_at' => 'Transféré le',
         'failure_reason' => 'Motif de l\'échec',
         'customer' => 'Client',
@@ -170,6 +171,12 @@ return [
         'cancelled' => 'Transfert extourné — les sources ont été libérées.',
     ],
 
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'mixed' => 'Les positions de ce transfert donnent des cas fiscaux différents (:cases), par exemple en raison de lieux de prestation différents (§ 3a UStG). Un document porte un seul cas fiscal : veuillez annuler le transfert et transférer chaque cas fiscal séparément, par exemple par période, ou facturer les prestations dans workDiary.',
+        'blocked_title' => 'Transfert bloqué (cas fiscal)',
+        'confirm_warning' => 'Le transfert ne peut pas être envoyé ainsi : :reason',
+    ],
     'error' => [
         'local_invoicing_locked' => 'La facturation est pilotée par :program ; la création locale de factures est verrouillée.',
         'sources_already_reserved' => ':count source(s) de ce justificatif figurent déjà dans un autre justificatif confirmé — veuillez le recréer.',

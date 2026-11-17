@@ -1,7 +1,7 @@
 ---
 title: "Órdenes de fabricación"
 topic: manufacturing.orders
-version: 6
+version: 7
 keywords:
     - orden de producción
     - lista de materiales
@@ -45,6 +45,10 @@ producto terminado se contabiliza como stock. Desde la página de detalle
 la orden puede asignarse a un puesto de trabajo o subcontratarse a un
 proveedor (genera un pedido); anular es irreversible y crear, notificar
 y entregar requieren el permiso **Registrar movimientos de stock**.
+
+**Consumo de material valorado:** el consumo de material registrado —a través de la reserva o, sin ella, directamente del almacén— sale según el método de valoración del artículo: FIFO y FEFO consumen las capas de valoración, el precio medio ponderado reduce su libro. El movimiento de existencias cita la orden como documento, y el coste real de material de la línea es el coste de esta salida; entra en el cálculo posterior. El material de existencias de terceros queda sin valorar.
+
+**Entrada valorada del producto terminado:** la cantidad buena de un parte entra en el almacén a su coste de fabricación —consumo real de material más tiempo de trabajo a la tarifa interna, dividido entre la cantidad buena—. Con partes parciales, cada parte registra el aumento desde el anterior, de modo que todas las entradas juntas suman el coste de fabricación de la orden. El tiempo de trabajo registrado solo después del último parte queda fuera del valor de existencias.
 
 ## Finalizar, poner en espera, bloquear
 

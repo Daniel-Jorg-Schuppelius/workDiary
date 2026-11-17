@@ -67,6 +67,7 @@ use Illuminate\Support\Carbon;
  * @property CurrencyCode $currency
  * @property Money|null $subtotal
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
+ * @property string|null $property_country Land des Grundstücks (MVP-1706); leer = Einsatzort des Auftrags bzw. Inland
  * @property Money|null $tax_amount
  * @property Money|null $total
  * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
@@ -155,7 +156,7 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
      */
     public const array APPROVED_CONTENT = [
         'customer_id', 'foreign_customer_id', 'project_id', 'type', 'category', 'currency',
-        'issued_on', 'due_on', 'payment_terms_days', 'tax_rate', 'is_reverse_charge', 'is_labour_cost_disclosed',
+        'issued_on', 'due_on', 'payment_terms_days', 'tax_rate', 'is_reverse_charge', 'property_country', 'is_labour_cost_disclosed',
         'subtotal', 'tax_amount', 'total', 'tax_breakdown', 'discount_percent', 'discount_amount',
         'skonto_percent', 'skonto_days', 'notes', 'buyer_reference',
     ];
@@ -214,6 +215,7 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
         'discount_amount',
         'tax_rate',
         'is_reverse_charge',
+        'property_country',
         'is_labour_cost_disclosed',
         'tax_amount',
         'total',

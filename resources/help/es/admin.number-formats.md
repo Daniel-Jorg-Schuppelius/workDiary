@@ -1,7 +1,7 @@
 ---
 title: "Formatos de numeración"
 topic: admin.number-formats
-version: 7
+version: 8
 keywords:
     - serie de numeración
     - número de factura
@@ -98,6 +98,17 @@ Si la **vía de facturación** de los ajustes de la organización está en un
 programa de contabilidad, este lleva las facturas por completo; la columna
 **Asignado por** lo indica. Si algunos clientes facturan por otra vía, debajo se
 indica para cuántos.
+
+La factura se envía con el tipo de impuesto de su caso fiscal: a Lexoffice
+como tipo de impuesto (por ejemplo, entrega intracomunitaria o servicios
+externos § 13b), a sevDesk como regla fiscal y a easybill como opción
+fiscal, siempre con el 0 % por posición. Si el programa no puede representar
+el caso, la factura sigue siendo un borrador y **Emitir** indica el motivo:
+orgaMAX solo asume facturas sujetas a impuesto y el § 19, Lexoffice ningún
+servicio no sujeto en Alemania con lugar en la UE, sevDesk con la
+contabilidad 1.0 ni el § 13b ni la inversión del sujeto pasivo a empresas de
+la UE, la exportación o el § 4. Para los tipos de impuesto exentos distintos
+de «exento», Lexoffice exige un contacto creado allí.
 
 ## Series bloqueadas
 

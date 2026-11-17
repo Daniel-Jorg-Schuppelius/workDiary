@@ -103,6 +103,8 @@ return [
         'lot_for_issue' => 'Charge (Entnahme)',
         'lot_fefo' => 'automatisch (FEFO)',
         'unit' => 'Einheit',
+        'unit_cost' => 'Einstandspreis je Einheit',
+        'unit_cost_hint' => 'Nur beim Eingang in Eigenbestand, in der Währung der Bewertung. Leer: Einkaufspreis der Variante, ohne ihn der aktuelle Durchschnitt.',
     ],
     'empty' => [
         'warehouses' => 'Noch keine Lagerorte angelegt.',

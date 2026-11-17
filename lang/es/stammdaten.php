@@ -50,4 +50,8 @@ return [
         'description' => 'Rellénela solo si la mercancía se entrega en una dirección distinta de la de la factura. Si queda vacía, la dirección de facturación es la de entrega.',
         'supplement' => 'Complemento de dirección',
     ],
+    // Rechnungsanschrift als Ganzes, etwa beim Zusammenführen (MVP-1701).
+    'billing' => [
+        'heading' => 'Dirección de facturación',
+    ],
 ];

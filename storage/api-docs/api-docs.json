@@ -5616,6 +5616,7 @@
                         "maxLength": 64
                     },
                     "address_street": {
+                        "description": "Rechnungsanschrift; fehlende Felder bleiben unverändert",
                         "type": "string",
                         "nullable": true,
                         "maxLength": 255
@@ -5634,6 +5635,27 @@
                         "description": "ISO 3166-1 alpha-2",
                         "type": "string",
                         "nullable": true
+                    },
+                    "bank_account_holder": {
+                        "description": "Bankverbindung; fehlende Felder bleiben unverändert",
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 200
+                    },
+                    "bank_iban": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 64
+                    },
+                    "bank_bic": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 32
+                    },
+                    "bank_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 200
                     },
                     "shipping_street": {
                         "description": "Abweichende Lieferanschrift; fehlende Felder bleiben unverändert, alle leer = keine",

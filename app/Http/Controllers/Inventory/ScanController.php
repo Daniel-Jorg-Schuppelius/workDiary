@@ -14,8 +14,10 @@ use App\Enums\Inventory\ScanAction;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\Inventory\Warehouse;
+use App\Rules\NonNegativeDecimal;
 use App\Services\Inventory\{BarcodeResolver, ScanActionService};
 use App\Support\{ErrorText, Sqid};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -56,6 +58,8 @@ class ScanController extends Controller {
             'qty' => ['required', 'numeric', 'gt:0'],
             'unit' => ['nullable', 'string', 'max:20'],
             'target' => ['nullable', 'string'],
+            // Einstandspreis je erfasster Einheit (MVP-1709), nur für den Eingang.
+            'unit_cost' => ['nullable', 'string', 'max:30', new NonNegativeDecimal()],
         ]);
 
         $action = ScanAction::tryFrom((string) $data['action']);
@@ -64,7 +68,7 @@ class ScanController extends Controller {
             return back()->with('error', __('inventory.scan.invalid'));
         }
 
-        $options = ['actor' => Auth::id() !== null ? (int) Auth::id() : null, 'unit' => $data['unit'] ?? null];
+        $options = ['actor' => Auth::id() !== null ? (int) Auth::id() : null, 'unit' => $data['unit'] ?? null, 'unit_cost' => StringHelper::trimToNull($data['unit_cost'] ?? null)];
         $targetRaw = (string) ($data['target'] ?? '');
         if ($targetRaw !== '') {
             $options['target'] = Warehouse::query()->find(Sqid::decodeOrNumeric(Warehouse::class, $targetRaw));

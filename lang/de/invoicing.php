@@ -169,7 +169,7 @@ return [
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Nie ausweisen',
-            'private_customers' => 'Bei Privatkunden ausweisen (ohne Firma und USt-IdNr.)',
+            'private_customers' => 'Bei Privatkunden ausweisen (Merkmal „Verbraucher“, sonst ohne Firma und USt-IdNr.)',
             'always' => 'Immer ausweisen',
         ],
         'share' => 'Arbeitsanteil § 35a EStG (%)',
@@ -571,7 +571,7 @@ return [
     // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
     'consumer' => [
         'label' => 'Verbraucher (kein Unternehmen)',
-        'hint' => 'Privatperson oder anderer Nichtunternehmer. Bestimmt den Leistungsort nach § 3a UStG: An Verbraucher im Drittland sind Katalogleistungen (Beratung, Datenverarbeitung, Rechte, Werbung, Vermietung beweglicher Gegenstände u. a.) im Inland nicht steuerbar, die übrigen Leistungen tragen deutsche Umsatzsteuer. Ohne Haken gilt der Kunde als Unternehmen.',
+        'hint' => 'Privatperson oder anderer Nichtunternehmer. Bestimmt den Leistungsort nach § 3a UStG: An Verbraucher im Drittland sind Katalogleistungen (Beratung, Datenverarbeitung, Rechte, Werbung, Vermietung beweglicher Gegenstände u. a.) im Inland nicht steuerbar, die übrigen Leistungen tragen deutsche Umsatzsteuer. Ohne Haken gilt der Kunde als Unternehmen. Bei der Regel „Bei Privatkunden ausweisen“ weist die Rechnung die Arbeitskosten nach § 35a EStG aus.',
         'recipient' => 'Leistungsempfänger',
         'yes' => 'Verbraucher',
         'no' => 'Unternehmen',
@@ -589,5 +589,20 @@ return [
         'changed_on_issue' => 'Der Steuerfall des Kunden hat sich seit der letzten Bearbeitung geändert (Reverse Charge, Ausfuhr oder steuerfrei). Der Entwurf wurde angepasst — bitte prüfen Sie die Summen und stellen Sie die Rechnung erneut.',
         'note_kept' => 'Der Rechnungstext wurde von Hand geändert und deshalb nicht angepasst: Bitte prüfen Sie den Hinweis zum Steuerfall (etwa Reverse Charge, Ausfuhr oder Steuerbefreiung) selbst.',
         'place_of_supply_mixed' => 'Die Positionen dieser Rechnung haben verschiedene Leistungsorte (§ 3a UStG) und damit verschiedene Steuerfälle. Bitte teilen Sie die Rechnung: je Steuerfall eine Rechnung, etwa Grundstücks- oder Katalogleistungen getrennt von den übrigen Leistungen.',
+        'line_rates_aligned' => 'Positionen ohne eigene Steuerkategorie folgen dem Steuerfall der Rechnung: Ihr Satz wurde angeglichen (ohne Steuer 0 %, nach einem Wechsel in die Steuerpflicht der Satz des Steuerfalls). Für einen abweichenden Satz wählen Sie an der Position eine Steuerkategorie.',
+        'line_rates_on_issue' => 'Positionen ohne eigene Steuerkategorie trugen einen Satz, der nicht zum Steuerfall der Rechnung passt. Ihr Satz wurde angeglichen — bitte prüfen Sie die Summen und stellen Sie die Rechnung erneut.',
+    ],
+    // Ort des Grundstücks an der Rechnung (MVP-1706).
+    'property_country' => [
+        'legend' => 'Leistungsort',
+        'label' => 'Ort des Grundstücks (Land, ISO 2)',
+        'hint' => 'Nur für Grundstücksleistungen (§ 3a Abs. 3 Nr. 1 UStG). Geht dem Einsatzort des Auftrags vor; leer gilt der Einsatzort, ohne ihn das Inland. Liegt das Grundstück im Ausland, ist die Leistung im Inland nicht steuerbar.',
+        'shown' => 'Ort des Grundstücks',
+    ],
+    // Soll-Befund bei Pauschal-Abrechnung (MVP-1708).
+    'target_settlement' => [
+        'flat_rate' => 'Pauschal abgerechnet mit Rechnung :number — keine Auffüllung',
+        'flat_rate_transfer' => 'Pauschal abgerechnet mit Übergabe #:id — keine Auffüllung',
+        'flat_rate_voucher' => 'Pauschal abgerechnet mit dem Zeitbeleg im Buchhaltungsprogramm — keine Auffüllung',
     ],
 ];

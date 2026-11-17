@@ -20,7 +20,8 @@ use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Finance\BillingPositionBuilder;
 use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ReconcilesByMarker};
-use App\Services\Finance\Targets\{FacturationTarget, TargetResult};
+use App\Services\Finance\Targets\{FacturationTarget, MapsTaxCases, TargetResult, TransferTaxCases};
+use App\Services\Invoicing\Dto\OutgoingTaxCase;
 use CommonToolkit\Helper\Data\JsonHelper;
 use GuzzleHttp\Exception\ConnectException;
 use Orgamax\API\Client;
@@ -41,8 +42,11 @@ use RuntimeException;
  * Timeout nach dem Schreiben löst KEINE blinde Wiederholung aus — der
  * Transfer scheitert als „Ergebnis unklar" und der nächste Lauf adoptiert
  * den gefundenen Auftrag statt doppelt anzulegen.
+ *
+ * Steuerfall (MVP-1712): Die API führt keine Steuerart; außer dem Standardfall
+ * und § 19 geht nichts hinüber ({@see OrgaMaxTaxCase}).
  */
-class OrgaMaxTarget implements FacturationTarget {
+class OrgaMaxTarget implements FacturationTarget, MapsTaxCases {
     use LoadsBillingSources;
     use ReconcilesByMarker;
 
@@ -57,6 +61,10 @@ class OrgaMaxTarget implements FacturationTarget {
 
     public function supports(TransferTarget $target): bool {
         return $target === TransferTarget::OrgaMax;
+    }
+
+    public function taxCaseBlocker(int $organizationId, OutgoingTaxCase $case): ?string {
+        return OrgaMaxTaxCase::blocker($case);
     }
 
     public function transfer(BillingTransfer $transfer): TargetResult {
@@ -77,6 +85,9 @@ class OrgaMaxTarget implements FacturationTarget {
             return new TargetResult(externalReference: $existing);
         }
 
+        $taxCase = app(TransferTaxCases::class)->single($transfer);
+        OrgaMaxTaxCase::assertMappable($taxCase);
+
         $client = $this->clients->for($connection);
         $marker = self::MARKER_PREFIX . $transfer->payload_hash;
 
@@ -90,7 +101,7 @@ class OrgaMaxTarget implements FacturationTarget {
         $transfer->loadMissing(['items', 'customer']);
         $customerRef = $this->resolveCustomerReference($transfer);
 
-        $positions = $this->positions($transfer);
+        $positions = $this->positions($transfer, $taxCase);
         if ($positions === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
@@ -183,9 +194,11 @@ class OrgaMaxTarget implements FacturationTarget {
      * bekommt weiterhin frei erfasste Positionen (kein Artikelverweis), aber
      * mit Bezeichnung, Einheit und Preis aus der geprüften Position.
      *
+     * § 19 trägt 0 %; der Standardfall bleibt ohne Satz wie bisher.
+     *
      * @return list<array<string, mixed>>
      */
-    private function positions(BillingTransfer $transfer): array {
+    private function positions(BillingTransfer $transfer, OutgoingTaxCase $taxCase): array {
         // Vollständigkeits-Guard der Quellen bleibt (M41).
         $transfer->channel === TransferChannel::Time
             ? $this->loadTimeEntries($transfer)
@@ -198,12 +211,13 @@ class OrgaMaxTarget implements FacturationTarget {
                 continue;
             }
 
-            $positions[] = self::position(
+            $row = self::position(
                 trim($position->name . (filled($position->description) ? "\n" . $position->description : '')),
                 round($position->quantityFloat(), 2),
                 (string) ($position->unit_name ?: __('invoicing.unit_piece')),
                 $position->unitPriceFloat(),
             );
+            $positions[] = $taxCase->zeroRated() ? $row + ['vatPercent' => 0.0] : $row;
         }
 
         return $positions;

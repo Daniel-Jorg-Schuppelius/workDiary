@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX Buchhaltung"
 topic: admin.orgamax
-version: 2
+version: 3
 keywords:
     - orgaMAX Schnittstelle
     - orgaMAX API
@@ -49,6 +49,12 @@ statt blinder Wiederholung). Umwandeln in eine Rechnung, irreversibles
 Sperren, Versand und Zahlung melden sind getrennte, eigens berechtigte und
 auditierte Aktionen. Rechnungsnummer, Status, Zahlung und PDF stammen
 sichtbar aus orgaMAX.
+
+Steuerfall: Die orgaMAX-API führt keine Steuerart, nur den Satz je Position.
+Übergaben und Rechnungen gehen deshalb nur steuerpflichtig oder als
+Kleinunternehmer (§ 19, 0 %) hinüber. Reverse Charge, § 13b, innergemeinschaftliche
+Lieferung, Ausfuhr und nicht steuerbare Leistungen sperren vor dem Senden mit
+Grund — rechnen Sie diese in WorkDiary ab oder erfassen Sie sie in orgaMAX.
 
 Polling läuft budgetiert mit Checkpoints (stündlich, konfigurierbar);
 „Jetzt synchronisieren" respektiert dieselben Limits. Die Ausgaben-/Beleg-

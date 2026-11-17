@@ -1,7 +1,7 @@
 ---
 title: "Zuordnungs-Inbox"
 topic: admin.integration-inbox
-version: 6
+version: 7
 keywords:
     - Integrations-Inbox
     - Importkonflikte
@@ -34,6 +34,8 @@ dem E-Mail-Eingang. Nichts wird blind angelegt: Je Eintrag entscheiden Sie.
 - **Mehrdeutig** – mehrere Datensätze kommen in Frage.
 - **Feld-Konflikt** – der Datensatz ist bekannt, aber der lokale und der
   entfernte Stand widersprechen sich. Beide Stände stehen nebeneinander.
+  Bei Kunden zählt die Lieferanschrift mit; **Remote übernehmen** schreibt
+  nur die abweichenden Felder, Anschrift und Bankverbindung bleiben sonst stehen.
 
 **Nummer schon vergeben:** Ein Sonderfall des Feld-Konflikts. Ein
 Buchhaltungsprogramm hat einem Kunden oder Lieferanten eine Nummer vergeben,

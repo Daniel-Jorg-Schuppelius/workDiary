@@ -45,6 +45,7 @@ return [
         'total_amount' => 'Gesamtbetrag (netto)',
         'total_quantity' => 'Gesamtmenge',
         'payload_hash' => 'Payload-Hash',
+        'tax_case' => 'Steuerfall',
         'transferred_at' => 'Übergeben am',
         'failure_reason' => 'Fehlergrund',
         'customer' => 'Kunde',
@@ -173,6 +174,12 @@ return [
         'cancelled' => 'Übergabe storniert — Quellen wurden wieder freigegeben.',
     ],
 
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'mixed' => 'Die Positionen dieser Übergabe ergeben verschiedene Steuerfälle (:cases), etwa wegen verschiedener Leistungsorte (§ 3a UStG). Ein Beleg trägt einen Steuerfall: Bitte die Übergabe verwerfen und je Steuerfall getrennt übergeben, etwa nach Zeitraum, oder die Leistungen in workDiary abrechnen.',
+        'blocked_title' => 'Übertragen gesperrt (Steuerfall)',
+        'confirm_warning' => 'So lässt sich die Übergabe nicht übertragen: :reason',
+    ],
     'error' => [
         'local_invoicing_locked' => 'Fakturierung führt :program; lokale Rechnungserstellung ist gesperrt.',
         'sources_already_reserved' => ':count Quelle(n) dieses Nachweises sind bereits in einem anderen bestätigten Nachweis enthalten — bitte den Nachweis neu erstellen.',

@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 10
+version: 11
 keywords:
     - create project
     - project management
@@ -101,12 +101,23 @@ bills one line with quantity 1 at the rule's price; the top-up to agreed hours d
 not apply then, because the flat rate covers the order regardless of its duration.
 All other units, such as hour, day or pcs, bill by duration.
 
+The document that bills the flat rate closes the shortfall of such a project —
+the invoice, the transfer when it is sent, or the time voucher in Lexoffice: it
+shows as resolved on the time tab with the number of the invoice or transfer, and
+the nightly check does not reopen it. A later booking on that day stays billable,
+because nothing was topped up. If you remove the line, discard the draft or cancel
+the invoice or the transfer, the shortfall is open again. Acknowledge shortfalls
+whose flat rate was billed earlier by hand.
+
 The billing rule also names the **place of supply** of its times (§ 3a UStG):
 **General**, **Catalogue service** or **Service connected with immovable
 property**. Empty means the place of supply of its article, otherwise the
 organisation default. For property services the property is at the site of the
 order, in Germany if none is stated. The rules table shows a chosen type next to
 the item type.
+
+For property services the country **Location of the property** of the invoice
+(**Terms** dialog on the draft) takes precedence over the site.
 
 ## Common mistakes
 

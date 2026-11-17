@@ -36,5 +36,7 @@ return [
         'label' => 'Variant: :variant',
         'mismatch' => 'The variant does not belong to the item of the selected material.',
         'inactive' => 'This variant is not active and cannot be newly selected.',
+        'not_selectable' => 'no longer selectable',
+        'kept_hint' => 'The saved variant can no longer be selected. It is kept when saving as long as the material stays the same.',
     ],
 ];

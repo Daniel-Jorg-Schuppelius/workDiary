@@ -20,7 +20,8 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Services\Finance\BillingPositionBuilder;
 use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ReconcilesByMarker};
-use App\Services\Finance\Targets\{FacturationTarget, TargetResult};
+use App\Services\Finance\Targets\{FacturationTarget, MapsTaxCases, TargetResult, TransferTaxCases};
+use App\Services\Invoicing\Dto\OutgoingTaxCase;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Exception\ConnectException;
 use InvalidArgumentException;
@@ -53,8 +54,11 @@ use RuntimeException;
  * Fehlversuch sucht der nächste Lauf den Entwurf über den Quellmarker. Lexoffice
  * hat kein internes Notizfeld — der Marker steht deshalb in der Schlussbemerkung
  * des Entwurfs (Entscheidung des Inhabers).
+ *
+ * Steuerart aus dem Steuerfall der Übergabe ({@see LexofficeTaxConditions},
+ * MVP-1712); ohne Lexware-Steuerart geht nichts hinaus.
  */
-class LexofficeTarget implements FacturationTarget {
+class LexofficeTarget implements FacturationTarget, MapsTaxCases {
     use LoadsBillingSources;
     use ReconcilesByMarker;
 
@@ -75,6 +79,10 @@ class LexofficeTarget implements FacturationTarget {
         return $target === TransferTarget::Lexoffice;
     }
 
+    public function taxCaseBlocker(int $organizationId, OutgoingTaxCase $case): ?string {
+        return LexofficeTaxConditions::blocker($case);
+    }
+
     public function transfer(BillingTransfer $transfer): TargetResult {
         $client = app(LexofficeClientFactory::class)->for($transfer->organization_id);
 
@@ -84,6 +92,10 @@ class LexofficeTarget implements FacturationTarget {
         }
 
         $transfer->loadMissing(['items', 'customer']);
+        // Vor jedem Schreibzugriff (Kontakt-Push): ein Fall ohne Lexware-Steuerart bricht hier ab.
+        $taxCase = app(TransferTaxCases::class)->single($transfer);
+        $defaults = LexofficeConfig::resolve($transfer->organization_id)['defaults'];
+        $taxConditions = LexofficeTaxConditions::for($taxCase, (string) ($defaults['default_tax_type'] ?? 'net'));
         $marker = self::MARKER_PREFIX . substr((string) $transfer->payload_hash, 0, self::MARKER_HASH_LENGTH);
         $contactId = $this->resolveContactId($transfer->customer, $client);
 
@@ -96,7 +108,7 @@ class LexofficeTarget implements FacturationTarget {
             }
         }
 
-        $payload = $this->invoicePayload($transfer, LexofficeConfig::resolve($transfer->organization_id)['defaults'], $contactId, $marker);
+        $payload = $this->invoicePayload($transfer, $defaults, $contactId, $marker, $taxCase, $taxConditions);
 
         try {
             // Rechnungsentwurf — bewusst KEIN ?finalize=true (Hoheit bei Lexoffice).
@@ -198,13 +210,14 @@ class LexofficeTarget implements FacturationTarget {
      * vorbereiten" am Nachweis: Entwurf drüben löschen, hier neu übertragen.
      *
      * @param  array<string, mixed>  $defaults
+     * @param  array{taxType: string, taxTypeNote?: string}  $taxConditions
      * @return array<string, mixed>
      */
-    private function invoicePayload(BillingTransfer $transfer, array $defaults, string $contactId, string $marker): array {
+    private function invoicePayload(BillingTransfer $transfer, array $defaults, string $contactId, string $marker, OutgoingTaxCase $taxCase, array $taxConditions): array {
         $customer = $transfer->customer;
         $currency = $customer->currency->value;
 
-        $lineItems = $this->lineItems($transfer, $currency, $defaults);
+        $lineItems = $this->lineItems($transfer, $currency, $defaults, $taxCase);
         if ($lineItems === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
@@ -217,7 +230,7 @@ class LexofficeTarget implements FacturationTarget {
             'address' => ['contactId' => $contactId],
             'lineItems' => $lineItems,
             'totalPrice' => ['currency' => $currency],
-            'taxConditions' => ['taxType' => (string) ($defaults['default_tax_type'] ?? 'net')],
+            'taxConditions' => $taxConditions,
             'shippingConditions' => $from !== null && $to !== null
                 ? ['shippingType' => 'serviceperiod', 'shippingDate' => $from . 'T00:00:00.000+01:00', 'shippingEndDate' => $to . 'T00:00:00.000+01:00']
                 : ['shippingType' => 'none'],
@@ -252,10 +265,12 @@ class LexofficeTarget implements FacturationTarget {
      * Positionstext (Standardtext + Leistungstext + Leistungsdatum) geht in
      * `description` — bislang blieb das Feld ungenutzt.
      *
+     * Steuerfreie Fälle tragen 0 % (Lexware: Pflicht bei steuerfreien Arten).
+     *
      * @param  array<string, mixed>  $defaults
      * @return list<array<string, mixed>>
      */
-    private function lineItems(BillingTransfer $transfer, string $currency, array $defaults): array {
+    private function lineItems(BillingTransfer $transfer, string $currency, array $defaults, OutgoingTaxCase $taxCase): array {
         // Vollständigkeits-Guard der Quellen bleibt (M41): fehlt eine Quelle,
         // ist der Nachweis unvollständig — dann lieber gar nicht senden.
         $transfer->channel === TransferChannel::Time
@@ -279,7 +294,11 @@ class LexofficeTarget implements FacturationTarget {
                 'unitPrice' => [
                     'currency' => $currency,
                     'netAmount' => round($position->unitPriceFloat(), 2),
-                    'taxRatePercentage' => $position->vat_rate !== null ? (float) $position->vat_rate : $vatRate,
+                    'taxRatePercentage' => match (true) {
+                        $taxCase->zeroRated() => 0.0,
+                        $position->vat_rate !== null => (float) $position->vat_rate,
+                        default => $vatRate,
+                    },
                 ],
             ];
 

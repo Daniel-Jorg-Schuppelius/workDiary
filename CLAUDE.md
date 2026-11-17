@@ -349,6 +349,15 @@ eine Projektion (`address_*`, `bank_*`, `ContactDetailsProjectionObserver`).
   `WritesContactDetails` (`pullContactDetails()` vor, `writeContactDetails()`
   nach dem Speichern); Dienste `ContactDetailsWriter::pullInline()` +
   `writeInline()` (Teil-Update). Anzeige `postalAddressLines()`.
+- **Anschrift und Bank nur über den Writer (MVP-1700/1701):** Teil-Updates
+  über `writeInline()` — Altbestand ohne Satellit übernimmt ihn vorher aus der
+  Projektion (`adoptProjection()`), sonst leert der Observer die übrigen
+  Spalten. Zusammenführen über `ContactDetailsWriter::mergeInto()` (genau eine
+  primäre Anschrift und Bankverbindung). Gate: `Tests\TestCase` bricht jeden
+  direkten Schreibzugriff aus `app/` auf `address_*`/`country`/`bank_*` von
+  Kunde und Lieferant ab (`ContactProjectionGuard`,
+  `ContactProjectionWriteRuleTest`) — den Pfad umstellen, nicht in die
+  Allowlist eintragen.
 - **Lieferanschrift (MVP-1689):** Satellit mit `kind = shipping` ohne
   Projektion — `ContactDetailsProjectionObserver` überspringt ihn,
   `primaryAddress()` ist nie eine Lieferanschrift. Formular

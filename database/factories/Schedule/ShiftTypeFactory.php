@@ -17,19 +17,34 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @extends Factory<ShiftType>
  */
 class ShiftTypeFactory extends Factory {
+    /**
+     * Name und Regelzeiten gehören zusammen: unabhängig gewürfelte Zeiten
+     * ergaben in gut jedem dritten Fall 14–24-h-Dienste und damit zufällige
+     * Verstöße gegen die Tageshöchstarbeitszeit (MVP-1713). Lange Dienste
+     * setzt der Test ausdrücklich.
+     *
+     * @var list<array{0: string, 1: ?string, 2: ?string}>
+     */
+    private const array PRESETS = [
+        ['Frühdienst', '06:00', '14:00'],
+        ['Spätdienst', '14:00', '22:00'],
+        ['Nachtdienst', '22:00', '06:00'],
+        ['Wochenenddienst', '08:00', '16:00'],
+        ['Rufbereitschaft', null, null],
+    ];
+
     protected $model = ShiftType::class;
 
     public function definition(): array {
-        $name = fake()->randomElement(['Frühdienst', 'Spätdienst', 'Nachtdienst', 'Wochenenddienst', 'Rufbereitschaft']);
-        $abbr = mb_strtoupper(mb_substr($name, 0, 2));
+        [$name, $start, $end] = fake()->randomElement(self::PRESETS);
         $colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
         return [
             'name' => $name,
-            'abbreviation' => $abbr,
+            'abbreviation' => mb_strtoupper(mb_substr($name, 0, 2)),
             'color' => fake()->randomElement($colors),
-            'default_start_time' => fake()->randomElement(['06:00', '08:00', '14:00', '22:00', null]),
-            'default_end_time' => fake()->randomElement(['14:00', '16:00', '22:00', '06:00', null]),
+            'default_start_time' => $start,
+            'default_end_time' => $end,
             'is_active' => true,
         ];
     }

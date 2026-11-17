@@ -1,7 +1,7 @@
 ---
 title: "Stock levels & scanning"
 topic: inventory.stock
-version: 8
+version: 9
 keywords:
     - inventory
     - stock on hand
@@ -16,6 +16,7 @@ keywords:
     - FEFO
     - scan barcode
     - stock value
+    - unit cost
 audience: []
 modules:
     - module.lager
@@ -100,7 +101,9 @@ blocked lots only after their release.
 
 **Variant of a material usage:** If the item has several active variants, the usage posts the variant selected on the timesheet, without a selection the default variant. Changing the variant returns the previous one and withdraws the new one.
 
-**Valuation of issues:** Issues from own stock — in the posting form, by scan and after a four-eyes approval — are valued by the item's valuation method like deliveries and material usage: FIFO and FEFO consume the valuation layers, the moving average reduces the average book at the current average price. Issues from third-party stock (customer, consignment, supplier, project) remain unvalued. The stock issue in the customer file also posts by the item's method; deleting the allocation returns it as a new layer at the issue's unit cost for FIFO and FEFO, and into the average book for the moving average. The manual receipt has no unit price and remains unvalued.
+**Valuation of issues:** Issues from own stock — in the posting form, by scan, after a four-eyes approval, for material consumption in manufacturing and when a reservation is fulfilled — are valued by the item's valuation method like deliveries and material usage: FIFO and FEFO consume the valuation layers, the moving average reduces the average book at the current average price. Issues from third-party stock (customer, consignment, supplier, project) remain unvalued. The stock issue in the customer file also posts by the item's method; deleting the allocation returns it as a new layer at the issue's unit cost for FIFO and FEFO, and into the average book for the moving average.
+
+**Valuation of receipts:** A receipt into own stock — in the posting form and by scan — is valued like the goods receipt of a purchase order. In the **Unit cost** field you enter the price per entered unit (for example per carton), with a comma or a point; it is posted per base unit. If left empty, the purchase price of the variant applies (without its own, that of the item), without a purchase price the current average of the warehouse, and without any valuation zero. The price is in the currency in which the valuation keeps the item in the warehouse, otherwise in that of the organisation; a purchase price in another currency is ignored. With FIFO and FEFO the receipt adds a valuation layer; with the moving average it recalculates the average. Receipts into third-party stock remain unvalued.
 
 **Redistributing reservations:** In the “Edit reservation” dialog you hand over open quantity to another reservation of the same article, warehouse and ownership, for example to an order with higher priority. A newer reservation never silently displaces an older one; the redistribution is recorded in the audit log and the material line of a manufacturing order follows it.
 

@@ -617,6 +617,9 @@ class BillingTransferService {
             return $this->sourceFor($transfer->channel)->setConsumed($transfer, $consumed, $held);
         }
         $changed = 0;
+        $targetPositions = null;
+        $flatRate = [];
+        $settledByFlatRate = [];
 
         foreach ($items as $item) {
             /** @var BillingTransferItem $item */
@@ -642,22 +645,39 @@ class BillingTransferService {
                 // Auffüllung auf Soll (Feature 194): berechnet heißt Minuten, Zeitpunkt und Position am Befund;
                 // eine von einer Rechnung berechnete Auffüllung gehört der Rechnung.
                 $shortfall = ProjectTimeShortfall::query()->find($item->source_id);
-                if ($shortfall !== null && $shortfall->invoice_item_id === null && ($shortfall->billed_minutes !== null) !== $consumed) {
-                    $position = $consumed
-                        ? $transfer->positions()->where('source_kind', BillingTransferPosition::KIND_TARGET)->get()
-                            ->first(fn(BillingTransferPosition $p): bool => in_array((int) $shortfall->id, $p->source_ids ?? [], true))
-                        : null;
-                    $shortfall->forceFill([
-                        'billed_minutes' => $consumed ? (int) $shortfall->shortfall_minutes : null,
-                        'billed_at' => $consumed ? now() : null,
-                        'billing_transfer_position_id' => $position?->id,
-                    ])->saveQuietly();
+                if ($shortfall === null || $shortfall->invoice_item_id !== null) {
+                    continue;
+                }
+                if ($consumed) {
+                    $targetPositions ??= $transfer->positions()->where('source_kind', BillingTransferPosition::KIND_TARGET)->get();
+                    $position = $targetPositions->first(fn(BillingTransferPosition $p): bool => in_array((int) $shortfall->id, $p->source_ids ?? [], true));
+                    // Berechnet nur mit Auffüllposition (MVP-1716); ohne sie rechnet das Projekt pauschal ab.
+                    if ($position === null) {
+                        $flatRate[] = $shortfall;
+                    } elseif ($shortfall->billed_minutes === null) {
+                        $shortfall->forceFill([
+                            'billed_minutes' => (int) $shortfall->shortfall_minutes,
+                            'billed_at' => now(),
+                            'billing_transfer_position_id' => $position->id,
+                        ])->saveQuietly();
+                        $changed++;
+                    }
+                } elseif ($shortfall->billed_minutes !== null) {
+                    $shortfall->forceFill(['billed_minutes' => null, 'billed_at' => null, 'billing_transfer_position_id' => null])->saveQuietly();
                     $changed++;
+                } elseif ($shortfall->billing_transfer_position_id !== null) {
+                    $settledByFlatRate[] = $shortfall;
                 }
             }
         }
 
-        return $changed;
+        // Pauschal-Befunde schließt die Übergabe wie der Rechnungslauf (MVP-1716); der Storno öffnet sie wieder.
+        $topUps = app(TargetTopUps::class);
+        if ($flatRate !== []) {
+            $changed += $topUps->settleFlatRateByTransfer(new \Illuminate\Database\Eloquent\Collection($flatRate), $transfer);
+        }
+
+        return $changed + $topUps->reopenFlatRate($settledByFlatRate);
     }
 
     /**

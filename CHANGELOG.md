@@ -91,9 +91,51 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   und Korrekturrechnung nehmen das des Originals. Artikeldialog, Detailseite
   und Artikelimport (Spalte `place_of_supply_kind`) sowie Regeldialog und
   Regeltabelle des Projekts führen die Art.
+- Einstandspreis beim manuellen Eingang (`MVP-1709`): Buchungsformular im
+  Lager und Scan-Eingang führen das optionale Feld „Einstandspreis je
+  Einheit“ (Komma oder Punkt, je erfasster Einheit, gebucht je
+  Basiseinheit). Der Eingang in Eigenbestand bucht über die Bewertung der
+  Variante wie der Wareneingang der Bestellung: FIFO und FEFO legen eine
+  Schicht an, der gleitende Durchschnitt rechnet neu. Leer gilt der
+  Einkaufspreis der Variante (ohne eigenen der des Artikels), ohne ihn der
+  aktuelle Durchschnitt des Lagers, ohne jeden Bewertungsstand null. Der Preis
+  gilt in der Währung, in der die Bewertung den Artikel im Lager führt, sonst
+  in der Standardwährung der Organisation; ein Einkaufspreis in anderer
+  Währung bleibt außen vor. Fremdbestand bleibt unbewertet, der Lagerplatz
+  steht an der Bewegung.
+
+- Kundenliste als CSV (`MVP-1703`): Die CSV-Liste der Kundenübersicht führt
+  Registernummer und Lieferanschrift; die Kopfzeilen („Registernummer“,
+  „Lieferstraße“, „Lieferadresszusatz“, „Liefer-PLZ“, „Lieferort“,
+  „Lieferland“) sind die des CSV-Imports, die Liste bleibt also einlesbar. Die
+  OpenAPI-Beschreibung der Kunden-API nennt die Bankfelder.
+- Ort des Grundstücks an der Rechnung (`MVP-1706`): Trägt eine Position eine
+  Grundstücksleistung (Leistungsort-Art „Grundstücksleistung“ über ihren
+  Artikel oder die Abrechnungsregel), führt der Dialog „Konditionen“ am
+  Entwurf das Land „Ort des Grundstücks“ (ISO-Kürzel). Es geht dem Einsatzort
+  des Auftrags vor und hilft vor allem bei Rechnungen ohne Auftrag; leer gilt
+  wie bisher der Einsatzort, ohne ihn das Inland. Liegt das Grundstück im
+  Ausland, ist die Leistung nicht steuerbar (O). Das Ausstellen schreibt das
+  Land mit der Rechnung fest; Stornorechnung, Korrekturrechnung und die
+  Umwandlung einer Pro-forma übernehmen es. E-Rechnung, PDF und Buchhaltung
+  folgen der eingefrorenen Kategorie. Die Rechnungsseite nennt das Land, die
+  Rechnungs-API liefert `property_country`.
 
 ### Behoben
 
+- Fertigung: Der Eingang des Fertigerzeugnisses war unbewertet, die
+  Auslieferung bewertet — das Bewertungsbuch des Erzeugnisses lief ins Minus.
+  Die Gutmenge geht jetzt mit den Herstellkosten ins Lager (Materialverbrauch
+  plus Arbeitszeit zum internen Satz je Gutstück); Teilrückmeldungen buchen den
+  Zuwachs, sodass alle Eingänge die Herstellkosten des Auftrags ergeben
+  (`MVP-1719`).
+- Schichttausch: Scheitert die Freigabe an der Qualifikationssperre, zeigt der
+  Dialog die Sperre statt Häkchen und Begründungsfeld für eine Übersteuerung,
+  die sie nie aufhebt (`MVP-1715`).
+- Stundenzettel: Beim Bearbeiten einer Materialzeile, deren Material inzwischen
+  inaktiv ist, stand die Auswahl auf „frei“ — das Speichern entfernte das
+  Material samt Lagerbuchung still. Das Material der Zeile bleibt jetzt wählbar
+  (`MVP-1714`).
 - Rechnungseingang (`MVP-1696`): Eingänge, deren Zusammenfassung vor
   `MVP-1686` die Registernummer des Verkäufers als Steuernummer führte, lassen
   sich einmalig aus dem abgelegten Original neu auswerten. Nur Steuer- und
@@ -125,6 +167,136 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   seit dem Original geändert, wich die Kategorie des Kopfes von den
   übernommenen Positionskategorien ab, und Buchhaltung und E-Rechnung lasen
   verschiedene Fälle.
+- Fertigungsverbrauch und Reservierungs-Erfüllung buchen Eigenbestand
+  bewertet (`MVP-1710`): Der Materialverbrauch eines Fertigungsauftrags — über
+  die Reservierung oder ohne sie — geht nach dem Verfahren des Artikels ab
+  (FIFO und FEFO verbrauchen Schichten, der gleitende Durchschnitt mindert
+  sein Buch) und nennt den Auftrag als Beleg; vorher standen die Bewegungen
+  ohne Kostenwert, und FIFO-Schichten blieben trotz Verbrauch stehen. Die
+  Ist-Materialkosten der Position sind jetzt die Kosten der Entnahme statt
+  Menge × Kosten der nächsten Schicht. Fremdbestand bleibt unbewertet,
+  Lagerplatz und Negativ-Freigabe bleiben.
+- Variante am Materialverbrauch (`MVP-1711`): Ist die gespeicherte Variante
+  nicht mehr wählbar (stillgelegt, oder der Artikel hat nur noch eine aktive
+  Variante), zeigt der Dialog am Stundenzettel sie mit „nicht mehr wählbar“ —
+  bei weiteren Varianten als gewählte Option, sonst als gesperrtes Feld. Das
+  Speichern behält sie, solange das Material bleibt; vorher sendete das
+  verborgene Feld eine leere Wahl, und die Zeile fiel still auf die
+  Standardvariante zurück und buchte um.
+
+- Anschrift und Bankverbindung über den Satelliten (`MVP-1700`): Kunden-API
+  und CSV-Import von Kunden und Lieferanten schrieben Rechnungsanschrift und
+  Bankverbindung direkt in die Listenspalten, an der gespeicherten Anschrift
+  vorbei; sie gehen jetzt wie im Dialog über Anschrift und Bankverbindung des
+  Kontakts. Ein Teil-Update (API, Import, Abgleich mit Buchhaltungsprogrammen,
+  Integrations-Eingang) leerte bei Bestandskontakten ohne gespeicherte
+  Anschrift die nicht gelieferten Felder; jetzt wird sie vorher aus den
+  Listenspalten übernommen. Ein API-Update ohne `country`, `bank_iban` oder
+  `bank_bic` leerte diese Felder; jetzt bleiben sie. Die Testsuite bricht jeden
+  direkten Schreibzugriff aus der App auf die Listenspalten ab.
+- Zusammenführen von Kunden und Lieferanten (`MVP-1701`): Danach gab es zwei
+  primäre Rechnungsanschriften und Bankverbindungen, und die übernommenen
+  Einzelfelder (Straße, PLZ, Ort, IBAN) liefen an der Anschrift vorbei.
+  Rechnungsanschrift und Bankverbindung stehen jetzt je als ein Feld: Das Ziel
+  behält seine, angehakt gilt die der Quelle; die andere bleibt als weitere
+  stehen, eine gleichlautende entfällt. Die Koordinaten folgen der geltenden
+  Anschrift, Fremd-IDs der Anschriften bleiben am Ziel eindeutig.
+- Lexoffice-Abgleich mit „Lexoffice gewinnt“ (`MVP-1702`): Eine in WorkDiary
+  angelegte Rechnungs- oder Lieferanschrift bekam beim Abgleich eine zweite
+  aus Lexoffice daneben, beide primär. Jetzt übernimmt die lokale Anschrift
+  derselben Art (die primäre zuerst) die Lexoffice-Kennung; primär ist danach
+  nur die erste Rechnungsanschrift aus Lexoffice. sevDesk, easybill, orgaMAX
+  und CardDAV gleichen über den Integrations-Eingang ab und ändern die primäre
+  Anschrift an Ort und Stelle.
+- Integrations-Eingang (`MVP-1703`): Die Verknüpfung mit einem vorhandenen
+  Kunden verglich die Lieferanschrift nicht; abweichende Felder gehen jetzt
+  wie bei der Neuanlage in den Feld-Konflikt bzw. werden mit „Remote gewinnt“
+  übernommen.
+- Schichttausch bei Qualifikationssperre (`MVP-1713`): Verletzte der Tausch
+  zusätzlich eine Arbeitszeitregel, verlangte die Freigabe erst eine
+  Begründung für die Übersteuerung und meldete die fehlende
+  Pflichtqualifikation erst danach. Jetzt nennt sie die Sperre sofort, die
+  sich ohnehin nicht übersteuern lässt. Testdaten: Schichtarten der
+  Test-Factory haben zum Namen passende Regelzeiten statt frei gewürfelter
+  (bis 24 h), die zufällig gegen die Tageshöchstarbeitszeit verstießen.
+- Steuerfall beim Anlegen (`MVP-1704`): Abrechnungsplan, Verleih, Zähler,
+  Reselling, Abschlag und Retainer legten den Kopf nach der Vorgabe der
+  Organisation an; wich der Leistungsort ihrer Positionen ab, hielt das erste
+  Ausstellen einmal mit „Steuerfall geändert“ an (beim Retainer scheiterte
+  damit die Übergabe an das Programm). Sie bestimmen den Fall jetzt wie der
+  Rechnungslauf aus Zeiten über den Leistungsort der Positionen:
+  Abrechnungsplan, Verleih, Reselling und die Umwandlung einer Pro-forma
+  gleichen nach dem Anlegen der Positionen ab; Abschlag, Retainer und Zähler,
+  deren Positionen ihre Kategorie selbst tragen, nehmen die Leistung des
+  Projekts — dieselbe Quelle, die das Ausstellen prüft. Reselling-Positionen
+  tragen keine kopierte Kategorie mehr, damit der Leistungsort der
+  Abo-Artikel zählt. Die Summen eines Abrechnungsplans rechnen mit demselben
+  Satz wie sein Lauf.
+- Angebot und Auftragsbestätigung (`MVP-1705`): Positionen ohne eigenen
+  Steuersatz rechnen mit dem Satz nach dem Leistungsort ihrer
+  Leistungsartikel, ohne Leistungsartikel nach der Leistung des Projekts — wie
+  die Rechnung, die daraus entsteht. Vorher galt die Vorgabe der
+  Organisation, etwa 0 % statt 19 % für eine Grundstücksleistung im Inland an
+  ein Unternehmen im EU-Ausland.
+- Arbeitskosten nach § 35a EStG (`MVP-1707`): Bei der Regel „Bei Privatkunden
+  ausweisen“ gilt ein Kunde mit dem Merkmal „Verbraucher“ als Privatkunde,
+  auch mit Firmenname oder USt-IdNr.; ohne Merkmal bleibt die bisherige
+  Erkennung (weder Firma noch USt-IdNr.), damit Bestandskunden den Ausweis
+  behalten.
+- Soll-Befund bei Pauschal-Abrechnung (`MVP-1708`): Rechnet ein Projekt mit
+  „Vereinbarte Stunden abrechnen“ die Arbeit pauschal ab, entfällt seit
+  `MVP-1678` die Auffüllung — der Befund blieb aber offen in Arbeitsvorrat,
+  Frühwarnung, Leitungssicht und in jedem weiteren Rechnungslauf. Der
+  Rechnungslauf, der die Pauschale abrechnet, schließt ihn jetzt als erledigt
+  mit Verweis auf die Position (am Zeitreiter mit der Rechnungsnummer); der
+  nächtliche Abgleich öffnet ihn nicht wieder. Entfernen der Position,
+  Verwerfen des Entwurfs oder Storno öffnen ihn wieder. Anders als nach einer
+  Auffüllung bleibt eine Nachbuchung auf den Tag abrechenbar.
+- Soll-Befund bei Pauschal-Abrechnung in Übergabe und Lexoffice-Zeitbeleg
+  (`MVP-1716`): Wie der Rechnungslauf schließen jetzt auch die Übergabe (beim
+  Übertragen) und der Zeitbeleg an Lexoffice den Befund eines Pauschal-Projekts,
+  dessen Arbeitszeit sie abrechnen — am Zeitreiter mit der Übergabe bzw. dem
+  Zeitbeleg; der Storno der Übergabe öffnet ihn wieder. Die Übergabe setzte
+  außerdem beim Übertragen auch für solche Befunde „Soll berechnet“, obwohl
+  keine Auffüllposition sie berechnet hatte: Eine Nachbuchung auf den Tag wurde
+  dadurch nicht mehr abrechenbar. Berechnet ist ein Befund jetzt nur noch mit
+  Auffüllposition.
+- Vorauszahlung im Verleih (`MVP-1717`): Betrag der Direktbuchung und
+  Umsatzsteuer der gebuchten Anzahlung folgen dem Leistungsort der
+  Standardleistung, wie die Rechnung der Akte, statt der Vorgabe der
+  Organisation — etwa Grundstücksleistung bei Ferienwohnungen oder
+  Katalogleistung an Verbraucher im Drittland.
+- Positionssätze beim Steuerfall-Abgleich (`MVP-1718`): Positionen ohne eigene
+  Steuerkategorie folgen dem Steuerfall der Rechnung — bei einem Fall ohne
+  Steuer (Reverse Charge, nicht steuerbar, Ausfuhr, steuerfrei, § 19) 0 %, nach
+  einem Wechsel in die Steuerpflicht der Satz des Steuerfalls. Vorher behielt
+  etwa eine aus Abrechnungsplan oder Pro-forma übernommene Position 19 %, die
+  Rechnung wies Steuer auf eine nicht steuerbare Leistung aus und die Prüfung
+  vor dem Versand wies sie ab. Ein ermäßigter Satz bei Steuerpflicht und
+  Positionen mit eigener Kategorie bleiben; ändern sich die Summen, meldet der
+  Entwurf das, das Ausstellen hält einmal zur Prüfung an. Ausgestellte
+  Rechnungen ändern sich nicht.
+- Steuerart bei der Übergabe an Buchhaltungsprogramme (`MVP-1712`): Bisher
+  bestimmte das Zielsystem die Steuerart — eine in WorkDiary als Reverse
+  Charge, innergemeinschaftliche Lieferung, Ausfuhr, nicht steuerbar oder § 19
+  eingeordnete Leistung konnte dort als steuerpflichtig entstehen. Jetzt geben
+  Faktura-Übergabe, Ausstellen über das vergebende Programm und Monatspauschalen
+  den Steuerfall mit: bei Lexoffice als `taxType` mit Hinweistext
+  (`externalService13b`, `constructionService13b`, `intraCommunitySupply`,
+  `thirdPartyCountryDelivery`, `thirdPartyCountryService`, `vatfree`), bei
+  sevDesk als Steuerregel (Update 2.0: 5, 21, 3, 2, 17, 11, 4; Update 1.0:
+  `eu`, `noteu`, `ss`), bei easybill als `vat_option` (`revc`, `nStbUstID`,
+  `IG`, `AL`, `nStb`, `nStbNoneUstID`, `smallBusiness`, `sStfr`), jeweils mit
+  0 % je Position. Bei der Übergabe aus Zeiten, Material oder Abos entsteht
+  der Fall wie im Rechnungslauf aus Kunde und Leistungsort der Positionen. Kann
+  das Ziel den Fall nicht abbilden — orgaMAX führt keine Steuerart, Lexoffice
+  kennt nicht steuerbare Leistungen nur im Drittland, sevDesk 1.0 kennt
+  § 13b, § 18b, Ausfuhr und § 4 nicht — oder ergeben die Positionen mehrere
+  Fälle, sperrt das Übertragen vorher mit Grund; die Übergabe zeigt den
+  Steuerfall, Bestätigen meldet die Sperre. Das Datei-Paket nennt einen Fall
+  ohne Steuer im Kopf; der Lexoffice-Beleg aus Zeiten am Kunden nimmt nur
+  steuerpflichtige Zeiten. Vorher gingen Reverse Charge mit der Voreinstellung
+  und jede Rechnung ohne Steuer als „steuerfrei“ an Lexoffice.
 
 ### Hinweise zum Update
 
@@ -142,9 +314,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Migration `2027_04_19_110000_add_article_variant_to_material_usages`
   (`MVP-1690`): Bestandszeilen bleiben ohne Variante und buchen wie bisher die
   Standardvariante. Ab dem Update mindern manuelle Entnahmen und Scan-Entnahmen
-  das Bewertungsbuch (`MVP-1692`); der manuelle Eingang trägt keinen
-  Einzelpreis und bleibt unbewertet — wer Bestand über ihn zubucht, sieht das
-  Durchschnittsbuch unter dem physischen Bestand.
+  das Bewertungsbuch (`MVP-1692`); auch der manuelle Eingang ist jetzt
+  bewertet (`MVP-1709`).
 - Migrationen `2027_04_19_120000_add_is_consumer_to_customers` und
   `2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules`
   (`MVP-1688`): Bestandskunden gelten als Unternehmen, Artikel und
@@ -160,6 +331,46 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   php-erechnung-toolkit 0.23.0 (`MVP-1697`). Die App nimmt Fehlerart und
   Formprüfung der Leitweg-ID und die Pauschal-Einheit in allen fünf Sprachen
   jetzt aus dem Toolkit (`MVP-1699`); Meldungen und Steuerfälle bleiben gleich.
+- Bewertung von Eingang und Fertigungsverbrauch (`MVP-1709`, `MVP-1710`):
+  Keine Migration. Bestand, der vor dem Update manuell oder per Scan
+  zugebucht wurde, fehlt weiter im Bewertungsbuch; er wird nicht nachträglich
+  bewertet, weil der Einstandspreis dieser Eingänge unbekannt ist. Ab dem Update mindern auch Fertigungsverbrauch und
+  Reservierungs-Erfüllung das Bewertungsbuch.
+- Kontaktdaten (`MVP-1700`, `MVP-1701`): Keine Migration. Bestandskunden und
+  -lieferanten ohne gespeicherte Anschrift oder Bankverbindung bekommen sie
+  beim ersten Teil-Update oder Zusammenführen aus den Listenspalten. Wer die
+  Kunden-API mit PUT ohne `country`, `bank_iban` oder `bank_bic` aufruft, um
+  diese zu leeren, sendet sie jetzt ausdrücklich leer. Die Feldauswahl beim
+  Zusammenführen nennt statt Straße, PLZ, Ort, Land und IBAN die Felder
+  „Rechnungsanschrift“ und „Bankverbindung“.
+- Phase 180, Steuerfall (`MVP-1704`–`MVP-1708`): Migration
+  `2027_04_20_120000_add_property_country_to_invoices` (Spalte
+  `invoices.property_country`, im Bestand leer). Soll-Befunde von
+  Pauschal-Projekten, deren Pauschale vor diesem Stand abgerechnet wurde,
+  bleiben offen; bestätigen Sie sie am Zeitreiter des Projekts. Kunden mit dem
+  Merkmal „Verbraucher“ und Firma oder USt-IdNr. weisen auf neuen Rechnungen
+  bei der Regel „Bei Privatkunden ausweisen“ die Arbeitskosten aus.
+- Phase 180, Pauschale und Positionssätze (`MVP-1716`–`MVP-1718`): Migration
+  `2027_04_20_140000_add_external_reference_to_project_time_shortfalls` (Spalte
+  `project_time_shortfalls.external_reference_id`, im Bestand leer). Befunde
+  von Pauschal-Projekten, die eine Übergabe vor diesem Stand als berechnet
+  markiert hat, bleiben berechnet; eine Nachbuchung auf diese Tage bleibt nicht
+  abrechenbar. Entwürfe, deren Positionen ohne Kategorie einen dem Steuerfall
+  widersprechenden Satz tragen, gleicht die nächste Bearbeitung an; das
+  Ausstellen eines solchen Entwurfs hält einmal zur Prüfung der Summen an.
+- Phase 180, Steuerart an Buchhaltungsprogramme (`MVP-1712`): Keine
+  Migration. Bereits übertragene Entwürfe und Rechnungen bleiben, wie sie
+  sind; prüfen Sie dort Belege mit Reverse Charge, Ausfuhr oder nicht
+  steuerbaren Leistungen. Steuerpflichtige Übergaben gehen unverändert hinüber.
+  Neu gesperrt: orgaMAX für alle Fälle außer steuerpflichtig und § 19,
+  Lexoffice für nicht steuerbare Leistungen mit Ort in der EU und für steuerfreie
+  Steuerarten ohne verknüpften Lexoffice-Kontakt, sevDesk-Konten mit
+  Buchhaltung 1.0 für § 13b, Reverse Charge an EU-Unternehmen, Ausfuhr und § 4.
+  Die Zuordnung Steuerfall → Steuerart lassen Sie von der Steuerberatung
+  bestätigen (insbesondere § 13b im Inland bei Lexoffice als „Bauleistungen“).
+- Fertigerzeugnisse, die vor diesem Update eingelagert wurden, bleiben
+  unbewertet; erst Rückmeldungen ab dem Update buchen Herstellkosten
+  (`MVP-1719`).
 
 ## [1.3.0] - 2026-11-12
 

@@ -103,6 +103,8 @@ return [
         'lot_for_issue' => 'Lot (issue)',
         'lot_fefo' => 'automatic (FEFO)',
         'unit' => 'Unit',
+        'unit_cost' => 'Unit cost',
+        'unit_cost_hint' => 'Only for receipts into own stock, in the valuation currency. Empty: the variant\'s purchase price, without one the current average.',
     ],
     'empty' => [
         'warehouses' => 'No warehouses created yet.',

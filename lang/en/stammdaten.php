@@ -50,4 +50,8 @@ return [
         'description' => 'Fill in only if goods go to a different address than the invoice. If left empty, the billing address is the delivery address.',
         'supplement' => 'Address supplement',
     ],
+    // Rechnungsanschrift als Ganzes, etwa beim Zusammenführen (MVP-1701).
+    'billing' => [
+        'heading' => 'Billing address',
+    ],
 ];

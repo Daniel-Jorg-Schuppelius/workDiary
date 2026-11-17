@@ -15,13 +15,14 @@ namespace App\Services\Manufacturing;
 use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Enums\Manufacturing\ProcurementStatus;
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\Warehouse;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial};
 use App\Models\Platform\Organization;
 use App\Models\Procurement\ProcurementRequest;
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService, StockPosting};
 use App\Support\DecimalQty;
-use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Enums\{CurrencyCode, RoundingMode};
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -134,24 +135,28 @@ class ManufacturingInventoryService {
 
         return DB::transaction(function () use ($material, $qty, $allowNegative): ManufacturingOrderMaterial {
             $variant = $this->resolveVariant($material->article_id, $material->article_variant_id);
-            $warehouse = $material->order?->warehouse;
+            $order = $material->order;
+            $warehouse = $order?->warehouse;
+            $organization = Organization::query()->find($order?->organization_id);
 
-            // Ist-Stückkosten VOR der Entnahme aus dem aktiven Bewertungsverfahren
-            // erfassen (Grundlage echter Nachkalkulation), ohne den Buchungspfad zu
-            // ändern.
-            $organization = Organization::query()->find($material->order?->organization_id);
-            if ($variant instanceof ArticleVariant && $warehouse instanceof Warehouse && $organization instanceof Organization) {
-                $unit = $this->valuation->forVariant($variant, $organization)->unitCost($variant, $warehouse);
-                $material->actual_cost = Money::of(bcadd($material->actual_cost?->getAmount() ?? '0', bcmul($qty, $unit, self::SCALE), self::SCALE), CurrencyCode::Euro, 4);
-            }
-
+            // Eigenbestand geht bewertet nach dem Verfahren der Variante ab (MVP-1710), mit dem Auftrag als Beleg.
+            $issue = null;
             $reservation = $material->reservation;
             if ($reservation !== null) {
-                $this->reservations->fulfill($reservation, $qty);
+                $issue = $this->reservations->fulfill($reservation, $qty, $order);
             } elseif ($variant instanceof ArticleVariant && $warehouse instanceof Warehouse) {
                 // Vollaudit 2026-07 (M20): keine stille Negativ-Entnahme mehr —
                 // allowNegative kommt jetzt als explizite Freigabe vom Aufrufer.
-                $this->ledger->issue($variant, $warehouse, $qty, allowNegative: $allowNegative);
+                $issue = $organization instanceof Organization
+                    ? $this->valuation->forVariant($variant, $organization)->issue($variant, $warehouse, $qty, allowNegative: $allowNegative, source: $order)
+                    : $this->ledger->issue($variant, $warehouse, $qty, allowNegative: $allowNegative, source: $order);
+            }
+
+            // Ist-Kosten aus dem Kostensnapshot des Abgangs (Grundlage der Nachkalkulation): bei FIFO/FEFO
+            // die Kosten der verbrauchten Schichten, nicht nur die der nächsten.
+            if ($issue !== null && $organization instanceof Organization) {
+                $previous = $material->actual_cost ?? Money::zero(CurrencyCode::Euro, self::SCALE);
+                $material->actual_cost = $previous->plus(Money::of($issue->costTotal(), $previous->getCurrency(), self::SCALE));
             }
 
             $material->consumed_qty = bcadd($material->consumed_qty, $qty, self::SCALE);
@@ -226,7 +231,16 @@ class ManufacturingInventoryService {
         // schlägt die Seriengenerierung fehl, darf die Gutmenge nicht eingebucht
         // bleiben (sonst Bestand ohne zugehörige Seriennummern).
         DB::transaction(function () use ($order, $variant, $warehouse, $qty): void {
-            $this->ledger->finishedGoodReceipt($variant, $warehouse, DecimalQty::positive($qty));
+            // Bewertet mit den Herstellkosten (MVP-1719), sonst liefe das Bewertungsbuch mit der bewerteten Auslieferung ins Minus.
+            $qty = DecimalQty::positive($qty);
+            $organization = Organization::query()->find($order->organization_id);
+            if ($organization instanceof Organization) {
+                $strategy = $this->valuation->forVariant($variant, $organization);
+                $currency = $strategy->averageCost($variant, $warehouse)?->getCurrency() ?? CurrencyCode::Euro;
+                $strategy->receipt($variant, $warehouse, $qty, $this->finishedGoodUnitCost($order, $qty), $currency->value, $order->created_by !== null ? (int) $order->created_by : null, $order, type: StockMovementType::FinishedGoodReceipt);
+            } else {
+                $this->ledger->finishedGoodReceipt($variant, $warehouse, $qty);
+            }
 
             // Eigenfertigung: für seriennummernpflichtige Erzeugnisse je Stück eine
             // Seriennummer erzeugen (E2). Greift nur bei ganzzahligen Stückmengen.
@@ -238,6 +252,33 @@ class ManufacturingInventoryService {
                 }
             }
         });
+    }
+
+    /**
+     * Herstellkosten je Gutstück dieser Rückmeldung (MVP-1719): Material plus Arbeit zum internen Satz aus der
+     * Fertigungs-Kalkulation, abzüglich des schon eingebuchten Werts früherer Rückmeldungen — so ergibt die
+     * Summe aller Eingänge die Herstellkosten des Auftrags, auch bei Teilrückmeldungen.
+     *
+     * @param numeric-string $qty
+     * @return numeric-string
+     */
+    private function finishedGoodUnitCost(ManufacturingOrder $order, string $qty): string {
+        $total = app(ManufacturingCostingService::class)->costing($order)['total'];
+        $booked = '0';
+        $earlier = StockMovement::query()->withoutGlobalScopes()
+            ->where('source_type', $order->getMorphClass())
+            ->where('source_id', $order->id)
+            ->where('movement_type', StockMovementType::FinishedGoodReceipt->value)
+            ->get();
+        foreach ($earlier as $movement) {
+            $booked = NumberHelper::addPrecise($booked, $movement->cost_total?->getAmount() ?? '0', self::SCALE);
+        }
+        $open = NumberHelper::maxPrecise(NumberHelper::subtractPrecise($total, $booked, self::SCALE), '0', self::SCALE);
+
+        // Kaufmännisch je Stück; eine Rundungsdifferenz gleicht die nächste Rückmeldung aus, weil sie vom gebuchten Wert ausgeht.
+        return NumberHelper::comparePrecise($qty, '0', self::SCALE) > 0
+            ? NumberHelper::dividePrecise($open, $qty, self::SCALE, RoundingMode::HalfUp)
+            : '0';
     }
 
     /**

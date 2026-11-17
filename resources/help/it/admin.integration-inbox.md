@@ -1,7 +1,7 @@
 ---
 title: "Inbox di riconciliazione"
 topic: admin.integration-inbox
-version: 6
+version: 7
 keywords:
     - inbox integrazioni
     - conflitti di importazione
@@ -32,6 +32,9 @@ cieca: decide lei per ogni voce.
 - **Ambiguo** – sono possibili più record.
 - **Conflitto di campo** – il record è noto, ma lo stato locale e quello
   remoto si contraddicono. I due stati sono affiancati.
+  Per i clienti conta anche l'indirizzo di consegna; l'adozione dello stato
+  remoto scrive solo i campi divergenti, il resto dell'indirizzo e dei dati
+  bancari resta.
 
 **Numero già assegnato:** un caso particolare di conflitto di campo. Un
 programma di contabilità ha assegnato a un cliente o fornitore un numero

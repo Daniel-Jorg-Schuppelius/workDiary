@@ -9,6 +9,10 @@
  */
 
 return [
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'version_one' => 'Das sevDesk-Konto nutzt noch die Buchhaltung 1.0; dort gibt es für „:case“ keinen Steuertyp, erst Update 2.0 kennt die passende Steuerregel. Bitte in workDiary abrechnen oder das Konto auf Update 2.0 umstellen.',
+    ],
     'error' => [
         'sevdesk_not_configured' => 'sevDesk ist für diese Organisation nicht konfiguriert (API-Token fehlt).',
         'sevdesk_cancel_not_transferred' => 'Die Rechnung :number ist nicht in sevDesk; das Storno lässt sich dort nicht anlegen. Stellen Sie den Kreis „Storno“ auf WorkDiary, um es lokal zu nummerieren.',

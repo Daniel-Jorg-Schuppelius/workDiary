@@ -21,7 +21,7 @@ use App\Models\Time\TimeEntry;
 use App\Services\Ai\Contracts\{ItemTextSuggester, SuggestionView};
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Finance\{BillingPositionBuilder, BillingTransferException, BillingTransferService};
-use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget};
+use App\Services\Finance\Targets\{FacturationTarget, FacturationTargetRegistry, FileTarget, TransferTaxCases};
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -198,6 +198,9 @@ class FinanceTransferController extends Controller {
         ]);
 
         $positions = $this->transferPositions($transfer);
+        // Steuerfall und Vorprüfung (MVP-1712): nur, solange noch etwas hinausgehen kann.
+        $openForTransfer = in_array($transfer->status, [TransferStatus::Draft, TransferStatus::Confirmed, TransferStatus::Failed], true) && $positions->isNotEmpty();
+        $taxCases = $openForTransfer ? app(TransferTaxCases::class)->for($transfer, $positions) : [];
         // Rechnung beim Anbieter (Feature 196): Nachweise und Versand trotz externer Rechnungshoheit.
         $externalInvoices = \App\Models\Finance\ExternalInvoice::query()
             ->whereIn('id', \App\Models\Finance\ExternalInvoicePosition::query()->where('billing_transfer_id', $transfer->id)->select('external_invoice_id'))
@@ -207,6 +210,8 @@ class FinanceTransferController extends Controller {
             'transfer' => $transfer,
             'positions' => $positions,
             'externalInvoices' => $externalInvoices,
+            'taxCases' => $taxCases,
+            'taxCaseBlocker' => $openForTransfer ? app(TransferTaxCases::class)->blocker($transfer, self::adapterFor($transfer), $taxCases) : null,
             'externalProvider' => $transfer->status === TransferStatus::Transferred ? app(\App\Services\Finance\ExternalInvoices\ExternalInvoiceProviders::class)->forTransfer($transfer) : null,
             'freeExternalPositions' => $transfer->status === TransferStatus::Transferred ? count(app(\App\Services\Finance\ExternalInvoices\ExternalInvoiceService::class)->freePositionIds($transfer)) : 0,
             // Summe der entstehenden Positionen: bei gesetzter Taktung liegt sie
@@ -250,12 +255,21 @@ class FinanceTransferController extends Controller {
         }
 
         // Preflight (MVP-485): eine Nullrechnung soll auffallen, bevor sie beim
-        // Zielsystem landet — gemeldet, nicht blockiert.
+        // Zielsystem landet — gemeldet, nicht blockiert. Ein Steuerfall, den das
+        // Ziel nicht abbildet (MVP-1712), sperrt erst das Übertragen.
+        $warnings = [];
         $unpriced = $transfer->positions()->where('unit_price', '<=', 0)->count();
         if ($unpriced > 0) {
+            $warnings[] = (string) __('finance.position.unpriced_hint', ['count' => $unpriced]);
+        }
+        $taxBlocker = app(TransferTaxCases::class)->blocker($transfer->refresh(), self::adapterFor($transfer));
+        if ($taxBlocker !== null) {
+            $warnings[] = (string) __('finance.tax_case.confirm_warning', ['reason' => $taxBlocker]);
+        }
+        if ($warnings !== []) {
             return back()
                 ->with('success', __('finance.flash.confirmed'))
-                ->with('warning', __('finance.position.unpriced_hint', ['count' => $unpriced]));
+                ->with('warning', implode(' ', $warnings));
         }
 
         return back()->with('success', __('finance.flash.confirmed'));
@@ -277,6 +291,14 @@ class FinanceTransferController extends Controller {
                     'to' => TransferStatus::Transferred->label(),
                 ]),
             ]);
+        }
+
+        // Vorprüfung (MVP-1712): Ein Steuerfall, den das Ziel nicht abbildet, oder
+        // mehrere Steuerfälle gehen nicht still als steuerpflichtig hinaus. Es
+        // ist nichts gesendet; der Nachweis bleibt bestätigt.
+        $taxBlocker = app(TransferTaxCases::class)->blocker($transfer, self::adapterFor($transfer));
+        if ($taxBlocker !== null) {
+            return back()->withErrors(['transfer' => $taxBlocker]);
         }
 
         try {
@@ -417,6 +439,15 @@ class FinanceTransferController extends Controller {
     }
 
     // ── intern ─────────────────────────────────────────────────────────
+
+    /** Ziel-Adapter der Übergabe; ohne geladenes Plugin keiner (das Übertragen meldet das dann selbst). */
+    private static function adapterFor(BillingTransfer $transfer): ?FacturationTarget {
+        try {
+            return app(FacturationTargetRegistry::class)->for($transfer->target);
+        } catch (\RuntimeException) {
+            return null;
+        }
+    }
 
     /** @return list<TransferChannel> */
     private function allowedChannels(): array {

@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 22
+version: 23
 keywords:
     - lieu de la prestation
     - prestation du catalogue
@@ -327,6 +327,15 @@ TVA » ou un nouveau numéro de TVA —, la modification suivante du brouillon a
 le nouveau régime. Si vous émettez un brouillon au régime fiscal dépassé, workDiary
 l'ajuste et interrompt l'émission : vérifiez les montants et émettez de nouveau.
 
+**Les lignes sans catégorie de TVA propre** suivent le régime fiscal de la
+facture, même si elles apportent un taux d'un plan de facturation, d'un devis ou
+d'une facture pro forma : pour un régime sans TVA (autoliquidation, hors champ,
+exportation, exonération, § 19), elles passent à 0 % ; après un passage à
+l'assujettissement, au taux du régime fiscal. Un autre taux en cas
+d'assujettissement, par exemple réduit, est conservé. Si les montants changent,
+workDiary vous le signale ou interrompt l'émission. Les lignes avec leur propre
+catégorie de TVA gardent leur taux ; les factures émises ne changent jamais.
+
 En **autoliquidation**, la facture électronique exige le numéro de TVA du client
 (règle BR-AE-02) ; pour l'autoliquidation nationale selon le § 13b UStG, son
 numéro d'immatriculation suffit. Le contrôle avant l'envoi signale l'absence de
@@ -372,6 +381,24 @@ signale, la facture ne peut pas être émise et le contrôle avant l’envoi la
 rejette (avec « non imposable » selon la règle BR-O-11) : scindez la facture,
 une par régime fiscal. L’annulation et la facture rectificative reprennent le
 régime fiscal de l’original.
+
+**Lieu de situation de l’immeuble.** Si une ligne porte une prestation liée à
+un bien immobilier (par son article ou la règle de facturation), la boîte de
+dialogue **Conditions** affiche le champ **Lieu de situation de l’immeuble**
+(pays en code ISO, par exemple AT). Il prime sur le lieu d’intervention de la
+commande et sert surtout aux factures sans commande ; vide, le lieu
+d’intervention s’applique, à défaut l’Allemagne. L’émission fige le pays ; la
+facture d’annulation et la facture rectificative le reprennent ; facture
+électronique, PDF et comptabilité suivent le régime fiscal figé.
+
+Les factures issues d’un **plan de facturation, de la location, des compteurs,
+de la revente, des acomptes et des forfaits mensuels** déterminent elles aussi
+le régime fiscal à la création d’après le lieu de prestation de leurs lignes ou
+la prestation du projet ; la première émission ne s’arrête donc plus sur
+« régime fiscal modifié ». **Devis et confirmations de commande** appliquent aux
+lignes sans taux propre le taux résultant du lieu de prestation de leurs
+articles de service, à défaut de la prestation du projet — comme la facture qui
+en découle.
 
 ## Motifs d'exonération dans la facture électronique
 
@@ -463,3 +490,8 @@ livraisons intracommunautaires et l'autoliquidation (§ 14a UStG). Les factures
 L'émission fige aussi l'indication des coûts de main-d'œuvre selon le § 35a EStG :
 une modification ultérieure de la règle de l'organisation ou du type de client ne
 change plus une facture émise.
+
+Avec la règle **Indiquer pour les particuliers**, un client portant la case
+**Consommateur** est considéré comme particulier. Sans cette case, comme
+auparavant, un client sans société ni numéro de TVA est considéré comme
+particulier — les clients existants conservent ainsi l’indication.

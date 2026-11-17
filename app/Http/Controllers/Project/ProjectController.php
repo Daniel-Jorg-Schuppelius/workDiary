@@ -227,7 +227,7 @@ class ProjectController extends Controller {
             'array_sum',
             $targetResolver->targetsFor($project, $targetUserIds, CarbonImmutable::parse($rangeFrom->toDateString()), CarbonImmutable::parse($rangeTo->toDateString())),
         ));
-        $shortfallsQuery = $project->timeShortfalls()->whereIn('user_id', $targetUserIds)->with('user:id,name')->orderByDesc('date')->orderBy('user_id');
+        $shortfallsQuery = $project->timeShortfalls()->whereIn('user_id', $targetUserIds)->with(['user:id,name', 'invoiceItem:id,invoice_id', 'invoiceItem.invoice:id,number', 'billingTransferPosition:id,billing_transfer_id'])->orderByDesc('date')->orderBy('user_id');
         $openShortfalls = (clone $shortfallsQuery)->unresolved()->count();
         $showAllShortfalls = request()->query('show') === 'shortfalls';
         $shortfalls = ($showAllShortfalls ? (clone $shortfallsQuery) : (clone $shortfallsQuery)->unresolved())->limit(100)->get();

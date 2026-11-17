@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 10
+version: 11
 keywords:
     - créer un projet
     - gestion de projet
@@ -109,12 +109,24 @@ complément jusqu'aux heures convenues est alors supprimé, car le forfait couvr
 commande quelle que soit sa durée. Toutes les autres unités, par exemple heure,
 jour ou pièce, comptent selon la durée.
 
+La pièce qui facture le forfait clôt l’écart d’un tel projet — la facture, le
+transfert lors de son envoi ou la pièce de temps dans Lexoffice : il apparaît comme
+résolu dans l’onglet des temps avec le numéro de la facture ou du transfert, et le
+contrôle nocturne ne le rouvre pas. Une saisie ultérieure sur ce jour reste
+facturable, car rien n’a été complété. Si vous supprimez la ligne, abandonnez le
+brouillon ou annulez la facture ou le transfert, l’écart est de nouveau ouvert.
+Confirmez à la main les écarts dont le forfait a été facturé auparavant.
+
 La règle de facturation indique aussi le **lieu de la prestation** de ses temps
 (§ 3a UStG) : **Générale**, **Prestation du catalogue** ou **Prestation liée à
 un bien immobilier**. Vide signifie le lieu de la prestation de son article,
 sinon la valeur par défaut de l’organisation. Pour une prestation immobilière,
 le bien se trouve au lieu d’intervention de la commande, en Allemagne à défaut.
 Le tableau des règles affiche le type choisi à côté du type d’élément.
+
+Pour une prestation immobilière, le pays **Lieu de situation de l’immeuble** de
+la facture (boîte de dialogue **Conditions** du brouillon) prime sur le lieu
+d’intervention.
 
 ## Erreurs fréquentes
 

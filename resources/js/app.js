@@ -916,7 +916,9 @@ document.addEventListener("click", (event) => {
     // nur eine passt (Charge der Entnahme: leer = FEFO).
     // `data-depends-strict`: ohne Eltern-Wert passt keine Option, und das Feld
     // (`.fieldset`) verschwindet, solange nur die leere Option bleibt
-    // (Variante des Materials: nur bei mehreren Varianten wählbar).
+    // (Variante des Materials: nur bei mehreren Varianten wählbar); verborgen
+    // sendet es nichts, damit eine nicht wählbare gespeicherte Variante bleibt.
+    // `data-depends-readonly`: gesperrtes Anzeigefeld, das nur ein- und ausblendet.
     /** @param {ParentNode} root */
     const bindDependentSelects = (root) => {
         if (!root) return;
@@ -960,6 +962,7 @@ document.addEventListener("click", (event) => {
                 if (strict) {
                     const field = /** @type {HTMLElement | null} */ (child.closest(".fieldset"));
                     if (field) field.hidden = visible.length === 0;
+                    if (child.dataset.dependsReadonly === undefined) child.disabled = visible.length === 0;
                 }
                 if (
                     autoSelectSingle &&

@@ -1,7 +1,7 @@
 ---
 title: "Stocks et scan"
 topic: inventory.stock
-version: 8
+version: 9
 keywords:
     - état des stocks
     - entrée de marchandises
@@ -15,6 +15,7 @@ keywords:
     - FEFO
     - scanner un code-barres
     - valeur du stock
+    - coût d’entrée
 audience: []
 modules:
     - module.lager
@@ -98,7 +99,9 @@ seulement le lot ; les lots bloqués seulement après leur libération.
 
 **Variante de la consommation de matériel :** si l’article comporte plusieurs variantes actives, la consommation comptabilise la variante choisie sur la feuille de temps, sans choix la variante par défaut. Un changement de variante remet l’ancienne en stock et sort la nouvelle.
 
-**Valorisation des sorties :** les sorties de stock propre — dans le formulaire de comptabilisation, par scan et après une validation à quatre yeux — sont valorisées selon la méthode de l’article, comme les livraisons et la consommation de matériel : FIFO et FEFO consomment les couches de valorisation, le coût moyen pondéré réduit le registre des moyennes au prix moyen actuel. Les sorties de stock de tiers (client, consignation, fournisseur, projet) restent non valorisées. La sortie de stock dans le dossier client comptabilise elle aussi selon la méthode de l’article ; la suppression de l’affectation la remet en stock comme nouvelle couche au coût unitaire de la sortie en FIFO et FEFO, et dans le registre des moyennes au coût moyen pondéré. L’entrée manuelle ne porte pas de prix unitaire et reste non valorisée.
+**Valorisation des sorties :** les sorties de stock propre — dans le formulaire de comptabilisation, par scan, après une validation à quatre yeux, lors de la consommation de matériel en fabrication et lors de l’exécution d’une réservation — sont valorisées selon la méthode de l’article, comme les livraisons et la consommation de matériel : FIFO et FEFO consomment les couches de valorisation, le coût moyen pondéré réduit le registre des moyennes au prix moyen actuel. Les sorties de stock de tiers (client, consignation, fournisseur, projet) restent non valorisées. La sortie de stock dans le dossier client comptabilise elle aussi selon la méthode de l’article ; la suppression de l’affectation la remet en stock comme nouvelle couche au coût unitaire de la sortie en FIFO et FEFO, et dans le registre des moyennes au coût moyen pondéré.
+
+**Valorisation des entrées :** une entrée en stock propre — dans le formulaire de comptabilisation et par scan — est valorisée comme la réception d’une commande fournisseur. Dans le champ **Coût d’entrée par unité**, vous saisissez le prix par unité saisie (par exemple par carton), avec une virgule ou un point ; il est comptabilisé par unité de base. Vide, le prix d’achat de la variante s’applique (à défaut celui de l’article), sans prix d’achat la moyenne actuelle du magasin et sans aucune valorisation zéro. Le prix s’entend dans la devise dans laquelle la valorisation tient l’article dans le magasin, sinon dans celle de l’organisation ; un prix d’achat dans une autre devise est ignoré. En FIFO et FEFO, l’entrée crée une couche de valorisation ; au coût moyen pondéré, elle recalcule la moyenne. Les entrées en stock de tiers restent non valorisées.
 
 **Redistribuer des réservations :** dans la boîte de dialogue « Modifier la réservation », vous cédez une quantité ouverte à une autre réservation du même article, entrepôt et propriété, par exemple à un ordre plus prioritaire. Une réservation plus récente n’en évince jamais une plus ancienne en silence ; la redistribution figure dans le journal d’audit et la ligne de matière d’un ordre de fabrication la suit.
 

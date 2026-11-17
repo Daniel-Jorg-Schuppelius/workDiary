@@ -36,5 +36,7 @@ return [
         'label' => 'Variante : :variant',
         'mismatch' => 'La variante n\'appartient pas à l\'article du matériel choisi.',
         'inactive' => 'Cette variante n\'est pas active et ne peut pas être choisie à nouveau.',
+        'not_selectable' => 'plus sélectionnable',
+        'kept_hint' => 'La variante enregistrée n\'est plus sélectionnable. Elle est conservée à l\'enregistrement tant que le matériel reste le même.',
     ],
 ];

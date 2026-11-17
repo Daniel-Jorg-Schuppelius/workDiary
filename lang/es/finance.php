@@ -45,6 +45,7 @@ return [
         'total_amount' => 'Importe total (neto)',
         'total_quantity' => 'Cantidad total',
         'payload_hash' => 'Hash del payload',
+        'tax_case' => 'Caso fiscal',
         'transferred_at' => 'Traspasado el',
         'failure_reason' => 'Motivo del fallo',
         'customer' => 'Cliente',
@@ -170,6 +171,12 @@ return [
         'cancelled' => 'Traspaso cancelado — las fuentes se han liberado de nuevo.',
     ],
 
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'mixed' => 'Las posiciones de este traspaso dan lugar a distintos casos fiscales (:cases), por ejemplo por distintos lugares de prestación (§ 3a UStG). Un documento lleva un único caso fiscal: anule el traspaso y traspase cada caso fiscal por separado, por ejemplo por período, o facture los servicios en workDiary.',
+        'blocked_title' => 'Traspaso bloqueado (caso fiscal)',
+        'confirm_warning' => 'El traspaso no se puede enviar así: :reason',
+    ],
     'error' => [
         'local_invoicing_locked' => 'La facturación la dirige :program; la creación local de facturas está bloqueada.',
         'sources_already_reserved' => ':count fuente(s) de este comprobante ya forman parte de otro comprobante confirmado; cree el comprobante de nuevo.',

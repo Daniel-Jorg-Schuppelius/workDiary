@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Contracts\Inventory;
 
-use App\Enums\Inventory\ValuationMethod;
+use App\Enums\Inventory\{StockMovementType, ValuationMethod};
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockMovement, Warehouse, WarehouseBin};
 use App\Services\Inventory\{EnteredQuantity, StockIssue};
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -26,8 +27,17 @@ use Illuminate\Database\Eloquent\Model;
 interface InventoryValuationStrategy {
     public function method(): ValuationMethod;
 
-    /** Wareneingang mit Einzelkosten je Basiseinheit; optional mit Herkunftsbeleg (z. B. Bestellzeile) und Eingabe in Artikeleinheit. */
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement;
+    /**
+     * Wareneingang mit Einzelkosten je Basiseinheit; optional mit Herkunftsbeleg (z. B. Bestellzeile), Eingabe in
+     * Artikeleinheit und Lagerplatz. `$type` trennt den Fertigerzeugnis-Eingang (MVP-1719) vom Wareneingang.
+     */
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt): StockMovement;
+
+    /**
+     * Aktueller Durchschnitt je Basiseinheit des Bewertungsstands im Lager, in dessen Währung; null ohne
+     * Bewertungsstand. FIFO/FEFO mitteln die Restschichten, ohne Rest gilt die jüngste Schicht.
+     */
+    public function averageCost(ArticleVariant $variant, Warehouse $warehouse): ?Money;
 
     /**
      * Abgang je Charge (gewählt oder FEFO-zugeteilt), jeder Teil verfahrensgemäß bewertet; `$requireLot` weist einen Teil ohne Charge ab.

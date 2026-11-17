@@ -37,6 +37,15 @@
         $labourRule = \App\Models\Invoicing\Invoice::labourCostDisclosureRule($invoice->organization);
         $labourValue = old('labour_cost_disclosure', $invoice->is_labour_cost_disclosed === null ? '' : ($invoice->is_labour_cost_disclosed ? '1' : '0'));
     @endphp
+    {{-- MVP-1706: nur bei einer Grundstücksleistung; leer = Einsatzort des Auftrags bzw. Inland. --}}
+    @if ($propertyPlace ?? false)
+        <x-form-group :legend="__('invoicing.property_country.legend')" icon="location_on" tone="ghost" cols="1">
+            <x-input-field name="property_country" :label="__('invoicing.property_country.label')" maxlength="2" class="uppercase"
+                           :value="old('property_country', $invoice->property_country ?? '')"
+                           :hint="__('invoicing.property_country.hint')" />
+        </x-form-group>
+    @endif
+
     <x-form-group :legend="__('invoicing.labour_costs.override')" icon="construction" tone="ghost" cols="1">
         <x-select-field name="labour_cost_disclosure" :label="__('invoicing.labour_costs.override')" :hint="__('invoicing.labour_costs.override_hint')">
             <option value="" @selected($labourValue === '')>{{ __('invoicing.labour_costs.override_default', ['rule' => $labourRule->label()]) }}</option>

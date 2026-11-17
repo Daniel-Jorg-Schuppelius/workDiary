@@ -50,4 +50,8 @@ return [
         'description' => 'Compilare solo se la merce viene consegnata a un indirizzo diverso da quello della fattura. Se resta vuoto, l’indirizzo di fatturazione è l’indirizzo di consegna.',
         'supplement' => 'Complemento dell’indirizzo',
     ],
+    // Rechnungsanschrift als Ganzes, etwa beim Zusammenführen (MVP-1701).
+    'billing' => [
+        'heading' => 'Indirizzo di fatturazione',
+    ],
 ];

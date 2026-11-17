@@ -1,7 +1,7 @@
 ---
 title: "Manufacturing orders"
 topic: manufacturing.orders
-version: 6
+version: 7
 keywords:
     - production order
     - work order
@@ -54,6 +54,10 @@ multi-level material requirements explosion (MRP) for a finished good as
 well as quality metrics per article. Cancelling is irreversible;
 creating, reporting and delivering require the right **Post stock
 movements**.
+
+**Valued material consumption:** Posted material consumption — via the reservation or, without one, directly from the warehouse — is issued by the item's valuation method: FIFO and FEFO consume the valuation layers, the moving average reduces its book. The stock movement names the order as its document, and the actual material cost of the line is the cost of this issue; it flows into the post-calculation. Material from third-party stock remains unvalued.
+
+**Valued receipt of the finished good:** The good quantity of a report goes into stock at its production cost — actual material consumption plus labour at the internal rate, divided by the good quantity. With partial reports, each report books the increase since the previous one, so all receipts together add up to the production cost of the order. Labour recorded only after the last report stays outside the stock value.
 
 ## Complete, wait, block
 

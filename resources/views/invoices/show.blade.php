@@ -388,6 +388,13 @@
         <x-status-badge :label="$invoice->delivery_format->label()" tone="info" size="xs" />
         <span class="text-xs text-muted">{{ __('invoice-import.flexibility_hint') }}</span>
     </div>
+    @if (filled($invoice->property_country))
+        {{-- MVP-1706: Ort des Grundstücks geht dem Einsatzort vor; mit der Ausstellung festgeschrieben. --}}
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+            <span class="text-muted">{{ __('invoicing.property_country.shown') }}</span>
+            <span>{{ \CommonToolkit\Enums\CountryCode::tryFrom((string) $invoice->property_country)?->getLabel(app()->getLocale()) ?? $invoice->property_country }} ({{ $invoice->property_country }})</span>
+        </div>
+    @endif
 
     {{-- KI-Leistungstexte (Feature 084): Vorschläge nur im Entwurf, nie stille Änderungen. --}}
     @php

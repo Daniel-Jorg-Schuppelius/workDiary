@@ -1,7 +1,7 @@
 ---
 title: "Mapping inbox"
 topic: admin.integration-inbox
-version: 6
+version: 7
 keywords:
     - integration inbox
     - import conflicts
@@ -33,6 +33,8 @@ Nothing is created blindly: you decide for each entry.
 - **Ambiguous** – several records are possible matches.
 - **Field conflict** – the record is known, but the local and the remote
   state contradict each other. Both states are shown side by side.
+  For customers the delivery address counts as well; **Adopt remote** writes
+  only the differing fields, the rest of the address and bank details stays.
 
 **Number already assigned:** A special field conflict. An accounting
 program assigned a number to a customer or supplier that another record in

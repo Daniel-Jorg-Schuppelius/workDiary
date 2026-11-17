@@ -86,14 +86,23 @@ trait PartyFormFields {
      */
     protected function partyNormalizedData(): array {
         // IBAN/BIC über die Toolkit-Normalisierer (Vollaudit 2026-07, N40) —
-        // Whitespace-Strip + Uppercase, leer → null.
-        return [
+        // Whitespace-Strip + Uppercase, leer → null. Land und Bank nur, wenn
+        // gesendet: ein API-Teil-Update ohne sie lässt sie stehen (MVP-1700).
+        $normalized = [
             'currency' => $this->string('currency')->upper()->value() ?: 'EUR',
-            'country' => $this->string('country')->upper()->value() ?: null,
             'contact_persons' => $this->normalizedContactPersons(),
-            'bank_iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) $this->input('bank_iban', '')),
-            'bank_bic' => \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) $this->input('bank_bic', '')),
         ];
+        if ($this->has('country')) {
+            $normalized['country'] = $this->string('country')->upper()->value() ?: null;
+        }
+        if ($this->has('bank_iban')) {
+            $normalized['bank_iban'] = \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) $this->input('bank_iban', ''));
+        }
+        if ($this->has('bank_bic')) {
+            $normalized['bank_bic'] = \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) $this->input('bank_bic', ''));
+        }
+
+        return $normalized;
     }
 
     protected function currentOrganizationId(): ?int {

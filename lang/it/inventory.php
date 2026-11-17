@@ -103,6 +103,8 @@ return [
         'lot_for_issue' => 'Lotto (prelievo)',
         'lot_fefo' => 'automatico (FEFO)',
         'unit' => 'Unità',
+        'unit_cost' => 'Costo di carico per unità',
+        'unit_cost_hint' => 'Solo per i carichi in stock proprio, nella valuta della valorizzazione. Vuoto: prezzo d\'acquisto della variante, in mancanza la media attuale.',
     ],
     'empty' => [
         'warehouses' => 'Nessun magazzino creato finora.',

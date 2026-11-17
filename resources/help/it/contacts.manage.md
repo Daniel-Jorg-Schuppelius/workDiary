@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 20
+version: 21
 keywords:
     - consumatore
     - privato
@@ -170,7 +170,16 @@ accesso, l'importazione e l'esportazione CSV lo riportano (colonne
 `shipping_country`; intestazioni come «Lieferstraße», «Liefer-PLZ»,
 «Lieferort», «Lieferland»). L'API clienti e lo strumento MCP `create_customer`
 accettano il numero di registro e l'indirizzo di consegna; un aggiornamento
-tramite API modifica solo i campi inviati dell'indirizzo di consegna.
+tramite API modifica solo i campi inviati dell'indirizzo di fatturazione, dei
+dati bancari e dell'indirizzo di consegna. L'elenco CSV della panoramica clienti
+riporta il numero di registro e l'indirizzo di consegna; l'importazione CSV ne
+comprende le intestazioni.
+
+**Unire:** nell'unione, l'indirizzo di fatturazione e i dati bancari compaiono
+ciascuno come un unico campo. Il record che resta conserva i propri; se la
+casella è spuntata, valgono quelli del record eliminato. Gli altri restano come
+indirizzo o dati bancari aggiuntivi (ad esempio per una richiesta di accesso);
+quelli identici vengono scartati.
 
 Come i documenti entrano nella fattura elettronica e cosa vale per i clienti
 della pubblica amministrazione lo descrive l'argomento di aiuto **Fatture &

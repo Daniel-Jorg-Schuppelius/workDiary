@@ -118,6 +118,15 @@
                             @endforeach
                         </x-select-field>
                     @endif
+                    {{-- Einstandspreis je erfasster Einheit (MVP-1709); wirkt nur beim Eingang. --}}
+                    <x-input-field name="unit_cost"
+                                   :label="__('inventory.field.unit_cost')"
+                                   :hint="__('inventory.field.unit_cost_hint')"
+                                   :value="old('unit_cost')"
+                                   class="input-sm"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   maxlength="30" />
                     <x-select-field name="warehouse" :label="__('inventory.field.warehouse')" class="select-sm">
                         @foreach ($warehouses as $wh)
                             <option value="{{ $wh->sqid }}">{{ $wh->name }}</option>

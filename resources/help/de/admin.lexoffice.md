@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 8
+version: 9
 keywords:
     - Lexware Office
     - Synchronisationskonflikt
@@ -59,6 +59,25 @@ WorkDiary liefert dorthin zu.
 Die Konflikt-Strategie gilt für Kontakte. Artikel führt Lexoffice: Der
 Artikel-Sync übernimmt jede neuere Lexoffice-Version, Artikelkonflikte
 gibt es nicht.
+
+**Anschriften bei „Lexoffice gewinnt“:** Lexoffice führt Anschriften ohne
+eigene Kennung, WorkDiary ordnet sie nach Art und Reihenfolge zu. Eine in
+WorkDiary angelegte Rechnungs- oder Lieferanschrift übernimmt beim ersten
+Abgleich die passende Lexoffice-Anschrift, statt ein zweites Mal angelegt zu
+werden: die primäre Rechnungsanschrift die erste aus Lexoffice. Primär ist
+danach nur diese; weitere Anschriften in WorkDiary bleiben als weitere stehen.
+
+**Steuerart beim Übertragen:** Rechnungen und Rechnungsentwürfe der
+Faktura-Übergabe tragen die Steuerart ihres Steuerfalls: Leistung an
+EU-Unternehmen als „Fremdleistungen § 13b EU“, § 13b im Inland als
+„Bauleistungen § 13b“, innergemeinschaftliche Lieferung, Ausfuhrlieferung,
+nicht steuerbare Leistung als „Dienstleistung an Drittland“, Kleinunternehmer
+als „steuerfrei“ — mit 0 % je Position und dem Hinweis als Steuerhinweis.
+Diese Steuerarten außer „steuerfrei“ verlangt Lexoffice mit einem dort
+angelegten Kontakt. Liegt eine nicht steuerbare Leistung in der EU (etwa ein
+Grundstück im EU-Ausland), kennt Lexoffice keine passende Steuerart: Die
+Übergabe sperrt mit Grund. Der Beleg aus Zeiten am Kunden überträgt nur
+steuerpflichtige Zeiten; andere Fälle gehen über die Faktura-Übergabe.
 
 Belegspiegel: Der Beleg-Sync spiegelt die Lexoffice-Belege nach WorkDiary.
 Auch Belege von Lexoffice-Kontakten, die noch keinem Kunden oder Lieferanten

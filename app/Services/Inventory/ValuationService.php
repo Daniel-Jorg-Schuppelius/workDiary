@@ -18,6 +18,7 @@ use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockMovement, StockValuation, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -54,11 +55,11 @@ class ValuationService implements InventoryValuationStrategy {
     }
 
     /** Wareneingang mit Einzelkosten: aktualisiert den gleitenden Durchschnitt. */
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement {
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt): StockMovement {
         $qty = DecimalQty::positive($qty);
         $unitCost = DecimalQty::positive($unitCost);
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $entered): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $entered, $bin, $type): StockMovement {
             $valuation = $this->valuationFor($variant, $warehouse);
             $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
             $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
@@ -81,7 +82,7 @@ class ValuationService implements InventoryValuationStrategy {
                 $warehouse,
                 StockState::Physical,
                 $qty,
-                StockMovementType::Receipt,
+                $type,
                 OwnershipType::Own,
                 originalQty: $entered?->originalQty,
                 originalUnit: $entered?->originalUnit,
@@ -90,8 +91,19 @@ class ValuationService implements InventoryValuationStrategy {
                 costUnit: $unitCost,
                 costTotal: $addValue,
                 currency: $currency,
+                bin: $bin,
             ));
         });
+    }
+
+    /** Aktueller gleitender Durchschnitt des Lagers; auch bei leerem Bestand der zuletzt fortgeschriebene. */
+    public function averageCost(ArticleVariant $variant, Warehouse $warehouse): ?Money {
+        $valuation = $this->valuationFor($variant, $warehouse);
+        if (! $valuation->exists) {
+            return null;
+        }
+
+        return $valuation->avg_cost ?? Money::zero($valuation->currency, self::SCALE);
     }
 
     /**

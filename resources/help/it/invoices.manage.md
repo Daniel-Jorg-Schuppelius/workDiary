@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 22
+version: 23
 keywords:
     - luogo della prestazione
     - prestazione del catalogo
@@ -330,6 +330,15 @@ l'IVA» o una nuova partita IVA —, la modifica successiva della bozza applica 
 nuovo regime. Se emette una bozza con un regime fiscale superato, workDiary la
 adegua e interrompe l'emissione: verifichi gli importi ed emetta di nuovo.
 
+**Le righe senza una propria categoria IVA** seguono il regime fiscale della
+fattura, anche se portano un'aliquota da un piano di fatturazione, da
+un'offerta o da una proforma: con un regime senza imposta (inversione contabile,
+fuori campo, esportazione, esenzione, § 19) passano allo 0 %; dopo un passaggio
+all'imponibilità, all'aliquota del regime fiscale. Un'altra aliquota in caso di
+imponibilità, ad esempio ridotta, resta. Se così cambiano gli importi, workDiary
+lo segnala o interrompe l'emissione. Le righe con una propria categoria IVA
+mantengono la loro aliquota; le fatture emesse non cambiano mai.
+
 Con l'**inversione contabile**, la fattura elettronica richiede la partita IVA del
 cliente (regola BR-AE-02); per l'inversione nazionale ai sensi del § 13b UStG
 basta il suo numero di registro. Il controllo prima dell'invio segnala se manca il
@@ -375,6 +384,24 @@ fiscali diversi, la bozza lo segnala, la fattura non può essere emessa e il
 controllo prima dell’invio la respinge (con «non imponibile» secondo la regola
 BR-O-11): divida la fattura, una per regime fiscale. L’annullamento e la
 fattura rettificativa riprendono il regime fiscale dell’originale.
+
+**Luogo dell’immobile.** Se una posizione riguarda una prestazione relativa a
+un immobile (tramite il suo articolo o la regola di fatturazione), la finestra
+**Condizioni** mostra il campo **Luogo dell’immobile** (paese come codice ISO,
+ad esempio AT). Prevale sul luogo d’intervento dell’ordine e serve soprattutto
+per fatture senza ordine; se vuoto vale tale luogo, in mancanza la Germania.
+L’emissione fissa il paese; la fattura di storno e la fattura di rettifica lo
+riprendono; fattura elettronica, PDF e contabilità seguono il regime fiscale
+fissato.
+
+Le fatture da **piano di fatturazione, noleggio, contatori, rivendita, acconti
+e canoni mensili** determinano anch’esse il regime fiscale alla creazione in
+base al luogo della prestazione delle loro posizioni o alla prestazione del
+progetto; la prima emissione quindi non si ferma più con «regime fiscale
+modificato». **Offerte e conferme d’ordine** applicano alle posizioni senza
+aliquota propria l’aliquota risultante dal luogo della prestazione dei loro
+articoli di servizio, altrimenti della prestazione del progetto, come la
+fattura che ne deriva.
 
 ## Motivi di esenzione nella fattura elettronica
 
@@ -465,3 +492,8 @@ estensione vengono ristampate senza la riga.
 L'emissione fissa anche l'indicazione dei costi di manodopera secondo il § 35a
 EStG: una modifica successiva della regola dell'organizzazione o del tipo di
 cliente non cambia più una fattura emessa.
+
+Con la regola **Indicare per i clienti privati**, un cliente con il
+contrassegno **Consumatore** è considerato privato. Senza il contrassegno, come
+finora, è considerato privato il cliente senza ragione sociale né partita IVA:
+i clienti esistenti mantengono così l’indicazione.

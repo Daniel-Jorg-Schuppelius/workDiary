@@ -14,6 +14,10 @@ return [
         'unit_hour' => 'ore',
         'unit_piece' => 'pz.',
     ],
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'not_taxable_region' => 'I luoghi delle prestazioni non imponibili in Germania si trovano in più aree (paese terzo e UE). easybill richiede una sola opzione fiscale per documento: fatturi ogni area separatamente.',
+    ],
     'error' => [
         'ownership_unavailable' => 'Il collegamento non è configurato: lo stato non può essere acquisito al momento.',
         'ownership_not_ready' => 'La fonte non fornisce lo stato al momento: riprovi più tardi.',

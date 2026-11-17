@@ -49,6 +49,8 @@ class InvoiceResource extends JsonResource {
             'tax_amount' => $this->tax_amount,
             'total' => $this->total,
             'delivery_format' => $this->delivery_format->value,
+            // Ort des Grundstücks (MVP-1706); leer = Einsatzort des Auftrags bzw. Inland.
+            'property_country' => $this->property_country,
             'pdf_url' => route('api.invoices.pdf', $this->resource),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

@@ -9,6 +9,10 @@
  */
 
 return [
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'version_one' => 'Le compte sevDesk utilise encore la comptabilité 1.0 ; elle n’a pas de type de taxe pour « :case » — seule la mise à jour 2.0 propose la règle fiscale adaptée. Veuillez facturer dans workDiary ou passer le compte à la mise à jour 2.0.',
+    ],
     'error' => [
         'sevdesk_not_configured' => 'sevDesk n\'est pas configuré pour cette organisation (jeton API manquant).',
         'sevdesk_cancel_not_transferred' => 'La facture :number n\'est pas dans sevDesk ; l\'annulation ne peut pas y être créée. Réglez la plage « Annulation » sur WorkDiary pour la numéroter localement.',

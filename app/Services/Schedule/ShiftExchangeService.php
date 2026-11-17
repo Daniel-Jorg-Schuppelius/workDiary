@@ -186,9 +186,29 @@ class ShiftExchangeService {
     }
 
     /**
-     * Teamleitung gibt frei: Compliance-Check, dann Umsetzung der Zuordnung.
+     * Meldung der Qualifikationssperre für die Zuordnung nach Freigabe (beide
+     * Richtungen eines Tauschs), null ohne Sperre. Freigabe und Dialog lesen
+     * sie hier, damit der Dialog keine wirkungslose Übersteuerung anbietet (MVP-1715).
+     */
+    public function qualificationBlock(ShiftExchange $exchange): ?string {
+        $exchange->loadMissing(['scheduledShift', 'offeredShift']);
+        $shift = $exchange->scheduledShift;
+        $targetUserId = (int) ($exchange->target_user_id ?? 0);
+        if ($shift === null || $targetUserId <= 0) {
+            return null;
+        }
+        $qualifications = app(QualificationEnforcement::class);
+
+        return $qualifications->shiftBlockMessage($this->reassignProxy($shift, $targetUserId))
+            ?? ($exchange->offeredShift !== null
+                ? $qualifications->shiftBlockMessage($this->reassignProxy($exchange->offeredShift, (int) $exchange->requested_by_user_id))
+                : null);
+    }
+
+    /**
+     * Teamleitung gibt frei: Qualifikationssperre, Compliance-Check, dann Umsetzung der Zuordnung.
      *
-     * @throws ShiftExchangeException bei ungültigem Status oder Compliance-Blockade
+     * @throws ShiftExchangeException bei ungültigem Status, Qualifikationssperre oder Compliance-Blockade
      */
     public function approve(ShiftExchange $exchange, User $decider, bool $overrideCompliance = false, ?string $overrideReason = null): ShiftExchange {
         if (! $exchange->status->isDecidable()) {
@@ -212,6 +232,13 @@ class ShiftExchangeService {
             throw new ShiftExchangeException(__('schedule.exchange.error_offered_shift'));
         }
 
+        // Qualifikationssperre (MVP-1514) vor der Compliance-Übersteuerung (MVP-1713):
+        // Keine Begründung hebt sie auf, also wird auch keine verlangt.
+        $blocked = $this->qualificationBlock($exchange);
+        if ($blocked !== null) {
+            throw new ShiftExchangeException($blocked);
+        }
+
         // Compliance-Prüfung der neuen Zuordnung (KEINE parallele Logik).
         $overridden = [];
         foreach ($this->previewCompliance($exchange) as $report) {
@@ -226,16 +253,6 @@ class ShiftExchangeService {
             if (mb_strlen(trim((string) $overrideReason)) < self::OVERRIDE_REASON_MIN_LENGTH) {
                 throw new ShiftExchangeException(__('schedule.exchange.error_override_reason', ['n' => self::OVERRIDE_REASON_MIN_LENGTH]));
             }
-        }
-
-        // Qualifikationssperre (MVP-1514): gilt für beide Richtungen eines Tauschs.
-        $qualifications = app(QualificationEnforcement::class);
-        $blocked = $qualifications->shiftBlockMessage($this->reassignProxy($shift, $targetUserId))
-            ?? ($exchange->offeredShift !== null
-                ? $qualifications->shiftBlockMessage($this->reassignProxy($exchange->offeredShift, (int) $exchange->requested_by_user_id))
-                : null);
-        if ($blocked !== null) {
-            throw new ShiftExchangeException($blocked);
         }
 
         DB::transaction(function () use ($exchange, $shift, $targetUserId, $decider, $overridden, $overrideReason): void {

@@ -7,7 +7,9 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Freigabe eines Schichttauschs mit Regelverstoß (MVP-1553): Verstöße
-  zeigen, Übersteuerung mit Begründung. Variablen: $exchange, $violations.
+  zeigen, Übersteuerung mit Begründung. Bei Qualifikationssperre nur die
+  Sperre, ohne Formular — keine Begründung hebt sie auf (MVP-1715).
+  Variablen: $exchange, $violations, $qualificationBlock.
 --}}
 <x-modal
     :title="__('schedule.exchange.approve_title')"
@@ -15,7 +17,7 @@
     icon="approval"
     tone="warning"
     size="md"
-    :action="route('schedule.exchanges.approve', $exchange)"
+    :action="$qualificationBlock === null ? route('schedule.exchanges.approve', $exchange) : null"
     method="PATCH"
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Freigeben')">
@@ -29,7 +31,15 @@
         @endif
     </div>
 
-    @if ($violations === [])
+    @if ($qualificationBlock !== null)
+        <div role="alert" class="alert alert-error items-start">
+            <x-icon name="block" />
+            <div>
+                <p class="font-semibold">{{ __('schedule.exchange.qualification_blocked') }}</p>
+                <p class="mt-1 text-sm">{{ $qualificationBlock }}</p>
+            </div>
+        </div>
+    @elseif ($violations === [])
         <p class="text-sm text-muted">{{ __('schedule.exchange.approve_clean') }}</p>
     @else
         <div role="alert" class="alert alert-warning mb-3 items-start">

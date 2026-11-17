@@ -50,4 +50,8 @@ return [
         'description' => 'À remplir uniquement si la marchandise est livrée à une autre adresse que celle de la facture. Si elle reste vide, l’adresse de facturation est l’adresse de livraison.',
         'supplement' => 'Complément d’adresse',
     ],
+    // Rechnungsanschrift als Ganzes, etwa beim Zusammenführen (MVP-1701).
+    'billing' => [
+        'heading' => 'Adresse de facturation',
+    ],
 ];

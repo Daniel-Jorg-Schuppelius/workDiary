@@ -14,6 +14,7 @@ namespace App\Plugins\Easybill\Services;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Sales\OrderConfirmationStatus;
+use App\Exceptions\UnmappableTaxCaseException;
 use App\Models\Billing\DeliveryNote;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -21,6 +22,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\EasybillPlugin;
+use App\Services\Invoicing\OutgoingTaxCaseResolver;
 use App\Services\Numbering\Contracts\DocumentIssuer;
 use App\Services\Numbering\Dto\IssuedDocument;
 use Illuminate\Database\Eloquent\Model;
@@ -35,7 +37,8 @@ use RuntimeException;
  * Vorlage übernähme (Lieferschein: nur die gelieferten Mengen, ohne Preise).
  * Ein Storno entsteht über `POST /documents/{id}/cancel` der übertragenen
  * Rechnung. Live-Test offen: Die Doku nennt den Zeitpunkt der Nummernvergabe
- * nicht.
+ * nicht. Rechnung und Gutschrift tragen die `vat_option` ihres Steuerfalls
+ * ({@see EasybillVatOption}, MVP-1712).
  */
 final class EasybillDocumentIssuer implements DocumentIssuer {
     public const string EXT_TYPE_OFFER = 'easybill_offer';
@@ -116,6 +119,15 @@ final class EasybillDocumentIssuer implements DocumentIssuer {
             throw new RuntimeException((string) __('easybill::finance.error.easybill_no_customer'));
         }
         $items = $document->getRelationValue('items')->sortBy('position')->values();
+        // Vor dem Kunden-Push: ein Fall ohne easybill-Steueroption bricht hier ab.
+        $vatOption = null;
+        if ($document instanceof Invoice) {
+            $cases = app(OutgoingTaxCaseResolver::class)->forInvoice($document);
+            if (count($cases) !== 1) {
+                throw new UnmappableTaxCaseException((string) __('invoicing.tax_case.place_of_supply_mixed'));
+            }
+            $vatOption = EasybillVatOption::for($cases[0]);
+        }
 
         $payload = [
             'type' => $type,
@@ -135,6 +147,7 @@ final class EasybillDocumentIssuer implements DocumentIssuer {
             },
         ];
         if ($document instanceof Invoice) {
+            $payload['vat_option'] = $vatOption;
             $payload['currency'] = $document->currency->value;
             $payload['due_in_days'] = $type === 'INVOICE' ? $document->effectivePaymentTermsDays() : null;
             $payload += EasybillLineItems::documentDiscount($document);

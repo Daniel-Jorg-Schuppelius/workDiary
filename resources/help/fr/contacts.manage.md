@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 20
+version: 21
 keywords:
     - consommateur
     - particulier
@@ -175,7 +175,17 @@ d'accès, l'import et l'export CSV la reprennent (colonnes `shipping_street`,
 en-têtes tels que « Lieferstraße », « Liefer-PLZ », « Lieferort »,
 « Lieferland »). L'API clients et l'outil MCP `create_customer` acceptent le
 numéro d'immatriculation et l'adresse de livraison ; une mise à jour via l'API
-ne modifie que les champs envoyés de l'adresse de livraison.
+ne modifie que les champs envoyés de l'adresse de facturation, des coordonnées
+bancaires et de l'adresse de livraison. La liste CSV de l'aperçu des clients
+reprend le numéro d'immatriculation et l'adresse de livraison ; l'import CSV
+comprend ses en-têtes.
+
+**Fusion :** lors de la fusion, l'adresse de facturation et les coordonnées
+bancaires apparaissent chacune comme un seul champ. L'enregistrement conservé
+garde les siennes ; si la case est cochée, celles de l'enregistrement supprimé
+s'appliquent. Les autres restent comme adresse ou coordonnées bancaires
+supplémentaires (par exemple pour une demande d'accès) ; des données identiques
+sont supprimées.
 
 La manière dont les pièces entrent dans la facture électronique et les règles
 pour les administrations sont décrites dans la rubrique d'aide **Factures &

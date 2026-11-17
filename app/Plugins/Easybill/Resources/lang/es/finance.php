@@ -14,6 +14,10 @@ return [
         'unit_hour' => 'h',
         'unit_piece' => 'uds.',
     ],
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'not_taxable_region' => 'Los lugares de prestación de estos servicios no sujetos en Alemania están en varias zonas (tercer país y UE). easybill necesita exactamente una opción fiscal por documento: facture cada zona por separado.',
+    ],
     'error' => [
         'ownership_unavailable' => 'La conexión no está configurada; el estado no se puede aplicar en este momento.',
         'ownership_not_ready' => 'La fuente no proporciona el estado en este momento; vuelva a aplicarlo más tarde.',

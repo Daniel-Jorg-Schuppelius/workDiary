@@ -19,7 +19,7 @@ use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Models\Platform\{Organization, User};
 use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit, RentalProfile, RentalRateCard, RentalRequest};
 use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
-use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
+use App\Services\Invoicing\{InvoiceGenerator, InvoiceIssueService, TaxResolver};
 use App\Support\Tz;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -90,7 +90,9 @@ class RentalBillingService {
     /**
      * Online-Vorauszahlung einer Direktbuchung (MVP-1515): Anteil des
      * Bruttopreises aus der Standard-Preisliste. Satz des Mietobjekts, sonst
-     * der Organisation; null ohne Vorauszahlung oder ohne Preis.
+     * der Organisation; null ohne Vorauszahlung oder ohne Preis. Steuer nach
+     * dem Leistungsort wie die Rechnung der Akte (MVP-1717): Die Akte der
+     * Direktbuchung hat kein Projekt, es gilt die Standardleistung.
      */
     public function prepaymentAmount(RentalProfile $profile, Customer $customer, Carbon $from, Carbon $to): ?Money {
         $organization = Organization::query()->withoutGlobalScopes()->find($profile->organization_id);
@@ -104,7 +106,7 @@ class RentalBillingService {
             return null;
         }
 
-        $rate = $this->taxes->resolve($organization, $customer)['rate'];
+        $rate = $this->invoices->projectTaxCase($customer, null, $to)['rate'];
         if (! is_numeric($rate)) {
             throw new \UnexpectedValueException('Steuersatz für die Vorauszahlung nicht lesbar: ' . $rate);
         }
@@ -310,7 +312,9 @@ class RentalBillingService {
                 ])->save();
             }
 
-            $invoice->load('items');
+            // Steuerfall über den Leistungsort der Positionen wie im Rechnungslauf (MVP-1704).
+            $invoice->load(['items', 'customer', 'organization']);
+            app(InvoiceIssueService::class)->alignTaxCase($invoice);
             $invoice->recalculate();
             $invoice->save();
 

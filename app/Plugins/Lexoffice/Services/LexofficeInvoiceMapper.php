@@ -10,14 +10,21 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Exceptions\UnmappableTaxCaseException;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
+use App\Services\Invoicing\OutgoingTaxCaseResolver;
 
 /**
  * Übersetzt eine lokale workDiary-Invoice in den JSON-Payload, den
  * Lexoffice unter POST /v1/invoices erwartet.
  *
  * Doku: https://developers.lexware.io/docs/#invoices-endpoint
+ *
+ * Die Steuerart folgt dem Steuerfall der Rechnung (MVP-1712,
+ * {@see LexofficeTaxConditions}): ausgestellt der eingefrorene, sonst der des
+ * Ausstellens. Vorher gingen Reverse Charge mit der Voreinstellung und jede
+ * Rechnung ohne Steuer als „steuerfrei“ hinüber.
  */
 class LexofficeInvoiceMapper {
     /**
@@ -32,6 +39,12 @@ class LexofficeInvoiceMapper {
         $issuedOn = $invoice->issued_on ?? now();
         $dueOn = $invoice->due_on ?? $issuedOn->copy()->addDays($invoice->effectivePaymentTermsDays());
         $items = $invoice->items->sortBy('position')->values();
+        $taxConditions = $this->taxConditions($invoice, $items, $defaults, $externalContactId);
+        $remark = $invoice->notes ?: ($invoice->customer->invoice_text ?: null);
+        // Der Hinweis steht als taxTypeNote auf dem Beleg; in der Bemerkung stünde er doppelt.
+        if ($remark !== null && isset($taxConditions['taxTypeNote']) && str_contains($remark, $taxConditions['taxTypeNote'])) {
+            $remark = trim((string) preg_replace("/\n{3,}/", "\n\n", str_replace($taxConditions['taxTypeNote'], '', $remark))) ?: null;
+        }
 
         return array_filter([
             'voucherDate' => $issuedOn->format('Y-m-d') . 'T00:00:00.000+01:00',
@@ -40,18 +53,35 @@ class LexofficeInvoiceMapper {
             // Steuersatz und Rabatt je Zeile (Befund B9); Zeilen ohne eigenen Satz tragen den der Rechnung.
             'lineItems' => LexofficeLineItems::from($items, fallbackRate: $invoice->tax_rate),
             'totalPrice' => ['currency' => $currency] + $this->documentDiscount($invoice),
-            'taxConditions' => [
-                // Reverse Charge behält die Voreinstellung — die Steuerart dazu (§ 13b, innergemeinschaftlich) kennt die Rechnung nicht.
-                'taxType' => $invoice->is_reverse_charge ? (string) ($defaults['default_tax_type'] ?? 'net') : LexofficeLineItems::taxType($items, $defaults, $invoice->tax_rate),
-            ],
+            'taxConditions' => $taxConditions,
             'shippingConditions' => [
                 'shippingDate' => $issuedOn->format('Y-m-d') . 'T00:00:00.000+01:00',
                 'shippingType' => 'service',
             ],
             'paymentConditions' => $this->paymentConditionsForInvoice($invoice, $dueOn),
             'title' => $invoice->isCreditNote() ? __('Gutschrift') : __('Rechnung'),
-            'remark' => $invoice->notes ?: ($invoice->customer->invoice_text ?: null),
+            'remark' => $remark,
         ], static fn($v) => $v !== null && $v !== '' && $v !== []);
+    }
+
+    /**
+     * @param  iterable<\App\Models\Invoicing\InvoiceItem>  $items
+     * @param  array<string, mixed>  $defaults
+     * @return array{taxType: string, taxTypeNote?: string}
+     *
+     * @throws UnmappableTaxCaseException
+     */
+    private function taxConditions(Invoice $invoice, iterable $items, array $defaults, ?string $externalContactId): array {
+        $cases = app(OutgoingTaxCaseResolver::class)->forInvoice($invoice);
+        if (count($cases) !== 1) {
+            throw new UnmappableTaxCaseException((string) __('invoicing.tax_case.place_of_supply_mixed'));
+        }
+        $conditions = LexofficeTaxConditions::for($cases[0], LexofficeLineItems::taxType($items, $defaults, $invoice->tax_rate));
+        if (LexofficeTaxConditions::requiresContact($conditions['taxType']) && blank($externalContactId)) {
+            throw new UnmappableTaxCaseException((string) __('lexoffice::finance.tax_case.contact_required', ['case' => $cases[0]->case->label()]));
+        }
+
+        return $conditions;
     }
 
     /**

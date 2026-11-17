@@ -32,14 +32,17 @@ enum LabourCostDisclosure: string implements HasLabel {
         };
     }
 
-    /** Privatkunde = weder Firmenname noch USt-IdNr.; der Beleg kann die Regel überschreiben. */
+    /**
+     * Privatkunde = Merkmal „Verbraucher“ (MVP-1707), ohne Merkmal weder
+     * Firmenname noch USt-IdNr. — Bestandskunden tragen das Merkmal nicht und
+     * behielten sonst den Ausweis nicht. Der Beleg kann die Regel überschreiben.
+     */
     public function appliesTo(?Customer $customer): bool {
         return match ($this) {
             self::Off => false,
             self::Always => true,
-            self::PrivateCustomers => $customer !== null
-                && trim((string) $customer->company) === ''
-                && trim((string) $customer->vat_id) === '',
+            self::PrivateCustomers => $customer !== null && ((bool) $customer->is_consumer
+                || (trim((string) $customer->company) === '' && trim((string) $customer->vat_id) === '')),
         };
     }
 }

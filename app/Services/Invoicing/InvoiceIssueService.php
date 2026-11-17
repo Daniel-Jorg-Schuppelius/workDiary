@@ -11,13 +11,14 @@
 namespace App\Services\Invoicing;
 
 use App\Enums\Invoicing\{InvoiceStatus, TaxCaseAlignment};
-use App\Models\Invoicing\{Invoice, OnlinePayment};
+use App\Models\Invoicing\{Invoice, InvoiceItem, OnlinePayment};
 use App\Models\Platform\Organization;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
 use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
 use App\Support\ErrorText;
 use CommonToolkit\ValueObjects\Percentage;
+use ERechnungToolkit\Enums\TaxCategory;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -119,8 +120,9 @@ final class InvoiceIssueService {
             $invoice->recalculate();
             $invoice->save();
 
-            throw new InvoiceIssueException(InvoiceIssueException::REASON_TAX_CASE_CHANGED, (string) __('invoicing.tax_case.changed_on_issue')
-                . ($alignment === TaxCaseAlignment::NoteKept ? ' ' . __('invoicing.tax_case.note_kept') : ''));
+            throw new InvoiceIssueException(InvoiceIssueException::REASON_TAX_CASE_CHANGED, $alignment === TaxCaseAlignment::LineRates
+                ? (string) __('invoicing.tax_case.line_rates_on_issue')
+                : (string) __('invoicing.tax_case.changed_on_issue') . ($alignment === TaxCaseAlignment::NoteKept ? ' ' . __('invoicing.tax_case.note_kept') : ''));
         }
         if ($invoice->pricedItems()->isEmpty()) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_EMPTY, (string) __('invoicing.free.error.empty'));
@@ -187,8 +189,10 @@ final class InvoiceIssueService {
      * (MVP-1623): Weicht er ab, kommen Reverse Charge und Kopfsatz wie bei
      * generierten Rechnungen aus dem {@see TaxResolver} — etwa wenn der Kunde
      * nach der Anlage zum Leistungsempfänger nach § 13b wurde, eine USt-IdNr.
-     * bekam oder ins Drittland zog.
-     * Setzt nur die Felder; Summen rechnet und speichert der Aufrufer.
+     * bekam oder ins Drittland zog. Positionen ohne eigene Steuerkategorie
+     * folgen dem Fall ({@see linesAgainstCase()}, MVP-1718) und werden
+     * gespeichert.
+     * Setzt am Kopf nur die Felder; Summen rechnet und speichert der Aufrufer.
      * Gutschriften, Stornos und importierte Belege tragen den Fall ihres
      * Originals bzw. ihrer Datei.
      */
@@ -209,15 +213,68 @@ final class InvoiceIssueService {
         $tax = $cases[0];
         $rate = Percentage::of((string) $tax['rate'], 2);
         // Der Fall zählt, nicht der Satz: Reverse Charge oder steuerfrei gegen steuerpflichtig. Ein anderer Regelsatz bleibt Sache des Entwurfs.
-        if ((bool) $invoice->is_reverse_charge === $tax['reverse_charge'] && $rate->isZero() === ($invoice->tax_rate?->isZero() ?? true)) {
-            return TaxCaseAlignment::Unchanged;
+        $caseChanged = (bool) $invoice->is_reverse_charge !== $tax['reverse_charge'] || $rate->isZero() !== ($invoice->tax_rate?->isZero() ?? true);
+        $lines = $this->linesAgainstCase($invoice, $tax['category'], $rate, $caseChanged);
+        if (! $caseChanged) {
+            return $lines === [] ? TaxCaseAlignment::Unchanged : $this->alignLineRates($invoice, $lines, $rate);
         }
         // Reverse Charge und 0 % tragen einen Pflichthinweis (§ 14a UStG, Steuerbefreiung, § 19); der Regelsatz keinen.
         $hadTaxNote = (bool) $invoice->is_reverse_charge || ($invoice->tax_rate?->isZero() ?? true);
         $invoice->is_reverse_charge = $tax['reverse_charge'];
         $invoice->tax_rate = $rate;
+        foreach ($lines as $item) {
+            $item->tax_rate = $rate;
+            $item->save();
+        }
 
         return $this->alignTaxNote($invoice, $organization, trim((string) $tax['note']), $hadTaxNote);
+    }
+
+    /**
+     * Positionen ohne eigene Steuerkategorie, deren Satz dem Steuerfall
+     * widerspricht (MVP-1718) — etwa aus Abrechnungsplan oder Pro-forma
+     * übernommen: über 0 % bei einem Fall ohne Steuer (AE, O, G, E …), nach
+     * einem Wechsel in die Steuerpflicht 0 %. Ein anderer positiver Satz
+     * (ermäßigt) bleibt Sache des Entwurfs; Positionen mit Kategorie und
+     * Abschlagsanrechnungen behalten ihren Satz.
+     *
+     * @return list<InvoiceItem>
+     */
+    private function linesAgainstCase(Invoice $invoice, string $category, Percentage $rate, bool $caseChanged): array {
+        $taxable = TaxCategory::tryFrom($category)?->isTaxable() ?? $rate->isPositive();
+        if ($taxable && ! $caseChanged) {
+            return [];
+        }
+
+        return array_values($invoice->pricedItems()->filter(static fn (InvoiceItem $item): bool => trim((string) $item->tax_category) === ''
+            && $item->settled_invoice_id === null && $item->tax_rate !== null
+            && ($taxable ? $item->tax_rate->isZero() : $item->tax_rate->isPositive()))->all());
+    }
+
+    /**
+     * Fall unverändert, nur Positionssätze folgen ihm. Ändert das die Summen
+     * nicht (Reverse Charge rechnet ohne Positionssteuer), hebt es keine
+     * Freigabe auf und hält das Ausstellen nicht an; der Aufriss ist neu
+     * gerechnet.
+     *
+     * @param  list<InvoiceItem>  $lines
+     */
+    private function alignLineRates(Invoice $invoice, array $lines, Percentage $rate): TaxCaseAlignment {
+        $before = $invoice->documentTotals()['total'];
+        foreach ($lines as $item) {
+            $item->tax_rate = $rate;
+        }
+        $invoice->recalculate();
+        $quiet = $invoice->total !== null && $invoice->total->equals($before);
+        foreach ($lines as $item) {
+            if ($quiet) {
+                $item->saveQuietly();
+            } else {
+                $item->save();
+            }
+        }
+
+        return $quiet ? TaxCaseAlignment::Unchanged : TaxCaseAlignment::LineRates;
     }
 
     /**

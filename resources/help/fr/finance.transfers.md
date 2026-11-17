@@ -1,7 +1,7 @@
 ---
 title: "Transfert de facturation"
 topic: finance.transfers
-version: 7
+version: 8
 keywords:
     - transfert vers Lexoffice
     - transfert DATEV
@@ -85,6 +85,43 @@ donne une ligne de quantité 1 au prix de la prestation ; les temps de la comman
 restent les sources de la ligne. Toutes les autres unités, par exemple heure, jour
 ou pièce, comptent selon la durée. L'arrondi et les heures convenues ne
 s'appliquent pas aux forfaits.
+
+## Cas fiscal
+
+Le transfert transmet le **cas fiscal** au système cible comme type de taxe.
+Il est déterminé comme lors de la facturation à partir du client (pays,
+numéro de TVA, consommateur, marqueur § 13b) et du lieu de prestation des
+positions ; le matériel compte comme marchandise. Jusqu'à l'envoi, le
+transfert l'affiche comme **Cas fiscal**.
+
+| Cas fiscal | Lexoffice | sevDesk (mise à jour 2.0) | easybill |
+| --- | --- | --- | --- |
+| imposable | réglage par défaut (net/gross) | règle configurée | – |
+| § 13b national | travaux de construction § 13b | règle 5 | autoliquidation § 13b (national) |
+| prestation à une entreprise de l’UE | prestations externes § 13b UE | règle 21 (§ 18b) | non imposable, UE avec n° de TVA |
+| livraison intracommunautaire | livraison intracommunautaire | règle 3 | livraison intracommunautaire |
+| livraison à l’exportation | livraison à l’exportation | règle 2 | livraison à l’exportation |
+| non imposable en Allemagne | prestation vers pays tiers | règle 17 | non imposable (pays tiers ou UE) |
+| petite entreprise (§ 19) | exonéré | règle 11 | petite entreprise |
+
+Les positions sans taxe partent à 0 %, la mention comme note fiscale du
+document. Le transfert est **bloqué** avant l'envoi, avec le motif sur la
+page et lors de **Transférer maintenant** :
+
+- **orgaMAX** ne gère pas de type de taxe dans son interface ; hormis
+  « imposable » et le § 19, le transfert reste ici.
+- **Lexoffice** ne connaît que les pays tiers pour les prestations non
+  imposables en Allemagne, pas par exemple un bien immobilier dans un autre
+  pays de l’UE.
+- **sevDesk** avec la comptabilité 1.0 ne connaît ni le § 13b, ni
+  l'autoliquidation envers des entreprises de l’UE, ni l'exportation, ni le
+  § 4.
+- Si les positions donnent **plusieurs cas fiscaux** (par exemple des
+  prestations de catalogue et générales à un consommateur d'un pays tiers),
+  annulez le transfert et transférez séparément, ou facturez dans WorkDiary.
+
+Le **paquet de fichiers** indique un cas fiscal sans taxe dans une ligne
+d'en-tête.
 
 ## Documents liés
 

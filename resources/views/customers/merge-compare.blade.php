@@ -32,19 +32,19 @@
         'phone' => __('Telefon'),
         'mobile' => __('Mobil'),
         'homepage' => __('Webseite'),
-        'address_street' => __('Straße'),
-        'address_zip' => __('PLZ'),
-        'address_city' => __('Ort'),
-        // Satellit ohne Spalte (MVP-1689): CustomerMergeService behält die des Ziels oder übernimmt die gewählte.
+        // Satelliten als Ganzes (MVP-1689, MVP-1701): das Ziel behält seine, ausgewählt gilt die der Quelle.
+        'billing_address' => __('stammdaten.billing.heading'),
         'shipping_address' => __('stammdaten.shipping.heading'),
         'hourly_rate' => __('Stundensatz'),
         'internal_rate' => __('Interner Satz'),
         'comment' => __('Notiz'),
         'invoice_text' => __('Rechnungstext'),
-        'bank_iban' => __('IBAN'),
+        'bank_account' => __('Bankverbindung'),
         'debtor_no' => __('Debitor-Nr.'),
     ];
     $valueOf = static fn (\App\Models\Customer\Customer $customer, string $field): mixed => match ($field) {
+        'billing_address' => implode(', ', array_filter([...$customer->postalAddressLines(), $customer->postalAddress()['country']])),
+        'bank_account' => implode(', ', array_filter(\Illuminate\Support\Arr::only($customer->bankDetails(), ['holder', 'iban', 'bic', 'bank']))),
         'shipping_address' => implode(', ', $customer->shippingAddressLines()),
         'is_consumer' => $customer->is_consumer ? __('invoicing.consumer.yes') : __('invoicing.consumer.no'),
         default => $customer->getAttribute($field),

@@ -9,6 +9,12 @@
  */
 
 return [
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'not_taxable_outside_third_country' => 'Per le prestazioni non imponibili in Germania Lexoffice conosce solo «servizi verso paesi terzi». Se il luogo della prestazione è nell’UE (ad esempio un immobile in un altro paese UE) o in più aree, non esiste un tipo d’imposta adatto: fatturi in workDiary o registri il documento manualmente in Lexoffice.',
+        'contact_required' => 'Per «:case» Lexoffice richiede un contatto creato in Lexoffice; il cliente non è ancora collegato. Trasferisca prima il contatto.',
+        'time_voucher' => 'Il giustificativo dai tempi trasferisce solo l’aliquota, non il tipo d’imposta; il caso fiscale di questi tempi è «:case». Li trasferisca a Lexoffice tramite la consegna fatturazione, che invia il tipo d’imposta adatto.',
+    ],
     'error' => [
         'lexoffice_contact_missing' => 'Nessun contatto Lexoffice per il cliente — sincronizzare prima il contatto.',
         'lexoffice_delivery_no_customer' => 'Una consegna senza cliente non può essere trasmessa come documento di trasporto.',

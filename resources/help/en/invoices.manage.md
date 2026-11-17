@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 22
+version: 23
 keywords:
     - place of supply
     - catalogue service
@@ -311,6 +311,14 @@ next edit of the draft applies the new case. If you issue a draft with an outdat
 tax case, workDiary adjusts it and stops the issue: check the totals and issue
 again.
 
+**Lines without their own tax category** follow the tax case of the invoice,
+even if they bring a rate from a billing plan, quote or pro forma: with a case
+without tax (reverse charge, not subject to VAT, export, exempt, § 19) they are
+set to 0 %, after a change to taxable to the rate of the tax case. A different
+rate under a taxable case, such as a reduced one, stays. If this changes the
+totals, workDiary tells you or stops the issue. Lines with their own tax
+category keep their rate; issued invoices never change.
+
 With **reverse charge**, the e-invoice needs the customer's VAT ID (rule
 BR-AE-02); for domestic reverse charge under § 13b UStG the register number will
 do instead. The check before sending reports when the required detail is missing. The register number appears
@@ -351,6 +359,22 @@ invoice. If the lines result in different tax cases, the draft says so, the
 invoice cannot be issued and the check before sending rejects it (with “not
 taxable” under rule BR-O-11): split the invoice, one per tax case. Cancellation
 and corrective invoice take over the tax case of the original.
+
+**Location of the property.** If a line carries a service connected with
+immovable property (via its article or the billing rule), the **Terms**
+dialog shows the field **Location of the property** (country as ISO code, e.g.
+AT). It takes precedence over the site of the order and helps above all with
+invoices without an order; if empty, the site applies, without one Germany.
+Issuing fixes the country; cancellation and corrective invoice take it over;
+e-invoice, PDF and accounting follow the fixed tax case.
+
+Invoices from **billing plans, rentals, meters, reselling, down payments and
+retainers** also determine the tax case on creation from the place of supply of
+their lines or the service of the project; the first issue therefore no longer
+stops with “tax case changed”. **Quotes and order confirmations** charge lines
+without their own VAT rate at the rate resulting from the place of supply of
+their service articles, otherwise of the project's service — like the invoice
+created from them.
 
 ## Exemption reasons in the e-invoice
 
@@ -434,3 +458,8 @@ line.
 Issuing also fixes the disclosure of labour costs under § 35a EStG: a later change
 to the organisation rule or to the type of customer no longer changes an issued
 invoice.
+
+With the rule **Show for private customers**, a customer with the
+**Consumer** flag counts as a private customer. Without the flag, as before, a
+customer without company name and VAT ID counts as private — existing customers
+keep the disclosure.

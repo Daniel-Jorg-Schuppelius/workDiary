@@ -18,8 +18,10 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts,
 use App\Models\Contracts\{AuditsChanges, HasDocumentLines};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Billing\Dto\DocumentTotalsContext;
+use App\Services\Invoicing\{PlaceOfSupplyResolver, TaxResolver};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Money, Percentage};
@@ -210,7 +212,7 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
     private function countedLinesAndContext(): array {
         $counted = $this->items->filter(fn (QuoteItem $item): bool => $item->countsInTotal())->values();
         $fallback = $counted->contains(fn (QuoteItem $item): bool => $item->taxRate() === null)
-            ? Percentage::of(NumberHelper::toUSFormat($this->defaultTaxRate(), 2))
+            ? Percentage::of(NumberHelper::toUSFormat($this->defaultTaxRate($counted), 2))
             : null;
 
         return [$counted, new DocumentTotalsContext(currency: $this->documentCurrency(), fallbackTaxRate: $fallback)];
@@ -233,14 +235,23 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         return $rows;
     }
 
-    /** Steuersatz-Fallback für Positionen ohne eigenen Satz (s. recalculate). */
-    private function defaultTaxRate(): float {
+    /**
+     * Steuersatz-Fallback für Positionen ohne eigenen Satz: Fall nach dem
+     * Leistungsort der Leistungsartikel, sonst der Leistung des Projekts — wie
+     * die Rechnung, die aus dem Angebot entsteht (MVP-1705).
+     *
+     * @param  \Illuminate\Support\Collection<int, QuoteItem>  $counted
+     */
+    private function defaultTaxRate(\Illuminate\Support\Collection $counted): float {
         $organization = $this->organization()->first();
         $customer = $this->customer()->first();
         if ($organization === null || $customer === null) {
             return 19.0; // defensiv: Alt-Verhalten ohne aufgelösten Kontext
         }
+        $project = $this->project_id !== null ? Project::query()->where('organization_id', $organization->id)->find($this->project_id) : null;
+        $articleIds = array_values($counted->pluck('article_id')->filter()->map(static fn (mixed $id): int => (int) $id)->all());
+        $places = app(PlaceOfSupplyResolver::class)->forArticlesOrProject($organization, $articleIds, $project);
 
-        return (float) app(\App\Services\Invoicing\TaxResolver::class)->resolve($organization, $customer)['rate'];
+        return (float) app(TaxResolver::class)->casesFor($organization, $customer, null, 'services', $places)[0]['rate'];
     }
 }

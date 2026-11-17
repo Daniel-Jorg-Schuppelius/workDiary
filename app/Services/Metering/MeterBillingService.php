@@ -19,7 +19,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
 use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
-use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
+use App\Services\Invoicing\InvoiceGenerator;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
@@ -265,7 +265,8 @@ class MeterBillingService {
         bool $estimated,
     ): Invoice {
         return DB::transaction(function () use ($agreement, $customer, $periodStart, $periodEnd, $consumption, $billable, $base, $variable, $estimated): Invoice {
-            $tax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer, $periodEnd);
+            // Die Positionen tragen ihre Kategorie selbst; der Fall folgt dem Leistungsort des Vertragsprojekts (MVP-1704).
+            $tax = $this->generator->projectTaxCase($customer, $agreement->project, $periodEnd);
 
             $invoice = Invoice::query()->create([
                 'organization_id' => $agreement->organization_id,

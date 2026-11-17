@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 22
+version: 23
 keywords:
     - Leistungsort
     - Katalogleistung
@@ -322,6 +322,15 @@ neue USt-IdNr. —, zieht die nächste Bearbeitung des Entwurfs den Fall nach.
 Stellen Sie einen Entwurf mit veraltetem Steuerfall, passt workDiary ihn an und
 hält die Ausstellung an: Prüfen Sie die Summen und stellen Sie erneut.
 
+**Positionen ohne eigene Steuerkategorie** folgen dem Steuerfall der Rechnung,
+auch wenn sie einen Satz aus Abrechnungsplan, Angebot oder Pro-forma mitbringen:
+Bei einem Fall ohne Steuer (Reverse Charge, nicht steuerbar, Ausfuhr,
+steuerfrei, § 19) stehen sie auf 0 %, nach einem Wechsel in die Steuerpflicht
+auf dem Satz des Steuerfalls. Ein anderer Satz bei Steuerpflicht, etwa ein
+ermäßigter, bleibt stehen. Ändern sich dadurch die Summen, meldet workDiary das
+bzw. hält die Ausstellung an. Positionen mit eigener Steuerkategorie behalten
+ihren Satz; ausgestellte Rechnungen ändern sich nie.
+
 Bei **Reverse Charge** braucht die E-Rechnung die USt-IdNr. des Kunden (Regel
 BR-AE-02); bei § 13b UStG im Inland genügt ersatzweise seine Registernummer. Die
 Prüfung vor dem Versand meldet, wenn die nötige Angabe fehlt. Die Registernummer steht als
@@ -363,6 +372,22 @@ Steuerfälle, meldet der Entwurf das, die Rechnung lässt sich nicht stellen, un
 die Prüfung vor dem Versand weist sie ab (mit „nicht steuerbar“ nach Regel
 BR-O-11): Teilen Sie die Rechnung, je Steuerfall eine. Storno und
 Korrekturrechnung übernehmen den Steuerfall des Originals.
+
+**Ort des Grundstücks.** Trägt eine Position eine Grundstücksleistung (über ihren
+Artikel oder die Abrechnungsregel), zeigt der Dialog **Konditionen** das Feld
+**Ort des Grundstücks** (Land als ISO-Kürzel, etwa AT). Es geht dem Einsatzort des
+Auftrags vor und hilft vor allem bei Rechnungen ohne Auftrag; leer gilt der
+Einsatzort, ohne ihn das Inland. Mit dem Stellen ist das Land festgeschrieben,
+Stornorechnung und Korrekturrechnung übernehmen es; E-Rechnung, PDF und
+Buchhaltung folgen dem festgeschriebenen Steuerfall.
+
+Rechnungen aus **Abrechnungsplan, Verleih, Zähler, Reselling, Abschlag und
+Retainer** bestimmen den Steuerfall beim Anlegen ebenso nach dem Leistungsort
+ihrer Positionen bzw. der Leistung des Projekts; das erste Stellen hält deshalb
+nicht mehr mit „Steuerfall geändert“ an. **Angebot und Auftragsbestätigung**
+rechnen Positionen ohne eigenen Steuersatz mit dem Satz nach dem Leistungsort
+ihrer Leistungsartikel, sonst der Leistung des Projekts — wie die Rechnung, die
+daraus entsteht.
 
 ## Befreiungsgründe in der E-Rechnung
 
@@ -453,3 +478,8 @@ ausgestellt wurden, druckt workDiary ohne die Zeile nach.
 Den Ausweis der Arbeitskosten nach § 35a EStG schreibt die Ausstellung ebenfalls
 fest: Eine spätere Änderung der Organisationsregel oder der Kundenart ändert eine
 ausgestellte Rechnung nicht mehr.
+
+Bei der Regel **Bei Privatkunden ausweisen** gilt ein Kunde mit dem Merkmal
+**Verbraucher** als Privatkunde. Ohne das Merkmal entscheidet wie bisher, ob
+der Kunde weder Firma noch USt-IdNr. führt — Bestandskunden behalten so den
+Ausweis.

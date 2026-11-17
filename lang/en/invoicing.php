@@ -169,7 +169,7 @@ return [
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Never show',
-            'private_customers' => 'Show for private customers (no company name or VAT ID)',
+            'private_customers' => 'Show for private customers (“consumer” flag, otherwise no company name or VAT ID)',
             'always' => 'Always show',
         ],
         'share' => 'Labour share § 35a EStG (%)',
@@ -571,7 +571,7 @@ return [
     // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
     'consumer' => [
         'label' => 'Consumer (not a business)',
-        'hint' => 'Private individual or other non-business recipient. Determines the place of supply under § 3a UStG: for consumers in a non-EU country, catalogue services (consulting, data processing, rights, advertising, hire of movable goods etc.) are not taxable in Germany; other services carry German VAT. Unticked, the customer counts as a business.',
+        'hint' => 'Private individual or other non-business recipient. Determines the place of supply under § 3a UStG: for consumers in a non-EU country, catalogue services (consulting, data processing, rights, advertising, hire of movable goods etc.) are not taxable in Germany; other services carry German VAT. Unticked, the customer counts as a business. With the rule “Show for private customers”, invoices show the labour costs under § 35a EStG.',
         'recipient' => 'Recipient',
         'yes' => 'Consumer',
         'no' => 'Business',
@@ -589,5 +589,20 @@ return [
         'changed_on_issue' => 'The customer\'s tax case has changed since the draft was last edited (reverse charge, export or tax-exempt). The draft has been adjusted — please check the totals and issue the invoice again.',
         'note_kept' => 'The invoice text was edited by hand and has therefore not been adjusted: please check the tax case notice (such as reverse charge, export or tax exemption) yourself.',
         'place_of_supply_mixed' => 'The lines of this invoice have different places of supply (§ 3a UStG) and therefore different tax cases. Please split the invoice: one invoice per tax case, e.g. property or catalogue services separately from the other services.',
+        'line_rates_aligned' => 'Lines without their own tax category follow the tax case of the invoice: their rate has been aligned (0 % without tax, after a change to taxable the rate of the tax case). For a different rate, choose a tax category on the line.',
+        'line_rates_on_issue' => 'Lines without their own tax category carried a rate that does not match the tax case of the invoice. Their rate has been aligned — please check the totals and issue the invoice again.',
+    ],
+    // Ort des Grundstücks an der Rechnung (MVP-1706).
+    'property_country' => [
+        'legend' => 'Place of supply',
+        'label' => 'Location of the property (country, ISO 2)',
+        'hint' => 'Only for services connected with immovable property (§ 3a(3) no. 1 UStG). Takes precedence over the site of the order; if empty, the site applies, without one Germany. If the property is abroad, the service is not taxable in Germany.',
+        'shown' => 'Location of the property',
+    ],
+    // Soll-Befund bei Pauschal-Abrechnung (MVP-1708).
+    'target_settlement' => [
+        'flat_rate' => 'Settled by the flat rate on invoice :number — no top-up',
+        'flat_rate_transfer' => 'Settled by the flat rate in transfer #:id — no top-up',
+        'flat_rate_voucher' => 'Settled by the flat rate on the time voucher in the accounting system — no top-up',
     ],
 ];

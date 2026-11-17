@@ -14,6 +14,10 @@ return [
         'unit_hour' => 'hrs',
         'unit_piece' => 'pcs',
     ],
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'not_taxable_region' => 'The places of supply of these services not taxable in Germany lie in several regions (third country and EU). easybill needs exactly one tax option per document — please bill each region separately.',
+    ],
     'error' => [
         'ownership_unavailable' => 'The connection is not set up — the state cannot be applied right now.',
         'ownership_not_ready' => 'The source is not providing the state right now — please apply it again later.',

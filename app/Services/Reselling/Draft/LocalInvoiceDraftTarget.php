@@ -20,7 +20,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\ResalePeriod;
 use App\Services\Article\Catalog\LocalArticleCatalogSource;
 use App\Services\Billing\BillingModeResolver;
-use App\Services\Invoicing\TaxResolver;
+use App\Services\Invoicing\{InvoiceIssueService, TaxResolver};
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -95,7 +95,6 @@ final class LocalInvoiceDraftTarget implements InvoiceDraftTarget {
                     'quantity' => (string) $line['quantity'],
                     'unit' => $line['unit_name'],
                     'unit_price' => (string) $line['unit_net'],
-                    'tax_category' => $tax['category'],
                     'position' => $position,
                     // Lokale Rechnungen kennen nur den Artikelstamm; Artikel anderer Quellen bleiben ohne Bezug.
                     'article_id' => LocalArticleCatalogSource::idOf($first->subscription->article_ref),
@@ -105,7 +104,10 @@ final class LocalInvoiceDraftTarget implements InvoiceDraftTarget {
                 }
                 $net += $line['quantity'] * $line['unit_net'];
             }
-            $invoice->load('items');
+            // Der Steuerfall folgt dem Leistungsort der Abo-Artikel wie im Rechnungslauf (MVP-1704); eine
+            // kopierte Kategorie an den Positionen hielte die Artikel aus dieser Prüfung heraus.
+            $invoice->load(['items', 'customer', 'organization']);
+            app(InvoiceIssueService::class)->alignTaxCase($invoice);
             $invoice->recalculate();
             $invoice->save();
 

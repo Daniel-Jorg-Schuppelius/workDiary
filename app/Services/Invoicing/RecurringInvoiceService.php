@@ -204,7 +204,9 @@ class RecurringInvoiceService {
             ]);
         }
 
-        $invoice->load('items');
+        // Steuerfall über den Leistungsort der Positionen wie im Rechnungslauf (MVP-1704).
+        $invoice->load(['items', 'customer', 'organization']);
+        app(InvoiceIssueService::class)->alignTaxCase($invoice);
         $invoice->recalculate();
         $invoice->save();
 

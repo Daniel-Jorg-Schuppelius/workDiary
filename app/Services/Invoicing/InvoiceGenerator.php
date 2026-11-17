@@ -87,11 +87,8 @@ class InvoiceGenerator {
                 ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
 
             // Auffüllung auf das Projekt-Soll (Feature 194), wie in der Übergabe.
-            $topUps = $this->targetTopUps->lines(
-                $this->targetTopUps->openQuery($customer, $range, $project, $foreignCustomer)->orderBy('date')->orderBy('user_id')->lockForUpdate()->get(),
-                $customer,
-                $customer->organization,
-            );
+            $shortfalls = $this->targetTopUps->openQuery($customer, $range, $project, $foreignCustomer)->orderBy('date')->orderBy('user_id')->lockForUpdate()->get();
+            $topUps = $this->targetTopUps->lines($shortfalls, $customer, $customer->organization);
 
             if ($entries->isEmpty() && count($charges) === 0 && $topUps->isEmpty()) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
@@ -172,6 +169,8 @@ class InvoiceGenerator {
                 ]);
                 $this->targetTopUps->markInvoiced($line->shortfall, $item);
             }
+            // Pauschal abgerechnete Projekte füllen nicht auf; ihre Befunde schließt diese Rechnung (MVP-1708).
+            $this->targetTopUps->settleFlatRate($shortfalls, $invoice);
 
             // Anfahrten wurden oben unter Sperre geladen.
             $this->appendTravelCharges($invoice, $charges, $foreignCustomer, $position);
@@ -578,6 +577,22 @@ class InvoiceGenerator {
     }
 
     /**
+     * Steuerfall nach der Leistung des Projekts für Belege, deren Positionen
+     * ihre Steuerkategorie selbst tragen (Abschlag, Retainer, Zähler,
+     * MVP-1704): Solche Positionen zählen für den Leistungsort nicht, das
+     * Ausstellen prüft den Fall über die Leistung des Projekts
+     * ({@see PlaceOfSupplyResolver::forInvoice()}) — hier dieselbe Quelle,
+     * sonst hielte das erste Ausstellen mit „Steuerfall geändert“ an.
+     *
+     * @return array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: ?array{id: int, source: ?string, valid_from: string, org_override: bool}}
+     */
+    public function projectTaxCase(Customer $customer, ?Project $project, ?CarbonInterface $serviceDate): array {
+        $organization = $customer->organization()->firstOrFail();
+
+        return app(TaxResolver::class)->casesFor($organization, $customer, $serviceDate, 'services', [app(PlaceOfSupplyResolver::class)->forProject($organization, $project)])[0];
+    }
+
+    /**
      * Stellt der Buchungszeile (Positionsbeschreibung) den abgerechneten
      * Endkunden (Fremdkunden) voran, sofern vorhanden. So ist auf der Rechnung
      * je Position erkennbar, für welchen Endkunden abgerechnet wird — auch wenn
@@ -680,6 +695,7 @@ class InvoiceGenerator {
                 'currency' => $original->currency,
                 'tax_rate' => $original->tax_rate,
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
+                'property_country' => $original->property_country,
                 'is_labour_cost_disclosed' => $original->is_labour_cost_disclosed,
                 // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert) — sonst negiert die Summe nicht exakt.
                 'discount_percent' => $original->discount_percent,
@@ -744,11 +760,7 @@ class InvoiceGenerator {
         $this->assertLocalDownPayments((int) $customer->organization_id);
 
         return DB::transaction(function () use ($customer, $project, $description, $netAmount, $serviceDate): Invoice {
-            $tax = app(TaxResolver::class)->resolve(
-                $customer->organization()->firstOrFail(),
-                $customer,
-                $serviceDate,
-            );
+            $tax = $this->projectTaxCase($customer, $project, $serviceDate);
 
             $notes = (string) __('Abschlags-/Anzahlungsrechnung über ein vor der Leistung vereinnahmtes Teilentgelt (§ 14 Abs. 5 UStG); die Anrechnung erfolgt in der Schlussrechnung.');
             if ($tax['note'] !== null) {
@@ -806,11 +818,7 @@ class InvoiceGenerator {
         ?CarbonInterface $serviceDate = null,
     ): Invoice {
         return DB::transaction(function () use ($customer, $description, $netAmount, $placeholderNumber, $type, $serviceDate): Invoice {
-            $tax = app(TaxResolver::class)->resolve(
-                $customer->organization()->firstOrFail(),
-                $customer,
-                $serviceDate,
-            );
+            $tax = $this->projectTaxCase($customer, null, $serviceDate);
 
             $invoice = Invoice::create([
                 'organization_id' => $customer->organization_id,
@@ -1004,6 +1012,7 @@ class InvoiceGenerator {
                 // MVP-162/172: Steuerkontext des ORIGINALS übernehmen — sonst
                 // droht unrichtiger Steuerausweis in der Korrektur (§ 14c).
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
+                'property_country' => $original->property_country,
                 'is_labour_cost_disclosed' => $original->is_labour_cost_disclosed,
                 // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert).
                 'discount_percent' => $original->discount_percent,

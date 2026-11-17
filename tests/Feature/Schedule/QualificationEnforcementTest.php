@@ -16,6 +16,7 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
 use App\Models\Schedule\{ScheduledShift, ShiftExchange, ShiftType};
+use App\Services\Compliance\ComplianceViolation;
 use App\Services\Dispatch\{DispatchConflictChecker, DispatchStatusResolver};
 use App\Services\Schedule\{ShiftExchangeException, ShiftExchangeService};
 use App\Settings\{SettingScope, SettingsRegistry};
@@ -138,6 +139,89 @@ class QualificationEnforcementTest extends TestCase {
         } finally {
             $this->assertSame($qualified->id, (int) $shift->refresh()->user_id);
         }
+    }
+
+    /**
+     * MVP-1713: Die Sperre lässt sich nicht übersteuern, also fragt die Freigabe
+     * bei einem zusätzlichen Regelverstoß (16 h > Tageshöchstarbeitszeit) nicht
+     * erst nach der Begründung, sondern nennt die fehlende Qualifikation.
+     */
+    public function test_block_mode_names_the_missing_qualification_before_any_override_reason(): void {
+        $this->type->update(['default_start_time' => '06:00', 'default_end_time' => '22:00']);
+        $this->block();
+        $qualified = $this->orgUser();
+        $qualified->qualifications()->attach($this->qualification->id);
+        $shift = ScheduledShift::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $qualified->id,
+            'shift_type_id' => $this->type->id,
+            'date' => '2030-05-04',
+        ]);
+        $exchange = ShiftExchange::query()->create([
+            'organization_id' => $this->organization->id,
+            'scheduled_shift_id' => $shift->id,
+            'requested_by_user_id' => $qualified->id,
+            'target_user_id' => $this->orgUser()->id,
+            'status' => ShiftExchangeStatus::Accepted,
+        ]);
+        $service = app(ShiftExchangeService::class);
+        $admin = $this->orgAdmin();
+
+        $errors = [];
+        foreach ($service->previewCompliance($exchange) as $report) {
+            foreach ($report->bySeverity(ComplianceViolation::SEVERITY_ERROR) as $violation) {
+                $errors[] = $violation->code;
+            }
+        }
+        $this->assertContains('max_daily_hours', $errors, 'Vorbedingung: der Tausch verletzt zusätzlich eine Arbeitszeitregel');
+
+        foreach ([[false, null], [true, null], [true, 'Einweisung durch Kollegin vor Ort']] as [$override, $reason]) {
+            try {
+                $service->approve($exchange->refresh(), $admin, overrideCompliance: $override, overrideReason: $reason);
+                $this->fail('Tausch trotz Qualifikationssperre freigegeben');
+            } catch (ShiftExchangeException $e) {
+                $this->assertStringContainsString('fehlt am 04.05.2030 die Pflichtqualifikation HA', $e->getMessage());
+            }
+        }
+        $this->assertSame($qualified->id, (int) $shift->refresh()->user_id);
+        $this->assertSame(ShiftExchangeStatus::Accepted, $exchange->refresh()->status);
+    }
+
+    public function test_the_approve_dialog_shows_the_block_instead_of_an_override(): void {
+        // MVP-1715: Bei Qualifikationssperre bietet der Dialog keine wirkungslose Übersteuerung an.
+        $this->type->update(['default_start_time' => '06:00', 'default_end_time' => '22:00']);
+        $this->block();
+        $qualified = $this->orgUser();
+        $qualified->qualifications()->attach($this->qualification->id);
+        $shift = ScheduledShift::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $qualified->id,
+            'shift_type_id' => $this->type->id,
+            'date' => '2030-05-04',
+        ]);
+        $exchange = ShiftExchange::query()->create([
+            'organization_id' => $this->organization->id,
+            'scheduled_shift_id' => $shift->id,
+            'requested_by_user_id' => $qualified->id,
+            'target_user_id' => $this->orgUser()->id,
+            'status' => ShiftExchangeStatus::Accepted,
+        ]);
+
+        $this->actingAs($this->orgAdmin())
+            ->get(route('schedule.exchanges.approve-form', $exchange))
+            ->assertOk()
+            ->assertSee(__('schedule.exchange.qualification_blocked'))
+            ->assertSee('fehlt am 04.05.2030 die Pflichtqualifikation HA', false)
+            ->assertDontSee('name="override_reason"', false)
+            ->assertDontSee('action="' . route('schedule.exchanges.approve', $exchange) . '"', false);
+
+        // Gegenprobe: Ist die Zielperson qualifiziert, bleibt nur der Arbeitszeitverstoß — mit Übersteuerung.
+        $exchange->targetUser()->firstOrFail()->qualifications()->attach($this->qualification->id);
+        $this->actingAs($this->orgAdmin())
+            ->get(route('schedule.exchanges.approve-form', $exchange))
+            ->assertOk()
+            ->assertSee('name="override_reason"', false)
+            ->assertDontSee(__('schedule.exchange.qualification_blocked'));
     }
 
     public function test_block_mode_rejects_order_assignment_and_confirmation_needs_a_reason(): void {

@@ -1,7 +1,7 @@
 ---
 title: "Ordres de fabrication"
 topic: manufacturing.orders
-version: 6
+version: 7
 keywords:
     - ordre de production
     - nomenclature
@@ -46,6 +46,10 @@ poste de travail ou sous-traité à un fournisseur (crée une commande) ; la
 vue de planification montre le calcul des besoins multi-niveaux (MRP) et
 les indicateurs qualité. L'annulation est irréversible ; créer, déclarer et
 livrer exigent le droit **Enregistrer des mouvements de stock**.
+
+**Consommation de matériel valorisée :** la consommation de matériel comptabilisée — via la réservation ou, sans elle, directement depuis le magasin — sort selon la méthode de valorisation de l’article : FIFO et FEFO consomment les couches de valorisation, le coût moyen pondéré réduit son registre. Le mouvement de stock cite l’ordre comme pièce, et le coût matière réel de la ligne est le coût de cette sortie ; il entre dans le calcul de revient a posteriori. Le matériel issu du stock de tiers reste non valorisé.
+
+**Entrée valorisée du produit fini :** la quantité bonne d’une déclaration entre en stock à son coût de production — consommation réelle de matériel plus temps de travail au taux interne, divisés par la quantité bonne. En cas de déclarations partielles, chaque déclaration comptabilise l’augmentation depuis la précédente, de sorte que toutes les entrées ensemble correspondent au coût de production de l’ordre. Le temps de travail saisi seulement après la dernière déclaration reste hors de la valeur du stock.
 
 ## Clôturer, mettre en attente, bloquer
 

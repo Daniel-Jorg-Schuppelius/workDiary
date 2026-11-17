@@ -16,6 +16,7 @@ use App\Enums\Inventory\{OwnershipType, ReservationStatus};
 use App\Events\Inventory\StockReservationQuantityChanged;
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockReservation, Warehouse, WarehouseBin};
+use App\Models\Platform\Organization;
 use App\Support\DecimalQty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -33,7 +34,10 @@ use RuntimeException;
 class ReservationService {
     public const int SCALE = 4;
 
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(
+        private readonly InventoryLedger $ledger,
+        private readonly InventoryValuationManager $valuation,
+    ) {}
 
     /**
      * Reserviert die volle Menge oder wirft bei Unterdeckung.
@@ -86,18 +90,27 @@ class ReservationService {
         });
     }
 
-    /** Erfüllt (verbraucht) einen Teil der Reservierung: reserviert → entnommen. */
-    public function fulfill(StockReservation $reservation, string $qty): StockReservation {
+    /**
+     * Erfüllt (verbraucht) einen Teil der Reservierung: reserviert → entnommen.
+     * Eigenbestand geht bewertet nach dem Verfahren der Variante ab (MVP-1710),
+     * Fremdbestand unbewertet; `$source` ist der Beleg der Abgangsbewegungen.
+     */
+    public function fulfill(StockReservation $reservation, string $qty, ?Model $source = null): StockIssue {
         $qty = DecimalQty::positive($qty);
         if (bccomp($qty, $reservation->openQuantity(), self::SCALE) > 0) {
             throw new RuntimeException('Erfüllung übersteigt die offene reservierte Menge.');
         }
 
-        return DB::transaction(function () use ($reservation, $qty): StockReservation {
+        return DB::transaction(function () use ($reservation, $qty, $source): StockIssue {
             [$variant, $warehouse] = $this->endpoints($reservation);
             $bin = $reservation->bin;
-            $this->ledger->releaseReservation($variant, $warehouse, $qty, $reservation->ownership_type, bin: $bin);
-            $this->ledger->issue($variant, $warehouse, $qty, $reservation->ownership_type, allowNegative: true, bin: $bin);
+            $ownership = $reservation->ownership_type;
+            $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, bin: $bin);
+            // Die eben freigegebene Reservierung deckt die Menge — wie bisher ohne erneute Bestandsprüfung.
+            $organization = $warehouse->organization;
+            $issue = $organization instanceof Organization && $ownership === OwnershipType::Own
+                ? $this->valuation->forVariant($variant, $organization)->issue($variant, $warehouse, $qty, allowNegative: true, source: $source, bin: $bin)
+                : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: true, bin: $bin, source: $source);
 
             $reservation->consumed_qty = bcadd($reservation->consumed_qty, $qty, self::SCALE);
             if (bccomp($reservation->consumed_qty, $reservation->quantity, self::SCALE) >= 0) {
@@ -105,7 +118,7 @@ class ReservationService {
             }
             $reservation->save();
 
-            return $reservation;
+            return $issue;
         });
     }
 

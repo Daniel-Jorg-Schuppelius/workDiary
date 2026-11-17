@@ -1,7 +1,7 @@
 ---
 title: "Ordini di produzione"
 topic: manufacturing.orders
-version: 6
+version: 7
 keywords:
     - ordine di lavorazione
     - distinta base
@@ -47,6 +47,10 @@ centro di lavoro o lo affida in conto lavoro a un fornitore; la vista di
 pianificazione mostra l'MRP multilivello e gli indicatori di qualità.
 L'annullamento è irreversibile; creare, confermare e consegnare
 richiedono il permesso **Registra movimenti di magazzino**.
+
+**Consumo di materiale valorizzato:** il consumo di materiale registrato — tramite la prenotazione o, senza di essa, direttamente dal magazzino — esce secondo il metodo di valorizzazione dell’articolo: FIFO e FEFO consumano gli strati di valorizzazione, il costo medio ponderato riduce il suo libro. Il movimento di magazzino indica l’ordine come documento e il costo effettivo del materiale della riga è il costo di questo prelievo; confluisce nel calcolo a consuntivo. Il materiale da giacenza di terzi resta non valorizzato.
+
+**Carico valorizzato del prodotto finito:** la quantità buona di una dichiarazione entra a magazzino al suo costo di produzione — consumo effettivo di materiale più tempo di lavoro alla tariffa interna, diviso per la quantità buona. Con dichiarazioni parziali, ogni dichiarazione registra l’aumento rispetto alla precedente, così che tutti i carichi insieme corrispondono al costo di produzione dell’ordine. Il tempo di lavoro registrato solo dopo l’ultima dichiarazione resta fuori dal valore di magazzino.
 
 ## Completare, mettere in attesa, bloccare
 

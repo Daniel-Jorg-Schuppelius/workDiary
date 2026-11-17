@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 10
+version: 11
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -106,6 +106,15 @@ hasta las horas acordadas se omite entonces, porque la tarifa plana cubre el
 pedido sea cual sea su duración. Todas las demás unidades, por ejemplo hora, día
 o ud., cuentan por duración.
 
+El documento que liquida la tarifa plana cierra la desviación de un proyecto así
+— la factura, la transferencia al enviarse o el justificante de tiempos en
+Lexoffice: aparece como resuelta en la pestaña de tiempos con el número de la
+factura o de la transferencia, y la comprobación nocturna no la vuelve a abrir. Un
+registro posterior en ese día sigue siendo facturable, porque no se completó nada.
+Si elimina la posición, descarta el borrador o anula la factura o la
+transferencia, la desviación vuelve a quedar abierta. Confirme a mano las
+desviaciones cuya tarifa plana se facturó antes.
+
 La regla de facturación indica también el **lugar de la prestación** de sus
 tiempos (§ 3a UStG): **General**, **Servicio del catálogo** o **Servicio
 relacionado con un inmueble**. Vacío significa el lugar de la prestación de su
@@ -113,6 +122,9 @@ artículo; si no, el valor por defecto de la organización. En un servicio
 inmobiliario, el inmueble está en el lugar de intervención del pedido; sin
 indicación, en Alemania. La tabla de reglas muestra el tipo elegido junto al
 tipo de elemento.
+
+En un servicio inmobiliario, el país **Lugar del inmueble** de la factura
+(diálogo **Condiciones** del borrador) prevalece sobre el lugar de intervención.
 
 ## Errores habituales
 

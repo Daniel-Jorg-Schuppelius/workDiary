@@ -14,6 +14,7 @@ namespace App\Services\Integration;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
 use App\Enums\Integration\IntegrationInboxStatus;
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\Organization;
@@ -162,7 +163,7 @@ class IntegrationResolver {
             $org, $pluginId, $source, $profile, $externalType, $externalId,
             $attributes, $rawRemote, IntegrationInboxItem::CASE_CONFLICT, [],
             referenceable: $model,
-            localSnapshot: $this->onlyKeys($model->attributesToArray(), $diff),
+            localSnapshot: $this->onlyKeys($model->attributesToArray() + $this->shippingFields($model), $diff),
             diffFields: $diff,
         );
         $this->writeReference($org, $pluginId, $externalType, $morph, $externalId, $model, $rawRemote);
@@ -198,22 +199,28 @@ class IntegrationResolver {
     /**
      * Felder, in denen sich der lokale Datensatz vom gemappten Remote-Satz
      * unterscheidet (nur nicht-leere Remote-Werte zählen). Enum-Casts zählen
-     * mit ihrem Wert, Listen (contact_persons) als Ganzes.
+     * mit ihrem Wert, Listen (contact_persons) als Ganzes. Die Lieferanschrift
+     * zählt wie bei der Neuanlage mit (Satellit, MVP-1703).
      *
      * @param  array<string, mixed>  $attributes
      * @return list<string>
      */
     private function diffFields(Model $model, array $attributes): array {
         $fillable = $model->getFillable();
+        $shipping = $this->shippingFields($model);
         $diff = [];
         foreach ($attributes as $field => $value) {
-            if (! in_array($field, $fillable, true)) {
+            $isShipping = array_key_exists($field, $shipping);
+            if (! $isShipping && ! in_array($field, $fillable, true)) {
                 continue;
             }
             if ($value === null || $value === '' || $value === []) {
                 continue;
             }
-            $local = $model->getAttribute($field);
+            if ($field === 'shipping_country' && is_string($value)) {
+                $value = strtoupper(trim($value));
+            }
+            $local = $isShipping ? $shipping[$field] : $model->getAttribute($field);
             if ($local instanceof BackedEnum) {
                 $local = $local->value;
             }
@@ -230,6 +237,11 @@ class IntegrationResolver {
         }
 
         return $diff;
+    }
+
+    /** @return array<string, ?string> Lieferanschrift unter den Eingabenamen, leer ohne Satelliten. */
+    private function shippingFields(Model $model): array {
+        return $model instanceof ContactDetailsHolder ? $model->shippingAddressFields() : [];
     }
 
     /**

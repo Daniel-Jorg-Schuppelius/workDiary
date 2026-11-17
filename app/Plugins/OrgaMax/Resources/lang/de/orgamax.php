@@ -118,6 +118,7 @@ return [
     'error.customer_unmapped' => 'Kunde „:customer" ist keinem orgaMAX-Kunden zugeordnet — Zuordnung über die Integrations-Inbox vornehmen.',
     'error.outcome_unclear' => 'Ergebnis unklar (Timeout nach dem Senden) — keine blinde Wiederholung. Der nächste Lauf gleicht über den Quellmarker ab.',
     'error.token_exchange_failed' => 'Tokenaustausch fehlgeschlagen (HTTP :status) — API-Key/Secret prüfen.',
+    'tax_case.unmappable' => 'orgaMAX kann den Steuerfall „:case“ nicht übernehmen: Die orgaMAX-API führt keine Steuerart, ein Satz von 0 % ginge ohne Grund als steuerpflichtiger Umsatz hinüber. Bitte in workDiary abrechnen oder den Beleg in orgaMAX von Hand erfassen.',
     'order.internal_note' => 'WorkDiary-Übergabe :channel :from–:to',
     'relations' => [
         'order' => 'Auftrag',

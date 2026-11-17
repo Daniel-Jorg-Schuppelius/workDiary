@@ -13396,6 +13396,7 @@ CREATE TABLE `invoices` (
   `discount_amount` decimal(12,2) DEFAULT NULL,
   `tax_rate` decimal(5,2) NOT NULL DEFAULT 19.00,
   `is_reverse_charge` tinyint(1) NOT NULL DEFAULT 0,
+  `property_country` char(2) DEFAULT NULL,
   `tax_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
   `total` decimal(12,2) NOT NULL DEFAULT 0.00,
   `notes` text DEFAULT NULL,
@@ -20511,6 +20512,7 @@ CREATE TABLE `project_time_shortfalls` (
   `billed_at` timestamp NULL DEFAULT NULL,
   `billing_transfer_position_id` bigint(20) unsigned DEFAULT NULL,
   `invoice_item_id` bigint(20) unsigned DEFAULT NULL,
+  `external_reference_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -20520,11 +20522,13 @@ CREATE TABLE `project_time_shortfalls` (
   KEY `project_time_shortfalls_billing_transfer_position_id_foreign` (`billing_transfer_position_id`),
   KEY `pts_org_status_date_idx` (`organization_id`,`status`,`date`),
   KEY `pts_invoice_item_fk` (`invoice_item_id`),
+  KEY `pts_external_reference_fk` (`external_reference_id`),
   CONSTRAINT `project_time_shortfalls_acknowledged_by_foreign` FOREIGN KEY (`acknowledged_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `project_time_shortfalls_billing_transfer_position_id_foreign` FOREIGN KEY (`billing_transfer_position_id`) REFERENCES `billing_transfer_positions` (`id`) ON DELETE SET NULL,
   CONSTRAINT `project_time_shortfalls_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `project_time_shortfalls_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
   CONSTRAINT `project_time_shortfalls_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pts_external_reference_fk` FOREIGN KEY (`external_reference_id`) REFERENCES `external_references` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pts_invoice_item_fk` FOREIGN KEY (`invoice_item_id`) REFERENCES `invoice_items` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -28994,3 +28998,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1119,'2027_04_18_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1120,'2027_04_19_110000_add_article_variant_to_material_usages',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1121,'2027_04_19_120000_add_is_consumer_to_customers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1122,'2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1123,'2027_04_20_120000_add_property_country_to_invoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1124,'2027_04_20_140000_add_external_reference_to_project_time_shortfalls',1);

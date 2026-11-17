@@ -118,6 +118,7 @@ return [
     'error.customer_unmapped' => 'Le client « :customer » n’est pas associé à un client orgaMAX — associez-le via la boîte d’intégration.',
     'error.outcome_unclear' => 'Résultat incertain (délai dépassé après envoi) — pas de nouvelle tentative aveugle. La prochaine exécution rapproche via le marqueur source.',
     'error.token_exchange_failed' => 'Échec de l’échange de jeton (HTTP :status) — vérifiez la clé/le secret API.',
+    'tax_case.unmappable' => 'orgaMAX ne peut pas reprendre le cas fiscal « :case » : l’API orgaMAX ne gère pas de type de taxe, et un taux de 0 % arriverait comme vente imposable sans motif. Veuillez facturer dans workDiary ou saisir le document manuellement dans orgaMAX.',
     'order.internal_note' => 'Transfert WorkDiary :channel :from–:to',
     'relations' => [
         'order' => 'Commande',

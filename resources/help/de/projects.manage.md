@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 10
+version: 11
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -107,12 +107,24 @@ vereinbarte Stunden entfällt dann, weil die Pauschale den Auftrag unabhängig v
 der Dauer abdeckt. Alle anderen Einheiten, etwa Stunde, Tag oder Stk, rechnen
 nach Dauer.
 
+Den Befund eines solchen Projekts schließt der Beleg, der die Pauschale
+abrechnet — die Rechnung, die Übergabe beim Übertragen oder der Zeitbeleg an
+Lexoffice: Er steht am Zeitreiter als erledigt mit der Nummer der Rechnung bzw.
+der Übergabe, und der nächtliche Abgleich öffnet ihn nicht wieder. Eine
+Nachbuchung auf diesen Tag bleibt abrechenbar, denn aufgefüllt wurde nichts.
+Entfernen Sie die Position, verwerfen Sie den Entwurf oder stornieren Sie die
+Rechnung oder die Übergabe, ist der Befund wieder offen. Befunde, deren
+Pauschale schon früher abgerechnet wurde, bestätigen Sie von Hand.
+
 Die Abrechnungsregel nennt auch den **Leistungsort** ihrer Zeiten (§ 3a UStG):
 **Allgemein**, **Katalogleistung** oder **Grundstücksleistung**. Leer gilt der
 Leistungsort ihres Artikels, sonst die Vorgabe der Organisation. Bei einer
 Grundstücksleistung liegt das Grundstück am Einsatzort des Auftrags, ohne
 Angabe im Inland. Die Regeltabelle zeigt eine gewählte Art neben dem
 Item-Typ.
+
+Bei einer Grundstücksleistung geht das Land **Ort des Grundstücks** der Rechnung
+(Dialog **Konditionen** am Entwurf) dem Einsatzort vor.
 
 ## Typische Fehler
 

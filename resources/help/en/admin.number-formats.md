@@ -1,7 +1,7 @@
 ---
 title: "Number Formats"
 topic: admin.number-formats
-version: 7
+version: 8
 keywords:
     - number range
     - invoice number
@@ -100,6 +100,16 @@ If the **billing route** in the organization settings is set to an
 accounting program, that program keeps the invoices entirely; the **Assigned
 by** column names it. If individual customers bill via another route, the
 number of customers is shown below.
+
+The invoice is sent with the tax type of its tax case: to Lexoffice as tax
+type (for example intra-Community supply or external services § 13b), to
+sevDesk as tax rule, to easybill as tax option, each with 0 % per position.
+If the program cannot represent the case, the invoice stays a draft and
+**Issue** names the reason: orgaMAX only takes taxable invoices and § 19,
+Lexoffice no service not taxable in Germany with its place in the EU, sevDesk
+with bookkeeping 1.0 neither § 13b nor reverse charge to EU businesses,
+export or § 4. For the tax-free tax types other than “tax-free”, Lexoffice
+requires a contact created there.
 
 ## Locked ranges
 

@@ -19,7 +19,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Models\Platform\Organization;
 use App\Services\Accounting\JournalService;
-use App\Services\Invoicing\TaxResolver;
+use App\Services\Invoicing\InvoiceGenerator;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
@@ -41,7 +41,7 @@ final class PrepaymentAdvance {
 
     public function __construct(
         private readonly PostingRuleResolver $rules,
-        private readonly TaxResolver $taxes,
+        private readonly InvoiceGenerator $invoices,
         private readonly JournalService $journal,
     ) {}
 
@@ -65,7 +65,10 @@ final class PrepaymentAdvance {
 
     /**
      * Kunde des Gegenstands und Steuersatz am Zahlungstag; ist die Zahlung
-     * schon gebucht, gilt der Satz dieser Buchung.
+     * schon gebucht, gilt der Satz dieser Buchung. Der Satz folgt dem
+     * Leistungsort wie der Betrag der Direktbuchung
+     * ({@see \App\Services\Rental\RentalBillingService::prepaymentAmount()},
+     * MVP-1717): ohne Projekt die Standardleistung der Organisation.
      *
      * @return array{customer: Customer, rate: numeric-string}|null
      */
@@ -78,7 +81,7 @@ final class PrepaymentAdvance {
         }
 
         $booked = data_get($this->paymentEntry($organization, $payment)?->snapshot, 'advance_rate');
-        $rate = is_numeric($booked) ? (string) $booked : $this->taxes->resolve($organization, $customer, $this->paidOn($payment))['rate'];
+        $rate = is_numeric($booked) ? (string) $booked : $this->invoices->projectTaxCase($customer, null, $this->paidOn($payment))['rate'];
 
         return is_numeric($rate) ? ['customer' => $customer, 'rate' => NumberHelper::roundPrecise((string) $rate, 2)] : null;
     }

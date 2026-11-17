@@ -69,6 +69,7 @@ return [
         'error_override_reason' => 'Die Übersteuerung braucht eine Begründung mit mindestens :n Zeichen.',
         'approve_title' => 'Tausch trotz Regelverstoß freigeben',
         'approve_clean' => 'Die geplante Zuordnung verstößt gegen keine Arbeitszeitregel.',
+        'qualification_blocked' => 'Freigabe nicht möglich: Qualifikationssperre. Eine Übersteuerung hebt sie nicht auf.',
         'approve_override_action' => 'Prüfen und freigeben',
         'violation_badge' => 'Regelverstoß',
         'override_legend' => 'Übersteuerung',

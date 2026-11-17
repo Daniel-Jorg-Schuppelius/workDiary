@@ -1,7 +1,7 @@
 ---
 title: "Conflits Lexoffice"
 topic: admin.lexoffice
-version: 8
+version: 9
 keywords:
     - Lexware Office
     - conflit de synchronisation
@@ -58,6 +58,28 @@ externe – WorkDiary se contente de lui livrer les données.
 La stratégie de conflit s'applique aux contacts. Lexoffice fait foi pour
 les articles : la synchronisation reprend chaque version plus récente de
 Lexoffice, il n'y a donc pas de conflits d'articles.
+
+**Adresses avec « Lexoffice l’emporte » :** Lexoffice gère les adresses sans
+identifiant propre ; WorkDiary les associe selon leur type et leur ordre. Une
+adresse de facturation ou de livraison créée dans WorkDiary reprend lors de la
+première synchronisation l’adresse Lexoffice correspondante au lieu d’être
+créée une seconde fois : l’adresse de facturation principale reprend la
+première de Lexoffice. Ensuite, seule celle-ci est principale ; les autres
+adresses de WorkDiary restent comme adresses supplémentaires.
+
+**Type de taxe lors du transfert :** les factures et brouillons de facture de
+la remise de facturation portent le type de taxe de leur cas fiscal :
+prestation à une entreprise de l'UE comme « prestations externes § 13b UE »,
+§ 13b national comme « travaux de construction § 13b », livraison
+intracommunautaire, livraison à l'exportation, prestation non imposable en
+Allemagne comme « prestation vers pays tiers », petite entreprise comme
+« exonéré » — à 0 % par position et avec la mention comme note fiscale.
+Hormis « exonéré », Lexoffice n'accepte ces types de taxe qu'avec un contact
+créé chez lui. Si une prestation non imposable se situe dans l'UE (par
+exemple un bien immobilier dans un autre pays de l'UE), Lexoffice n'a pas de
+type de taxe adapté : le transfert est bloqué avec le motif. Le justificatif
+issu des temps sur le client ne transmet que des temps imposables ; les
+autres cas passent par la remise de facturation.
 
 Miroir des pièces : la synchronisation des pièces reprend en miroir les
 pièces Lexoffice dans WorkDiary. Les pièces de contacts Lexoffice qui ne

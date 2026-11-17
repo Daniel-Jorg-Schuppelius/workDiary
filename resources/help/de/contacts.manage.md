@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 20
+version: 21
 keywords:
     - Verbraucher
     - Privatkunde
@@ -167,7 +167,15 @@ sie ein eigenes Feld, und Datenauskunft, CSV-Import und -Export führen sie mit
 `shipping_city`, `shipping_country`; Kopfzeilen wie „Lieferstraße“,
 „Liefer-PLZ“, „Lieferort“, „Lieferland“). Die Kunden-API und das MCP-Werkzeug
 `create_customer` nehmen Registernummer und Lieferanschrift an; ein Update über
-die API ändert nur die gesendeten Felder der Lieferanschrift.
+die API ändert nur die gesendeten Felder von Rechnungsanschrift, Bankverbindung
+und Lieferanschrift. Die CSV-Liste der Kundenübersicht führt Registernummer und
+Lieferanschrift mit; ihre Kopfzeilen versteht der CSV-Import.
+
+**Zusammenführen:** Rechnungsanschrift und Bankverbindung stehen beim
+Zusammenführen je als ein Feld. Der verbleibende Datensatz behält seine;
+angehakt gilt die des gelöschten. Die andere bleibt als weitere Anschrift bzw.
+Bankverbindung erhalten (etwa für die Datenauskunft), eine gleichlautende
+entfällt.
 
 Wie Unterlagen in die E-Rechnung kommen und was bei Behördenkunden gilt,
 beschreibt das Hilfethema **Rechnungen & Belege**.

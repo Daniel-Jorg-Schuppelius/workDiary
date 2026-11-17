@@ -143,6 +143,7 @@ class ShiftExchangeController extends Controller {
         return view('shift-exchanges._approve_dialog', [
             'exchange' => $exchange->load(['scheduledShift.shiftType', 'offeredShift.shiftType', 'requester', 'targetUser']),
             'violations' => $this->blockingViolations($exchange),
+            'qualificationBlock' => $this->service->qualificationBlock($exchange),
         ]);
     }
 

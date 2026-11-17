@@ -19,14 +19,18 @@ namespace App\Enums\Invoicing;
  * und deshalb stehen geblieben — die Person prüft ihn selbst.
  * `Mixed`: Die Positionen ergeben nach ihrem Leistungsort verschiedene
  * Steuerfälle (MVP-1688); der Entwurf bleibt, ausgestellt wird er nicht.
+ * `LineRates`: Der Fall stimmt, aber Positionen ohne eigene Steuerkategorie
+ * trugen einen widersprechenden Satz und folgen ihm jetzt (MVP-1718); die
+ * Summen ändern sich, die Person prüft sie.
  */
 enum TaxCaseAlignment: string {
     case Unchanged = 'unchanged';
     case Aligned = 'aligned';
     case NoteKept = 'note_kept';
     case Mixed = 'mixed';
+    case LineRates = 'line_rates';
 
     public function changed(): bool {
-        return $this === self::Aligned || $this === self::NoteKept;
+        return $this === self::Aligned || $this === self::NoteKept || $this === self::LineRates;
     }
 }

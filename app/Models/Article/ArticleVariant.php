@@ -93,4 +93,9 @@ class ArticleVariant extends Model {
     public function effectiveSalePrice(): ?Money {
         return $this->sale_price ?? $this->article?->default_sale_price;
     }
+
+    /** Effektiver Einkaufspreis: Variante überschreibt den Artikelstandard (MVP-1709). */
+    public function effectivePurchasePrice(): ?Money {
+        return $this->purchase_price ?? $this->article?->default_purchase_price;
+    }
 }

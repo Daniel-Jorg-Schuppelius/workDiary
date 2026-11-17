@@ -69,6 +69,7 @@ return [
         'error_override_reason' => 'La deroga richiede una motivazione di almeno :n caratteri.',
         'approve_title' => 'Approvare lo scambio nonostante la violazione delle regole',
         'approve_clean' => 'L’assegnazione prevista non viola alcuna regola sull’orario di lavoro.',
+        'qualification_blocked' => 'Approvazione non possibile: blocco per qualifica. Una forzatura non lo rimuove.',
         'approve_override_action' => 'Verificare e approvare',
         'violation_badge' => 'Violazione delle regole',
         'override_legend' => 'Deroga',

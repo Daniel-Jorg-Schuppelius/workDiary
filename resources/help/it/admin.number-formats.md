@@ -1,7 +1,7 @@
 ---
 title: "Formati di numerazione"
 topic: admin.number-formats
-version: 7
+version: 8
 keywords:
     - serie numerica
     - numero fattura
@@ -98,6 +98,17 @@ Se la **via di fatturazione** nelle impostazioni dell'organizzazione è su un
 programma di contabilità, questo gestisce completamente le fatture; la
 colonna **Assegnato da** lo indica. Se singoli clienti fatturano per un'altra via,
 sotto è indicato per quanti.
+
+La fattura viene trasmessa con il tipo d'imposta del suo caso fiscale: a
+Lexoffice come tipo d'imposta (ad esempio cessione intracomunitaria o
+prestazioni esterne § 13b), a sevDesk come regola fiscale, a easybill come
+opzione fiscale, sempre con lo 0 % per posizione. Se il programma non può
+rappresentare il caso, la fattura resta una bozza ed **Emettere** indica il
+motivo: orgaMAX riprende solo fatture imponibili e il § 19, Lexoffice nessuna
+prestazione non imponibile in Germania con luogo nell'UE, sevDesk con la
+contabilità 1.0 né il § 13b né l'inversione contabile verso imprese UE,
+l'esportazione o il § 4. Per i tipi d'imposta esenti diversi da «esente»
+Lexoffice richiede un contatto creato lì.
 
 ## Serie bloccate
 

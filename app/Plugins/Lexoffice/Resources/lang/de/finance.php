@@ -9,6 +9,12 @@
  */
 
 return [
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'not_taxable_outside_third_country' => 'Lexoffice kennt für nicht im Inland steuerbare Leistungen nur „Dienstleistungen an Drittländer“. Liegt der Leistungsort in der EU (etwa ein Grundstück im EU-Ausland) oder in mehreren Gebieten, gibt es dort keine passende Steuerart — bitte in workDiary abrechnen oder den Beleg in Lexoffice von Hand erfassen.',
+        'contact_required' => 'Für „:case“ verlangt Lexoffice einen dort angelegten Kontakt; der Kunde ist noch nicht mit Lexoffice verknüpft. Bitte zuerst den Kontakt übertragen.',
+        'time_voucher' => 'Der Beleg aus Zeiten überträgt nur den Steuersatz, keine Steuerart; der Steuerfall dieser Zeiten ist „:case“. Bitte über die Faktura-Übergabe an Lexoffice übertragen — dort geht die passende Steuerart mit.',
+    ],
     'error' => [
         'lexoffice_contact_missing' => 'Kein Lexoffice-Kontakt für den Kunden — bitte zuerst den Kontakt synchronisieren.',
         'lexoffice_delivery_no_customer' => 'Auslieferung ohne Kunde kann nicht als Lieferschein übergeben werden.',

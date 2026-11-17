@@ -1,7 +1,7 @@
 ---
 title: "Fertigungsaufträge"
 topic: manufacturing.orders
-version: 6
+version: 7
 keywords:
     - Produktionsauftrag
     - Stückliste
@@ -53,6 +53,10 @@ Lieferanten vergeben (erzeugt eine Bestellung). Die Planungssicht zeigt
 für ein Erzeugnis die mehrstufige Materialbedarfsauflösung (MRP) sowie
 Qualitätskennzahlen je Artikel. Stornieren ist nicht umkehrbar; Anlegen,
 Rückmelden und Ausliefern erfordern das Recht **Lagerbewegungen buchen**.
+
+**Bewerteter Materialverbrauch:** Der gebuchte Materialverbrauch — über die Reservierung oder, ohne sie, direkt aus dem Lager — geht nach dem Bewertungsverfahren des Artikels ab: FIFO und FEFO verbrauchen die Bewertungsschichten, der gleitende Durchschnitt mindert sein Buch. Die Lagerbewegung nennt den Auftrag als Beleg, und die Ist-Materialkosten der Position sind die Kosten dieser Entnahme; sie fließen in die Nachkalkulation. Material aus Fremdbestand bleibt unbewertet.
+
+**Bewerteter Eingang des Fertigerzeugnisses:** Die Gutmenge einer Rückmeldung geht mit ihren Herstellkosten ins Lager — tatsächlicher Materialverbrauch plus Arbeitszeit zum internen Satz, geteilt durch die Gutmenge. Bei Teilrückmeldungen bucht jede Rückmeldung den Zuwachs seit der letzten, sodass alle Eingänge zusammen die Herstellkosten des Auftrags ergeben. Arbeitszeit, die erst nach der letzten Rückmeldung erfasst wird, bleibt außerhalb des Bestandswerts.
 
 ## Abschließen, warten, sperren
 

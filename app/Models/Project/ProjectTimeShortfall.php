@@ -15,6 +15,7 @@ namespace App\Models\Project;
 use App\Enums\Project\ShortfallStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Finance\BillingTransferPosition;
+use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\InvoiceItem;
 use App\Models\Platform\User;
 use Database\Factories\Project\ProjectTimeShortfallFactory;
@@ -26,7 +27,9 @@ use Illuminate\Support\Carbon;
 /**
  * Tagesbefund „unter Soll“ je Projekt und Person (Feature 194). Der Nachtlauf
  * legt ihn an, erledigt ihn bei Nachbuchung und öffnet ihn wieder, wenn die
- * Zeit erneut unter das Soll fällt; Bestätigen hält ihn als gesehen fest.
+ * Zeit erneut unter das Soll fällt; Bestätigen hält ihn als gesehen fest. Der
+ * Beleg mit der Pauschale des Projekts erledigt ihn — Rechnung (MVP-1708),
+ * Übergabe oder Lexoffice-Zeitbeleg (MVP-1716).
  *
  * @property int $id
  * @property int $organization_id
@@ -47,6 +50,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $billed_at
  * @property int|null $billing_transfer_position_id
  * @property int|null $invoice_item_id
+ * @property int|null $external_reference_id Zeitbeleg im Buchhaltungsprogramm, der die Pauschale abrechnet (MVP-1716)
  * @property-read Project $project
  * @property-read User $user
  */
@@ -60,7 +64,7 @@ class ProjectTimeShortfall extends Model {
     protected $fillable = [
         'organization_id', 'project_id', 'user_id', 'date', 'target_minutes', 'booked_minutes',
         'shortfall_minutes', 'tolerance_minutes', 'status', 'acknowledged_by', 'acknowledged_at',
-        'resolved_at', 'notified_at', 'note', 'billed_minutes', 'billed_at', 'billing_transfer_position_id', 'invoice_item_id',
+        'resolved_at', 'notified_at', 'note', 'billed_minutes', 'billed_at', 'billing_transfer_position_id', 'invoice_item_id', 'external_reference_id',
     ];
 
     protected $casts = [
@@ -106,6 +110,11 @@ class ProjectTimeShortfall extends Model {
         return $this->belongsTo(InvoiceItem::class);
     }
 
+    /** @return BelongsTo<ExternalReference, $this> */
+    public function externalReference(): BelongsTo {
+        return $this->belongsTo(ExternalReference::class);
+    }
+
     /**
      * Offen oder bestätigt — alles, was noch nicht durch Nachbuchung erledigt ist.
      *
@@ -126,5 +135,15 @@ class ProjectTimeShortfall extends Model {
 
     public function isBilled(): bool {
         return $this->billed_minutes !== null;
+    }
+
+    /**
+     * Mit der Pauschale des Projekts abgerechnet und deshalb erledigt
+     * (MVP-1708, MVP-1716): Verweis auf Rechnungsposition, Übergabeposition
+     * oder Zeitbeleg, ohne aufgefüllte Minuten.
+     */
+    public function isSettledByFlatRate(): bool {
+        return $this->status === ShortfallStatus::Resolved && $this->billed_minutes === null
+            && ($this->invoice_item_id !== null || $this->billing_transfer_position_id !== null || $this->external_reference_id !== null);
     }
 }

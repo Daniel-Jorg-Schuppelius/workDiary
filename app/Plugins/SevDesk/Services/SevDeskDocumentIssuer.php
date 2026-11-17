@@ -13,13 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\SevDesk\Services;
 
 use App\Enums\Numbering\NumberScope;
+use App\Exceptions\UnmappableTaxCaseException;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
+use App\Services\Invoicing\OutgoingTaxCaseResolver;
 use App\Services\Numbering\Contracts\DocumentIssuer;
 use App\Services\Numbering\Dto\IssuedDocument;
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use RuntimeException;
@@ -30,7 +31,8 @@ use RuntimeException;
  * dann `sendBy` — sevDesk führt die Rechnung danach als offen. Storno:
  * `cancelInvoice` der übertragenen Ursprungsrechnung. Gutschriften legt sevDesk
  * nur aus der vollen Rechnung an (`createFromInvoice`), deshalb vergibt es den
- * Gutschriftkreis nicht.
+ * Gutschriftkreis nicht. Steuerregel bzw. Steuertyp folgen dem Steuerfall der
+ * Rechnung ({@see SevDeskTaxRule}, MVP-1712).
  */
 final class SevDeskDocumentIssuer implements DocumentIssuer {
     public function pluginId(): string {
@@ -90,6 +92,12 @@ final class SevDeskDocumentIssuer implements DocumentIssuer {
         $invoice->loadMissing(['items', 'customer']);
         $customer = $invoice->customer;
         $config = SevDeskConfig::resolve((int) $invoice->organization_id);
+        // Vor jedem Schreibzugriff: ein Fall ohne Steuerregel dieser Buchhaltungs-Version bricht hier ab.
+        $cases = app(OutgoingTaxCaseResolver::class)->forInvoice($invoice);
+        if (count($cases) !== 1) {
+            throw new UnmappableTaxCaseException((string) __('invoicing.tax_case.place_of_supply_mixed'));
+        }
+        $taxHeader = SevDeskTaxRule::header($cases[0], $client->bookkeepingVersion(), (int) $config['tax_rule_id'], (float) ($invoice->tax_rate?->getNumericValue() ?? $config['default_vat_rate']));
         $sevUserId = (string) ($client->firstSevUser()['id'] ?? '');
         if ($sevUserId === '') {
             throw new RuntimeException('sevDesk /SevUser returned no user for contactPerson.');
@@ -116,14 +124,7 @@ final class SevDeskDocumentIssuer implements DocumentIssuer {
             'header' => (string) __('Rechnung'),
             'footText' => filled($invoice->notes) ? (string) $invoice->notes : '',
         ], static fn ($value): bool => $value !== null);
-        if ($client->bookkeepingVersion() === '2.0') {
-            $payload['taxRule'] = ['id' => (int) $config['tax_rule_id'], 'objectName' => 'TaxRule'];
-        } else {
-            $rate = (float) ($invoice->tax_rate?->getNumericValue() ?? $config['default_vat_rate']);
-            $payload['taxType'] = 'default';
-            $payload['taxRate'] = $rate;
-            $payload['taxText'] = (string) __('sevdesk::finance.sevdesk.tax_text', ['rate' => NumberHelper::toUSFormat($rate, 2, trimTrailingZeros: true)]);
-        }
+        $payload += $taxHeader;
 
         $created = $client->saveInvoice(['invoice' => $payload, 'invoicePosSave' => $positions, 'invoicePosDelete' => null]);
         $invoiceObject = is_array($created['invoice'] ?? null) ? $created['invoice'] : $created;

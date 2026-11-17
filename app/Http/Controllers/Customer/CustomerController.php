@@ -236,17 +236,20 @@ class CustomerController extends Controller {
         $rows = (static function () use ($query, $customFields): \Generator {
             /** @var Customer $c */
             foreach ($query->lazy(500) as $c) {
+                $shipping = $c->shippingAddressFields();
                 yield [
                     $c->number,
                     $c->name,
                     $c->company,
                     $c->vat_id,
+                    $c->register_number,
                     $c->email,
                     $c->phone ?: $c->mobile,
                     $c->address_street,
                     $c->address_zip,
                     $c->address_city,
                     $c->country,
+                    ...array_values($shipping),
                     $c->currency->value,
                     $c->hourly_rate?->getAmount(),
                     $c->billable ? 'ja' : 'nein',
@@ -262,12 +265,19 @@ class CustomerController extends Controller {
             'Name',
             'Firma',
             'USt-IdNr.',
+            // Kopfzeilen wie die Aliase des CSV-Imports, damit die Liste wieder einlesbar bleibt (MVP-1703).
+            'Registernummer',
             'E-Mail',
             'Telefon',
             'Straße',
             'PLZ',
             'Ort',
             'Land',
+            'Lieferstraße',
+            'Lieferadresszusatz',
+            'Liefer-PLZ',
+            'Lieferort',
+            'Lieferland',
             'Währung',
             'Stundensatz',
             'Abrechenbar',

@@ -20,9 +20,10 @@ use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
 use App\Services\Finance\BillingPositionBuilder;
 use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ProjectsContactReference, ReconcilesByMarker};
-use App\Services\Finance\Targets\{FacturationTarget, TargetResult};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Services\Finance\Targets\{FacturationTarget, MapsTaxCases, TargetResult, TransferTaxCases};
+use App\Services\Invoicing\Dto\OutgoingTaxCase;
 use GuzzleHttp\Exception\ConnectException;
+use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 
 /**
@@ -41,8 +42,10 @@ use RuntimeException;
  *   `workdiary:<payload_hash>` (customerInternalNote). Ein Timeout nach dem
  *   Schreiben löst KEINE blinde Wiederholung aus — der nächste Lauf adoptiert
  *   die gefundene Rechnung statt doppelt anzulegen.
+ * - Steuerregel bzw. Steuertyp aus dem Steuerfall der Übergabe
+ *   ({@see SevDeskTaxRule}, MVP-1712).
  */
-class SevDeskTarget implements FacturationTarget {
+class SevDeskTarget implements FacturationTarget, MapsTaxCases {
     use LoadsBillingSources;
     use ProjectsContactReference;
     use ReconcilesByMarker;
@@ -60,6 +63,13 @@ class SevDeskTarget implements FacturationTarget {
 
     public function supports(TransferTarget $target): bool {
         return $target === TransferTarget::SevDesk;
+    }
+
+    /** Ohne Anfrage: Die zuletzt gelesene Buchhaltungs-Version, unbekannt Update 2.0 (seit Ende 2024 für alle Konten). */
+    public function taxCaseBlocker(int $organizationId, OutgoingTaxCase $case): ?string {
+        $version = Cache::get(SevDeskClient::versionCacheKey($organizationId));
+
+        return SevDeskTaxRule::blocker($case, is_string($version) && $version !== '' ? $version : '2.0');
     }
 
     public function transfer(BillingTransfer $transfer): TargetResult {
@@ -85,12 +95,16 @@ class SevDeskTarget implements FacturationTarget {
         }
 
         $transfer->loadMissing(['items', 'customer']);
+        // Vor dem Kontakt-Push: ein Fall ohne Steuerregel dieser Buchhaltungs-Version bricht hier ab.
+        $vatRate = (float) $config['default_vat_rate'];
+        $taxCase = app(TransferTaxCases::class)->single($transfer);
+        $taxHeader = SevDeskTaxRule::header($taxCase, $client->bookkeepingVersion(), (int) $config['tax_rule_id'], $vatRate);
         $contactReference = $this->resolveContactReference($transfer);
 
-        $vatRate = (float) $config['default_vat_rate'];
+        $positionRate = $taxCase->zeroRated() ? 0.0 : null;
         $positions = $transfer->channel === TransferChannel::Time
-            ? $this->positions($transfer, $vatRate, (int) $config['unity_hour_id'])
-            : $this->positions($transfer, $vatRate, (int) $config['unity_piece_id']);
+            ? $this->positions($transfer, $vatRate, (int) $config['unity_hour_id'], $positionRate)
+            : $this->positions($transfer, $vatRate, (int) $config['unity_piece_id'], $positionRate);
         if ($positions === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
@@ -131,13 +145,7 @@ class SevDeskTarget implements FacturationTarget {
         ];
 
         // Buchhaltungs-Version je Mandant (gecacht): 2.0 ⇒ taxRule, 1.0 ⇒ taxType.
-        if ($client->bookkeepingVersion() === '2.0') {
-            $invoice['taxRule'] = ['id' => (int) $config['tax_rule_id'], 'objectName' => 'TaxRule'];
-        } else {
-            $invoice['taxType'] = 'default';
-            $invoice['taxRate'] = $vatRate;
-            $invoice['taxText'] = (string) __('sevdesk::finance.sevdesk.tax_text', ['rate' => NumberHelper::toUSFormat($vatRate, 2, trimTrailingZeros: true)]);
-        }
+        $invoice += $taxHeader;
 
         try {
             $body = $client->saveInvoice([
@@ -231,9 +239,10 @@ class SevDeskTarget implements FacturationTarget {
      * Text und Preis kommen aus der Position; die Einheit wird auf die
      * konfigurierte sevDesk-Unity abgebildet.
      *
+     * @param  float|null  $fixedRate  Satz aller Positionen (0 % bei steuerfreien Fällen), sonst der der Position
      * @return list<array<string, mixed>>
      */
-    private function positions(BillingTransfer $transfer, float $vatRate, int $unityId): array {
+    private function positions(BillingTransfer $transfer, float $vatRate, int $unityId, ?float $fixedRate = null): array {
         // Vollständigkeits-Guard der Quellen bleibt (M41).
         $transfer->channel === TransferChannel::Time
             ? $this->loadTimeEntries($transfer)
@@ -252,7 +261,7 @@ class SevDeskTarget implements FacturationTarget {
                 'name' => $position->name,
                 'quantity' => round($position->quantityFloat(), 2),
                 'price' => round($position->unitPriceFloat(), 2),
-                'taxRate' => $position->vat_rate !== null ? (float) $position->vat_rate : $vatRate,
+                'taxRate' => $fixedRate ?? ($position->vat_rate !== null ? (float) $position->vat_rate : $vatRate),
                 'unity' => ['id' => $unityId, 'objectName' => 'Unity'],
             ];
 

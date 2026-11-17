@@ -1,7 +1,7 @@
 ---
 title: "Faktura-Übergabe"
 topic: finance.transfers
-version: 7
+version: 8
 keywords:
     - Lexoffice-Übergabe
     - Zeiten an Lexoffice
@@ -84,6 +84,39 @@ Standardleistung der Organisation die Einheit „Pauschale“, entsteht je Auftr
 eine Position mit Menge 1 zum Preis der Leistung; die Zeiten des Auftrags bleiben
 die Quellen der Position. Alle anderen Einheiten, etwa Stunde, Tag oder Stk,
 rechnen nach Dauer. Taktung und vereinbarte Stunden gelten nicht für Pauschalen.
+
+## Steuerfall
+
+Die Übergabe gibt den **Steuerfall** als Steuerart des Zielsystems mit. Er
+entsteht wie im Rechnungslauf aus dem Kunden (Land, USt-IdNr., Verbraucher,
+§ 13b-Merkmal) und dem Leistungsort der Positionen; Material gilt als Ware.
+Bis zum Übertragen zeigt die Übergabe ihn als **Steuerfall**.
+
+| Steuerfall | Lexoffice | sevDesk (Update 2.0) | easybill |
+| --- | --- | --- | --- |
+| steuerpflichtig | Voreinstellung (net/gross) | eingestellte Regel | – |
+| § 13b im Inland | Bauleistungen § 13b | Regel 5 | Steuerschuldwechsel § 13b |
+| Leistung an EU-Unternehmen | Fremdleistungen § 13b EU | Regel 21 (§ 18b) | nicht steuerbar, EU mit USt-IdNr. |
+| innergemeinschaftliche Lieferung | innergemeinschaftliche Lieferung | Regel 3 | innergemeinschaftliche Lieferung |
+| Ausfuhrlieferung | Ausfuhrlieferung | Regel 2 | Ausfuhrlieferung |
+| nicht im Inland steuerbar | Dienstleistung an Drittland | Regel 17 | nicht steuerbar (Drittland bzw. EU) |
+| Kleinunternehmer (§ 19) | steuerfrei | Regel 11 | Kleinunternehmen |
+
+Positionen ohne Steuer gehen mit 0 % hinüber, der Hinweistext als
+Steuerhinweis des Belegs. **Gesperrt** wird vor dem Senden, mit Grund auf der
+Seite und beim **Übertragen**:
+
+- **orgaMAX** führt in seiner Schnittstelle keine Steuerart; außer
+  „steuerpflichtig“ und § 19 bleibt die Übergabe hier.
+- **Lexoffice** kennt bei nicht steuerbaren Leistungen nur Drittländer, etwa
+  nicht ein Grundstück im EU-Ausland.
+- **sevDesk** mit Buchhaltung 1.0 kennt § 13b, Reverse Charge an
+  EU-Unternehmen, Ausfuhr und § 4 nicht.
+- Ergeben die Positionen **mehrere Steuerfälle** (etwa Katalog- und
+  allgemeine Leistungen an einen Verbraucher im Drittland), verwerfen Sie die
+  Übergabe und übergeben Sie getrennt, oder Sie rechnen in WorkDiary ab.
+
+Das **Datei-Paket** nennt einen Steuerfall ohne Steuer in einer Kopfzeile.
 
 ## Zugehörige Belege
 

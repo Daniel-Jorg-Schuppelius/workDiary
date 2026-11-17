@@ -9,6 +9,12 @@
  */
 
 return [
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'not_taxable_outside_third_country' => 'For services not taxable in Germany, Lexoffice only offers “services to third countries”. If the place of supply is in the EU (for example a property in another EU country) or in several regions, there is no matching tax type — please bill in workDiary or enter the document in Lexoffice manually.',
+        'contact_required' => 'For “:case”, Lexoffice requires a contact created there; the customer is not yet linked to Lexoffice. Please transfer the contact first.',
+        'time_voucher' => 'The voucher from times only transfers the tax rate, not the tax type; the tax case of these times is “:case”. Please transfer them to Lexoffice via the invoicing handover, which sends the matching tax type.',
+    ],
     'error' => [
         'lexoffice_contact_missing' => 'No Lexoffice contact for the customer — please sync the contact first.',
         'lexoffice_delivery_no_customer' => 'A delivery without a customer cannot be handed over as a delivery note.',

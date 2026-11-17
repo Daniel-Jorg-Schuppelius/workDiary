@@ -1,7 +1,7 @@
 ---
 title: "Boîte de rapprochement"
 topic: admin.integration-inbox
-version: 6
+version: 7
 keywords:
     - boîte des intégrations
     - conflits import
@@ -32,6 +32,9 @@ chaque entrée.
 - **Ambigu** – plusieurs enregistrements sont possibles.
 - **Conflit de champ** – l'enregistrement est connu, mais l'état local et
   l'état distant se contredisent. Les deux états sont affichés côte à côte.
+  Pour les clients, l'adresse de livraison compte aussi ; la reprise de l'état
+  distant n'écrit que les champs divergents, le reste de l'adresse et des
+  coordonnées bancaires est conservé.
 
 **Numéro déjà attribué :** un cas particulier de conflit de champ. Un
 logiciel de comptabilité a attribué à un client ou fournisseur un numéro

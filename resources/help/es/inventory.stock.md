@@ -1,7 +1,7 @@
 ---
 title: "Existencias y escaneo"
 topic: inventory.stock
-version: 8
+version: 9
 keywords:
     - stock
     - almacén
@@ -16,6 +16,7 @@ keywords:
     - FEFO
     - escanear código de barras
     - valor del stock
+    - coste de entrada
 audience: []
 modules:
     - module.lager
@@ -101,7 +102,9 @@ lote; los lotes bloqueados, solo tras su liberación.
 
 **Variante del consumo de material:** si el artículo tiene varias variantes activas, el consumo registra la variante elegida en el parte de horas; sin elección, la variante predeterminada. Un cambio de variante devuelve la anterior y retira la nueva.
 
-**Valoración de las salidas:** las salidas de existencias propias —en el formulario de registro, por escaneo y tras una aprobación a cuatro ojos— se valoran según el método del artículo, como las entregas y el consumo de material: FIFO y FEFO consumen las capas de valoración, el precio medio ponderado reduce el libro de medias al precio medio actual. Las salidas de existencias de terceros (cliente, consignación, proveedor, proyecto) quedan sin valorar. La salida de almacén en la ficha del cliente también registra según el método del artículo; eliminar la asignación la devuelve como nueva capa al coste unitario de la salida en FIFO y FEFO, y al libro de medias con el precio medio ponderado. La entrada manual no lleva precio unitario y queda sin valorar.
+**Valoración de las salidas:** las salidas de existencias propias —en el formulario de registro, por escaneo, tras una aprobación a cuatro ojos, en el consumo de material de fabricación y al cumplir una reserva— se valoran según el método del artículo, como las entregas y el consumo de material: FIFO y FEFO consumen las capas de valoración, el precio medio ponderado reduce el libro de medias al precio medio actual. Las salidas de existencias de terceros (cliente, consignación, proveedor, proyecto) quedan sin valorar. La salida de almacén en la ficha del cliente también registra según el método del artículo; eliminar la asignación la devuelve como nueva capa al coste unitario de la salida en FIFO y FEFO, y al libro de medias con el precio medio ponderado.
+
+**Valoración de las entradas:** una entrada en existencias propias —en el formulario de registro y por escaneo— se valora como la recepción de un pedido de compra. En el campo **Coste de entrada por unidad** indique el precio por unidad introducida (por ejemplo, por caja), con coma o punto; se registra por unidad base. Si queda vacío, se aplica el precio de compra de la variante (sin uno propio, el del artículo); sin precio de compra, la media actual del almacén, y sin ninguna valoración, cero. El precio está en la moneda en la que la valoración lleva el artículo en el almacén; si no, en la de la organización; un precio de compra en otra moneda no se tiene en cuenta. Con FIFO y FEFO la entrada crea una capa de valoración; con el precio medio ponderado recalcula la media. Las entradas en existencias de terceros quedan sin valorar.
 
 **Redistribuir reservas:** en el diálogo «Modificar reserva» cede la cantidad abierta a otra reserva del mismo artículo, almacén y propiedad, por ejemplo a una orden con mayor prioridad. Una reserva más reciente nunca desplaza en silencio a una más antigua; la redistribución queda en el registro de auditoría y la línea de material de una orden de fabricación la sigue.
 

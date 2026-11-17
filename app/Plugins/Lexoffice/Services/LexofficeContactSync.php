@@ -559,6 +559,11 @@ class LexofficeContactSync implements OwnershipConflictReplay {
 
     /**
      * Spiegelt die Lexoffice-Adressen (billing/shipping) in contact_addresses.
+     * Lexoffice liefert keine Adress-IDs; die Fremd-ID ist Art und Position
+     * (`billing-0`). Eine lokal angelegte Anschrift ohne Fremd-ID derselben Art
+     * übernimmt sie (die primäre die erste Rechnungsanschrift), statt dass eine
+     * zweite entsteht (MVP-1702). Danach ist nur die erste Rechnungsanschrift
+     * aus Lexoffice primär.
      *
      * @param  array<string, mixed>  $remote
      */
@@ -574,23 +579,47 @@ class LexofficeContactSync implements OwnershipConflictReplay {
                 if (! is_array($addr)) {
                     continue;
                 }
-                $record->addresses()->updateOrCreate(
-                    ['kind' => $kind, 'external_id' => $kind . '-' . $i],
-                    [
-                        'organization_id' => $orgId,
-                        // Verschlüsselte Felder NIE als leeren String speichern:
-                        // '' lässt sich nicht entschlüsseln und sprengt sonst
-                        // jeden späteren Lese-/Save-Zugriff (DecryptException).
-                        'supplement' => $this->nullIfBlank($addr['supplement'] ?? null),
-                        'street' => $this->nullIfBlank($addr['street'] ?? null),
-                        'zip' => $this->nullIfBlank($addr['zip'] ?? null),
-                        'city' => $this->nullIfBlank($addr['city'] ?? null),
-                        'country_code' => $addr['countryCode'] ?? null,
-                        'is_primary' => $i === 0 && $kind === ContactAddress::KIND_BILLING,
-                    ],
-                );
+                $externalId = $kind . '-' . $i;
+                $primary = $i === 0 && $kind === ContactAddress::KIND_BILLING;
+                $address = $record->addresses()->where('kind', $kind)->where('external_id', $externalId)->first()
+                    ?? $this->unlinkedAddress($record, $kind)
+                    ?? $record->addresses()->make();
+                if ($primary) {
+                    // Erst die übrigen abwerten: das Speichern der ersten zieht die Projektion nach.
+                    $record->addresses()->where('kind', '!=', ContactAddress::KIND_SHIPPING)->where('is_primary', true)
+                        ->when($address->exists, static fn ($q) => $q->whereKeyNot($address->getKey()))
+                        ->update(['is_primary' => false]);
+                }
+                $address->fill([
+                    'organization_id' => $orgId,
+                    'kind' => $kind,
+                    'external_id' => $externalId,
+                    // Verschlüsselte Felder NIE als leeren String speichern:
+                    // '' lässt sich nicht entschlüsseln und sprengt sonst
+                    // jeden späteren Lese-/Save-Zugriff (DecryptException).
+                    'supplement' => $this->nullIfBlank($addr['supplement'] ?? null),
+                    'street' => $this->nullIfBlank($addr['street'] ?? null),
+                    'zip' => $this->nullIfBlank($addr['zip'] ?? null),
+                    'city' => $this->nullIfBlank($addr['city'] ?? null),
+                    'country_code' => $addr['countryCode'] ?? null,
+                    'is_primary' => $primary,
+                ])->save();
             }
         }
+    }
+
+    /**
+     * Lokal angelegte Anschrift ohne Fremd-ID derselben Art, die primäre zuerst;
+     * eine Rechnungsanschrift kann auch die Vorgabeart tragen.
+     */
+    private function unlinkedAddress(Customer|Supplier $record, string $kind): ?ContactAddress {
+        return $record->addresses()->whereNull('external_id')
+            ->when(
+                $kind === ContactAddress::KIND_SHIPPING,
+                static fn ($q) => $q->where('kind', ContactAddress::KIND_SHIPPING),
+                static fn ($q) => $q->where('kind', '!=', ContactAddress::KIND_SHIPPING),
+            )
+            ->orderByDesc('is_primary')->orderBy('id')->first();
     }
 
     /**

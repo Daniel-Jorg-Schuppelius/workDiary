@@ -1,7 +1,7 @@
 ---
 title: "Trasferimento fatturazione"
 topic: finance.transfers
-version: 7
+version: 8
 keywords:
     - trasferimento a Lexoffice
     - trasferimento DATEV
@@ -85,6 +85,41 @@ ordine genera una riga con quantità 1 al prezzo della prestazione; i tempi
 dell'ordine restano le fonti della riga. Tutte le altre unità, ad esempio ora,
 giorno o pz., contano in base alla durata. L'arrotondamento e le ore concordate
 non valgono per i forfait.
+
+## Caso fiscale
+
+Il trasferimento trasmette il **caso fiscale** al sistema di destinazione come
+tipo d'imposta. Viene determinato come nella fatturazione dal cliente (paese,
+partita IVA, consumatore, indicatore § 13b) e dal luogo della prestazione
+delle posizioni; il materiale conta come merce. Fino all'invio il trasferimento
+lo mostra come **Caso fiscale**.
+
+| Caso fiscale | Lexoffice | sevDesk (aggiornamento 2.0) | easybill |
+| --- | --- | --- | --- |
+| imponibile | impostazione predefinita (net/gross) | regola configurata | – |
+| § 13b nazionale | lavori edili § 13b | regola 5 | inversione contabile § 13b (nazionale) |
+| prestazione a un'impresa UE | prestazioni esterne § 13b UE | regola 21 (§ 18b) | non imponibile, UE con partita IVA |
+| cessione intracomunitaria | cessione intracomunitaria | regola 3 | cessione intracomunitaria |
+| cessione all'esportazione | cessione all'esportazione | regola 2 | cessione all'esportazione |
+| non imponibile in Germania | servizio verso paese terzo | regola 17 | non imponibile (paese terzo o UE) |
+| piccola impresa (§ 19) | esente | regola 11 | piccola impresa |
+
+Le posizioni senza imposta partono allo 0 %, la dicitura come nota fiscale
+del documento. Il trasferimento viene **bloccato** prima dell'invio, con il
+motivo sulla pagina e su **Trasferire ora**:
+
+- **orgaMAX** non gestisce un tipo d'imposta nella sua interfaccia; oltre a
+  «imponibile» e al § 19 il trasferimento resta qui.
+- **Lexoffice** conosce solo paesi terzi per le prestazioni non imponibili in
+  Germania, non ad esempio un immobile in un altro paese UE.
+- **sevDesk** con la contabilità 1.0 non conosce il § 13b, l'inversione
+  contabile verso imprese UE, l'esportazione né il § 4.
+- Se le posizioni danno **più casi fiscali** (ad esempio prestazioni da
+  catalogo e generiche a un consumatore di un paese terzo), annulli il
+  trasferimento e trasferisca separatamente, oppure fatturi in WorkDiary.
+
+Il **pacchetto di file** indica un caso fiscale senza imposta in una riga di
+intestazione.
 
 ## Documenti collegati
 

@@ -1,7 +1,7 @@
 ---
 title: "Equipment rental"
 topic: rental.overview
-version: 9
+version: 10
 keywords:
     - landlord
     - holiday apartment
@@ -92,6 +92,12 @@ If **Prepayment for direct booking** is set under “Organization and settings�
 (or a rental item has its own rate), a direct booking in the customer portal
 leads to the payment page of the payment provider:
 
+- The amount is the configured share of the gross price from the default
+  price list. The VAT in it follows the place of supply of the organization's
+  default service, like the later invoice of the rental case (for example
+  “Service connected with immovable property” for holiday apartments or
+  “Catalogue service” for rented equipment); accounting books the same VAT
+  with the payment.
 - The rental case is reserved immediately and holds the item until the
   **payment deadline**. Until then the booking shows **payment pending** under
   **Rental requests**.

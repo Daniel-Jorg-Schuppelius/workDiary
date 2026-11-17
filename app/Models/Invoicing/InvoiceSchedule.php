@@ -17,7 +17,7 @@ use App\Models\Contracts\HasDocumentLines;
 use App\Models\Customer\Customer;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Billing\Dto\DocumentTotalsContext;
-use App\Services\Invoicing\TaxResolver;
+use App\Services\Invoicing\{PlaceOfSupplyResolver, TaxResolver};
 use Carbon\{Carbon, CarbonInterface};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -118,7 +118,8 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
 
     /**
      * Summen eines Laufs, wie ihn der Rechnungslauf erzeugt: Positionen ohne
-     * eigenen Satz erhalten den Satz aus dem TaxResolver des Kunden.
+     * eigenen Satz erhalten den Satz des Kunden nach dem Leistungsort, den der
+     * Lauf ansetzt — Positionen ohne Artikel folgen der Standardleistung (MVP-1704).
      */
     public function documentTotals(): array {
         $fallback = null;
@@ -126,7 +127,7 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
             $organization = $this->organization()->first();
             $customer = $this->customer()->first();
             if ($organization !== null && $customer !== null) {
-                $rate = app(TaxResolver::class)->resolve($organization, $customer)['rate'];
+                $rate = app(TaxResolver::class)->casesFor($organization, $customer, null, 'services', [app(PlaceOfSupplyResolver::class)->forProject($organization, null)])[0]['rate'];
                 $fallback = Percentage::of(NumberHelper::toUSFormat((float) $rate, 2));
             }
         }

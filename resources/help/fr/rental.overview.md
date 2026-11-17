@@ -1,7 +1,7 @@
 ---
 title: "Location de matériel"
 topic: rental.overview
-version: 9
+version: 10
 keywords:
     - bailleur
     - location de vacances
@@ -91,6 +91,12 @@ paramètres » (ou un taux propre sur l’objet de location), la réservation
 directe dans le portail client mène à la page de paiement du prestataire de
 paiement :
 
+- Le montant est la part paramétrée du prix TTC de la liste de prix standard.
+  La TVA incluse suit le lieu de la prestation de la prestation standard de
+  l’organisation, comme la facture ultérieure du dossier (par exemple
+  « Prestation liée à un bien immobilier » pour les locations de vacances ou
+  « Prestation du catalogue » pour les appareils loués) ; la comptabilité
+  comptabilise la même TVA avec le paiement.
 - Le dossier est réservé immédiatement et retient l’appareil jusqu’au **délai
   de paiement**. Jusque-là, la réservation affiche **paiement en attente** sous
   **Demandes de location**.

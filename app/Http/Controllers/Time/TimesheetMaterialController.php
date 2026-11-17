@@ -34,7 +34,11 @@ class TimesheetMaterialController extends Controller {
     public function edit(Project $project, Timesheet $timesheet, MaterialUsage $usage): View {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
-        $materials = Material::query()->where('is_active', true)->orderBy('name')->get();
+        // Ein inzwischen inaktives Material der Zeile bleibt wählbar, sonst stünde die Auswahl auf „frei“
+        // und das Speichern entfernte Material und Lagerbuchung still (MVP-1714).
+        $materials = Material::query()
+            ->where(fn ($query) => $query->where('is_active', true)->when($usage->material_id !== null, fn ($q) => $q->orWhereKey($usage->material_id)))
+            ->orderBy('name')->get();
 
         return view('timesheets._material_form_dialog', [
             'project' => $project,

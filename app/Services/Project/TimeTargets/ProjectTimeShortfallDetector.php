@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Cache;
  * Projekts (Feature 194, MVP-1468). Eine Unterschreitung über der Toleranz
  * legt einen Befund an oder öffnet einen erledigten wieder; erreicht die
  * Buchung das Soll, ist der Befund erledigt. Bestätigte Befunde bleiben
- * bestätigt, solange die Lücke besteht.
+ * bestätigt, solange die Lücke besteht; pauschal abgerechnete bleiben erledigt.
  */
 final class ProjectTimeShortfallDetector {
     use AssertsStatusTransition;
@@ -74,6 +74,11 @@ final class ProjectTimeShortfallDetector {
             foreach ($days as $date => $target) {
                 /** @var ProjectTimeShortfall|null $found */
                 $found = $existing->get($userId . '|' . $date);
+                // Pauschal abgerechnet (MVP-1708): Der Tag ist bezahlt, eine fehlende Stunde öffnet ihn nicht wieder.
+                if ($found !== null && $found->isSettledByFlatRate()) {
+                    $result['unchanged']++;
+                    continue;
+                }
                 $bookedMinutes = $booked[$userId][$date] ?? 0;
                 $shortfall = $target - $bookedMinutes;
                 if ($target <= 0 || $shortfall <= $tolerance) {

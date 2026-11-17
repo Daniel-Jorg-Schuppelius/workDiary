@@ -21,7 +21,7 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Billing\Dto\DocumentTotalsContext;
-use App\Services\Invoicing\TaxResolver;
+use App\Services\Invoicing\{PlaceOfSupplyResolver, TaxResolver};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Money, Percentage};
@@ -116,7 +116,7 @@ class OrderConfirmation extends Model implements AuditsChanges, HasDocumentLines
     public function documentTotals(): array {
         $lines = $this->items->filter(fn (OrderConfirmationItem $item): bool => $item->lineKind()->isPriced())->values();
         $fallback = $lines->contains(fn (OrderConfirmationItem $item): bool => $item->taxRate() === null)
-            ? Percentage::of(NumberHelper::toUSFormat($this->defaultTaxRate(), 2))
+            ? Percentage::of(NumberHelper::toUSFormat($this->defaultTaxRate($lines), 2))
             : null;
 
         return app(DocumentTotalsCalculator::class)->totals($lines, new DocumentTotalsContext(currency: $this->documentCurrency(), fallbackTaxRate: $fallback));
@@ -129,12 +129,21 @@ class OrderConfirmation extends Model implements AuditsChanges, HasDocumentLines
         $this->total = $totals['total'];
     }
 
-    private function defaultTaxRate(): float {
+    /**
+     * Steuersatz für Positionen ohne eigenen Satz: Fall nach dem Leistungsort
+     * der Leistungsartikel, sonst der Leistung des Projekts (MVP-1705).
+     *
+     * @param  \Illuminate\Support\Collection<int, OrderConfirmationItem>  $lines
+     */
+    private function defaultTaxRate(\Illuminate\Support\Collection $lines): float {
         $customer = $this->customer;
         $organization = $this->organization;
+        if ($customer === null || $organization === null) {
+            return 19.0;
+        }
+        $articleIds = array_values($lines->pluck('article_id')->filter()->map(static fn (mixed $id): int => (int) $id)->all());
+        $places = app(PlaceOfSupplyResolver::class)->forArticlesOrProject($organization, $articleIds, $this->project);
 
-        return $customer !== null && $organization !== null
-            ? (float) app(TaxResolver::class)->resolve($organization, $customer)['rate']
-            : 19.0;
+        return (float) app(TaxResolver::class)->casesFor($organization, $customer, null, 'services', $places)[0]['rate'];
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Invoicing transfer"
 topic: finance.transfers
-version: 7
+version: 8
 keywords:
     - Lexoffice transfer
     - send times to Lexoffice
@@ -81,6 +81,39 @@ service names the unit "flat" or "Pauschale", each order becomes one line with
 quantity 1 at the service price; the order's times remain the sources of the line.
 All other units, such as hour, day or pcs, bill by duration. Rounding increments
 and agreed hours do not apply to flat rates.
+
+## Tax case
+
+The handover passes the **tax case** to the target system as its tax type.
+It is determined as in the invoice run from the customer (country, VAT ID,
+consumer, § 13b flag) and the place of supply of the positions; material
+counts as goods. Until it is sent, the transfer shows it as **Tax case**.
+
+| Tax case | Lexoffice | sevDesk (update 2.0) | easybill |
+| --- | --- | --- | --- |
+| taxable | default (net/gross) | configured rule | – |
+| § 13b domestic | construction services § 13b | rule 5 | reverse charge § 13b (domestic) |
+| service to an EU business | external services § 13b EU | rule 21 (§ 18b) | not taxable, EU with VAT ID |
+| intra-Community supply | intra-Community supply | rule 3 | intra-Community supply |
+| export delivery | export delivery | rule 2 | export delivery |
+| not taxable in Germany | service to third country | rule 17 | not taxable (third country or EU) |
+| small business (§ 19) | tax-free | rule 11 | small business |
+
+Positions without tax are sent at 0 %, the note as the document's tax note.
+The transfer is **blocked** before sending, with the reason on the page and
+on **Transfer now**:
+
+- **orgaMAX** has no tax type in its interface; apart from “taxable” and
+  § 19 the transfer stays here.
+- **Lexoffice** only knows third countries for services not taxable in
+  Germany, not for example a property in another EU country.
+- **sevDesk** with bookkeeping 1.0 does not know § 13b, reverse charge to EU
+  businesses, export or § 4.
+- If the positions result in **several tax cases** (for example catalogue
+  and general services to a consumer in a third country), void the transfer
+  and transfer separately, or bill in WorkDiary.
+
+The **file package** names a tax case without tax in a header line.
 
 ## Related documents
 

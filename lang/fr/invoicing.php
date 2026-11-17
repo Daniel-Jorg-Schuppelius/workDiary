@@ -169,7 +169,7 @@ return [
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Ne jamais indiquer',
-            'private_customers' => 'Indiquer pour les particuliers (sans société ni n° de TVA)',
+            'private_customers' => 'Indiquer pour les particuliers (case « consommateur », sinon sans société ni n° de TVA)',
             'always' => 'Toujours indiquer',
         ],
         'share' => 'Part de main-d’œuvre § 35a EStG (%)',
@@ -571,7 +571,7 @@ return [
     // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
     'consumer' => [
         'label' => 'Consommateur (pas une entreprise)',
-        'hint' => 'Particulier ou autre non-assujetti. Détermine le lieu de la prestation selon le § 3a UStG : pour un consommateur hors UE, les prestations du catalogue (conseil, traitement de données, droits, publicité, location de biens meubles, etc.) ne sont pas imposables en Allemagne ; les autres prestations portent la TVA allemande. Sans coche, le client est considéré comme une entreprise.',
+        'hint' => 'Particulier ou autre non-assujetti. Détermine le lieu de la prestation selon le § 3a UStG : pour un consommateur hors UE, les prestations du catalogue (conseil, traitement de données, droits, publicité, location de biens meubles, etc.) ne sont pas imposables en Allemagne ; les autres prestations portent la TVA allemande. Sans coche, le client est considéré comme une entreprise. Avec la règle « Indiquer pour les particuliers », la facture indique les frais de main-d’œuvre selon le § 35a EStG.',
         'recipient' => 'Destinataire',
         'yes' => 'Consommateur',
         'no' => 'Entreprise',
@@ -589,5 +589,20 @@ return [
         'changed_on_issue' => 'Le régime fiscal du client a changé depuis la dernière modification du brouillon (autoliquidation, exportation ou exonération). Le brouillon a été ajusté — veuillez vérifier les montants et émettre à nouveau la facture.',
         'note_kept' => 'Le texte de la facture a été modifié manuellement et n’a donc pas été ajusté : veuillez vérifier vous-même la mention du régime fiscal (autoliquidation, exportation ou exonération, par exemple).',
         'place_of_supply_mixed' => 'Les lignes de cette facture ont des lieux de prestation différents (§ 3a UStG) et donc des régimes fiscaux différents. Veuillez scinder la facture : une facture par régime fiscal, par exemple les prestations immobilières ou du catalogue séparément des autres.',
+        'line_rates_aligned' => 'Les lignes sans catégorie de TVA propre suivent le régime fiscal de la facture : leur taux a été aligné (0 % sans TVA, après un passage à l’assujettissement le taux du régime fiscal). Pour un autre taux, choisissez une catégorie de TVA sur la ligne.',
+        'line_rates_on_issue' => 'Des lignes sans catégorie de TVA propre portaient un taux qui ne correspond pas au régime fiscal de la facture. Leur taux a été aligné — veuillez vérifier les montants et émettre à nouveau la facture.',
+    ],
+    // Ort des Grundstücks an der Rechnung (MVP-1706).
+    'property_country' => [
+        'legend' => 'Lieu de la prestation',
+        'label' => 'Lieu de situation de l’immeuble (pays, ISO 2)',
+        'hint' => 'Uniquement pour les prestations immobilières (§ 3a, al. 3, n° 1 UStG). Prime sur le lieu d’intervention de la commande ; vide, le lieu d’intervention s’applique, à défaut l’Allemagne. Si l’immeuble est situé à l’étranger, la prestation n’est pas imposable en Allemagne.',
+        'shown' => 'Lieu de situation de l’immeuble',
+    ],
+    // Soll-Befund bei Pauschal-Abrechnung (MVP-1708).
+    'target_settlement' => [
+        'flat_rate' => 'Réglé par le forfait de la facture :number — sans complément',
+        'flat_rate_transfer' => 'Réglé par le forfait du transfert n° :id — sans complément',
+        'flat_rate_voucher' => 'Réglé par le forfait de la pièce de temps dans le logiciel comptable — sans complément',
     ],
 ];

@@ -103,6 +103,7 @@ final class InventoryRmaStockHandler implements RmaStockHandler {
                 break;
             case ClaimRmaDisposition::ReturnToSupplier:
                 if ($hasStock) {
+                    // Unbewertet: der Rückläufer kam ohne Kostenwert in den Prüfbestand, das Bewertungsbuch führt ihn nicht.
                     $this->ledger->post(new StockPosting($variant, $warehouse, $state, $qtyOut, StockMovementType::Issue, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':rts', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
                 }
                 break;

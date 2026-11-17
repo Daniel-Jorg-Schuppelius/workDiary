@@ -35,6 +35,7 @@ class ScanActionService {
         private readonly InventoryLedger $ledger,
         private readonly LotStockReader $lotStock,
         private readonly InventoryValuationManager $valuation,
+        private readonly ManualStockReceipt $receipts,
     ) {}
 
     /**
@@ -42,7 +43,7 @@ class ScanActionService {
      * Abgang (je Charge eine Bewegung). Ein gescannter Chargencode bucht genau
      * diese Charge.
      *
-     * @param array{actor?: int|null, target?: Warehouse|null, unit?: string|null} $options `unit`: Einheit des Artikels, leer = Basiseinheit
+     * @param array{actor?: int|null, target?: Warehouse|null, unit?: string|null, unit_cost?: string|null} $options `unit`: Einheit des Artikels, leer = Basiseinheit; `unit_cost`: Einstandspreis je erfasster Einheit des Eingangs
      */
     public function book(string $code, ScanAction $action, Warehouse $warehouse, string $qty, array $options = []): StockMovement|StockIssue {
         $match = $this->resolver->resolve($code);
@@ -74,7 +75,8 @@ class ScanActionService {
         $organization = $warehouse->organization;
 
         return match ($action) {
-            ScanAction::Receipt => $this->ledger->receipt($variant, $warehouse, $qty, actorUserId: $actor, entered: $entered),
+            // Bewertet wie der Eingang im Lager (MVP-1709); der Scan bucht nur Eigenbestand.
+            ScanAction::Receipt => $this->receipts->book($variant, $warehouse, $entered, OwnershipType::Own, $options['unit_cost'] ?? null, actorUserId: $actor),
             // Bewertet wie die Entnahme im Lager (MVP-1692).
             ScanAction::Issue => $organization instanceof Organization
                 ? $this->valuation->forVariant($variant, $organization)->issue($variant, $warehouse, $qty, actorUserId: $actor, lot: $match->lot, entered: $entered)

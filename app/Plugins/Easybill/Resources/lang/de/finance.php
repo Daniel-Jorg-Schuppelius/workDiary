@@ -14,6 +14,10 @@ return [
         'unit_hour' => 'Std.',
         'unit_piece' => 'Stk.',
     ],
+    // Steuerfall der Übergabe (MVP-1712)
+    'tax_case' => [
+        'not_taxable_region' => 'Die Leistungsorte dieser nicht im Inland steuerbaren Leistungen liegen in mehreren Gebieten (Drittland und EU). easybill braucht je Beleg genau eine Steueroption — bitte je Gebiet getrennt abrechnen.',
+    ],
     'error' => [
         'ownership_unavailable' => 'Die Anbindung ist nicht eingerichtet — der Stand lässt sich gerade nicht übernehmen.',
         'ownership_not_ready' => 'Die Quelle liefert den Stand gerade nicht — bitte später erneut übernehmen.',

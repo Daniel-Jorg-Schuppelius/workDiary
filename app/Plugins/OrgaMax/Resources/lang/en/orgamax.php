@@ -118,6 +118,7 @@ return [
     'error.customer_unmapped' => 'Customer ":customer" is not mapped to an orgaMAX customer — map it via the integration inbox.',
     'error.outcome_unclear' => 'Outcome unclear (timeout after sending) — no blind retry. The next run reconciles via the source marker.',
     'error.token_exchange_failed' => 'Token exchange failed (HTTP :status) — check API key/secret.',
+    'tax_case.unmappable' => 'orgaMAX cannot take over the tax case “:case”: the orgaMAX API has no tax type, and a 0 % rate would arrive as a taxable sale without a reason. Please bill in workDiary or enter the document in orgaMAX manually.',
     'order.internal_note' => 'WorkDiary hand-over :channel :from–:to',
     'relations' => [
         'order' => 'Order',

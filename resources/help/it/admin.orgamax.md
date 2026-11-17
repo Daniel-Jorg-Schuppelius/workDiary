@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX contabilità"
 topic: admin.orgamax
-version: 2
+version: 3
 keywords:
     - API orgaMAX
     - integrazione contabile
@@ -48,6 +48,13 @@ riconciliazione invece di ripetizioni cieche). Conversione in fattura,
 blocco irreversibile, invio e registrazione pagamenti sono azioni separate,
 con permessi propri e auditate. Numero, stato, pagamento e PDF provengono
 visibilmente da orgaMAX.
+
+Caso fiscale: l'API di orgaMAX non gestisce un tipo d'imposta, solo l'aliquota
+per posizione. Consegne e fatture partono quindi solo come imponibili o come
+piccola impresa (§ 19, 0 %). Inversione contabile, § 13b, cessione
+intracomunitaria, esportazione e prestazioni non imponibili in Germania sono
+bloccate prima dell'invio, con il motivo: le fatturi in WorkDiary o le
+registri in orgaMAX.
 
 Il polling è budgetato con checkpoint (orario, configurabile); «Sincronizza
 ora» rispetta gli stessi limiti. La consegna spese/ricevute resta bloccata

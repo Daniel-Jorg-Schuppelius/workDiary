@@ -1,7 +1,7 @@
 ---
 title: "Geräte- & Maschinenverleih"
 topic: rental.overview
-version: 9
+version: 10
 keywords:
     - Vermieter
     - Ferienwohnung
@@ -100,6 +100,11 @@ Ist unter „Organisation und Einstellungen“ eine **Vorauszahlung bei
 Direktbuchung** gesetzt (oder am Mietobjekt ein eigener Satz), führt die
 Direktbuchung im Kundenportal zur Bezahlseite des Zahlungsanbieters:
 
+- Der Betrag ist der eingestellte Anteil am Bruttopreis der
+  Standard-Preisliste. Die Umsatzsteuer darin folgt dem Leistungsort der
+  Standardleistung der Organisation, wie die spätere Rechnung der Akte (etwa
+  „Grundstücksleistung“ für Ferienwohnungen oder „Katalogleistung“ für
+  vermietete Geräte); dieselbe Steuer bucht die Buchhaltung mit der Zahlung.
 - Die Akte wird sofort reserviert und hält das Gerät bis zur
   **Zahlungsfrist**. Unter **Verleih-Anfragen** steht die Buchung bis dahin
   auf **Zahlung ausstehend**.

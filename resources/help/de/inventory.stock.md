@@ -1,7 +1,7 @@
 ---
 title: "Lagerbestände & Scannen"
 topic: inventory.stock
-version: 8
+version: 9
 keywords:
     - Warenbestand
     - Bestand buchen
@@ -16,6 +16,7 @@ keywords:
     - FEFO
     - Barcode scannen
     - Bestandswert
+    - Einstandspreis
 audience: []
 modules:
     - module.lager
@@ -106,7 +107,9 @@ Chargen erst nach der Freigabe.
 
 **Variante beim Materialverbrauch:** Hat der Artikel mehrere aktive Varianten, bucht der Verbrauch die am Stundenzettel gewählte Variante, ohne Wahl die Standardvariante. Ein Wechsel der Variante bucht die alte zurück und die neue ab.
 
-**Bewertung der Entnahme:** Entnahmen aus Eigenbestand — im Buchungsformular, per Scan und nach einer Vier-Augen-Freigabe — sind nach dem Bewertungsverfahren des Artikels bewertet wie Auslieferung und Materialverbrauch: FIFO und FEFO verbrauchen die Bewertungsschichten, der gleitende Durchschnitt mindert das Durchschnittsbuch zum aktuellen Durchschnittspreis. Entnahmen aus Fremdbestand (Kunde, Kommission, Lieferant, Projekt) bleiben unbewertet. Die Lagerentnahme in der Kundenakte bucht ebenfalls nach dem Verfahren des Artikels; das Löschen der Zuordnung bucht bei FIFO und FEFO als neue Schicht zum Stückkostenwert der Entnahme zurück, beim gleitenden Durchschnitt ins Durchschnittsbuch. Der manuelle Eingang trägt keinen Einzelpreis und bleibt unbewertet.
+**Bewertung der Entnahme:** Entnahmen aus Eigenbestand — im Buchungsformular, per Scan, nach einer Vier-Augen-Freigabe, beim Materialverbrauch der Fertigung und bei der Erfüllung einer Reservierung — sind nach dem Bewertungsverfahren des Artikels bewertet wie Auslieferung und Materialverbrauch: FIFO und FEFO verbrauchen die Bewertungsschichten, der gleitende Durchschnitt mindert das Durchschnittsbuch zum aktuellen Durchschnittspreis. Entnahmen aus Fremdbestand (Kunde, Kommission, Lieferant, Projekt) bleiben unbewertet. Die Lagerentnahme in der Kundenakte bucht ebenfalls nach dem Verfahren des Artikels; das Löschen der Zuordnung bucht bei FIFO und FEFO als neue Schicht zum Stückkostenwert der Entnahme zurück, beim gleitenden Durchschnitt ins Durchschnittsbuch.
+
+**Bewertung des Eingangs:** Ein Eingang in Eigenbestand — im Buchungsformular und per Scan — ist bewertet wie der Wareneingang einer Bestellung. Im Feld **Einstandspreis je Einheit** erfassen Sie den Preis je eingegebener Einheit (etwa je Karton), mit Komma oder Punkt; gebucht wird er je Basiseinheit. Leer gilt der Einkaufspreis der Variante (ohne eigenen der des Artikels), ohne Einkaufspreis der aktuelle Durchschnitt des Lagers und ohne jeden Bewertungsstand null. Der Preis gilt in der Währung, in der die Bewertung den Artikel im Lager führt, sonst in der der Organisation; ein Einkaufspreis in anderer Währung bleibt außen vor. Bei FIFO und FEFO legt der Eingang eine Bewertungsschicht an, beim gleitenden Durchschnitt rechnet er den Durchschnitt neu. Eingänge in Fremdbestand bleiben unbewertet.
 
 **Reservierungen umverteilen:** Im Dialog „Reservierung ändern“ geben Sie offene Menge an eine andere Reservierung desselben Artikels, Lagers und Eigentums ab, etwa an einen Auftrag mit höherer Priorität. Eine jüngere Reservierung verdrängt eine ältere nie still; die Umverteilung steht im Audit-Protokoll, und die Materialposition eines Fertigungsauftrags folgt ihr.
 

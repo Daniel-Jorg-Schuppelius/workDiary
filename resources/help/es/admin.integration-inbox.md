@@ -1,7 +1,7 @@
 ---
 title: "Bandeja de conciliación"
 topic: admin.integration-inbox
-version: 6
+version: 7
 keywords:
     - bandeja de integraciones
     - conflictos de importación
@@ -32,6 +32,9 @@ decide en cada entrada.
 - **Ambiguo** – hay varios registros posibles.
 - **Conflicto de campo** – el registro es conocido, pero el estado local y el
   remoto se contradicen. Ambos estados se muestran uno junto al otro.
+  En los clientes también cuenta la dirección de entrega; adoptar lo remoto
+  solo escribe los campos divergentes, el resto de la dirección y de los datos
+  bancarios se conserva.
 
 **Número ya asignado:** un caso especial de conflicto de campo. Un
 programa de contabilidad asignó a un cliente o proveedor un número que otro
