@@ -389,4 +389,19 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
 
         return Money::of((string) $voucher->net_amount, CurrencyCode::tryFrom(strtoupper((string) $voucher->currency)) ?? CurrencyCode::Euro, 2);
     }
+
+    public function bookedVoucherNumbers(Organization $organization, array $voucherNumbers): array {
+        if ($voucherNumbers === []) {
+            return [];
+        }
+
+        return array_values(array_map('strval', AccountingVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('voucher_number', $voucherNumbers)
+            ->whereNull('source_deleted_at')
+            ->where('is_cancellation', false)
+            ->distinct()
+            ->pluck('voucher_number')
+            ->all()));
+    }
 }

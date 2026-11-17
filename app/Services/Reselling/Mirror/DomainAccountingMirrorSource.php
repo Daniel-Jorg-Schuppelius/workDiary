@@ -41,9 +41,23 @@ use Illuminate\Support\Facades\Lang;
  * Preiskatalog (`domain:sync-prices`), sonst den Journalbetrag; was die gebuchte
  * Monatsrechnung darüber hinaus enthält (DNS-Zonen, Gebühren), steht in der
  * Belegansicht als Restposition „Weitere Posten des Portals“.
+ *
+ * Berechnet ist eine Buchung erst, wenn die Monatsrechnung gebucht ist (Befund
+ * 2026-11-16): Das Journal ist das des Inhaberkontos, den Subuser trägt der Sync
+ * über den heutigen Besitzer der Domain nach — auch für Monate, bevor es das
+ * Unterkonto gab. Monate vor der ersten gebuchten Monatsrechnung des Subusers
+ * gelten als nie berechnet ({@see voidedLines()}), spätere ungebuchte als noch
+ * offen. Ohne jede gebuchte Monatsrechnung (Buchhaltung nicht gespiegelt) gilt
+ * das Journal selbst als Rechnung.
  */
 final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
     public const string KEY = 'domain-accounting';
+
+    private const string INVOICED = 'invoiced';
+
+    private const string NEVER_INVOICED = 'never';
+
+    private const string PENDING = 'pending';
 
     public function key(): string {
         return self::KEY;
@@ -58,11 +72,11 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             return collect();
         }
         // Kein Von-Filter: eine Mehrjahresbuchung vor dem Fenster deckt Perioden darin; das Journal ist klein.
-        return $this->map($organization, $this->entryQuery($organization, $recipientCustomerIds, null, $to)->get());
+        return $this->map($organization, $this->entryQuery($organization, $recipientCustomerIds, null, $to)->get(), self::INVOICED);
     }
 
     public function voidedLines(Organization $organization, ?array $recipientCustomerIds): Collection {
-        return collect();
+        return $this->map($organization, $this->entryQuery($organization, $recipientCustomerIds, null, null)->get(), self::NEVER_INVOICED);
     }
 
     public function planLines(Organization $organization, array $planKeys, CarbonImmutable $from): Collection {
@@ -77,7 +91,7 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
         if ($recipientCustomerIds === []) {
             return collect();
         }
-        $lines = $this->withRemainders($organization, $this->map($organization, $this->entryQuery($organization, $recipientCustomerIds, $from, null)->get()));
+        $lines = $this->withRemainders($organization, $this->map($organization, $this->entryQuery($organization, $recipientCustomerIds, $from, null)->get(), self::INVOICED));
 
         return $this->vouchers($lines)
             ->sortByDesc(static fn(MirrorVoucher $v): string => ($v->voucherDate?->format('Y-m-d') ?? '') . ' ' . $v->voucherKey)
@@ -171,9 +185,11 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
 
     /**
      * @param  Collection<int, DomainAccountingEntry>  $entries
+     * @param  self::INVOICED|self::NEVER_INVOICED|self::PENDING|null  $only  nur Zeilen dieses Abrechnungsstands (null: alle)
      * @return Collection<int, MirrorLine>
      */
-    private function map(Organization $organization, Collection $entries): Collection {
+    private function map(Organization $organization, Collection $entries, ?string $only = null): Collection {
+        $billing = $this->billing($organization, $entries);
         $customerIds = [];
         foreach ($entries as $entry) {
             if ($entry->resellerAccount?->customer_id !== null) {
@@ -195,13 +211,84 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             // (AR<Datum>…, Prod 2026-10-29), nicht die Rechnung des Portals an den Subuser.
             $voucherKey = $reseller->id . ':' . $start->format('Y-m');
             $positions[$voucherKey] = ($positions[$voucherKey] ?? 0) + 1;
-            $lines[] = $this->toLine($entry, $reseller, $start, $voucherKey, $positions[$voucherKey], $names[(int) $reseller->customer_id] ?? null, self::classUnit($prices, $entry, $reseller, $start));
+            $state = self::state($billing[(int) $reseller->id] ?? null, self::voucherNumber($reseller, $start), $start);
+            if ($only !== null && $state !== $only) {
+                continue;
+            }
+            $status = $state === self::NEVER_INVOICED ? MirrorLine::STATUS_NOT_INVOICED : MirrorLine::STATUS_ISSUED;
+            $lines[] = $this->toLine($entry, $reseller, $start, $voucherKey, $positions[$voucherKey], $names[(int) $reseller->customer_id] ?? null, self::classUnit($prices, $entry, $reseller, $start), $status);
         }
 
         return collect($lines);
     }
 
-    private function toLine(DomainAccountingEntry $entry, DomainResellerAccount $reseller, CarbonImmutable $start, string $voucherKey, int $position, ?string $recipientName, ?Money $classUnit): MirrorLine {
+    /**
+     * Gebuchte Monatsrechnungen je Subuser und der früheste gebuchte Monat; Subuser ohne gebuchte
+     * Monatsrechnung fehlen (dort gilt das Journal als Rechnung). Geprüft wird jeder Monat von der
+     * ersten Buchung des Subusers an, damit der erste gebuchte Monat nicht vom Abfragefenster abhängt.
+     *
+     * @param  Collection<int, DomainAccountingEntry>  $entries
+     * @return array<int, array{booked: array<string, true>, first: string}>  Subuser-ID → Belegnummern, Monat (Y-m)
+     */
+    private function billing(Organization $organization, Collection $entries): array {
+        $accounts = [];
+        $last = CarbonImmutable::now('UTC')->startOfMonth();
+        foreach ($entries as $entry) {
+            $reseller = $entry->resellerAccount;
+            if ($reseller === null || $reseller->customer_id === null || $entry->entry_date === null) {
+                continue;
+            }
+            $accounts[(int) $reseller->id] = $reseller;
+            $month = CarbonImmutable::instance($entry->entry_date)->startOfMonth();
+            $last = $month->greaterThan($last) ? $month : $last;
+        }
+        if ($accounts === []) {
+            return [];
+        }
+        $firstEntries = DomainAccountingEntry::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('reseller_account_id', array_keys($accounts))
+            ->whereNotNull('entry_date')
+            ->groupBy('reseller_account_id')
+            ->selectRaw('reseller_account_id, MIN(entry_date) AS first_entry')
+            ->toBase()
+            ->pluck('first_entry', 'reseller_account_id');
+        /** @var array<string, array{0: int, 1: string}> $candidates Belegnummer → [Subuser-ID, Monat] */
+        $candidates = [];
+        foreach ($accounts as $id => $account) {
+            $month = CarbonImmutable::parse((string) ($firstEntries[$id] ?? $last->toDateString()), 'UTC')->startOfMonth();
+            for (; $month->lessThanOrEqualTo($last); $month = $month->addMonthNoOverflow()) {
+                $candidates[self::voucherNumber($account, $month)] = [$id, $month->format('Y-m')];
+            }
+        }
+        $billing = [];
+        foreach (app(InvoiceMirror::class)->bookedVoucherNumbers($organization, array_map('strval', array_keys($candidates))) as $number) {
+            if (! isset($candidates[$number])) {
+                continue;
+            }
+            [$id, $month] = $candidates[$number];
+            $billing[$id]['booked'][$number] = true;
+            $billing[$id]['first'] = min($billing[$id]['first'] ?? $month, $month);
+        }
+
+        return $billing;
+    }
+
+    /** @param  array{booked: array<string, true>, first: string}|null  $billing */
+    private static function state(?array $billing, string $number, CarbonImmutable $month): string {
+        if ($billing === null || isset($billing['booked'][$number])) {
+            return self::INVOICED;
+        }
+
+        return $month->format('Y-m') < $billing['first'] ? self::NEVER_INVOICED : self::PENDING;
+    }
+
+    /** Nummer der Monatsrechnung des Portals an den Subuser: Kundennummer plus Monat. */
+    private static function voucherNumber(DomainResellerAccount $reseller, CarbonImmutable $month): string {
+        return ($reseller->provider_customer_number ?? $reseller->external_user) . '-' . $month->format('m-Y');
+    }
+
+    private function toLine(DomainAccountingEntry $entry, DomainResellerAccount $reseller, CarbonImmutable $start, string $voucherKey, int $position, ?string $recipientName, ?Money $classUnit, string $status): MirrorLine {
         $currency = $entry->currency instanceof CurrencyCode ? $entry->currency : CurrencyCode::Euro;
         $years = self::yearsOf($entry);
         // Belastung steht negativ im Journal; ein positiver Betrag mit Domain ist eine Rückbuchung.
@@ -211,8 +298,7 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
         if ($classUnit !== null) {
             $total = $classUnit->withScale(4)->times($years); // der Subuser zahlt den Preis seiner Klasse, nicht den Einkauf
         }
-        // Nummer der Monatsrechnung des Portals an den Subuser: Kundennummer plus Monat.
-        $number = ($reseller->provider_customer_number ?? $reseller->external_user) . '-' . $start->format('m-Y');
+        $number = self::voucherNumber($reseller, $start);
         $registrarInvoice = trim((string) $entry->invoice_number);
         $type = (string) $entry->type;
         $typeLabel = $type !== '' && Lang::has('domain.accounting.types.' . $type) ? (string) __('domain.accounting.types.' . $type) : $type;
@@ -228,7 +314,7 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             voucherKey: $voucherKey,
             voucherNumber: $number,
             voucherDate: $start->endOfMonth()->startOfDay(),
-            voucherStatus: MirrorLine::STATUS_ISSUED,
+            voucherStatus: $status,
             isCreditNote: $isCreditNote,
             recipientCustomerId: (int) $reseller->customer_id,
             recipientKey: 'customer:' . (int) $reseller->customer_id,
@@ -446,5 +532,9 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
 
     public function bookedNet(Organization $organization, string $voucherNumber): ?Money {
         return null; // das Journal kennt keine Rechnungssummen, nur Buchungen
+    }
+
+    public function bookedVoucherNumbers(Organization $organization, array $voucherNumbers): array {
+        return []; // die Monatsrechnungen bucht die Buchhaltung, nicht das Journal
     }
 }

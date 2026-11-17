@@ -284,6 +284,7 @@ return [
         'voucher_only' => 'Documento (senza riga)',
         'needed' => 'aperto: :amount',
         'note_voided' => 'Fattura annullata — copriva :months', // Review 2026-09-10
+        'note_not_invoiced' => 'Mai fatturato — copriva :months',
         'note_domain_typo' => 'Dominio scritto come «:written» invece di «:domain» nel testo della fattura (refuso), da verificare',
         'no_lines' => 'Nessuna riga di fattura specchiata nella finestra intorno all’inizio del periodo.',
         'line' => 'Riga di fattura',
@@ -306,6 +307,7 @@ return [
         'reason_order_change' => 'Cambio d’ordine: il resto passa al successore dal :date',
         'order_change' => 'Cambio d’ordine',
         'reason_voided' => 'Credito inesigibile: fattura :voucher annullata',
+        'reason_not_invoiced' => 'Non fatturato: nessuna fattura mensile :voucher',
         'reason_presets' => ['Credito inesigibile (insolvenza)', 'Cortesia', 'Periodo di prova', 'Uso proprio', 'Fatturato due volte'],
         'origin' => [
             'proposed' => 'Proposta',
@@ -549,6 +551,7 @@ return [
             'paid' => 'pagata',
             'draft' => 'bozza',
             'voided' => 'annullata',
+            'not_invoiced' => 'mai fatturato',
         ],
         'compare' => [
             'title' => 'Confronto con il periodo',
@@ -663,6 +666,7 @@ return [
         'periods' => [
             'foreign' => 'Fatturato a :recipient',
             'voided' => 'stornata',
+            'not_invoiced' => 'mai fatturato',
         ],
     ],
     'transfer' => [
@@ -1467,6 +1471,7 @@ return [
         'without_period' => 'senza periodo',
         'line_taken' => 'usata da :periods',
         'writeoff' => 'Registrare come perdita',
+        'writeoff_not_invoiced' => 'Chiudere come non fatturato',
         'assign' => 'Assegna :amount',
         'no_candidate' => 'Nessuna fattura libera adatta: :amount aperto. Fatturare in seguito o rinunciare.',
         'create_subscription' => 'Crea abbonamento',

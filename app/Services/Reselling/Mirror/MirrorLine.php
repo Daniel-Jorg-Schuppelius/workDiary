@@ -26,7 +26,9 @@ use CommonToolkit\ValueObjects\Money;
  * {@see $morphClass}/{@see $morphId} tragen den Bezug (`resale_period_links`).
  *
  * Statusbegriffe sind neutral: `issued` (gültig, offen), `paid`, `draft`,
- * `voided` (storniert). Bei Gutschriften ist nur {@see $totalNet} negativ.
+ * `voided` (storniert), `not_invoiced` (nie in Rechnung gestellt — Buchung im
+ * Journal des Domainanbieters ohne Monatsrechnung an den Subuser). Bei
+ * Gutschriften ist nur {@see $totalNet} negativ.
  */
 final readonly class MirrorLine {
     public const string STATUS_ISSUED = 'issued';
@@ -36,6 +38,8 @@ final readonly class MirrorLine {
     public const string STATUS_DRAFT = 'draft';
 
     public const string STATUS_VOIDED = 'voided';
+
+    public const string STATUS_NOT_INVOICED = 'not_invoiced';
 
     public function __construct(
         public string $sourceKey,

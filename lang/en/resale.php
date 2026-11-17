@@ -284,6 +284,7 @@ return [
         'voucher_only' => 'Voucher (no line item)',
         'needed' => 'open: :amount',
         'note_voided' => 'Invoice voided — covered :months', // Review 2026-09-10
+        'note_not_invoiced' => 'Never invoiced — covered :months',
         'note_domain_typo' => 'Domain written as “:written” instead of “:domain” in the invoice text (typo) — please check',
         'no_lines' => 'No mirrored invoice line items in the window around the period start.',
         'line' => 'Invoice line item',
@@ -306,6 +307,7 @@ return [
         'reason_order_change' => 'Order change: remainder goes to the successor from :date',
         'order_change' => 'Order change',
         'reason_voided' => 'Bad debt: invoice :voucher voided',
+        'reason_not_invoiced' => 'Not invoiced: no monthly invoice :voucher',
         'reason_presets' => ['Bad debt (insolvency)', 'Goodwill', 'Trial period', 'Own use', 'Billed twice'],
         'origin' => [
             'proposed' => 'Proposal',
@@ -549,6 +551,7 @@ return [
             'paid' => 'paid',
             'draft' => 'draft',
             'voided' => 'voided',
+            'not_invoiced' => 'never invoiced',
         ],
         'compare' => [
             'title' => 'Comparison with the period',
@@ -663,6 +666,7 @@ return [
         'periods' => [
             'foreign' => 'Invoiced to :recipient',
             'voided' => 'voided',
+            'not_invoiced' => 'never invoiced',
         ],
     ],
     'transfer' => [
@@ -1467,6 +1471,7 @@ return [
         'without_period' => 'without period',
         'line_taken' => 'used by :periods',
         'writeoff' => 'Record as bad debt',
+        'writeoff_not_invoiced' => 'Close as not invoiced',
         'assign' => 'Assign :amount',
         'no_candidate' => 'No fitting free invoice — :amount open. Bill it later or waive.',
         'create_subscription' => 'Create subscription',

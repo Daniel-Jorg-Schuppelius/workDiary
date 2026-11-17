@@ -284,6 +284,7 @@ return [
         'voucher_only' => 'Pièce (sans ligne)',
         'needed' => 'ouvert : :amount',
         'note_voided' => 'Facture annulée — couvrait :months', // Review 2026-09-10
+        'note_not_invoiced' => 'Jamais facturé — couvrait :months',
         'note_domain_typo' => 'Domaine écrit « :written » au lieu de « :domain » dans le texte de la facture (faute de frappe), à vérifier',
         'no_lines' => 'Aucune ligne de facture miroir dans la fenêtre autour du début de période.',
         'line' => 'Ligne de facture',
@@ -306,6 +307,7 @@ return [
         'reason_order_change' => 'Changement de commande : le reste passe au successeur à partir du :date',
         'order_change' => 'Changement de commande',
         'reason_voided' => 'Créance irrécouvrable : facture :voucher annulée',
+        'reason_not_invoiced' => 'Non facturé : aucune facture mensuelle :voucher',
         'reason_presets' => ['Créance irrécouvrable (insolvabilité)', 'Geste commercial', 'Période d’essai', 'Usage interne', 'Facturé deux fois'],
         'origin' => [
             'proposed' => 'Proposition',
@@ -549,6 +551,7 @@ return [
             'paid' => 'payée',
             'draft' => 'brouillon',
             'voided' => 'annulée',
+            'not_invoiced' => 'jamais facturé',
         ],
         'compare' => [
             'title' => 'Comparaison avec la période',
@@ -663,6 +666,7 @@ return [
         'periods' => [
             'foreign' => 'Facturé à :recipient',
             'voided' => 'annulée',
+            'not_invoiced' => 'jamais facturé',
         ],
     ],
     'transfer' => [
@@ -1467,6 +1471,7 @@ return [
         'without_period' => 'sans période',
         'line_taken' => 'utilisée par :periods',
         'writeoff' => 'Comptabiliser comme perte',
+        'writeoff_not_invoiced' => 'Clôturer comme non facturé',
         'assign' => 'Affecter :amount',
         'no_candidate' => 'Aucune facture libre correspondante — :amount ouvert. Facturer après coup ou renoncer.',
         'create_subscription' => 'Créer l’abonnement',

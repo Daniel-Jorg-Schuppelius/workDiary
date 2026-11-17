@@ -284,6 +284,7 @@ return [
         'voucher_only' => 'Beleg (ohne Position)',
         'needed' => 'offen: :amount',
         'note_voided' => 'Rechnung storniert — deckte :months', // Review 2026-09-10
+        'note_not_invoiced' => 'Nie in Rechnung gestellt — deckte :months',
         'note_domain_typo' => 'Domain im Rechnungstext „:written“ statt „:domain“ (Tippfehler) — bitte prüfen',
         'no_lines' => 'Keine gespiegelten Rechnungspositionen im Fenster um den Periodenbeginn.',
         'line' => 'Rechnungsposition',
@@ -306,6 +307,7 @@ return [
         'reason_order_change' => 'Bestellungswechsel: Rest an den Nachfolger ab :date',
         'order_change' => 'Bestellungswechsel',
         'reason_voided' => 'Forderungsausfall: Rechnung :voucher storniert',
+        'reason_not_invoiced' => 'Nicht berechnet: keine Monatsrechnung :voucher',
         'reason_presets' => ['Forderungsausfall (Insolvenz)', 'Kulanz', 'Testphase', 'Eigener Bedarf', 'Doppelt berechnet'],
         'origin' => [
             'proposed' => 'Vorschlag',
@@ -549,6 +551,7 @@ return [
             'paid' => 'bezahlt',
             'draft' => 'Entwurf',
             'voided' => 'storniert',
+            'not_invoiced' => 'nie berechnet',
         ],
         'compare' => [
             'title' => 'Vergleich mit der Periode',
@@ -663,6 +666,7 @@ return [
         'periods' => [
             'foreign' => 'Rechnung an :recipient',
             'voided' => 'storniert',
+            'not_invoiced' => 'nie berechnet',
         ],
     ],
     'transfer' => [
@@ -1467,6 +1471,7 @@ return [
         'without_period' => 'ohne Periode',
         'line_taken' => 'vergeben an :periods',
         'writeoff' => 'Als Ausfall verbuchen',
+        'writeoff_not_invoiced' => 'Als nicht berechnet abschließen',
         'assign' => ':amount zuordnen',
         'no_candidate' => 'Keine passende freie Rechnung — :amount offen. Rechnung nachholen oder verzichten.',
         'create_subscription' => 'Abo anlegen',

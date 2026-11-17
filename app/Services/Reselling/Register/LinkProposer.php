@@ -309,8 +309,8 @@ final class LinkProposer {
     }
 
     /**
-     * Storno: Bezüge jeder Herkunft auf Positionen stornierter Rechnungen
-     * decken nichts mehr. Vorschläge sind schon weg; bestätigte/manuelle
+     * Storno: Bezüge jeder Herkunft auf Positionen stornierter (oder nie
+     * gestellter, {@see MirrorLine::STATUS_NOT_INVOICED}) Rechnungen decken nichts mehr. Vorschläge sind schon weg; bestätigte/manuelle
      * bleiben als Spur mit 0 Monaten, 0 Betrag und Hinweis (Original-Monate
      * in der Bemerkung). Die Periode wird aus der Restdeckung neu bewertet;
      * ist sie nicht mehr voll gedeckt, gilt die Entscheidung als aufgehoben
@@ -347,7 +347,8 @@ final class LinkProposer {
             $line = $lines[MirrorLine::identityOf((string) $link->linkable_type, (int) $link->linkable_id)] ?? null;
             $months = (float) $link->months;
             $label = $line !== null ? LicenseMonths::label($months, LicenseMonths::split($line)['months']) : LicenseMonths::label($months, 0.0);
-            $link->appendNote((string) __('resale.link.note_voided', ['months' => $label]));
+            $note = $line?->voucherStatus === MirrorLine::STATUS_NOT_INVOICED ? 'resale.link.note_not_invoiced' : 'resale.link.note_voided';
+            $link->appendNote((string) __($note, ['months' => $label]));
             $link->forceFill(['months' => 0, 'quantity' => 0, 'amount' => 0])->save();
             $periodIds[(int) $link->period_id] = true;
         }

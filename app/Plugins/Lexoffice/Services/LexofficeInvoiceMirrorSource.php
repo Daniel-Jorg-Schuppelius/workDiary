@@ -415,4 +415,18 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
 
         return $voucher?->net_amount;
     }
+
+    public function bookedVoucherNumbers(Organization $organization, array $voucherNumbers): array {
+        if ($voucherNumbers === []) {
+            return [];
+        }
+
+        return array_values(array_map('strval', LexofficeVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('voucher_number', $voucherNumbers)
+            ->where('voucher_status', '!=', 'voided')
+            ->distinct()
+            ->pluck('voucher_number')
+            ->all()));
+    }
 }

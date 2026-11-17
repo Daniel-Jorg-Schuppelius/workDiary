@@ -18,11 +18,13 @@ use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderCo
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Reselling\{ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Services\Reselling\Mirror\{DomainAccountingMirrorSource, InvoiceMirror};
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
+use App\Services\Reselling\Mirror\{DomainAccountingMirrorSource, InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Plan\PlanAudit;
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner, ResaleInvoiceDraftService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\{Collection, Str};
 use Tests\Concerns\WithOrganization;
 use Tests\Support\InteractsWithPlugins;
 use Tests\TestCase;
@@ -117,6 +119,53 @@ class DomainAccountingMirrorTest extends TestCase {
         $this->actingAs($this->orgAdmin())->get(route('finance.resale.show', $subscription))->assertOk()
             ->assertSee(__('resale.field.actual_sale'))
             ->assertSee(\CommonToolkit\ValueObjects\Money::of('5.36', \CommonToolkit\Enums\CurrencyCode::Euro, 2)->format());
+    }
+
+    public function test_months_before_the_first_booked_monthly_invoice_were_never_invoiced(): void {
+        // Befund 2026-11-16: Das Journal ist das des Inhaberkontos, der Sync hängt Buchungen über den heutigen Besitzer
+        // der Domain an den Subuser — auch aus Monaten, bevor es das Unterkonto gab. Berechnet ist nur, was eine gebuchte
+        // Monatsrechnung trägt; vor der ersten gab es keine.
+        $domain = $this->domain('altbestand-beispiel.de');
+        $subscription = $this->subscription('altbestand-beispiel.de', '2016-08-10');
+        foreach (['2016-08-11', '2017-08-11', '2026-08-11'] as $date) {
+            $this->entry($date . ' 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'altbestand-beispiel.de', '-4.50', ['domain_projection_id' => $domain->id]);
+        }
+        $byYear = static fn (): Collection => $subscription->periods()->orderBy('starts_on')->get()
+            ->keyBy(static fn (ResalePeriod $p): string => $p->starts_on->format('Y'));
+
+        // Stand vor dem Befund: ohne gebuchte Monatsrechnung gilt das Journal als Rechnung, der Lauf bestätigt selbst.
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Billed, $byYear()['2016']->status);
+        $this->assertNotNull($byYear()['2016']->links()->first()?->confirmed_at);
+
+        // Lexoffice führt die Monatsrechnung als Umsatzbeleg ohne Netto; eine stornierte zählt nicht.
+        $voucher = ['organization_id' => $this->organization->id, 'voucher_type' => 'salesinvoice', 'total_amount' => 9, 'currency' => 'EUR', 'archived' => false];
+        LexofficeVoucher::create($voucher + ['external_id' => 'v-0817', 'voucher_status' => 'paid', 'voucher_number' => '90021-08-2017', 'voucher_date' => '2017-08-31']);
+        LexofficeVoucher::create($voucher + ['external_id' => 'v-0826', 'voucher_status' => 'voided', 'voucher_number' => '90021-08-2026', 'voucher_date' => '2026-08-31']);
+        $this->assertSame(['90021-08-2017'], app(InvoiceMirror::class)->bookedVoucherNumbers($this->organization, ['90021-08-2016', '90021-08-2017', '90021-08-2026']));
+
+        $source = new DomainAccountingMirrorSource;
+        $offered = $source->linesFor($this->organization, [$this->nordlicht->id], licenceOnly: false);
+        $this->assertSame(['90021-08-2017'], $offered->map(static fn (MirrorLine $l): ?string => $l->voucherNumber)->all(), '2016 nie berechnet, 08/2026 noch nicht gebucht');
+        $never = $source->voidedLines($this->organization, null);
+        $this->assertSame(['90021-08-2016'], $never->map(static fn (MirrorLine $l): ?string => $l->voucherNumber)->all());
+        $this->assertSame(MirrorLine::STATUS_NOT_INVOICED, $never->first()?->voucherStatus);
+        $this->assertSame(['90021-08-2017'], $source->vouchersFor($this->organization, [$this->nordlicht->id], CarbonImmutable::parse('2015-01-01'))->map(static fn ($v): ?string => $v->voucherNumber)->all());
+        $this->assertSame(MirrorLine::STATUS_NOT_INVOICED, $source->voucherByKey($this->organization, $this->reseller->id . ':2016-08')?->voucherStatus, 'der Beleg hinter dem alten Bezug bleibt lesbar');
+
+        // Der nächste Lauf nimmt dem bestätigten Bezug die Deckung; noch nicht gebuchte Monate behalten ihren Bezug.
+        (new LinkProposer)->propose($this->organization);
+        $periods = $byYear();
+        $this->assertSame(PeriodStatus::Open, $periods['2016']->status);
+        $link = $periods['2016']->links()->first();
+        $this->assertSame('0.00', $link?->months);
+        $this->assertStringContainsString(Str::before((string) __('resale.link.note_not_invoiced'), ' —'), (string) $link?->note);
+        $this->assertSame(PeriodStatus::Billed, $periods['2017']->status);
+        $this->assertSame(PeriodStatus::Billed, $periods['2026']->status);
+
+        $this->actingAs($this->orgAdmin())->get(route('finance.resale.reconcile.show', $this->nordlicht))->assertOk()
+            ->assertSee(__('resale.reconcile.periods.not_invoiced'))
+            ->assertSee(__('resale.board.writeoff_not_invoiced'));
     }
 
     public function test_source_groups_entries_to_monthly_vouchers_and_resolves_keys(): void {

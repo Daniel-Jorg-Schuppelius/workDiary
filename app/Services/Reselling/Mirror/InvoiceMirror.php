@@ -354,4 +354,25 @@ final class InvoiceMirror {
 
         return null;
     }
+
+    /**
+     * Gebuchte Belegnummern über alle Quellen.
+     *
+     * @param  list<string>  $voucherNumbers
+     * @return list<string>
+     */
+    public function bookedVoucherNumbers(Organization $organization, array $voucherNumbers): array {
+        if ($voucherNumbers === []) {
+            return [];
+        }
+        $booked = [];
+        foreach ($this->sources as $source) {
+            foreach ($source->bookedVoucherNumbers($organization, $voucherNumbers) as $number) {
+                $booked[$number] = true;
+            }
+        }
+
+        // Rein numerische Belegnummern würden als Array-Schlüssel zu int.
+        return array_map('strval', array_keys($booked));
+    }
 }

@@ -192,12 +192,15 @@
                                             @endif
                                         </li>
                                     @endforeach
-                                    {{-- Storno dicht am Periodenbeginn: als Forderungsausfall verbuchen (Phase 166, MVP-1451). --}}
+                                    {{-- Storno dicht am Periodenbeginn: als Forderungsausfall verbuchen (Phase 166, MVP-1451); nie gestellte Monatsrechnung des Portals: als nicht berechnet abschließen. --}}
                                     @foreach (array_slice($open['voided'], 0, 2) as $candidate)
-                                        @php $line = $candidate['row']['line']; @endphp
+                                        @php
+                                            $line = $candidate['row']['line'];
+                                            $neverInvoiced = $line->voucherStatus === \App\Services\Reselling\Mirror\MirrorLine::STATUS_NOT_INVOICED;
+                                        @endphp
                                         <li class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
                                             <span class="flex flex-wrap items-center gap-x-2">
-                                                <x-status-badge size="xs" tone="error" outline :label="__('resale.reconcile.periods.voided')" />
+                                                <x-status-badge size="xs" :tone="$neverInvoiced ? 'warning' : 'error'" outline :label="__($neverInvoiced ? 'resale.reconcile.periods.not_invoiced' : 'resale.reconcile.periods.voided')" />
                                                 <a href="{{ route('finance.resale.vouchers.show', ['source' => $line->sourceKey, 'voucher' => $line->voucherKey, 'line' => $line->morphId]) }}" data-entry-modal-trigger class="link link-hover font-mono" title="{{ __('resale.voucher.open') }}">{{ $line->voucherNumber }}</a>
                                                 <span class="tabular-nums">{{ $line->voucherDate?->fdate() }}</span>
                                                 @if ($candidate['row']['recipient'] !== null)
@@ -206,8 +209,8 @@
                                             </span>
                                             @if ($canManage)
                                                 <x-icon-btn icon="money_off" size="xs" tone="ghost" data-entry-modal-trigger
-                                                            :href="route('finance.resale.periods.waive.create', ['period' => $period->sqid, 'reason' => __('resale.link.reason_voided', ['voucher' => (string) $line->voucherNumber])])"
-                                                            show-label>{{ __('resale.board.writeoff') }}</x-icon-btn>
+                                                            :href="route('finance.resale.periods.waive.create', ['period' => $period->sqid, 'reason' => __($neverInvoiced ? 'resale.link.reason_not_invoiced' : 'resale.link.reason_voided', ['voucher' => (string) $line->voucherNumber])])"
+                                                            show-label>{{ __($neverInvoiced ? 'resale.board.writeoff_not_invoiced' : 'resale.board.writeoff') }}</x-icon-btn>
                                             @endif
                                         </li>
                                     @endforeach

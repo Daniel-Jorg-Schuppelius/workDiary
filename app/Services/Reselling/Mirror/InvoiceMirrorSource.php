@@ -48,7 +48,8 @@ interface InvoiceMirrorSource {
     public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null, bool $licenceOnly = true): Collection;
 
     /**
-     * Lizenzpositionen stornierter Rechnungen (Erklärung einer Lücke, Storno-Neutralisierung).
+     * Lizenzpositionen stornierter Rechnungen (Erklärung einer Lücke, Storno-Neutralisierung) — und
+     * Positionen, die nie in Rechnung gestellt wurden ({@see MirrorLine::STATUS_NOT_INVOICED}).
      *
      * @param  list<int>|null  $recipientCustomerIds
      * @return Collection<int, MirrorLine>
@@ -137,4 +138,13 @@ interface InvoiceMirrorSource {
      * ohne Positionen (Feature 185, 2026-10-30). null, wenn die Quelle ihn nicht führt.
      */
     public function bookedNet(Organization $organization, string $voucherNumber): ?Money;
+
+    /**
+     * Welche dieser Belegnummern die Quelle als gültigen Beleg führt (nicht storniert,
+     * nicht gelöscht) — unabhängig davon, ob sie einen Nettobetrag kennt.
+     *
+     * @param  list<string>  $voucherNumbers
+     * @return list<string>
+     */
+    public function bookedVoucherNumbers(Organization $organization, array $voucherNumbers): array;
 }

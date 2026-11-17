@@ -16,7 +16,7 @@
     $statusTone = match ($voucher->voucherStatus) {
         MirrorLine::STATUS_PAID => 'success',
         MirrorLine::STATUS_VOIDED => 'error',
-        MirrorLine::STATUS_DRAFT => 'warning',
+        MirrorLine::STATUS_DRAFT, MirrorLine::STATUS_NOT_INVOICED => 'warning',
         default => 'info',
     };
     $check = static fn(?bool $ok): array => $ok === null ? ['help', 'text-muted'] : ($ok ? ['check_circle', 'text-success'] : ['error', 'text-warning']);

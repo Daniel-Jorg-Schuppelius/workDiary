@@ -464,4 +464,8 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
     public function bookedNet(Organization $organization, string $voucherNumber): ?Money {
         return null; // lokale Rechnungen sind eigene Ausgangsrechnungen, keine gebuchten Fremdbelege
     }
+
+    public function bookedVoucherNumbers(Organization $organization, array $voucherNumbers): array {
+        return [];
+    }
 }
