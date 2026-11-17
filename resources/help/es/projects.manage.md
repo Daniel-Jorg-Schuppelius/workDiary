@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 11
+version: 12
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -113,7 +113,10 @@ factura o de la transferencia, y la comprobación nocturna no la vuelve a abrir.
 registro posterior en ese día sigue siendo facturable, porque no se completó nada.
 Si elimina la posición, descarta el borrador o anula la factura o la
 transferencia, la desviación vuelve a quedar abierta. Confirme a mano las
-desviaciones cuya tarifa plana se facturó antes.
+desviaciones cuya tarifa plana se facturó antes. Si una transferencia no
+contiene tiempo de trabajo del proyecto, su desviación sigue abierta y libre: la
+siguiente transferencia o factura con tiempo de trabajo del proyecto la cierra,
+sin anular la primera.
 
 La regla de facturación indica también el **lugar de la prestación** de sus
 tiempos (§ 3a UStG): **General**, **Servicio del catálogo** o **Servicio

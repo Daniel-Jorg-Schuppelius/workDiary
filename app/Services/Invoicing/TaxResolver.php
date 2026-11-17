@@ -162,6 +162,37 @@ class TaxResolver {
     }
 
     /**
+     * Steuerfälle, die das Ausstellen eines Entwurfs einfriert (MVP-1720) —
+     * dieselbe Quelle für Ausstellen, E-Rechnung und Buchhaltungsprogramme:
+     * der eigene Beleg je Leistungsort seiner Positionen, Storno und
+     * Gutschrift der Fall ihres Originals (sonst wichen Kopf und übernommene
+     * Positionskategorien ab), importierte Belege nach Kunde und Vorgabe der
+     * Organisation. Mehr als einer: Der Beleg ist zu teilen.
+     *
+     * @return non-empty-list<array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: mixed}>
+     */
+    public function casesToFreeze(Invoice $invoice, ?\DateTimeInterface $onDate = null): array {
+        if ($invoice->derivesTaxCase()) {
+            return $this->casesForInvoice($invoice, $onDate);
+        }
+        $original = $invoice->parent;
+        $category = trim((string) data_get($original?->tax_context, 'category', ''));
+        if ($original !== null && ! $original->is($invoice) && $category !== '') {
+            // Der Hinweis steht im übernommenen Text, nicht im Fall.
+            return [[
+                'rate' => (string) data_get($original->tax_context, 'rate', ''),
+                'reverse_charge' => (bool) data_get($original->tax_context, 'is_reverse_charge', false),
+                'note' => null,
+                'category' => $category,
+                'rule' => data_get($original->tax_context, 'rule'),
+            ]];
+        }
+        $organization = $invoice->organization ?? throw new \LogicException('Steuerfall ohne Organisation.');
+
+        return [$this->resolve($organization, $invoice->customer, $onDate ?? $invoice->serviceDateTo() ?? now(), $invoice->isMaterial() ? 'goods' : 'services')];
+    }
+
+    /**
      * @param  list<PlaceOfSupply>  $places  leer = Vorgabe der Organisation
      * @return non-empty-list<array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: ?array{id: int, source: ?string, valid_from: string, org_override: bool}}>
      */

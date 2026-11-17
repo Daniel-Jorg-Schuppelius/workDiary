@@ -1,7 +1,7 @@
 ---
 title: "Inventaire"
 topic: inventory.counts
-version: 4
+version: 5
 keywords:
     - comptage des stocks
     - inventaire physique
@@ -40,3 +40,5 @@ Si un article possède d’autres unités, la quantité comptée peut être sais
 ## Terminer, rouvrir ou abandonner le comptage
 
 **Terminer le comptage** fige les quantités comptées pour la vérification ; plus rien ne peut ensuite être saisi. La personne qui valide les écarts peut **rouvrir le comptage** pour corriger, comptabiliser les écarts ou **abandonner l'inventaire** – un inventaire abandonné ne comptabilise rien. L'étape de vérification est facultative ; la validation est aussi possible directement depuis le comptage.
+
+**Écarts valorisés :** les écarts du stock propre disponible sont valorisés. Un excédent entre comme une entrée manuelle (prix d’achat de la variante, sinon moyenne du magasin), un manquant sort selon la méthode de valorisation — en FIFO et FEFO à partir des couches les plus anciennes ou expirant en premier, au coût moyen pondéré au prix moyen. Les écarts du stock réservé ou bloqué et du stock de tiers ne modifient pas la valeur du stock. La validation à quatre yeux mesure la valeur ainsi comptabilisée ; si elle s’applique, rien n’est comptabilisé.

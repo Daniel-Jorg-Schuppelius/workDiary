@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 23
+version: 24
 keywords:
     - Leistungsort
     - Katalogleistung
@@ -371,7 +371,10 @@ Steuerkategorie folgen der Rechnung. Ergeben die Positionen verschiedene
 Steuerfälle, meldet der Entwurf das, die Rechnung lässt sich nicht stellen, und
 die Prüfung vor dem Versand weist sie ab (mit „nicht steuerbar“ nach Regel
 BR-O-11): Teilen Sie die Rechnung, je Steuerfall eine. Storno und
-Korrekturrechnung übernehmen den Steuerfall des Originals.
+Korrekturrechnung übernehmen den Steuerfall des Originals. Einen Entwurf prüft
+die E-Rechnungs-Prüfung mit dem Steuerfall, den das Stellen festschreiben wird,
+etwa „nicht steuerbar“ (O) statt Nullsatz (Z); dasselbe gilt für die Hinweise im
+Entwurfs-PDF. Gestellte Rechnungen behalten ihren festgeschriebenen Steuerfall.
 
 **Ort des Grundstücks.** Trägt eine Position eine Grundstücksleistung (über ihren
 Artikel oder die Abrechnungsregel), zeigt der Dialog **Konditionen** das Feld

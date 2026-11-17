@@ -1,7 +1,7 @@
 ---
 title: "Conflitti Lexoffice"
 topic: admin.lexoffice
-version: 9
+version: 10
 keywords:
     - Lexware Office
     - conflitto di sincronizzazione
@@ -76,8 +76,14 @@ dicitura come nota fiscale. Tranne «esente», Lexoffice accetta questi tipi
 d'imposta solo con un contatto creato lì. Se una prestazione non imponibile
 si trova nell'UE (ad esempio un immobile in un altro paese UE), Lexoffice non
 ha un tipo d'imposta adatto: il trasferimento viene bloccato con il motivo. Il
-giustificativo dai tempi sul cliente trasferisce solo tempi imponibili; gli
-altri casi passano per la consegna fatturazione.
+giustificativo dai tempi sul cliente è un documento contabile: per aliquota
+l'importo netto, l'imposta e la categoria contabile del caso fiscale
+(«Dienstleistungen», «Fremdleistungen § 13b», «Dienstleistungen an
+Drittländer», «Einnahmen als Kleinunternehmer»), con il numero di documento
+`ZE-<numero cliente>-<fine prestazione>-<numero progressivo>`. Per il § 13b
+nazionale, le operazioni esenti ai sensi del § 4, più casi fiscali o una
+valuta estera viene bloccato con il motivo; questi tempi passano per la
+consegna fatturazione.
 
 Specchio documenti: il sync dei documenti rispecchia i documenti di
 Lexoffice in WorkDiary. Vengono rispecchiati anche i documenti di contatti

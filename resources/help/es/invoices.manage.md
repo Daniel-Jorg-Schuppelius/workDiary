@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 23
+version: 24
 keywords:
     - lugar de la prestación
     - servicio del catálogo
@@ -379,7 +379,10 @@ factura. Si las posiciones dan supuestos fiscales distintos, el borrador lo
 indica, la factura no puede emitirse y la comprobación antes del envío la
 rechaza (con «no sujeto» según la regla BR-O-11): divida la factura, una por
 supuesto fiscal. La anulación y la factura rectificativa adoptan el supuesto
-fiscal del original.
+fiscal del original. La comprobación de la factura electrónica revisa un
+borrador con el supuesto fiscal que fijará la emisión, por ejemplo «no sujeto»
+(O) en lugar de tipo cero (Z); lo mismo vale para las menciones del PDF del
+borrador. Las facturas emitidas conservan su supuesto fiscal fijado.
 
 **Lugar del inmueble.** Si una posición lleva un servicio relacionado con un
 inmueble (por su artículo o la regla de facturación), el diálogo

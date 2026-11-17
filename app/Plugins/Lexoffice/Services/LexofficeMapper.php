@@ -10,13 +10,18 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Enums\Invoicing\SalesTaxCase;
 use App\Enums\Stammdaten\ContactSalutation;
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Invoicing\Dto\OutgoingTaxCase;
 use App\Services\Stammdaten\ContactPersons;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\PersonNameHelper;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 
 /**
@@ -250,14 +255,20 @@ class LexofficeMapper {
     }
 
     /**
-     * Build a Lexoffice voucher payload (type=salesinvoice) summarising all
-     * billable time entries of the given customer in [$from, $to], grouped
-     * by project. Each project becomes one voucher item; a flat-rate service
-     * (MVP-1678) becomes one item with quantity 1 per order.
+     * Beleg (type=salesinvoice) über die abrechenbaren Zeiten des Kunden im
+     * Zeitraum, nach der Lexware-API-Referenz „Vouchers Endpoint“ (MVP-1723):
+     * Positionen je Steuersatz mit `amount` (netto, `taxType` net),
+     * `taxAmount`, `taxRatePercent` und `categoryId` des Steuerfalls; Kopf mit
+     * Belegnummer, Datum, Leistungsdatum und Summen. Je Projekt, Art und
+     * Pauschal-Auftrag gilt der Betrag wie in der Rechnung (Taktung, Satz,
+     * Pauschale je Auftrag, MVP-1678); Positionen mit Artikel und Einheit
+     * kennt ein Buchhaltungsbeleg nicht.
      *
      * @param  Collection<int, TimeEntry>  $entries
      * @param  array<string, mixed>  $defaults
      * @return array<string, mixed>
+     *
+     * @throws \App\Exceptions\UnmappableTaxCaseException Steuerfall ohne Buchungskategorie
      */
     public function timeEntriesToVoucherPayload(
         Customer $customer,
@@ -265,10 +276,12 @@ class LexofficeMapper {
         CarbonImmutable $from,
         CarbonImmutable $to,
         array $defaults = [],
+        OutgoingTaxCase $taxCase = new OutgoingTaxCase(SalesTaxCase::Standard),
     ): array {
-        $taxType = $defaults['default_tax_type'] ?? 'net';
+        $categoryId = LexofficeTaxConditions::voucherCategory($taxCase);
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
-        $currency = $customer->currency->value;
+        // Lexware-Belege führen Euro; eine Fremdwährung sperrt der Aufrufer vorher.
+        $currency = CurrencyCode::Euro;
 
         // Taktung & Zusammenfassung anwenden: liefert Blöcke je (Projekt, kind).
         if ($entries instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -276,88 +289,79 @@ class LexofficeMapper {
         }
         $blocks = app(\App\Services\Invoicing\BillableTimeAggregator::class)->aggregate($entries, $customer->organization);
 
-        $items = $blocks
+        /** @var array<string, Money> $netByRate */
+        $netByRate = [];
+        $projects = [];
+        $groups = $blocks
             // Pauschalen bleiben je Auftrag eine eigene Position.
-            ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project->id ?? 0) . '|' . ($b->kind->value ?? '') . ($b->isFlatRate() ? '|flat|' . $b->primaryEntryId : ''))
-            ->map(function (Collection $group) use ($vatRate, $from, $to, $customer) {
-                /** @var \App\Services\Invoicing\BillingBlock $first */
-                $first = $group->first();
-                $project = $first->project;
-                $kind = $first->kind;
-                $projectName = $project !== null ? $project->name : (string) __('Leistung');
-                $hours = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->quantity()), 2);
-                $revenue = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->revenue), 2);
-                // Stundensatz aus der gearbeiteten Zeit (ohne Lücken), damit die
-                // Taktung über die aufgerundeten $hours den Betrag erhöht.
-                $workedHours = (float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->workedMinutes) / 60.0;
-                $unitPrice = $workedHours > 0 ? round($revenue / $workedHours, 2) : 0.0;
+            ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project->id ?? 0) . '|' . ($b->kind->value ?? '') . ($b->isFlatRate() ? '|flat|' . $b->primaryEntryId : ''));
+        foreach ($groups as $group) {
+            /** @var \App\Services\Invoicing\BillingBlock $first */
+            $first = $group->first();
+            $project = $first->project;
+            $hours = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->quantity()), 2);
+            $revenue = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->revenue), 2);
+            // Stundensatz aus der gearbeiteten Zeit (ohne Lücken), damit die
+            // Taktung über die aufgerundeten $hours den Betrag erhöht.
+            $workedHours = (float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->workedMinutes) / 60.0;
+            $unitPrice = $workedHours > 0 ? round($revenue / $workedHours, 2) : 0.0;
 
-                // Standardleistung (MVP-486): Projekt-Regel → Org-Einstellung.
-                $service = app(\App\Services\Invoicing\ServiceDefaultResolver::class)
-                    ->resolve($customer->organization, $project, $kind?->value);
+            // Standardleistung (MVP-486): Projekt-Regel → Org-Einstellung.
+            $service = app(\App\Services\Invoicing\ServiceDefaultResolver::class)
+                ->resolve($customer->organization, $project, $first->kind?->value);
+            // Ein an der Projektregel gepflegter Preis ist eine bewusste
+            // Festlegung und gewinnt; sonst zählt der aus den Zeiten
+            // errechnete Satz, und der Listenpreis der Leistung füllt nur
+            // die Lücke (sonst 0,00 €). Eine Pauschale kostet den Preis ihrer Leistung.
+            $servicePrice = $service !== null ? $service->netPrice : null;
+            $netAmount = match (true) {
+                $first->isFlatRate() => app(\App\Services\Invoicing\BlockPriceResolver::class)->resolve($first, null, $customer, $first->flatService)->rate,
+                $service?->priceIsExplicit === true && ($servicePrice ?? 0.0) > 0.0 => (float) $servicePrice,
+                default => $unitPrice > 0.0 ? $unitPrice : ($servicePrice ?? 0.0),
+            };
+            // Ohne Steuer (Drittland, § 13b, § 19 …) trägt die Position 0 %.
+            $rate = $taxCase->zeroRated() ? 0.0 : ($service !== null && $service->vatRate !== null ? $service->vatRate : $vatRate);
+            $key = DocumentTotalsCalculator::rateKey(DocumentTotalsCalculator::percent($rate));
+            $net = DocumentTotalsCalculator::lineNet($hours, $netAmount, currency: $currency)->withScale(2);
+            $netByRate[$key] = isset($netByRate[$key]) ? $netByRate[$key]->plus($net) : $net;
+            if ($project !== null) {
+                $projects[$project->id] = $project->name;
+            }
+        }
+        ksort($netByRate);
 
-                $type = $service?->itemType ?: 'service';
-                $unitName = $service?->unitName ?: 'Stunde';
-                $taxRate = $service !== null && $service->vatRate !== null ? $service->vatRate : $vatRate;
-                // Ein an der Projektregel gepflegter Preis ist eine bewusste
-                // Festlegung und gewinnt; sonst zählt der aus den Zeiten
-                // errechnete Satz, und der Listenpreis der Leistung füllt nur
-                // die Lücke (sonst 0,00 €). Eine Pauschale kostet den Preis ihrer Leistung.
-                $servicePrice = $service !== null ? $service->netPrice : null;
-                $netAmount = match (true) {
-                    $first->isFlatRate() => app(\App\Services\Invoicing\BlockPriceResolver::class)->resolve($first, null, $customer, $first->flatService)->rate,
-                    $service?->priceIsExplicit === true && ($servicePrice ?? 0.0) > 0.0 => (float) $servicePrice,
-                    default => $unitPrice > 0.0 ? $unitPrice : ($servicePrice ?? 0.0),
-                };
-
-                $kindSuffix = $kind !== null ? ' [' . $kind->value . ']' : '';
-                // Endkunde (Fremdkunde) mit in die Buchungszeile übernehmen.
-                $endkunde = $project?->foreignCustomer;
-                $prefix = $endkunde !== null
-                    ? (string) __('Endkunde :name', ['name' => trim((string) ($endkunde->displayLabel()))]) . ' · '
-                    : '';
-                $order = $first->orderTitle !== null ? ' · ' . $first->orderTitle : '';
-                $name = sprintf('%s%s%s%s (%s – %s)', $prefix, $projectName, $kindSuffix, $order, $from->format('d.m.Y'), $to->format('d.m.Y'));
-
-                $item = [
-                    'type' => $type,
-                    'name' => $name,
-                    'quantity' => $hours,
-                    'unitName' => $unitName,
-                    'unitPrice' => [
-                        'currency' => 'EUR',
-                        'netAmount' => $netAmount,
-                        'taxRatePercentage' => $taxRate,
-                    ],
-                ];
-
-                $articleId = $service !== null
-                    ? app(LexofficeArticleCatalogSource::class)->externalId((int) $customer->organization_id, $service->articleRef)
-                    : null;
-                if ($articleId !== null) {
-                    $item['id'] = $articleId;
-                }
-                if (filled($service?->standardText)) {
-                    $item['description'] = (string) $service->standardText;
-                }
-
-                return $item;
-            })->values()->all();
+        $items = [];
+        $tax = Money::zero($currency);
+        $gross = Money::zero($currency);
+        foreach ($netByRate as $key => $net) {
+            // Steuer je Satz gerundet wie der Belegrechner ({@see DocumentTotalsCalculator::totals()}).
+            $itemTax = $net->percentage((float) $key);
+            $items[] = [
+                'amount' => $net->toFloat(),
+                'taxAmount' => $itemTax->toFloat(),
+                'taxRatePercent' => (float) $key,
+                'categoryId' => $categoryId,
+            ];
+            $tax = $tax->plus($itemTax);
+            $gross = $gross->plus($net)->plus($itemTax);
+        }
+        $date = $to->format('Y-m-d') . 'T00:00:00.000+01:00';
 
         return [
             // POST /vouchers erwartet `type`; `voucherType` heißt das Feld nur in der
             // voucherlist. Die SDK-Entität verwarf den falschen Schlüssel still (MVP-802).
             'type' => 'salesinvoice',
-            'voucherNumber' => null,
-            'voucherDate' => $to->format('Y-m-d') . 'T00:00:00.000+01:00',
-            'totalGrossAmount' => null,
-            'totalTaxAmount' => null,
-            'taxType' => $taxType,
+            'voucherNumber' => (string) ($defaults['voucher_number'] ?? ''),
+            'voucherDate' => $date,
+            // Leistungszeitraum: die Referenz verlangt sein Ende.
+            'shippingDate' => $date,
+            'totalGrossAmount' => $gross->toFloat(),
+            'totalTaxAmount' => $tax->toFloat(),
+            'taxType' => 'net',
             'useCollectiveContact' => false,
             'contactId' => $defaults['external_contact_id'] ?? null,
-            'remark' => sprintf('Zeiterfassung %s – %s', $from->format('d.m.Y'), $to->format('d.m.Y')),
+            'remark' => mb_substr(trim(sprintf('Zeiterfassung %s – %s: %s', $from->format('d.m.Y'), $to->format('d.m.Y'), implode(', ', $projects)), ' :'), 0, 255),
             'voucherItems' => $items,
-            'currency' => $currency,
         ];
     }
 

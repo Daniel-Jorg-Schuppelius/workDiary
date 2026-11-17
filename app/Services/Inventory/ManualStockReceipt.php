@@ -52,21 +52,39 @@ final class ManualStockReceipt {
     }
 
     /**
+     * Einstandspreis ohne erfassten Preis, je Basiseinheit (MVP-1727): Einkaufspreis der Variante (sonst des Artikels),
+     * sonst Durchschnitt des Lagers, ohne jeden Bewertungsstand 0. Auch der Mehrbestand einer Inventur geht so ein.
+     */
+    public function defaultUnitCost(InventoryValuationStrategy $strategy, ArticleVariant $variant, Warehouse $warehouse, Organization $organization): Money {
+        $average = $strategy->averageCost($variant, $warehouse);
+
+        return $this->fallbackCost($variant, $average, $this->bookCurrency($average, $organization));
+    }
+
+    /**
      * Einstandspreis je Basiseinheit in der Währung, in der die Bewertung die
      * Variante im Lager führt — ohne Bewertungsstand in der der Organisation;
      * so mischt kein Eingang zwei Währungen in einem Buch.
      */
     private function unitCostInBase(InventoryValuationStrategy $strategy, ArticleVariant $variant, Warehouse $warehouse, Organization $organization, EnteredQuantity $entered, ?string $unitCost): Money {
         $average = $strategy->averageCost($variant, $warehouse);
-        $currency = $average?->getCurrency()
-            ?? CurrencyCode::tryFrom(strtoupper((string) $this->settings->effective('invoicing.default_currency', $organization)->value))
-            ?? CurrencyCode::Euro;
+        $currency = $this->bookCurrency($average, $organization);
 
         $entry = Money::ofNullable($unitCost, $currency, self::SCALE);
         if ($entry !== null) {
             return Money::of($entered->unitCostInBase($entry->getAmount()), $currency, self::SCALE);
         }
 
+        return $this->fallbackCost($variant, $average, $currency);
+    }
+
+    private function bookCurrency(?Money $average, Organization $organization): CurrencyCode {
+        return $average?->getCurrency()
+            ?? CurrencyCode::tryFrom(strtoupper((string) $this->settings->effective('invoicing.default_currency', $organization)->value))
+            ?? CurrencyCode::Euro;
+    }
+
+    private function fallbackCost(ArticleVariant $variant, ?Money $average, CurrencyCode $currency): Money {
         // Einkaufspreise gelten je Basiseinheit; einer in anderer Währung passt nicht ins Buch.
         $purchase = $variant->effectivePurchasePrice();
         if ($purchase instanceof Money && $purchase->getCurrency() === $currency) {

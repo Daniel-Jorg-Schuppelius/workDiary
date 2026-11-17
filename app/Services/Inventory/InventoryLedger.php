@@ -37,6 +37,9 @@ class InventoryLedger {
     /** Schlüsselpräfix mehrteiliger Abgänge ohne eigenen Schlüssel: hält die Teile für {@see issueOf()} zusammen. */
     public const string ISSUE_GROUP_PREFIX = 'issue:';
 
+    /** Schlüssel des Umlagerungszugangs je TransferOut-Bewegung: `transfer-in:<id des Abgangs>`. */
+    public const string TRANSFER_IN_KEY_PREFIX = 'transfer-in:';
+
     /** @var array<int, \App\Enums\Inventory\InventoryMode|null> */
     private array $modeCache = [];
 
@@ -155,6 +158,16 @@ class InventoryLedger {
         if ($bin !== null && ! $bin->isUsable()) {
             throw new RuntimeException((string) __('inventory.error.bin_unusable', ['code' => $bin->code]));
         }
+    }
+
+    /**
+     * Die unter dem Schlüssel der Buchung schon gebuchte Bewegung, gesperrt gelesen — eine Bewertung fragt vor dem
+     * Rechnen, damit eine Wiederholung das Buch nicht zweimal bewegt. Ohne Schlüssel oder Organisation null.
+     */
+    public function posted(StockPosting $posting): ?StockMovement {
+        $orgId = $posting->variant->organization_id;
+
+        return $posting->idempotencyKey !== null && $orgId !== null ? $this->findByIdempotencyKey($orgId, $posting->idempotencyKey, lock: true) : null;
     }
 
     private function findByIdempotencyKey(int $orgId, string $key, bool $lock): ?StockMovement {
@@ -366,14 +379,15 @@ class InventoryLedger {
      * `$requireLot` (chargenpflichtiger Artikel) weist eine Zuteilung mit
      * einem Teil ohne Charge ab, bevor etwas gebucht ist. `$source` ist der
      * fachliche Beleg jeder Teilbewegung (z. B. der Materialverbrauch).
+     * `$type` bucht den Abgang einer Umlagerung als TransferOut (MVP-1726).
      *
-     * @param  (Closure(StockLot|null, numeric-string): array{unit: numeric-string, total: numeric-string})|null  $costing
+     * @param  (Closure(StockLot|null, numeric-string): array{unit: numeric-string, total: numeric-string, currency?: string})|null  $costing
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Closure $costing = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?Model $source = null): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Closure $costing = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?Model $source = null, StockMovementType $type = StockMovementType::Issue): StockIssue {
         $qty = DecimalQty::positive($qty);
 
         // Prüfung, Zuteilung und Buchung in einer Transaktion: availableForUpdate() und die Zuteilung sperren den Bestand gegen parallele Abgänge.
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin, $lot, $costing, $requireLot, $entered, $source): StockIssue {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin, $lot, $costing, $requireLot, $entered, $source, $type): StockIssue {
             $orgId = $variant->organization_id;
             if ($idempotencyKey !== null && $orgId !== null) {
                 $earlier = $this->findByIdempotencyKey($orgId, $idempotencyKey, lock: true);
@@ -396,7 +410,7 @@ class InventoryLedger {
             foreach ($parts as $index => ['lot' => $partLot, 'qty' => $partQty]) {
                 $cost = $costing !== null ? $costing($partLot, $partQty) : null;
                 $movement = $this->post(new StockPosting(
-                    $variant, $warehouse, StockState::Physical, DecimalQty::negative($partQty), StockMovementType::Issue, $ownership,
+                    $variant, $warehouse, StockState::Physical, DecimalQty::negative($partQty), $type, $ownership,
                     idempotencyKey: $idempotencyKey !== null && count($parts) > 1 ? $idempotencyKey . '#' . ($index + 1) : $idempotencyKey,
                     originalQty: $entered?->originalFor($partQty),
                     originalUnit: $entered?->originalUnit,
@@ -404,6 +418,7 @@ class InventoryLedger {
                     source: $source,
                     costUnit: $cost['unit'] ?? null,
                     costTotal: $cost['total'] ?? null,
+                    currency: $cost['currency'] ?? null,
                     stockLotId: $partLot?->id,
                     bin: $bin,
                 ));
@@ -455,11 +470,32 @@ class InventoryLedger {
         return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::negative($qty), StockMovementType::ReleaseReservation, $ownership, idempotencyKey: $idempotencyKey, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit, actorUserId: $actorUserId, bin: $bin));
     }
 
+    /**
+     * Zugang einer Umlagerung (MVP-1726) zu einer TransferOut-Bewegung: gleiche Charge, Menge und Kosten im Ziellager.
+     * Der Schlüssel hängt am Abgang — eine Wiederholung liefert den früheren Zugang.
+     */
+    public function transferIn(ArticleVariant $variant, StockMovement $out, Warehouse $to, ?EnteredQuantity $entered = null): StockMovement {
+        $qty = DecimalQty::positive((string) $out->qty_base);
+
+        return $this->post(new StockPosting(
+            $variant, $to, StockState::Physical, $qty, StockMovementType::TransferIn, $out->ownership_type,
+            ownerRef: $out->owner_ref,
+            idempotencyKey: self::TRANSFER_IN_KEY_PREFIX . $out->id,
+            originalQty: $entered?->originalFor($qty),
+            originalUnit: $entered?->originalUnit,
+            actorUserId: $out->actor_user_id,
+            costUnit: $out->cost_unit?->getAmount(),
+            costTotal: $out->cost_total?->getAmount(),
+            currency: $out->cost_total?->getCurrency()->value,
+            stockLotId: $out->stock_lot_id,
+        ));
+    }
+
     public function finishedGoodReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
         return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::FinishedGoodReceipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }
 
-    /** Inventurdifferenz/Gegenbuchung: signierte Menge auf einen Zustand. */
+    /** Signierte Menge auf einen Zustand, unbewertet — Inventurdifferenz und Gegenbuchung laufen über {@see StockCorrection} (MVP-1727). */
     public function correction(ArticleVariant $variant, Warehouse $warehouse, StockState $state, string $signedQty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
         return $this->post(new StockPosting($variant, $warehouse, $state, NumberHelper::normalizeDecimalString($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }

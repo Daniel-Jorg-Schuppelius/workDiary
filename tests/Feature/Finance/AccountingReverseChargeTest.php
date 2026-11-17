@@ -562,7 +562,8 @@ class AccountingReverseChargeTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->org->id, 'name' => 'Beispiel Generalunternehmer GmbH', 'currency' => 'EUR']);
         $this->put(route('customers.update', $customer), ['name' => 'Beispiel Generalunternehmer GmbH', 'currency' => 'EUR', 'is_reverse_charge_recipient' => '1'])->assertSessionHasNoErrors();
         $this->assertTrue($customer->refresh()->is_reverse_charge_recipient);
-        $this->put(route('customers.update', $customer), ['name' => 'Beispiel Generalunternehmer GmbH', 'currency' => 'EUR'])->assertSessionHasNoErrors();
+        // Abgehakt: verstecktes 0 wie im Formular (MVP-1724).
+        $this->put(route('customers.update', $customer), ['name' => 'Beispiel Generalunternehmer GmbH', 'currency' => 'EUR', 'is_reverse_charge_recipient' => '0'])->assertSessionHasNoErrors();
         $this->assertFalse($customer->refresh()->is_reverse_charge_recipient);
     }
 

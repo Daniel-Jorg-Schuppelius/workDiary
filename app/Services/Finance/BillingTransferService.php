@@ -694,14 +694,20 @@ class BillingTransferService {
 
         $held = [];
         foreach ($items->groupBy('source_type') as $sourceType => $group) {
-            $ids = BillingTransferItem::query()
+            $query = BillingTransferItem::query()
                 ->join('billing_transfers', 'billing_transfers.id', '=', 'billing_transfer_items.billing_transfer_id')
                 ->where('billing_transfers.id', '!=', $transfer->id)
-                ->whereIn('billing_transfers.status', [TransferStatus::Confirmed->value, TransferStatus::Transferred->value])
                 ->whereNull('billing_transfers.deleted_at')
                 ->where('billing_transfer_items.source_type', $sourceType)
-                ->whereIn('billing_transfer_items.source_id', $group->pluck('source_id')->all())
-                ->pluck('billing_transfer_items.source_id');
+                ->whereIn('billing_transfer_items.source_id', $group->pluck('source_id')->all());
+            if (MorphMap::is((string) $sourceType, ProjectTimeShortfall::class)) {
+                // Einen Befund hält eine Übergabe nur, wenn sie ihn auffüllt oder schließen kann (MVP-1722).
+                $query->join('project_time_shortfalls', 'project_time_shortfalls.id', '=', 'billing_transfer_items.source_id');
+                TargetTopUps::whereTransferHolds($query->getQuery());
+            } else {
+                $query->whereIn('billing_transfers.status', [TransferStatus::Confirmed->value, TransferStatus::Transferred->value]);
+            }
+            $ids = $query->pluck('billing_transfer_items.source_id');
 
             $held[(string) $sourceType] = array_values(array_map(static fn($id): int => (int) $id, $ids->all()));
         }

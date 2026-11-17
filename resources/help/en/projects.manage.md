@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 11
+version: 12
 keywords:
     - create project
     - project management
@@ -107,7 +107,9 @@ shows as resolved on the time tab with the number of the invoice or transfer, an
 the nightly check does not reopen it. A later booking on that day stays billable,
 because nothing was topped up. If you remove the line, discard the draft or cancel
 the invoice or the transfer, the shortfall is open again. Acknowledge shortfalls
-whose flat rate was billed earlier by hand.
+whose flat rate was billed earlier by hand. If a transfer contains no working
+time of the project, its shortfall stays open and free: the next transfer or
+invoice with working time of the project closes it, without cancelling the first.
 
 The billing rule also names the **place of supply** of its times (§ 3a UStG):
 **General**, **Catalogue service** or **Service connected with immovable

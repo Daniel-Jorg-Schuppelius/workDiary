@@ -1,7 +1,7 @@
 ---
 title: "Stock levels & scanning"
 topic: inventory.stock
-version: 9
+version: 10
 keywords:
     - inventory
     - stock on hand
@@ -112,3 +112,5 @@ follow the article’s valuation method: for the moving average from the average
 ledger, for FIFO and FEFO from the open valuation layers (value of the remaining
 quantities, average = value ÷ quantity). The ABC classification of cycle counts
 uses the same values.
+
+**Valuation of transfers and corrections:** A transfer takes its value along. The source warehouse issues by its method and the target warehouse receives the same value: with FIFO and FEFO one layer per consumed layer with its unit cost, receipt date and best-before date; with the moving average the target warehouse recalculates its average. The stock value across all warehouses stays the same. Corrections of free own stock are valued too — stock count differences, the counter-posting of a conflict with the external system and the takeover count when switching from a merchandise management system: a surplus like a manual receipt (purchase price, otherwise average), a shortage by the valuation method. The counter-posting of a valued issue comes back in at the issue's unit cost. Reservations, blocks, quarantine and third-party stock do not change the stock value.

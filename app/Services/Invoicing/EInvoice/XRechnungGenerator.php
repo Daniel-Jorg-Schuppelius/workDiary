@@ -49,8 +49,9 @@ use Illuminate\Validation\ValidationException;
  *    Programm (Sperre im Controller via BillingModeResolver).
  *
  * Steuerlogik (Rechnung trägt genau einen Steuersatz, siehe Invoice-Modell):
- *  - Satz > 0  ⇒ Kategorie S (Standard)
- *  - Satz = 0  ⇒ Kategorie Z (Zero rated)
+ *  - Kategorie des Steuerfalls: ausgestellt der eingefrorene, als Entwurf
+ *    der, den das Ausstellen einfrieren wird (MVP-1720)
+ *  - ohne Fall (Altbeleg): Satz > 0 ⇒ S (Standard), Satz = 0 ⇒ Z (Zero rated)
  *  - Org-Flag settings['einvoice']['small_business'] ⇒ Kategorie E
  *    (Exempt, § 19 UStG) mit Exemption-Text.
  * Kategorien ohne Steuer (AE, K, G, O, E) tragen je Steueraufriss ihren
@@ -164,11 +165,9 @@ class XRechnungGenerator {
             $errors[] = (string) __('invoicing.einvoice.error.seller_vat_id_required');
         }
         // Leistungsort je Position (MVP-1688): Vor dem Ausstellen muss der Beleg genau einen Steuerfall ergeben; mit O ist das BR-O-11.
-        if ($invoice->party_snapshot === null && $invoice->derivesTaxCase()) {
-            $cases = array_column(app(\App\Services\Invoicing\TaxResolver::class)->casesForInvoice($invoice), 'category');
-            if (count($cases) > 1) {
-                $errors[] = (string) __(in_array(TaxCategory::OUT_OF_SCOPE->value, $cases, true) ? 'invoicing.einvoice.error.not_subject_mixed' : 'invoicing.tax_case.place_of_supply_mixed');
-            }
+        $cases = array_column($this->casesToFreeze($invoice) ?? [], 'category');
+        if (count($cases) > 1) {
+            $errors[] = (string) __(in_array(TaxCategory::OUT_OF_SCOPE->value, $cases, true) ? 'invoicing.einvoice.error.not_subject_mixed' : 'invoicing.tax_case.place_of_supply_mixed');
         }
         // BR-O-11 bis -14: „nicht steuerbar“ steht allein; BR-O-02 verbietet die USt-IdNr., es bleibt die Steuernummer.
         if ($has(TaxCategory::OUT_OF_SCOPE)) {
@@ -808,7 +807,10 @@ class XRechnungGenerator {
     }
 
     /**
-     * Steuerkategorie nach EN 16931: E (Kleinunternehmer § 19), Z (0 %), S (Standard).
+     * Steuerkategorie nach EN 16931: E (Kleinunternehmer § 19), sonst der
+     * eingefrorene Fall bzw. beim Entwurf der, den das Ausstellen einfrieren
+     * wird (MVP-1720). Ohne Fall (Altbeleg, zu teilender Entwurf) Z bei 0 %,
+     * sonst S.
      *
      * @param array<string, mixed> $seller
      */
@@ -826,8 +828,29 @@ class XRechnungGenerator {
         if ($fromContext !== null) {
             return $fromContext;
         }
+        // Mehrere Fälle meldet der Preflight; keiner wird still gewählt.
+        $pending = $this->casesToFreeze($invoice);
+        if ($pending !== null && count($pending) === 1 && ($category = TaxCategory::tryFrom($pending[0]['category'])) !== null) {
+            return $category;
+        }
 
         return $invoice->tax_rate !== null && $invoice->tax_rate->isPositive() ? TaxCategory::STANDARD : TaxCategory::ZERO_RATED;
+    }
+
+    /**
+     * Steuerfälle, die das Ausstellen einfrieren wird ({@see \App\Services\Invoicing\TaxResolver::casesToFreeze()});
+     * null, wenn der Beleg ausgestellt ist oder seinen Fall schon trägt. Der Versandweg prüft den Entwurf als
+     * „ausgestellt“ im Speicher — gespeichert ist er noch Entwurf.
+     *
+     * @return non-empty-list<array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: mixed}>|null
+     */
+    private function casesToFreeze(Invoice $invoice): ?array {
+        $draft = $invoice->status === InvoiceStatus::Draft || $invoice->getRawOriginal('status') === InvoiceStatus::Draft->value;
+        if (! $draft || $invoice->organization === null || trim((string) data_get($invoice->tax_context, 'category', '')) !== '') {
+            return null;
+        }
+
+        return app(\App\Services\Invoicing\TaxResolver::class)->casesToFreeze($invoice);
     }
 
     /** Positions-Kategorie (D6): expliziter Positions-Code vor Kopf-Kategorie. */

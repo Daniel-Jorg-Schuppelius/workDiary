@@ -145,4 +145,31 @@ final class EInvoiceValidationTest extends TestCase {
             ->assertRedirect(route('invoices.einvoice-validation', $draft));
         $this->assertSame(InvoiceStatus::Draft, $draft->fresh()->status, 'Ausstellung wurde geblockt.');
     }
+
+    /** MVP-1730: Geprüft wird der Beleg, wie er ausgestellt aussähe — am Entwurf selbst scheiterte der Status-Check immer. */
+    public function test_enforced_validation_lets_a_valid_draft_be_issued(): void {
+        $settings = (array) $this->org->settings;
+        $settings['einvoice']['enforce_validation'] = '1';
+        $this->org->update(['settings' => $settings]);
+        app()->instance('currentOrganization', $this->org->fresh());
+
+        $draft = Invoice::query()->create([
+            'organization_id' => $this->org->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'R2026-0044',
+            'status' => InvoiceStatus::Draft,
+            'type' => Invoice::TYPE_INVOICE,
+            'tax_rate' => '19.00',
+        ]);
+        $draft->items()->create(['organization_id' => $this->org->id, 'description' => 'Beratung', 'quantity' => '2', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);
+        $draft->load('items');
+        $draft->recalculate();
+        $draft->save();
+
+        $this->actingAs($this->user)
+            ->post(route('invoices.issue', $draft))
+            ->assertSessionHasNoErrors();
+
+        $this->assertNotSame(InvoiceStatus::Draft, $draft->fresh()?->status, 'Ein gültiger Entwurf wird trotz Validierungspflicht ausgestellt.');
+    }
 }

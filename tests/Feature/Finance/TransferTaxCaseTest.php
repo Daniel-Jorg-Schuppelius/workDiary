@@ -116,17 +116,40 @@ final class TransferTaxCaseTest extends TestCase {
         $this->assertSame(1, TimeEntry::query()->where('exported', false)->count());
     }
 
-    /** Der Beleg aus Zeiten (Kundenseite) trägt keine Steuerart — außer dem Standardfall sperrt er. */
-    public function test_lexoffice_time_voucher_refuses_other_cases(): void {
+    /**
+     * MVP-1723: Der Beleg aus Zeiten trägt den Steuerfall als Buchungskategorie —
+     * nicht steuerbare Leistung ins Drittland als „Dienstleistungen an Drittländer“
+     * mit 0 %, Felder wie in der Lexware-Referenz „Vouchers Endpoint“.
+     */
+    public function test_lexoffice_time_voucher_books_a_third_country_service_with_its_category(): void {
         $customer = $this->customer(['country' => 'CH'], BillingMode::Lexoffice);
+        $this->timeEntry($this->project($customer));
+        $fake = FakePluginHttp::fake(['https://api.lexware.io/v1/vouchers*' => FakePluginHttp::response(['id' => 'voucher-ch-1'], 201)]);
+
+        $result = app(LexofficePlugin::class)->exportCustomerTime($customer, CarbonImmutable::parse('2030-04-01'), CarbonImmutable::parse('2030-04-30')->endOfDay());
+
+        $this->assertSame('voucher-ch-1', $result['external_id']);
+        $body = self::body($fake, '/vouchers');
+        $this->assertSame('net', $body['taxType']);
+        $this->assertSame(self::LEXOFFICE_CONTACT, $body['contactId']);
+        $this->assertSame(sprintf('ZE-%s-20300430-1', $customer->number), $body['voucherNumber']);
+        $this->assertEquals(0, $body['totalTaxAmount']);
+        $this->assertEquals(180, $body['totalGrossAmount']);
+        $this->assertEquals([['amount' => 180.0, 'taxAmount' => 0.0, 'taxRatePercent' => 0.0, 'categoryId' => 'ef5b1a6e-f690-4004-9a19-91276348894f']], $body['voucherItems']);
+        $this->assertSame(0, TimeEntry::query()->where('exported', false)->count());
+    }
+
+    /** Für § 13b im Inland nennt die Referenz keine Belegkategorie: gesperrt, nichts gesendet. */
+    public function test_lexoffice_time_voucher_refuses_a_case_without_category(): void {
+        $customer = $this->customer(['country' => 'DE', 'is_reverse_charge_recipient' => true], BillingMode::Lexoffice);
         $this->timeEntry($this->project($customer));
         $fake = FakePluginHttp::fake([]);
 
         try {
             app(LexofficePlugin::class)->exportCustomerTime($customer, CarbonImmutable::parse('2030-04-01'), CarbonImmutable::parse('2030-04-30')->endOfDay());
-            $this->fail('Zeitbeleg trotz nicht steuerbarer Leistung angelegt.');
+            $this->fail('Zeitbeleg trotz § 13b im Inland angelegt.');
         } catch (UnmappableTaxCaseException $e) {
-            $this->assertStringContainsString(SalesTaxCase::NotTaxable->label(), $e->getMessage());
+            $this->assertStringContainsString(SalesTaxCase::DomesticReverseCharge->label(), $e->getMessage());
         }
 
         $fake->assertNothingSent();

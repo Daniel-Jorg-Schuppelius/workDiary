@@ -13,7 +13,9 @@ return [
     'tax_case' => [
         'not_taxable_outside_third_country' => 'Per le prestazioni non imponibili in Germania Lexoffice conosce solo «servizi verso paesi terzi». Se il luogo della prestazione è nell’UE (ad esempio un immobile in un altro paese UE) o in più aree, non esiste un tipo d’imposta adatto: fatturi in workDiary o registri il documento manualmente in Lexoffice.',
         'contact_required' => 'Per «:case» Lexoffice richiede un contatto creato in Lexoffice; il cliente non è ancora collegato. Trasferisca prima il contatto.',
-        'time_voucher' => 'Il giustificativo dai tempi trasferisce solo l’aliquota, non il tipo d’imposta; il caso fiscale di questi tempi è «:case». Li trasferisca a Lexoffice tramite la consegna fatturazione, che invia il tipo d’imposta adatto.',
+        'time_voucher' => 'Per il caso fiscale «:case» l’interfaccia dei giustificativi di Lexoffice non conosce alcuna categoria contabile (ad esempio § 13b in Germania o esenzione ai sensi del § 4 UStG). Trasferisca i tempi a Lexoffice tramite la consegna fatturazione, che invia il tipo d’imposta adatto.',
+        'time_voucher_mixed' => 'I tempi danno luogo a più casi fiscali (:case); un giustificativo ne porta solo uno. Fatturi i tempi separatamente, ad esempio tramite la consegna fatturazione per caso fiscale.',
+        'time_voucher_currency' => 'Un giustificativo Lexoffice contiene importi solo in euro, ma il cliente viene fatturato in :currency. Fatturi in workDiary o registri il giustificativo manualmente in Lexoffice.',
     ],
     'error' => [
         'lexoffice_contact_missing' => 'Nessun contatto Lexoffice per il cliente — sincronizzare prima il contatto.',

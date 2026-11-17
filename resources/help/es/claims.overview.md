@@ -1,7 +1,7 @@
 ---
 title: "Reclamaciones y garantía"
 topic: claims.overview
-version: 4
+version: 5
 keywords:
     - queja de cliente
     - reclamación de cliente
@@ -64,6 +64,8 @@ las traspasa o las da de baja. Sin variante o sin módulo de almacén, la
 devolución solo se documenta y el mensaje indica «registrada sin asiento
 de existencias». Las devoluciones del portal de clientes traen la variante
 y el número de serie; el almacén se completa en la entrada de mercancía.
+
+**Valor de la reincorporación al stock:** la reincorporación al stock pasa la devolución de la cuarentena a las existencias libres y la valora allí: al coste unitario de la entrega original si la devolución la conoce por su número de serie; si no, a la media del almacén (sin valoración previa, al precio de compra). Mientras la devolución está en cuarentena no cuenta para el valor del stock; por eso el desguace y la devolución al proveedor desde la cuarentena quedan sin valor.
 
 **Medidas y orden de seguimiento:** El retrabajo, la reparación, la
 sustitución o la intervención se crean en «Medidas» con plazo y persona

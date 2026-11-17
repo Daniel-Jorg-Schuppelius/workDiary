@@ -25,11 +25,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Schema(
     schema: 'CustomerInput',
-    description: 'Kunde anlegen oder ändern; weitere Felder wie im Kundendialog.',
-    required: ['name', 'currency'],
+    description: 'Kunde anlegen oder ändern; weitere Felder wie im Kundendialog. Beim Ändern gelten nur gesendete Felder, fehlende bleiben unverändert; neu angelegt gelten die Vorgaben (EUR, abrechenbar).',
+    required: ['name'],
     properties: [
         new OA\Property(property: 'name', type: 'string', maxLength: 200),
-        new OA\Property(property: 'currency', type: 'string', example: 'EUR'),
+        new OA\Property(property: 'currency', type: 'string', example: 'EUR', description: 'fehlt das Feld, bleibt die Währung; neu angelegt EUR'),
         new OA\Property(property: 'number', type: 'string', maxLength: 64, nullable: true),
         new OA\Property(property: 'company', type: 'string', maxLength: 200, nullable: true),
         new OA\Property(property: 'vat_id', type: 'string', maxLength: 64, nullable: true),
@@ -50,6 +50,21 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'shipping_zip', type: 'string', maxLength: 32, nullable: true),
         new OA\Property(property: 'shipping_city', type: 'string', maxLength: 128, nullable: true),
         new OA\Property(property: 'shipping_country', type: 'string', description: 'ISO 3166-1 alpha-2', nullable: true),
+        new OA\Property(property: 'billable', type: 'boolean', description: 'abrechenbar; fehlt das Feld, bleibt der Wert, neu angelegt true'),
+        new OA\Property(
+            property: 'contact_persons',
+            type: 'array',
+            nullable: true,
+            description: 'weitere Ansprechpartner als ganze Liste; fehlt das Feld, bleiben sie, [] oder null leert sie',
+            items: new OA\Items(type: 'object', properties: [
+                new OA\Property(property: 'salutation', type: 'string', nullable: true),
+                new OA\Property(property: 'first_name', type: 'string', nullable: true),
+                new OA\Property(property: 'last_name', type: 'string', nullable: true),
+                new OA\Property(property: 'email', type: 'string', format: 'email', nullable: true),
+                new OA\Property(property: 'phone', type: 'string', nullable: true),
+                new OA\Property(property: 'primary', type: 'boolean'),
+            ]),
+        ),
     ],
     type: 'object',
 )]

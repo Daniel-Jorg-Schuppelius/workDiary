@@ -181,6 +181,85 @@ class ContactDetailsWriter {
     }
 
     /**
+     * Angleich von Altbestand (MVP-1725), dessen Projektion vom primären
+     * Satelliten abweicht. Jedes Speichern eines Satelliten spiegelt ihn zurück;
+     * eine Abweichung entsteht also nur, wenn die Projektion danach direkt
+     * geschrieben wurde (API, CSV-Import, Zusammenführung vor MVP-1700) oder
+     * ein Massen-Update den Satelliten am Observer vorbei änderte. Daher: ohne
+     * Satellit wird die Projektion übernommen; ist der Satellit jünger als die
+     * Partei, gilt er; sonst gilt die Projektion, nur ihre leeren Felder
+     * (früher beim Teil-Update geleert) behalten den Wert des Satelliten.
+     *
+     * @return list<array{group: string, columns: list<string>, resolution: string}> je abweichender Gruppe
+     */
+    public function reconcileProjection(Model&ContactDetailsHolder $party, bool $apply): array {
+        $drifts = [];
+        foreach (['address' => self::ADDRESS_MAP, 'bank' => self::BANK_MAP] as $group => $map) {
+            $satellite = $group === 'address' ? $party->primaryAddress() : $party->primaryBankAccount();
+            $projection = [];
+            foreach ($map as $column => $key) {
+                $projection[$key] = $this->nullIfBlank($this->projected($party, $column));
+            }
+
+            if ($satellite === null) {
+                if (array_filter($projection) === []) {
+                    continue;
+                }
+                $drifts[] = ['group' => $group, 'columns' => array_keys(array_filter(array_combine(array_keys($map), $projection))), 'resolution' => 'adopted'];
+                if ($apply) {
+                    $group === 'address' ? $this->adoptProjectedAddress($party) : $this->adoptProjectedBankAccount($party);
+                }
+
+                continue;
+            }
+
+            $current = [];
+            $columns = [];
+            foreach ($map as $column => $key) {
+                $current[$key] = $this->nullIfBlank((string) $satellite->getAttribute($key === 'country' ? 'country_code' : $key));
+                if (! self::sameValue($projection[$key] ?? null, $current[$key], $key)) {
+                    $columns[] = $column;
+                }
+            }
+            if ($columns === []) {
+                continue;
+            }
+
+            $satelliteNewer = $satellite->updated_at !== null && $party->getAttribute('updated_at') !== null
+                && $satellite->updated_at->greaterThan($party->getAttribute('updated_at'));
+            $drifts[] = ['group' => $group, 'columns' => $columns, 'resolution' => $satelliteNewer ? 'satellite' : 'projection'];
+            if (! $apply) {
+                continue;
+            }
+            if ($satelliteNewer) {
+                // Speichern spiegelt zurück; Eloquent meldet `saved` auch ohne Änderung.
+                $satellite->save();
+
+                continue;
+            }
+            $merged = [];
+            foreach ($projection as $key => $value) {
+                $merged[$key] = $value ?? $current[$key] ?? null;
+            }
+            $group === 'address'
+                ? $this->writeAddress($party, $merged + ['supplement' => $satellite->getAttribute('supplement')])
+                : $this->writeBankAccount($party, $merged);
+        }
+
+        return $drifts;
+    }
+
+    /** Gleich bis auf Schreibweise: Länder- und Bankkennungen ohne Leerzeichen und Großschreibung. */
+    private static function sameValue(?string $a, ?string $b, string $key): bool {
+        if (in_array($key, ['country', 'iban', 'bic'], true)) {
+            $a = $a === null ? null : strtoupper(str_replace(' ', '', $a));
+            $b = $b === null ? null : strtoupper(str_replace(' ', '', $b));
+        }
+
+        return $a === $b;
+    }
+
+    /**
      * Zusammenführen (MVP-1701): die Satelliten der Quelle wandern zum Ziel, danach
      * trägt es genau eine primäre Rechnungsanschrift und eine primäre Bankverbindung —
      * die eigene, ausgewählt oder ohne eigene die der Quelle. Die andere bleibt als

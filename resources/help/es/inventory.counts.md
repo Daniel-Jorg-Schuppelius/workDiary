@@ -1,7 +1,7 @@
 ---
 title: "Inventario físico"
 topic: inventory.counts
-version: 4
+version: 5
 keywords:
     - recuento de existencias
     - toma de inventario
@@ -41,3 +41,5 @@ Si un artículo tiene otras unidades, la cantidad contada puede registrarse en u
 ## Terminar, reabrir o descartar el recuento
 
 **Terminar el recuento** congela las cantidades contadas para la revisión; después ya no se puede registrar nada. Quien aprueba las diferencias puede **reabrir el recuento** para corregir, contabilizar las diferencias o **descartar el inventario**; un inventario descartado no contabiliza nada. El paso de revisión es opcional; también se puede aprobar directamente desde el recuento.
+
+**Diferencias valoradas:** las diferencias en las existencias propias libres se valoran. Un excedente entra como una entrada manual (precio de compra de la variante; si no, la media del almacén) y un faltante sale según el método de valoración: con FIFO y FEFO de las capas más antiguas o que caducan antes, con el precio medio ponderado al precio medio. Las diferencias en existencias reservadas o bloqueadas y en existencias de terceros no cambian el valor del stock. La aprobación a cuatro ojos mide el valor así contabilizado; si se aplica, no se contabiliza nada.

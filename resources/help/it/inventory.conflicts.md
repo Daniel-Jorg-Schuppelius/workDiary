@@ -1,7 +1,7 @@
 ---
 title: "Conflitti con sistemi esterni (giacenze)"
 topic: inventory.conflicts
-version: 4
+version: 5
 keywords:
     - differenza di giacenza
     - errore di sincronizzazione
@@ -59,3 +59,5 @@ aperti o per tutti i conflitti.
 I conflitti aperti dovrebbero essere verificati tempestivamente: finché
 esistono, la giacenza locale e quella esterna divergono — con
 conseguenze su disponibilità, proposte d'ordine e valorizzazione.
+
+**Valorizzazione della compensazione:** la contropartita nella giacenza propria libera è valorizzata. Un prelievo compensato rientra al suo costo unitario, così il valore di magazzino torna quello di prima; senza valore di costo vale il prezzo d'acquisto, altrimenti la media. Un'entrata compensata esce secondo il metodo di valorizzazione. Le contropartite in altri stati e nella giacenza di terzi restano senza valore.

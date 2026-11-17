@@ -176,7 +176,8 @@ final class FlatRateServicePositionTest extends TestCase {
         $this->assertCount(1, app(BillingPositionBuilder::class)->build($this->transfer()));
     }
 
-    public function test_lexoffice_time_voucher_carries_one_flat_item_per_order(): void {
+    /** MVP-1723: Der Beleg bucht die Pauschale einmal je Auftrag, als Nettobetrag mit Steuer je Satz. */
+    public function test_lexoffice_time_voucher_books_the_flat_price_once_per_order(): void {
         $this->flatRule();
         $order = $this->order('Wartung Kessel 2');
         $this->entry($order, '2030-04-02 08:00', '2030-04-02 09:10');
@@ -191,9 +192,11 @@ final class FlatRateServicePositionTest extends TestCase {
 
         $this->assertCount(1, $payload['voucherItems']);
         $item = $payload['voucherItems'][0];
-        $this->assertSame(1.0, (float) $item['quantity']);
-        $this->assertSame('Pauschale', $item['unitName']);
-        $this->assertSame(250.0, $item['unitPrice']['netAmount']);
+        $this->assertSame(250.0, $item['amount'], 'Eine Pauschale für zwei Zeiten desselben Auftrags.');
+        $this->assertSame(47.5, $item['taxAmount']);
+        $this->assertSame(19.0, $item['taxRatePercent']);
+        $this->assertSame(297.5, $payload['totalGrossAmount']);
+        $this->assertSame(47.5, $payload['totalTaxAmount']);
     }
 
     public function test_unit_decides_between_hours_and_flat_rate(): void {

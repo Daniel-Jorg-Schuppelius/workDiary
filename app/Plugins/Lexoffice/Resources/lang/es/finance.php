@@ -13,7 +13,9 @@ return [
     'tax_case' => [
         'not_taxable_outside_third_country' => 'Para servicios no sujetos en Alemania, Lexoffice solo ofrece «servicios a terceros países». Si el lugar de prestación está en la UE (por ejemplo, un inmueble en otro país de la UE) o en varias zonas, no hay un tipo de impuesto adecuado: facture en workDiary o registre el documento manualmente en Lexoffice.',
         'contact_required' => 'Para «:case», Lexoffice exige un contacto creado allí; el cliente aún no está vinculado con Lexoffice. Transfiera primero el contacto.',
-        'time_voucher' => 'El comprobante a partir de tiempos solo transfiere el tipo impositivo, no el tipo de impuesto; el caso fiscal de estos tiempos es «:case». Transfiéralos a Lexoffice mediante la entrega de facturación, que envía el tipo de impuesto adecuado.',
+        'time_voucher' => 'Para el caso fiscal «:case», la interfaz de comprobantes de Lexoffice no tiene categoría contable (por ejemplo, § 13b en Alemania o exención según el § 4 UStG). Transfiera los tiempos a Lexoffice mediante la entrega de facturación, que envía el tipo de impuesto adecuado.',
+        'time_voucher_mixed' => 'Los tiempos dan lugar a varios casos fiscales (:case); un comprobante solo admite uno. Facture los tiempos por separado, por ejemplo mediante la entrega de facturación por caso fiscal.',
+        'time_voucher_currency' => 'Un comprobante de Lexoffice solo admite importes en euros, pero al cliente se le factura en :currency. Facture en workDiary o registre el comprobante manualmente en Lexoffice.',
     ],
     'error' => [
         'lexoffice_contact_missing' => 'No hay contacto de Lexoffice para el cliente — sincronice primero el contacto.',

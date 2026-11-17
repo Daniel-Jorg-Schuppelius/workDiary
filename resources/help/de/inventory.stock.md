@@ -1,7 +1,7 @@
 ---
 title: "Lagerbestände & Scannen"
 topic: inventory.stock
-version: 9
+version: 10
 keywords:
     - Warenbestand
     - Bestand buchen
@@ -118,3 +118,5 @@ Chargen erst nach der Freigabe.
 Durchschnitt aus dem Durchschnittsbuch, bei FIFO und FEFO aus den offenen
 Bewertungsschichten (Wert der Restmengen, Durchschnitt = Wert ÷ Menge). Dieselben
 Werte nutzt die ABC-Einteilung der zyklischen Inventur.
+
+**Bewertung von Umlagerung und Korrektur:** Eine Umlagerung nimmt den Wert mit. Das Quelllager gibt nach seinem Verfahren ab, das Ziellager erhält denselben Wert: bei FIFO und FEFO je verbrauchter Schicht eine Schicht mit Stückwert, Zugangsdatum und Mindesthaltbarkeit, beim gleitenden Durchschnitt rechnet das Ziellager seinen Durchschnitt neu. Der Bestandswert über alle Lager bleibt gleich. Korrekturen des freien Eigenbestands sind ebenfalls bewertet — Inventurdifferenzen, die Gegenbuchung eines Konflikts mit dem Fremdsystem und die Übernahme-Inventur beim Wechsel von einer Warenwirtschaft: Mehrbestand wie ein manueller Eingang (Einkaufspreis, sonst Durchschnitt), Minderbestand nach dem Verfahren. Die Gegenbuchung einer bewerteten Entnahme geht zu deren Stückwert wieder ein. Reservierungen, Sperren, Quarantäne und Fremdbestand ändern den Bestandswert nicht.

@@ -357,7 +357,10 @@ eine Projektion (`address_*`, `bank_*`, `ContactDetailsProjectionObserver`).
   direkten Schreibzugriff aus `app/` auf `address_*`/`country`/`bank_*` von
   Kunde und Lieferant ab (`ContactProjectionGuard`,
   `ContactProjectionWriteRuleTest`) — den Pfad umstellen, nicht in die
-  Allowlist eintragen.
+  Allowlist eintragen. Abweichenden Altbestand gleicht
+  `contacts:reconcile-projection` an (MVP-1725). Party-Requests ändern nur
+  gesendete Felder (MVP-1724): neue Schalter oder Listen nur mit `has()`
+  normalisieren, nie mit `boolean()`/Vorgabe für fehlende Felder.
 - **Lieferanschrift (MVP-1689):** Satellit mit `kind = shipping` ohne
   Projektion — `ContactDetailsProjectionObserver` überspringt ihn,
   `primaryAddress()` ist nie eine Lieferanschrift. Formular

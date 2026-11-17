@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 9
+version: 10
 keywords:
     - Lexware Office
     - Synchronisationskonflikt
@@ -76,8 +76,13 @@ als „steuerfrei“ — mit 0 % je Position und dem Hinweis als Steuerhinweis.
 Diese Steuerarten außer „steuerfrei“ verlangt Lexoffice mit einem dort
 angelegten Kontakt. Liegt eine nicht steuerbare Leistung in der EU (etwa ein
 Grundstück im EU-Ausland), kennt Lexoffice keine passende Steuerart: Die
-Übergabe sperrt mit Grund. Der Beleg aus Zeiten am Kunden überträgt nur
-steuerpflichtige Zeiten; andere Fälle gehen über die Faktura-Übergabe.
+Übergabe sperrt mit Grund. Der Beleg aus Zeiten am Kunden ist ein
+Buchhaltungsbeleg: je Steuersatz Nettobetrag, Steuer und Buchungskategorie des
+Steuerfalls („Dienstleistungen“, „Fremdleistungen § 13b“, „Dienstleistungen
+an Drittländer“, „Einnahmen als Kleinunternehmer“), mit Belegnummer
+`ZE-<Kundennummer>-<Leistungsende>-<laufende Nummer>`. Für § 13b im Inland,
+steuerfreie Umsätze nach § 4, mehrere Steuerfälle oder eine Fremdwährung
+sperrt er mit Grund; diese Zeiten gehen über die Faktura-Übergabe.
 
 Belegspiegel: Der Beleg-Sync spiegelt die Lexoffice-Belege nach WorkDiary.
 Auch Belege von Lexoffice-Kontakten, die noch keinem Kunden oder Lieferanten

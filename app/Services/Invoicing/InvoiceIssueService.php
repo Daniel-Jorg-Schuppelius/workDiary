@@ -43,6 +43,22 @@ final class InvoiceIssueService {
     }
 
     /**
+     * Prüfling der E-Rechnungs-Validierung vor dem Ausstellen: der Beleg, wie er
+     * ausgestellt aussähe, nur im Speicher. Der Preflight verlangt den Status
+     * „gestellt“; am Entwurf selbst scheiterte jede Prüfung (MVP-1730).
+     */
+    public function issuedProbe(Invoice $invoice): Invoice {
+        $probe = clone $invoice;
+        if ($this->wouldIssue($invoice)) {
+            $probe->status = InvoiceStatus::Issued;
+            $probe->issued_on ??= now();
+            $probe->due_on ??= now()->addDays($probe->effectivePaymentTermsDays());
+        }
+
+        return $probe;
+    }
+
+    /**
      * Fachliche Voraussetzungen der Ausstellung: keine Pro-forma, Freigabe
      * (MVP-163, Opt-in), E-Rechnungs-Validierung (MVP-164, Opt-in). Eine
      * Entwurfsnummer stellt nur die Übertragung an das vergebende Programm aus
@@ -73,7 +89,7 @@ final class InvoiceIssueService {
 
         $einvoiceSettings = (array) data_get($invoice->organization?->settings, 'einvoice', []);
         if ((string) ($einvoiceSettings['enforce_validation'] ?? '0') === '1') {
-            $report = $this->eInvoiceValidation->validate($invoice);
+            $report = $this->eInvoiceValidation->validate($this->issuedProbe($invoice));
             if (! $report['valid'] || $report['preflight_errors'] !== []) {
                 throw new InvoiceIssueException(InvoiceIssueException::REASON_EINVOICE_INVALID, (string) __('Die Rechnung besteht die E-Rechnungs-Validierung nicht — Ausstellung abgebrochen.'));
             }
@@ -129,7 +145,7 @@ final class InvoiceIssueService {
         }
         $organization = $invoice->organization;
         $resolvedOn = $invoice->serviceDateTo() ?? now();
-        $taxResolution = $organization !== null ? $this->taxCaseToFreeze($invoice, $organization, $resolvedOn) : null;
+        $taxResolution = $organization !== null ? $this->taxResolver->casesToFreeze($invoice, $resolvedOn)[0] : null;
 
         $fromFile = $invoice->number_source === 'file_import';
 
@@ -275,26 +291,6 @@ final class InvoiceIssueService {
         }
 
         return $quiet ? TaxCaseAlignment::Unchanged : TaxCaseAlignment::LineRates;
-    }
-
-    /**
-     * Steuerfall, den das Ausstellen einfriert: der eigene Beleg nach Kunde und
-     * Leistungsort seiner Positionen (MVP-1688), Storno und Gutschrift der
-     * ihres Originals — sonst wichen Kopf und übernommene Positionskategorien
-     * ab —, importierte Belege nach Kunde und Vorgabe der Organisation.
-     *
-     * @return array{category: ?string, rule: mixed}
-     */
-    private function taxCaseToFreeze(Invoice $invoice, Organization $organization, \Carbon\CarbonInterface $resolvedOn): array {
-        if ($invoice->derivesTaxCase()) {
-            return $this->taxResolver->casesForInvoice($invoice, $resolvedOn)[0];
-        }
-        $original = $invoice->parent;
-        if ($original !== null && ! $original->is($invoice) && (string) data_get($original->tax_context, 'category', '') !== '') {
-            return ['category' => (string) data_get($original->tax_context, 'category'), 'rule' => data_get($original->tax_context, 'rule')];
-        }
-
-        return $this->taxResolver->resolve($organization, $invoice->customer, $resolvedOn, $invoice->isMaterial() ? 'goods' : 'services');
     }
 
     /**

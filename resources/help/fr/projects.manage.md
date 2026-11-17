@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 11
+version: 12
 keywords:
     - créer un projet
     - gestion de projet
@@ -115,7 +115,10 @@ résolu dans l’onglet des temps avec le numéro de la facture ou du transfert,
 contrôle nocturne ne le rouvre pas. Une saisie ultérieure sur ce jour reste
 facturable, car rien n’a été complété. Si vous supprimez la ligne, abandonnez le
 brouillon ou annulez la facture ou le transfert, l’écart est de nouveau ouvert.
-Confirmez à la main les écarts dont le forfait a été facturé auparavant.
+Confirmez à la main les écarts dont le forfait a été facturé auparavant. Si un
+transfert ne contient aucun temps de travail du projet, son écart reste ouvert et
+libre : le prochain transfert ou la prochaine facture avec du temps de travail du
+projet le clôt, sans annuler le premier.
 
 La règle de facturation indique aussi le **lieu de la prestation** de ses temps
 (§ 3a UStG) : **Générale**, **Prestation du catalogue** ou **Prestation liée à

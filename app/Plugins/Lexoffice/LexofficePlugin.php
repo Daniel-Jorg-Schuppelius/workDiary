@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Enums\Invoicing\{InvoiceStatus, SalesTaxCase};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\User\Permission;
 use App\Exceptions\UnmappableTaxCaseException;
@@ -28,7 +28,7 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiBusyException;
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
-use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeService, LexofficeWebhookService};
+use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeService, LexofficeTaxConditions, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Services\Invoicing\Dto\OutgoingTaxCase;
@@ -37,6 +37,7 @@ use App\Services\Stammdaten\ContactNumberAdopter;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Cache;
@@ -385,7 +386,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
                 'payload' => ['skipped' => true, 'reason' => 'no billable entries'],
             ];
         }
-        $this->assertStandardTaxCase($customer, $entries, $to);
+        $taxCase = $this->timeVoucherTaxCase($customer, $entries, $to);
 
         $contactRef = ExternalReference::query()
             ->forPlugin($customer->organization_id, self::ID, self::EXT_TYPE_CONTACT)
@@ -394,7 +395,14 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
         $contactExternalId = $contactRef !== null ? $contactRef->external_id : $this->pushContact($customer);
 
-        $result = (new LexofficeService((int) $customer->organization_id))->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId);
+        // Lexware verlangt eine Belegnummer (MVP-1723): Kunde, Leistungsende und laufende Nummer der Zeitbelege des Kunden.
+        $previous = ExternalReference::query()
+            ->forPlugin($customer->organization_id, self::ID, self::EXT_TYPE_VOUCHER)
+            ->forReferenceable($customer)
+            ->count();
+        $voucherNumber = sprintf('ZE-%s-%s-%d', trim((string) $customer->number) !== '' ? trim((string) $customer->number) : $customer->sqid, $to->format('Ymd'), $previous + 1);
+
+        $result = (new LexofficeService((int) $customer->organization_id))->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId, $taxCase, $voucherNumber);
 
         $voucherRef = ExternalReference::create([
             'organization_id' => $customer->organization_id,
@@ -423,27 +431,34 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
     }
 
     /**
-     * Der Beleg aus Zeiten trägt nur Satz und net/gross, keine Buchungskategorie
-     * je Steuerfall (MVP-1712): Ein anderer Fall als steuerpflichtig geht über
-     * die Faktura-Übergabe, die ihn als Steuerart überträgt.
+     * Steuerfall des Belegs aus Zeiten (MVP-1712, MVP-1723): wie die übrigen
+     * Wege aus Kunde und Leistungsort der Zeiten. Der Beleg trägt ihn als
+     * Buchungskategorie; ein Fall ohne Kategorie, mehrere Fälle oder eine
+     * Fremdwährung sperren vor dem ersten Aufruf.
      *
      * @param  EloquentCollection<int, TimeEntry>  $entries
      *
      * @throws UnmappableTaxCaseException
      */
-    private function assertStandardTaxCase(Customer $customer, EloquentCollection $entries, CarbonImmutable $to): void {
+    private function timeVoucherTaxCase(Customer $customer, EloquentCollection $entries, CarbonImmutable $to): OutgoingTaxCase {
         $organization = $customer->organization ?? throw new \LogicException('Kunde ohne Organisation.');
+        if ($customer->currency !== CurrencyCode::Euro) {
+            throw new UnmappableTaxCaseException((string) __('lexoffice::finance.tax_case.time_voucher_currency', ['currency' => $customer->currency->value]));
+        }
         $places = [];
         foreach ($entries as $entry) {
             $place = app(PlaceOfSupplyResolver::class)->forTimeEntry($organization, $entry);
             $places[$place->key()] = $place;
         }
         $cases = app(OutgoingTaxCaseResolver::class)->forPlaces($organization, $customer, $to, false, array_values($places));
-        if (count($cases) !== 1 || $cases[0]->case !== SalesTaxCase::Standard) {
-            throw new UnmappableTaxCaseException((string) __('lexoffice::finance.tax_case.time_voucher', [
+        if (count($cases) !== 1) {
+            throw new UnmappableTaxCaseException((string) __('lexoffice::finance.tax_case.time_voucher_mixed', [
                 'case' => implode(', ', array_map(static fn (OutgoingTaxCase $case): string => $case->case->label(), $cases)),
             ]));
         }
+        LexofficeTaxConditions::voucherCategory($cases[0]);
+
+        return $cases[0];
     }
 
     /** Datenführerschaft (MVP-1592): Kontakt-Rückweg schreibt Kunden und Lieferanten. */

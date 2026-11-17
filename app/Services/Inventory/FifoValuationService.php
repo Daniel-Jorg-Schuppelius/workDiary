@@ -139,15 +139,118 @@ class FifoValuationService implements InventoryValuationStrategy {
     }
 
     /**
+     * Umlagerung (MVP-1726): der Abgang verbraucht die Schichten des Quelllagers nach Verfahren, das Ziellager erhält
+     * je verbrauchter Schicht eine Schicht mit deren Stückwert, Zugangsdatum und MHD — die Reihenfolge bleibt.
+     */
+    public function transfer(ArticleVariant $variant, Warehouse $from, Warehouse $to, string $qty, ?int $actorUserId = null, ?StockLot $lot = null, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null): StockIssue {
+        return DB::transaction(function () use ($variant, $from, $to, $qty, $actorUserId, $lot, $entered, $idempotencyKey): StockIssue {
+            $slices = [];
+            $leaving = $this->ledger->issue(
+                $variant, $from, $qty,
+                idempotencyKey: $idempotencyKey,
+                actorUserId: $actorUserId,
+                lot: $lot,
+                costing: function (?StockLot $partLot, string $partQty) use ($variant, $from, &$slices): array {
+                    $taken = $this->takeLayers($variant, $from, $partLot, $partQty);
+                    $slices[] = $taken;
+
+                    return self::costOf($taken, $partQty);
+                },
+                entered: $entered,
+                type: StockMovementType::TransferOut,
+            );
+
+            foreach ($leaving->movements as $index => $out) {
+                $arrival = $this->ledger->transferIn($variant, $out, $to, $entered);
+                if (! $arrival->wasRecentlyCreated) {
+                    continue;
+                }
+                $partLot = $out->lot;
+                foreach ($slices[$index] ?? [] as $slice) {
+                    StockValuationLayer::query()->create([
+                        'organization_id' => $variant->organization_id,
+                        'article_variant_id' => $variant->id,
+                        'warehouse_id' => $to->id,
+                        'stock_lot_id' => $partLot?->id,
+                        'qty_remaining' => $slice['qty'],
+                        'unit_cost' => $slice['unit_cost'],
+                        'currency' => $slice['currency'],
+                        'source_movement_id' => $arrival->id,
+                        'acquired_at' => $slice['acquired_at'] ?? Carbon::now(),
+                        'best_before' => $partLot !== null ? $partLot->best_before : $slice['best_before'],
+                    ]);
+                }
+            }
+
+            return $leaving;
+        });
+    }
+
+    /**
+     * Mehrbestand legt eine Schicht zum Stückwert an wie ein Eingang, Minderbestand verbraucht Schichten nach Verfahren
+     * (zuerst die der Charge der Buchung) — MVP-1727.
+     */
+    public function correct(StockPosting $posting, ?Money $unitCost = null): StockMovement {
+        $posting->assertValuedStock();
+
+        return DB::transaction(function () use ($posting, $unitCost): StockMovement {
+            $earlier = $this->ledger->posted($posting);
+            if ($earlier instanceof StockMovement) {
+                return $earlier;
+            }
+
+            $variant = $posting->variant;
+            $warehouse = $posting->warehouse;
+            $lot = $posting->stockLotId !== null ? StockLot::query()->find($posting->stockLotId) : null;
+            $qty = DecimalQty::positive($posting->signedQty);
+            if (! NumberHelper::isPositivePrecise($posting->signedQty, self::SCALE)) {
+                $cost = self::costOf($this->takeLayers($variant, $warehouse, $lot, $qty), $qty);
+
+                return $this->ledger->post($posting->withCost($cost['unit'], $cost['total'], $cost['currency']));
+            }
+
+            $unit = $unitCost?->withScale(self::SCALE)->getAmount() ?? '0';
+            $currency = $unitCost?->getCurrency()->value ?? ($this->averageCost($variant, $warehouse)?->getCurrency()->value ?? 'EUR');
+            $movement = $this->ledger->post($posting->withCost($unit, bcmul($qty, $unit, self::SCALE), $currency));
+            StockValuationLayer::query()->create([
+                'organization_id' => $variant->organization_id,
+                'article_variant_id' => $variant->id,
+                'warehouse_id' => $warehouse->id,
+                'stock_lot_id' => $lot?->id,
+                'qty_remaining' => $qty,
+                'unit_cost' => $unit,
+                'currency' => $currency,
+                'source_movement_id' => $movement->id,
+                'acquired_at' => Carbon::now(),
+                'best_before' => $lot?->best_before,
+            ]);
+
+            return $movement;
+        });
+    }
+
+    /**
      * Verbraucht Schichten für einen Teil des Abgangs und liefert dessen Kosten.
      *
      * @param  numeric-string  $qty
-     * @return array{unit: numeric-string, total: numeric-string}
+     * @return array{unit: numeric-string, total: numeric-string, currency: string}
      */
     private function consumeLayers(ArticleVariant $variant, Warehouse $warehouse, ?StockLot $lot, string $qty): array {
+        return self::costOf($this->takeLayers($variant, $warehouse, $lot, $qty), $qty);
+    }
+
+    /**
+     * Entnimmt einen Teil des Abgangs aus den Schichten — zuerst die seiner Charge, der Teil ohne Charge die
+     * chargenlosen, danach die übrigen in Verfahrensfolge — und liefert die entnommenen Scheiben.
+     *
+     * @param  numeric-string  $qty
+     * @return list<array{qty: numeric-string, unit_cost: numeric-string, currency: string, acquired_at: \Carbon\CarbonInterface|null, best_before: \Carbon\CarbonInterface|null}>
+     */
+    private function takeLayers(ArticleVariant $variant, Warehouse $warehouse, ?StockLot $lot, string $qty): array {
         $remaining = $qty;
-        $costTotal = '0';
         $lastCost = '0';
+        $lastCurrency = 'EUR';
+        $slices = [];
 
         $layers = $this->layerQuery($variant, $warehouse)->lockForUpdate()->get();
         $ofThisLot = fn (StockValuationLayer $layer): bool => $lot === null ? $layer->stock_lot_id === null : (int) $layer->stock_lot_id === $lot->id;
@@ -157,8 +260,9 @@ class FifoValuationService implements InventoryValuationStrategy {
                 break;
             }
             $lastCost = $layer->unit_cost?->getAmount() ?? '0';
+            $lastCurrency = $layer->currency->value;
             $take = bccomp($layer->qty_remaining, $remaining, self::SCALE) <= 0 ? $layer->qty_remaining : $remaining;
-            $costTotal = bcadd($costTotal, bcmul($take, $layer->unit_cost?->getAmount() ?? '0', self::SCALE), self::SCALE);
+            $slices[] = ['qty' => bcadd($take, '0', self::SCALE), 'unit_cost' => $lastCost, 'currency' => $lastCurrency, 'acquired_at' => $layer->acquired_at, 'best_before' => $layer->best_before];
             $layer->qty_remaining = bcsub($layer->qty_remaining, $take, self::SCALE);
             $layer->save();
             $remaining = bcsub($remaining, $take, self::SCALE);
@@ -176,12 +280,29 @@ class FifoValuationService implements InventoryValuationStrategy {
                     ->first();
                 if ($historic instanceof StockValuationLayer) {
                     $lastCost = $historic->unit_cost?->getAmount() ?? '0';
+                    $lastCurrency = $historic->currency->value;
                 }
             }
-            $costTotal = bcadd($costTotal, bcmul($remaining, $lastCost, self::SCALE), self::SCALE);
+            $slices[] = ['qty' => bcadd($remaining, '0', self::SCALE), 'unit_cost' => $lastCost, 'currency' => $lastCurrency, 'acquired_at' => null, 'best_before' => $lot?->best_before];
         }
 
-        return ['unit' => NumberHelper::divideOrDefault($costTotal, $qty, self::SCALE), 'total' => $costTotal];
+        return $slices;
+    }
+
+    /**
+     * Kosten eines Abgangsteils aus seinen Scheiben.
+     *
+     * @param  list<array{qty: numeric-string, unit_cost: numeric-string, currency: string, acquired_at: \Carbon\CarbonInterface|null, best_before: \Carbon\CarbonInterface|null}>  $slices
+     * @param  numeric-string  $qty
+     * @return array{unit: numeric-string, total: numeric-string, currency: string}
+     */
+    private static function costOf(array $slices, string $qty): array {
+        $total = '0';
+        foreach ($slices as $slice) {
+            $total = bcadd($total, bcmul($slice['qty'], $slice['unit_cost'], self::SCALE), self::SCALE);
+        }
+
+        return ['unit' => NumberHelper::divideOrDefault($total, $qty, self::SCALE), 'total' => $total, 'currency' => $slices[0]['currency'] ?? 'EUR'];
     }
 
     /** Wert der Restschichten durch ihre Menge, ohne Rest die jüngste Schicht; nur Schichten in der Währung der jüngsten. */

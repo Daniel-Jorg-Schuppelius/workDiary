@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 11
+version: 12
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -114,7 +114,10 @@ der Übergabe, und der nächtliche Abgleich öffnet ihn nicht wieder. Eine
 Nachbuchung auf diesen Tag bleibt abrechenbar, denn aufgefüllt wurde nichts.
 Entfernen Sie die Position, verwerfen Sie den Entwurf oder stornieren Sie die
 Rechnung oder die Übergabe, ist der Befund wieder offen. Befunde, deren
-Pauschale schon früher abgerechnet wurde, bestätigen Sie von Hand.
+Pauschale schon früher abgerechnet wurde, bestätigen Sie von Hand. Enthält eine
+Übergabe keine Arbeitszeit des Projekts, bleibt sein Befund offen und frei: Die
+nächste Übergabe oder Rechnung mit Arbeitszeit des Projekts schließt ihn, ohne
+dass die erste storniert werden muss.
 
 Die Abrechnungsregel nennt auch den **Leistungsort** ihrer Zeiten (§ 3a UStG):
 **Allgemein**, **Katalogleistung** oder **Grundstücksleistung**. Leer gilt der

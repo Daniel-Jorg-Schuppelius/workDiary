@@ -5584,10 +5584,9 @@
     "components": {
         "schemas": {
             "CustomerInput": {
-                "description": "Kunde anlegen oder ändern; weitere Felder wie im Kundendialog.",
+                "description": "Kunde anlegen oder ändern; weitere Felder wie im Kundendialog. Beim Ändern gelten nur gesendete Felder, fehlende bleiben unverändert; neu angelegt gelten die Vorgaben (EUR, abrechenbar).",
                 "required": [
-                    "name",
-                    "currency"
+                    "name"
                 ],
                 "properties": {
                     "name": {
@@ -5595,6 +5594,7 @@
                         "maxLength": 200
                     },
                     "currency": {
+                        "description": "fehlt das Feld, bleibt die Währung; neu angelegt EUR",
                         "type": "string",
                         "example": "EUR"
                     },
@@ -5699,6 +5699,44 @@
                     "shipping_country": {
                         "description": "ISO 3166-1 alpha-2",
                         "type": "string",
+                        "nullable": true
+                    },
+                    "billable": {
+                        "description": "abrechenbar; fehlt das Feld, bleibt der Wert, neu angelegt true",
+                        "type": "boolean"
+                    },
+                    "contact_persons": {
+                        "description": "weitere Ansprechpartner als ganze Liste; fehlt das Feld, bleiben sie, [] oder null leert sie",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "salutation": {
+                                    "type": "string",
+                                    "nullable": true
+                                },
+                                "first_name": {
+                                    "type": "string",
+                                    "nullable": true
+                                },
+                                "last_name": {
+                                    "type": "string",
+                                    "nullable": true
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "nullable": true
+                                },
+                                "phone": {
+                                    "type": "string",
+                                    "nullable": true
+                                },
+                                "primary": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
                         "nullable": true
                     }
                 },

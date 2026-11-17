@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 9
+version: 10
 keywords:
     - Lexware Office
     - sync conflict
@@ -76,8 +76,13 @@ Germany as “service to third country”, small business as “tax-free” — 
 other than “tax-free” only with a contact created there. If a service not
 taxable in Germany lies in the EU (for example a property in another EU
 country), Lexoffice has no matching tax type: the transfer is blocked with
-the reason. The voucher from times on the customer only transfers taxable
-times; other cases go through the invoicing handover.
+the reason. The voucher from times on the customer is a bookkeeping
+voucher: per tax rate the net amount, the tax and the booking category of the
+tax case (“Dienstleistungen”, “Fremdleistungen § 13b”, “Dienstleistungen an
+Drittländer”, “Einnahmen als Kleinunternehmer”), with the voucher number
+`ZE-<customer number>-<end of service>-<sequence>`. For domestic § 13b,
+tax-exempt sales under § 4, several tax cases or a foreign currency it is
+blocked with the reason; such times go through the invoicing handover.
 
 Voucher mirror: the voucher sync mirrors the Lexoffice vouchers into
 WorkDiary. Vouchers of Lexoffice contacts that are not yet linked to a

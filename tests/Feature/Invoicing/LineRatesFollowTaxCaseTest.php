@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem, InvoiceSchedule};
 use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
-use App\Services\Invoicing\{InvoiceGenerator, InvoiceIssueException, InvoiceIssueService, QuoteService, RecurringInvoiceService, TaxResolver};
+use App\Services\Invoicing\{InvoiceGenerator, InvoiceIssueException, InvoiceIssueService, QuoteService, RecurringInvoiceService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -244,8 +244,7 @@ final class LineRatesFollowTaxCaseTest extends TestCase {
         $probe = clone $draft->load(['items', 'customer']);
         $probe->status = InvoiceStatus::Issued;
         $probe->issued_on = now();
-        // Wie das Ausstellen: der Steuerfall wird eingefroren; ein Entwurf ohne ihn fällt bei 0 % auf Z zurück.
-        $probe->tax_context = ['category' => app(TaxResolver::class)->resolve($draft->organization()->firstOrFail(), $draft->customer()->firstOrFail())['category']];
+        // Ohne eingefrorenen Fall prüft der Generator den Fall, den das Ausstellen einfrieren wird (MVP-1720).
 
         return $probe;
     }

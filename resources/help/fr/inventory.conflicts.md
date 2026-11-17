@@ -1,7 +1,7 @@
 ---
 title: "Conflits avec les systèmes externes (stock)"
 topic: inventory.conflicts
-version: 4
+version: 5
 keywords:
     - écart de stock
     - erreur de synchronisation
@@ -58,3 +58,5 @@ Les conflits ouverts doivent être examinés rapidement : tant qu'ils
 subsistent, le stock local et le stock externe divergent — avec des
 conséquences sur les disponibilités, les propositions de commande et la
 valorisation.
+
+**Valorisation de la compensation :** la contre-écriture dans le stock propre disponible est valorisée. Une sortie compensée revient à son coût unitaire, si bien que la valeur du stock est la même qu’avant ; sans valeur de coût, le prix d’achat s’applique, sinon la moyenne. Une entrée compensée sort selon la méthode de valorisation. Les contre-écritures dans d’autres états et dans le stock de tiers restent sans valeur.

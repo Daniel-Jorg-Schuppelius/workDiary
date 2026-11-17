@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 23
+version: 24
 keywords:
     - place of supply
     - catalogue service
@@ -358,7 +358,10 @@ article, travel charges and lines with their own tax category follow the
 invoice. If the lines result in different tax cases, the draft says so, the
 invoice cannot be issued and the check before sending rejects it (with “not
 taxable” under rule BR-O-11): split the invoice, one per tax case. Cancellation
-and corrective invoice take over the tax case of the original.
+and corrective invoice take over the tax case of the original. The e-invoice
+check tests a draft with the tax case that issuing will fix, for example “not
+taxable” (O) instead of zero rate (Z); the same applies to the notes in the draft
+PDF. Issued invoices keep their fixed tax case.
 
 **Location of the property.** If a line carries a service connected with
 immovable property (via its article or the billing rule), the **Terms**

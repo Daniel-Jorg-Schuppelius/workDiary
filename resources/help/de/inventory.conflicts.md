@@ -1,7 +1,7 @@
 ---
 title: "Konflikte mit Fremdsystemen (Bestand)"
 topic: inventory.conflicts
-version: 4
+version: 5
 keywords:
     - Bestandsabweichung
     - Synchronisationsfehler
@@ -57,3 +57,5 @@ offenen bzw. allen Konflikten filtern.
 Offene Konflikte sollten zeitnah geprüft werden: Solange sie bestehen,
 weichen lokaler und externer Bestand voneinander ab — mit Folgen für
 Verfügbarkeiten, Bestellvorschläge und Bewertung.
+
+**Bewertung der Kompensation:** Die Gegenbuchung im freien Eigenbestand ist bewertet. Eine kompensierte Entnahme geht zu ihrem Stückwert wieder ein, sodass der Bestandswert wie vorher steht; ohne Kostenwert gilt der Einkaufspreis, sonst der Durchschnitt. Ein kompensierter Zugang geht nach dem Bewertungsverfahren ab. Gegenbuchungen in anderen Zuständen und in Fremdbestand bleiben ohne Wert.

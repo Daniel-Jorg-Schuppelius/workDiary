@@ -32,6 +32,20 @@ final class LexofficeTaxConditions {
     private const array WITHOUT_CONTACT = ['net', 'gross', 'vatfree'];
 
     /**
+     * Buchungskategorien für Belege vom Typ salesinvoice (MVP-1723), Lexware-API-Referenz
+     * „Vouchers Endpoint › List of CategoryIds“. Ein Buchhaltungsbeleg kennt nur `taxType`
+     * net/gross; den Steuerfall trägt die Kategorie.
+     */
+    private const array VOUCHER_CATEGORIES = [
+        SalesTaxCase::Standard->value => '8f8664a0-fd86-11e1-a21f-0800200c9a66', // Dienstleistungen
+        SalesTaxCase::SmallBusiness->value => 'f5c7fee8-f184-4e7a-ab04-8f7e7ad6c207', // Einnahmen als Kleinunternehmer
+        SalesTaxCase::EuReverseCharge->value => '380a20cb-d04c-426e-b49c-84c22adfa362', // Fremdleistungen §13b
+        SalesTaxCase::IntraCommunitySupply->value => '9075a4e3-66de-4795-a016-3889feca0d20', // Innergemeinschaftliche Lieferung
+        SalesTaxCase::Export->value => '93d24c20-ea84-424e-a731-5e1b78d1e6a9', // Ausfuhrlieferungen an Drittländer
+        SalesTaxCase::NotTaxable->value => 'ef5b1a6e-f690-4004-9a19-91276348894f', // Dienstleistungen an Drittländer
+    ];
+
+    /**
      * @param  string  $standardType  Steuerart steuerpflichtiger Belege (Voreinstellung bzw. `vatfree` ohne steuerpflichtige Zeile)
      * @return array{taxType: string, taxTypeNote?: string}
      *
@@ -52,6 +66,22 @@ final class LexofficeTaxConditions {
         };
 
         return $type === null ? ['taxType' => $standardType] : ['taxType' => $type, 'taxTypeNote' => $case->noteOrLabel()];
+    }
+
+    /**
+     * Buchungskategorie eines Verkaufsbelegs je Steuerfall. Für § 13b im Inland
+     * und steuerfreie Umsätze nach § 4 nennt die Referenz keine Kategorie, nicht
+     * steuerbare Leistungen gibt es nur an Drittländer.
+     *
+     * @throws UnmappableTaxCaseException
+     */
+    public static function voucherCategory(OutgoingTaxCase $case): string {
+        if ($case->case === SalesTaxCase::NotTaxable && $case->region !== OutgoingTaxCase::REGION_THIRD_COUNTRY) {
+            throw new UnmappableTaxCaseException((string) __('lexoffice::finance.tax_case.not_taxable_outside_third_country'));
+        }
+
+        return self::VOUCHER_CATEGORIES[$case->case->value]
+            ?? throw new UnmappableTaxCaseException((string) __('lexoffice::finance.tax_case.time_voucher', ['case' => $case->case->label()]));
     }
 
     /** Verlangt die Steuerart einen in Lexware angelegten Kontakt statt einer Anschrift im Beleg? */

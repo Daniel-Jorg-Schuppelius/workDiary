@@ -29,6 +29,7 @@ use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Collection as EloquentCollection};
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
 
@@ -51,8 +52,8 @@ final class TargetTopUps {
 
     /**
      * Offene oder bestätigte Befunde der Kundenprojekte mit Abrechnung nach
-     * Soll im Zeitraum, noch nicht berechnet und in keiner bestätigten oder
-     * übergebenen Übergabe reserviert.
+     * Soll im Zeitraum, noch nicht berechnet und von keiner bestätigten oder
+     * übergebenen Übergabe gehalten ({@see whereTransferHolds()}).
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
      * @return Builder<ProjectTimeShortfall>
@@ -74,14 +75,42 @@ final class TargetTopUps {
             $query->where('date', '<', DateRange::dayAfter(Carbon::parse($period['to'])));
         }
 
-        return $query->whereNotExists(function ($sub): void {
+        return $query->whereNotExists(function (QueryBuilder $sub): void {
             $sub->from('billing_transfer_items')
                 ->join('billing_transfers', 'billing_transfers.id', '=', 'billing_transfer_items.billing_transfer_id')
                 ->whereColumn('billing_transfer_items.source_id', 'project_time_shortfalls.id')
                 ->where('billing_transfer_items.source_type', MorphMap::alias(ProjectTimeShortfall::class))
-                ->whereIn('billing_transfers.status', [TransferStatus::Confirmed->value, TransferStatus::Transferred->value])
                 ->whereNull('billing_transfers.deleted_at');
+            self::whereTransferHolds($sub);
         });
+    }
+
+    /**
+     * Hält eine bestätigte oder übergebene Übergabe den Befund (MVP-1722)? Nur,
+     * wenn sie ihn auffüllt (Auffüllposition) oder mit der Pauschale schließen
+     * kann (Arbeitszeit seines Projekts, die Regel von {@see settle()}). Einen
+     * Pauschal-Befund ohne Arbeitszeit seines Projekts lässt sie offen — er
+     * bleibt für die nächste Übergabe oder Rechnung frei, statt bis zum Storno
+     * reserviert zu sein. Die Abfrage führt `billing_transfers` und
+     * `project_time_shortfalls`.
+     */
+    public static function whereTransferHolds(QueryBuilder $query): void {
+        $query->whereIn('billing_transfers.status', [TransferStatus::Confirmed->value, TransferStatus::Transferred->value])
+            ->where(static function (QueryBuilder $holds): void {
+                $holds->whereExists(static function (QueryBuilder $topUp): void {
+                    $topUp->from('billing_transfer_positions')
+                        ->whereColumn('billing_transfer_positions.billing_transfer_id', 'billing_transfers.id')
+                        ->where('billing_transfer_positions.source_kind', BillingTransferPosition::KIND_TARGET)
+                        ->whereColumn('billing_transfer_positions.primary_source_id', 'project_time_shortfalls.id');
+                })->orWhereExists(static function (QueryBuilder $work): void {
+                    $work->from('billing_transfer_items as held_time')
+                        ->join('time_entries', 'time_entries.id', '=', 'held_time.source_id')
+                        ->whereColumn('held_time.billing_transfer_id', 'billing_transfers.id')
+                        ->where('held_time.source_type', MorphMap::alias(TimeEntry::class))
+                        ->whereColumn('time_entries.project_id', 'project_time_shortfalls.project_id')
+                        ->where('time_entries.kind', TimeEntryKind::Work->value);
+                });
+            });
     }
 
     /**
@@ -270,7 +299,7 @@ final class TargetTopUps {
     }
 
     /** Eine Pauschale deckt den Auftrag unabhängig von der Dauer (MVP-1678): kein Auffüllen auf Soll-Stunden. */
-    private function coveredByFlatRate(?ResolvedService $service): bool {
+    public function coveredByFlatRate(?ResolvedService $service): bool {
         return $service !== null && ! $service->isHourly();
     }
 }

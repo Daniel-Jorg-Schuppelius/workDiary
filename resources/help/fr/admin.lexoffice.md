@@ -1,7 +1,7 @@
 ---
 title: "Conflits Lexoffice"
 topic: admin.lexoffice
-version: 9
+version: 10
 keywords:
     - Lexware Office
     - conflit de synchronisation
@@ -78,8 +78,14 @@ Hormis « exonéré », Lexoffice n'accepte ces types de taxe qu'avec un contact
 créé chez lui. Si une prestation non imposable se situe dans l'UE (par
 exemple un bien immobilier dans un autre pays de l'UE), Lexoffice n'a pas de
 type de taxe adapté : le transfert est bloqué avec le motif. Le justificatif
-issu des temps sur le client ne transmet que des temps imposables ; les
-autres cas passent par la remise de facturation.
+issu des temps sur le client est une pièce comptable : par taux, le montant
+net, la taxe et la catégorie comptable du cas fiscal (« Dienstleistungen »,
+« Fremdleistungen § 13b », « Dienstleistungen an Drittländer », « Einnahmen
+als Kleinunternehmer »), avec le numéro de pièce
+`ZE-<numéro client>-<fin de prestation>-<numéro d'ordre>`. Pour le § 13b
+national, les opérations exonérées selon le § 4, plusieurs cas fiscaux ou
+une devise étrangère, il est bloqué avec le motif ; ces temps passent par la
+remise de facturation.
 
 Miroir des pièces : la synchronisation des pièces reprend en miroir les
 pièces Lexoffice dans WorkDiary. Les pièces de contacts Lexoffice qui ne

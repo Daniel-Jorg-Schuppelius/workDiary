@@ -20,6 +20,7 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException};
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Services\Finance\Accounting\ContactPushService;
+use App\Services\Invoicing\Dto\OutgoingTaxCase;
 use App\Services\Stammdaten\ContactIdentity;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{JsonHelper, PersonNameHelper};
@@ -255,10 +256,12 @@ class LexofficeService {
         Collection $entries,
         CarbonImmutable $from,
         CarbonImmutable $to,
-        ?string $externalContactId = null,
+        ?string $externalContactId,
+        OutgoingTaxCase $taxCase,
+        string $voucherNumber,
     ): array {
-        $defaults = $this->defaults() + ['external_contact_id' => $externalContactId];
-        $payload = $this->mapper->timeEntriesToVoucherPayload($customer, $entries, $from, $to, $defaults);
+        $defaults = $this->defaults() + ['external_contact_id' => $externalContactId, 'voucher_number' => $voucherNumber];
+        $payload = $this->mapper->timeEntriesToVoucherPayload($customer, $entries, $from, $to, $defaults, $taxCase);
 
         $endpoint = new VouchersEndpoint($this->client());
         $voucher = Voucher::fromJson(JsonHelper::encode($payload));

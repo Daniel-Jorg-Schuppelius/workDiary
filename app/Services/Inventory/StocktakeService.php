@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Enums\Inventory\{StockCountStatus, StockCountType};
+use App\Enums\Inventory\{StockCountStatus, StockCountType, StockMovementType};
 use App\Models\Article\ArticleVariant;
 use App\Models\Audit\AuditLog;
 use App\Models\Inventory\{StockCount, StockCountLine, StockMovement, Warehouse};
@@ -21,6 +21,7 @@ use App\Services\Concerns\AssertsStatusTransition;
 use App\Settings\SettingsRegistry;
 use App\Support\{DecimalQty, MorphMap};
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -39,9 +40,13 @@ class StocktakeService {
 
     public const int SCALE = 4;
 
+    /** Schlüssel der Korrektur je Zählzeile: eine Zeile bucht ihre Differenz genau einmal. */
+    public const string LINE_KEY_PREFIX = 'stock-count-line:';
+
     public function __construct(
         private readonly InventoryLedger $ledger,
         private readonly BarcodeResolver $resolver,
+        private readonly StockCorrection $corrections,
     ) {}
 
     /** Eröffnet eine Vollinventur und friert den Sollbestand aller belegten Buckets ein. */
@@ -222,7 +227,10 @@ class StocktakeService {
     /**
      * Gibt die geprüften Differenzen frei und bucht sie als Korrekturen. Jede
      * Differenz (counted − book) wird gegen den eingefrorenen Sollbestand als
-     * eigene Korrekturbuchung gebucht.
+     * eigene Korrekturbuchung gebucht — physischer Eigenbestand bewertet
+     * (MVP-1727): Mehrbestand wie ein manueller Eingang, Minderbestand nach
+     * Verfahren. Die Vier-Augen-Prüfung misst den gebuchten Wert; greift sie,
+     * rollt die Freigabe samt Buchungen zurück.
      */
     public function applyDifferences(StockCount $count, ?int $reviewedBy = null): StockCount {
         $warehouse = $count->warehouse;
@@ -230,36 +238,48 @@ class StocktakeService {
             throw new RuntimeException('Inventur ohne Lagerort.');
         }
 
-        $fourEyes = $this->assertFourEyes($count, $warehouse, $reviewedBy);
+        return DB::transaction(function () use ($count, $warehouse, $reviewedBy): StockCount {
+            /** @var StockCount $locked */
+            $locked = StockCount::query()->whereKey($count->id)->lockForUpdate()->firstOrFail();
+            $this->assertStatusTransition($locked->status, StockCountStatus::Completed);
 
-        return DB::transaction(function () use ($count, $warehouse, $reviewedBy, $fourEyes): StockCount {
-            foreach ($count->lines()->with('variant')->get() as $line) {
+            $booked = [];
+            foreach ($locked->lines()->with('variant')->get() as $line) {
                 if ($line->counted_qty === null || $line->applied) {
                     continue;
                 }
                 $variant = $line->variant;
                 $difference = $line->difference();
                 if ($variant !== null && $difference !== null && bccomp($difference, '0', self::SCALE) !== 0) {
-                    $this->ledger->correction($variant, $warehouse, $line->stock_state, $difference, $line->ownership_type);
+                    $booked[] = [$line, $this->corrections->book(new StockPosting(
+                        $variant, $warehouse, $line->stock_state, $difference, StockMovementType::Correction, $line->ownership_type,
+                        idempotencyKey: self::LINE_KEY_PREFIX . $line->id,
+                        actorUserId: $reviewedBy,
+                        source: $locked,
+                    ))];
                 }
                 $line->applied = true;
                 $line->save();
             }
 
-            $count->status = StockCountStatus::Completed;
-            $count->reviewed_by = $reviewedBy;
-            $count->completed_at = Carbon::now();
-            $count->save();
+            $fourEyes = $this->assertFourEyes($locked, $warehouse, $reviewedBy, $booked);
+
+            $locked->status = StockCountStatus::Completed;
+            $locked->reviewed_by = $reviewedBy;
+            $locked->completed_at = Carbon::now();
+            $locked->save();
 
             // Grenzwert und Freigebende gehören ins Audit (Feature 048, Berechtigungen und Freigaben).
             AuditLog::query()->create([
-                'organization_id' => $count->organization_id,
+                'organization_id' => $locked->organization_id,
                 'user_id' => $reviewedBy,
                 'event' => 'inventory.countApproved',
                 'auditable_type' => MorphMap::stableKey(StockCount::class),
-                'auditable_id' => $count->id,
+                'auditable_id' => $locked->id,
                 'changes' => ['approved_by' => $reviewedBy] + $fourEyes,
             ]);
+
+            $count->setRawAttributes($locked->getAttributes(), true);
 
             return $count;
         });
@@ -268,11 +288,14 @@ class StocktakeService {
     /**
      * Vier-Augen-Freigabe (MVP-1585): ist sie für die Organisation eingeschaltet,
      * gibt Differenzen ab dem Grenzwert nicht frei, wer sie gezählt hat. Der
-     * Grenzwert misst den Bestandswert der Differenz je Zeile.
+     * Grenzwert misst den Bestandswert der Differenz je Zeile: den gebuchten Wert
+     * der Korrektur (MVP-1727); eine Zeile ohne eigenen Bestandswert (anderer
+     * Zustand, Fremdbestand) mit dem Stückwert des Verfahrens geschätzt.
      *
+     * @param list<array{0: StockCountLine, 1: StockMovement}> $booked
      * @return array{four_eyes: bool, threshold: string, flagged_lines: int, counted_by: list<int>}
      */
-    private function assertFourEyes(StockCount $count, Warehouse $warehouse, ?int $reviewedBy): array {
+    private function assertFourEyes(StockCount $count, Warehouse $warehouse, ?int $reviewedBy, array $booked): array {
         $organization = $count->organization;
         $registry = app(SettingsRegistry::class);
         $enabled = (bool) $registry->effective('inventory.four_eyes.count', $organization)->value;
@@ -282,14 +305,17 @@ class StocktakeService {
             return $state;
         }
 
+        $limit = Decimal::of($threshold, self::SCALE);
         $valuation = app(InventoryValuationManager::class);
-        foreach ($count->lines()->with('variant.article')->get() as $line) {
-            $difference = $line->difference();
-            if ($line->applied || $difference === null || bccomp($difference, '0', self::SCALE) === 0 || ! $line->variant instanceof ArticleVariant) {
+        foreach ($booked as [$line, $movement]) {
+            $variant = $line->variant;
+            if (! $variant instanceof ArticleVariant) {
                 continue;
             }
-            $value = bcmul(DecimalQty::positive($difference), $valuation->forVariant($line->variant, $organization)->unitCost($line->variant, $warehouse), self::SCALE);
-            if (bccomp($value, $threshold, self::SCALE) >= 0) {
+            $value = $movement->cost_total?->getDecimal()
+                ?? Decimal::of($valuation->forVariant($variant, $organization)->unitCost($variant, $warehouse), self::SCALE)
+                    ->times(Decimal::of(DecimalQty::positive((string) $line->difference()), self::SCALE), self::SCALE);
+            if ($value->greaterThanOrEqual($limit)) {
                 $state['flagged_lines']++;
                 if ($line->counted_by !== null) {
                     $state['counted_by'][] = (int) $line->counted_by;

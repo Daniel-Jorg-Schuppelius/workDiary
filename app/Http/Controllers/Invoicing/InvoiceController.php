@@ -1136,14 +1136,8 @@ class InvoiceController extends Controller {
         }
         if ($deliveryFormat->isElectronic()) {
             $invoice->loadMissing(['items', 'customer']);
-            // Der Queue-Job sieht nach markSent() den gestellten Datensatz. Für
-            // den synchronen Preflight spiegeln wir diesen Status nur im RAM.
-            $validationInvoice = clone $invoice;
-            if ($invoice->status === InvoiceStatus::Draft && ! $invoice->isCreditNote()) {
-                $validationInvoice->status = InvoiceStatus::Issued;
-                $validationInvoice->issued_on ??= now();
-                $validationInvoice->due_on ??= now()->addDays($validationInvoice->effectivePaymentTermsDays());
-            }
+            // Der Queue-Job sieht nach markSent() den gestellten Datensatz; der Preflight prüft ihn im Speicher.
+            $validationInvoice = $issuer->issuedProbe($invoice);
             $generator = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class);
             $profile = $deliveryFormat->needsZugferd()
                 ? \ERechnungToolkit\Enums\ERechnungProfile::EN16931

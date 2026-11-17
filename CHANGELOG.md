@@ -38,6 +38,17 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Umwandlung einer Pro-forma übernehmen es. E-Rechnung, PDF und Buchhaltung
   folgen der eingefrorenen Kategorie. Die Rechnungsseite nennt das Land, die
   Rechnungs-API liefert `property_country`.
+- Datenreparatur Pauschal-Befunde (`MVP-1721`): Der Befehl
+  `finance:repair-transfer-shortfalls` setzt Soll-Befunde zurück, die eine
+  Übergabe vor `MVP-1716` ohne Auffüllposition als berechnet markiert hat
+  (Minuten und Zeitpunkt gesetzt, keine Übergabe- oder Rechnungsposition, kein
+  Zeitbeleg). Enthält die Übergabe Arbeitszeit des Projekts, schließt er den
+  Befund wie heute mit der Pauschale, sonst bleibt er offen. Nachbuchungen auf
+  diese Tage, die als „[Soll berechnet]“ nicht abrechenbar wurden, werden wieder
+  abrechenbar, sofern keine Rechnung oder Übergabe sie abgerechnet hat. Mehrere
+  Übergaben, eine vorhandene Auffüllposition oder ein Projekt, das heute nach
+  Stunden abrechnet, meldet er nur. Ausgabe mit Sqids und IDs, `--dry-run`
+  ändert nichts.
 
 ### Behoben
 
@@ -183,6 +194,77 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   ohne Steuer im Kopf; der Lexoffice-Beleg aus Zeiten am Kunden nimmt nur
   steuerpflichtige Zeiten. Vorher gingen Reverse Charge mit der Voreinstellung
   und jede Rechnung ohne Steuer als „steuerfrei“ an Lexoffice.
+- Kunden-API: Ein `PUT`/`PATCH` ändert nur gesendete Felder. Ohne
+  `contact_persons` bleiben die Ansprechpartner stehen (`[]` oder `null`
+  leert sie), ohne `currency`, `billable`, `no_bulk_mail`, `survey_opt_out`,
+  `exclude_from_reports`, `is_reverse_charge_recipient` oder `travel_settings`
+  bleiben diese Werte. Vorher setzte ein Teil-Update die Ansprechpartner auf
+  leer, die Währung auf EUR, die Schalter auf „nein“ und die Anfahrt auf
+  „erben“; ein per API angelegter Kunde war ohne `billable` nicht abrechenbar,
+  jetzt gilt wie im Formular „abrechenbar“. `currency` ist kein Pflichtfeld
+  mehr (neu angelegt EUR). Wird ein Kunde per API Verbraucher, entfällt ohne
+  Angabe das Merkmal § 13b (`MVP-1724`).
+- Umlagerung bewertet (`MVP-1726`): Die Umlagerung per Scan buchte Abgang und
+  Zugang nur als Menge, das Bewertungsbuch blieb im Quelllager — das Ziellager
+  führte Bestand ohne Wert, das Quelllager Wert ohne Bestand. Jetzt geht der
+  Abgang nach dem Verfahren des Quelllagers ab und der Zugang zum selben Wert
+  ein: FIFO und FEFO tragen jede verbrauchte Schicht mit Stückwert,
+  Zugangsdatum und Mindesthaltbarkeit ins Ziellager, beim gleitenden
+  Durchschnitt rechnet das Ziellager neu. Der Bestandswert der Organisation
+  bleibt gleich. Prüfung und Chargenzuteilung laufen wie bei der Entnahme, die
+  Meldung bei zu wenig Bestand ist die der Entnahme.
+- Inventurdifferenz und Korrekturen bewertet (`MVP-1727`): Inventurdifferenzen,
+  die Gegenbuchung eines Konflikts mit dem Fremdsystem und die
+  Übernahme-Inventur aus JTL-Wawi buchten den freien Eigenbestand ohne Wert.
+  Mehrbestand geht jetzt wie ein manueller Eingang ein (Einkaufspreis, sonst
+  Durchschnitt), Minderbestand nach dem Verfahren ab; die Gegenbuchung einer
+  bewerteten Entnahme geht zu deren Stückwert wieder ein. Andere Zustände
+  (reserviert, gesperrt, Quarantäne) und Fremdbestand bleiben wertneutral. Die
+  Vier-Augen-Freigabe der Inventur misst den gebuchten Wert der Differenz
+  (vorher Menge × nächster Stückwert, bei FIFO über mehrere Schichten zu
+  niedrig); greift sie, rollt die Freigabe samt Buchungen zurück. Die Freigabe
+  sperrt die Inventur und bucht jede Zeile genau einmal.
+- RMA-Wiedereinlagerung bewertet (`MVP-1728`): Der Zugang eines Rückläufers in
+  den freien Bestand trug keinen Wert. Er geht jetzt zum Stückwert der
+  ursprünglichen Auslieferung ein, wenn die Rücksendung sie über ihre
+  Seriennummer kennt, sonst zum Durchschnitt des Lagers (ohne Bewertungsstand
+  zum Einkaufspreis). Dafür trägt die Auslieferung sich als Beleg an ihre
+  Abgangsbewegungen ein. Quarantäne, Verschrottung und Rücksendung an den
+  Lieferanten aus der Quarantäne bleiben wertneutral.
+- E-Rechnungsprüfung eines Entwurfs (`MVP-1720`): Ohne eingefrorenen
+  Steuerfall nahm der Generator bei 0 % die Kategorie „Z“ (Nullsatz), auch wenn
+  das Ausstellen „O“ (nicht steuerbar) oder „AE“ einfrieren würde; die Prüfung
+  vor dem Versand und die Hinweise im Entwurfs-PDF folgten damit einem anderen
+  Fall als die ausgestellte Rechnung. Entwürfe — auch der Versandweg, der den
+  Entwurf vor dem Ausstellen prüft — nehmen jetzt den Fall, den das Ausstellen
+  einfriert: eine Quelle für Ausstellen, E-Rechnung und Buchhaltungsprogramme
+  (Stornorechnung und Gutschrift den des Originals). Ergeben die Positionen
+  mehrere Fälle, meldet die Prüfung den zu teilenden Beleg und wählt keinen.
+  Ausgestellte Rechnungen behalten ihren eingefrorenen Fall, Altbelege ohne
+  Kategorie bleiben bei „S“ bzw. „Z“.
+- Reservierung durch die Übergabe (`MVP-1722`): Ein Pauschal-Befund ohne
+  Arbeitszeit seines Projekts in einer übertragenen Übergabe blieb offen, aber
+  bis zum Storno reserviert — keine weitere Übergabe und keine Rechnung konnte
+  ihn schließen. Eine bestätigte oder übertragene Übergabe hält einen Befund
+  jetzt nur, wenn sie ihn auffüllt (Auffüllposition) oder mit der Pauschale
+  schließen kann (Arbeitszeit seines Projekts). Der Storno einer Übergabe lässt
+  einen Befund, den eine andere Übergabe geschlossen hat, unberührt.
+- Lexoffice „Zeiten als Beleg“ (`MVP-1723`): Der Beleg sendete
+  Rechnungspositionen (Name, Menge, Einzelpreis) unter `voucherItems`; die
+  Belegschnittstelle kennt sie nicht, die SDK-Entität verwarf sie, und Lexware
+  bekam leere Positionen ohne Summen und Belegnummer. Der Beleg folgt jetzt der
+  Lexware-API-Referenz („Vouchers Endpoint“): je Steuersatz Nettobetrag, Steuer,
+  Satz und Buchungskategorie, im Kopf Belegnummer
+  (`ZE-<Kundennummer>-<Leistungsende>-<laufende Nummer>`), Beleg- und
+  Leistungsdatum sowie Summen. Die Kategorie folgt dem Steuerfall wie bei den
+  übrigen Lexoffice-Wegen: „Dienstleistungen“, „Fremdleistungen §13b“ (Reverse
+  Charge an EU-Unternehmen), „Dienstleistungen an Drittländer“, „Einnahmen als
+  Kleinunternehmer“. § 13b im Inland, steuerfreie Umsätze nach § 4, mehrere
+  Steuerfälle und Kunden in Fremdwährung sperren vor dem ersten Aufruf mit Grund.
+- Rechnungen: Mit eingeschalteter E-Rechnungs-Validierung vor dem Ausstellen
+  ließ sich kein Entwurf ausstellen, auch kein gültiger — die Prüfung verlangte
+  den Status „gestellt“ und prüfte den Entwurf selbst. Geprüft wird jetzt der
+  Beleg, wie er ausgestellt aussähe, wie schon beim Versand (`MVP-1730`).
 
 ### Hinweise zum Update
 
@@ -228,6 +310,34 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Fertigerzeugnisse, die vor diesem Update eingelagert wurden, bleiben
   unbewertet; erst Rückmeldungen ab dem Update buchen Herstellkosten
   (`MVP-1719`).
+- Anschrift und Bankverbindung von Kunden und Lieferanten, die vor 1.4.0
+  über API, CSV-Import oder Zusammenführung am Satelliten vorbei geschrieben
+  wurden, können zwischen Projektion und Satellit abweichen. Einmal nach dem
+  Deploy `scripts/artisan.sh contacts:reconcile-projection --dry-run` (zeigt
+  Art, ID und Spalten, keine Werte), danach ohne `--dry-run`. Ohne Satellit
+  wird er aus der Projektion angelegt; ist der Satellit jünger, gilt er; sonst
+  gilt die zuletzt geschriebene Projektion, leere Felder behalten den Wert des
+  Satelliten (`MVP-1725`).
+- API-Clients, die Ansprechpartner oder Schalter bisher durch Weglassen
+  geleert haben, senden sie ausdrücklich (`contact_persons: []`,
+  `billable: false`; `MVP-1724`).
+- Bewertungsbücher, die vor diesem Update durch Umlagerungen,
+  Inventurdifferenzen, Gegenbuchungen oder Wiedereinlagerungen vom physischen
+  Bestand abgewichen sind, bleiben so; bewertet wird ab dem Update. Den
+  Stückwert der Auslieferung kennt eine Rücksendung nur bei Auslieferungen ab
+  dem Update, ältere Rückläufer gehen zum Durchschnitt ein (`MVP-1726`,
+  `MVP-1727`, `MVP-1728`).
+- Pauschal-Befunde aus Übergaben vor `MVP-1716` (`MVP-1721`): Einmal nach dem
+  Deploy `scripts/artisan.sh finance:repair-transfer-shortfalls --dry-run`
+  (zeigt Befunde und Nachbuchungen mit Sqid), danach ohne `--dry-run`. Als
+  „nicht eindeutig“ gemeldete Befunde prüfen Sie von Hand. Der Hinweis zu Phase
+  180, solche Befunde blieben berechnet, ist damit überholt.
+- Lexoffice „Zeiten als Beleg“ (`MVP-1723`): Keine Migration. Vor dem Update
+  gingen Positionen ohne Beträge, ohne Summen und ohne Belegnummer hinaus;
+  Lexware dürfte das abgewiesen haben. Ist dennoch ein Beleg aus Zeiten
+  angelegt worden, prüfen Sie ihn in Lexoffice. Die Zuordnung Steuerfall → Buchungskategorie (insbesondere „Fremdleistungen
+  §13b“ für Leistungen an EU-Unternehmen) lassen Sie von der Steuerberatung
+  bestätigen.
 
 ## [1.4.0] - 2026-11-13
 

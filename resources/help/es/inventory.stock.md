@@ -1,7 +1,7 @@
 ---
 title: "Existencias y escaneo"
 topic: inventory.stock
-version: 9
+version: 10
 keywords:
     - stock
     - almacén
@@ -113,3 +113,5 @@ la vista siguen el método de valoración del artículo: con el precio medio mó
 del libro de medias; con FIFO y FEFO, de las capas de valoración abiertas (valor
 de las cantidades restantes, media = valor ÷ cantidad). La clasificación ABC del
 inventario cíclico usa los mismos valores.
+
+**Valoración de traspasos y correcciones:** un traspaso se lleva su valor. El almacén de origen da salida según su método y el almacén de destino recibe el mismo valor: con FIFO y FEFO, una capa por cada capa consumida con su coste unitario, su fecha de entrada y su fecha de caducidad; con el precio medio ponderado, el almacén de destino recalcula su media. El valor del stock en todos los almacenes no cambia. Las correcciones de las existencias propias libres también se valoran —diferencias de inventario, el contraasiento de un conflicto con el sistema externo y el inventario de traspaso al dejar un sistema de gestión de mercancías—: un excedente como una entrada manual (precio de compra; si no, la media), un faltante según el método. El contraasiento de una salida valorada vuelve a entrar a su coste unitario. Las reservas, los bloqueos, la cuarentena y las existencias de terceros no cambian el valor del stock.

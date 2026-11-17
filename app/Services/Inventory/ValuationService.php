@@ -60,22 +60,8 @@ class ValuationService implements InventoryValuationStrategy {
         $unitCost = DecimalQty::positive($unitCost);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $entered, $bin, $type): StockMovement {
-            $valuation = $this->valuationFor($variant, $warehouse);
-            $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
-            $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
-
-            $newQty = bcadd($oldQty, $qty, self::SCALE);
-            $oldValue = bcmul($oldQty, $oldAvg, self::SCALE);
             $addValue = bcmul($qty, $unitCost, self::SCALE);
-            $newValue = bcadd($oldValue, $addValue, self::SCALE);
-            $newAvg = NumberHelper::divideOrDefault($newValue, $newQty, self::SCALE, $unitCost);
-
-            $valuation->fill([
-                'organization_id' => $variant->organization_id,
-                'avg_cost' => $newAvg,
-                'qty_on_hand' => $newQty,
-                'currency' => $currency,
-            ])->save();
+            $this->addToBook($variant, $warehouse, $qty, $addValue, $unitCost, $currency);
 
             return $this->ledger->post(new StockPosting(
                 $variant,
@@ -118,22 +104,8 @@ class ValuationService implements InventoryValuationStrategy {
         $unitCost = DecimalQty::positive($unitCost);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $lot, $idempotencyKey): StockMovement {
-            $valuation = $this->valuationFor($variant, $warehouse);
-            $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
-            $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
-
-            $newQty = bcadd($oldQty, $qty, self::SCALE);
-            $oldValue = bcmul($oldQty, $oldAvg, self::SCALE);
             $addValue = bcmul($qty, $unitCost, self::SCALE);
-            $newValue = bcadd($oldValue, $addValue, self::SCALE);
-            $newAvg = NumberHelper::divideOrDefault($newValue, $newQty, self::SCALE, $unitCost);
-
-            $valuation->fill([
-                'organization_id' => $variant->organization_id,
-                'avg_cost' => $newAvg,
-                'qty_on_hand' => $newQty,
-                'currency' => $currency,
-            ])->save();
+            $this->addToBook($variant, $warehouse, $qty, $addValue, $unitCost, $currency);
 
             return $this->lots->holdArrival($lot, fn (): StockMovement => $this->ledger->post(new StockPosting(
                 $variant,
@@ -170,19 +142,66 @@ class ValuationService implements InventoryValuationStrategy {
             bin: $bin,
             // Läuft nach der gesperrten Bestandsprüfung des Lagerbuchs: der Durchschnitt wird erst danach gelesen, sonst
             // schrieben zwei parallele Abgänge ihren Bestand gegen denselben veralteten Stand fort.
-            costing: function (?StockLot $partLot, string $partQty) use ($variant, $warehouse): array {
-                $valuation = $this->valuationFor($variant, $warehouse);
-                $avg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
-                $valuation->fill([
-                    'organization_id' => $variant->organization_id,
-                    'avg_cost' => $avg,
-                    'qty_on_hand' => bcsub($valuation->exists ? $valuation->qty_on_hand : '0', $partQty, self::SCALE),
-                    'currency' => $valuation->exists ? $valuation->currency : 'EUR',
-                ])->save();
-
-                return ['unit' => bcadd($avg, '0', self::SCALE), 'total' => bcmul($partQty, $avg, self::SCALE)];
-            },
+            costing: fn (?StockLot $partLot, string $partQty): array => $this->takeFromBook($variant, $warehouse, $partQty),
         );
+    }
+
+    /**
+     * Abgang zum Durchschnitt des Quelllagers (TransferOut), Zugang im Ziellager zum selben Wert: dessen Durchschnitt
+     * rechnet neu, der Bestandswert der Organisation bleibt gleich (MVP-1726).
+     */
+    public function transfer(ArticleVariant $variant, Warehouse $from, Warehouse $to, string $qty, ?int $actorUserId = null, ?StockLot $lot = null, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null): StockIssue {
+        return DB::transaction(function () use ($variant, $from, $to, $qty, $actorUserId, $lot, $entered, $idempotencyKey): StockIssue {
+            $leaving = $this->ledger->issue(
+                $variant, $from, $qty,
+                idempotencyKey: $idempotencyKey,
+                actorUserId: $actorUserId,
+                lot: $lot,
+                costing: fn (?StockLot $partLot, string $partQty): array => $this->takeFromBook($variant, $from, $partQty),
+                entered: $entered,
+                type: StockMovementType::TransferOut,
+            );
+
+            foreach ($leaving as $out) {
+                $arrival = $this->ledger->transferIn($variant, $out, $to, $entered);
+                if ($arrival->wasRecentlyCreated) {
+                    $this->addToBook($variant, $to, DecimalQty::positive((string) $arrival->qty_base), $arrival->cost_total?->getAmount() ?? '0', $arrival->cost_unit?->getAmount() ?? '0', $arrival->cost_total?->getCurrency()->value ?? 'EUR');
+                }
+            }
+
+            return $leaving;
+        });
+    }
+
+    /**
+     * Mehrbestand rechnet den Durchschnitt mit dem Stückwert neu wie ein Eingang, Minderbestand geht zum Durchschnitt
+     * ab (MVP-1727). Ein schon gebuchter Schlüssel liefert die frühere Bewegung, ohne das Buch erneut zu bewegen.
+     */
+    public function correct(StockPosting $posting, ?Money $unitCost = null): StockMovement {
+        $posting->assertValuedStock();
+
+        return DB::transaction(function () use ($posting, $unitCost): StockMovement {
+            $earlier = $this->ledger->posted($posting);
+            if ($earlier instanceof StockMovement) {
+                return $earlier;
+            }
+
+            $variant = $posting->variant;
+            $warehouse = $posting->warehouse;
+            $qty = DecimalQty::positive($posting->signedQty);
+            if (NumberHelper::isPositivePrecise($posting->signedQty, self::SCALE)) {
+                $unit = $unitCost?->withScale(self::SCALE)->getAmount() ?? '0';
+                $currency = $unitCost?->getCurrency()->value ?? ($this->averageCost($variant, $warehouse)?->getCurrency()->value ?? 'EUR');
+                $value = bcmul($qty, $unit, self::SCALE);
+                $this->addToBook($variant, $warehouse, $qty, $value, $unit, $currency);
+
+                return $this->ledger->post($posting->withCost($unit, $value, $currency));
+            }
+
+            $cost = $this->takeFromBook($variant, $warehouse, $qty);
+
+            return $this->ledger->post($posting->withCost($cost['unit'], $cost['total'], $cost['currency']));
+        });
     }
 
     /** @return numeric-string */
@@ -211,12 +230,57 @@ class ValuationService implements InventoryValuationStrategy {
         return $out;
     }
 
-    private function valuationFor(ArticleVariant $variant, Warehouse $warehouse): StockValuation {
+    /**
+     * Zugang ins Buch: neuer Durchschnitt = (Wert alt + Wert neu) / Menge; ohne Bestand der Stückwert.
+     *
+     * @param numeric-string $qty
+     * @param numeric-string $value
+     * @param numeric-string $unitCost
+     */
+    private function addToBook(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $value, string $unitCost, string $currency): void {
+        $valuation = $this->valuationFor($variant, $warehouse, lock: true);
+        $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
+        $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
+
+        $newQty = bcadd($oldQty, $qty, self::SCALE);
+        $newValue = bcadd(bcmul($oldQty, $oldAvg, self::SCALE), $value, self::SCALE);
+
+        $valuation->fill([
+            'organization_id' => $variant->organization_id,
+            'avg_cost' => NumberHelper::divideOrDefault($newValue, $newQty, self::SCALE, $unitCost),
+            'qty_on_hand' => $newQty,
+            'currency' => $currency,
+        ])->save();
+    }
+
+    /**
+     * Abgang aus dem Buch zum aktuellen Durchschnitt; der Durchschnitt bleibt.
+     *
+     * @param numeric-string $qty
+     * @return array{unit: numeric-string, total: numeric-string, currency: string}
+     */
+    private function takeFromBook(ArticleVariant $variant, Warehouse $warehouse, string $qty): array {
+        $valuation = $this->valuationFor($variant, $warehouse, lock: true);
+        $avg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
+        $currency = $valuation->exists ? $valuation->currency->value : 'EUR';
+        $valuation->fill([
+            'organization_id' => $variant->organization_id,
+            'avg_cost' => $avg,
+            'qty_on_hand' => bcsub($valuation->exists ? $valuation->qty_on_hand : '0', $qty, self::SCALE),
+            'currency' => $currency,
+        ])->save();
+
+        return ['unit' => bcadd($avg, '0', self::SCALE), 'total' => bcmul($qty, $avg, self::SCALE), 'currency' => $currency];
+    }
+
+    private function valuationFor(ArticleVariant $variant, Warehouse $warehouse, bool $lock = false): StockValuation {
         /** @var StockValuation $valuation */
-        $valuation = StockValuation::query()->firstOrNew([
-            'article_variant_id' => $variant->id,
-            'warehouse_id' => $warehouse->id,
-        ]);
+        $valuation = StockValuation::query()
+            ->when($lock, fn ($query) => $query->lockForUpdate())
+            ->firstOrNew([
+                'article_variant_id' => $variant->id,
+                'warehouse_id' => $warehouse->id,
+            ]);
 
         return $valuation;
     }

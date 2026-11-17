@@ -69,10 +69,11 @@ class TimeEntryBillableSyncTest extends TestCase {
         $open = $this->openEntry();
         $exported = $this->openEntry(['exported' => true]);
 
-        // Checkbox nicht gesendet → prepareForValidation setzt billable=false.
+        // Abgehakt sendet das Formular das versteckte 0; ein fehlendes Feld bliebe unverändert (MVP-1724).
         $response = $this->actingAs($this->admin)
             ->put(route('customers.update', $this->customer), [
                 'name' => $this->customer->name,
+                'billable' => '0',
             ]);
 
         $response->assertRedirect(route('customers.show', $this->customer));

@@ -1,7 +1,7 @@
 ---
 title: "Stocks et scan"
 topic: inventory.stock
-version: 9
+version: 10
 keywords:
     - état des stocks
     - entrée de marchandises
@@ -111,3 +111,5 @@ pondéré à partir du registre des moyennes, pour FIFO et FEFO à partir des
 couches de valorisation ouvertes (valeur des quantités restantes, moyenne =
 valeur ÷ quantité). La classification ABC de l’inventaire tournant utilise les
 mêmes valeurs.
+
+**Valorisation des transferts et des corrections :** un transfert emporte sa valeur. Le magasin d’origine sort selon sa méthode et le magasin de destination reçoit la même valeur : en FIFO et FEFO, une couche par couche consommée avec son coût unitaire, sa date d’entrée et sa date limite ; au coût moyen pondéré, le magasin de destination recalcule sa moyenne. La valeur du stock sur l’ensemble des magasins reste inchangée. Les corrections du stock propre disponible sont elles aussi valorisées — écarts d’inventaire, contre-écriture d’un conflit avec le système externe et inventaire de reprise lors du passage depuis une gestion commerciale : un excédent comme une entrée manuelle (prix d’achat, sinon moyenne), un manquant selon la méthode. La contre-écriture d’une sortie valorisée revient à son coût unitaire. Les réservations, les blocages, la quarantaine et le stock de tiers ne modifient pas la valeur du stock.

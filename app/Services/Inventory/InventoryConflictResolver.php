@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Integration\ExternalConflictStatus;
+use App\Enums\Inventory\StockMovementType;
 use App\Models\Article\ArticleVariant;
 use App\Models\Audit\AuditLog;
 use App\Models\Integration\PendingExternalConflict;
@@ -32,7 +33,7 @@ use RuntimeException;
 class InventoryConflictResolver {
     public const int SCALE = 4;
 
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(private readonly StockCorrection $corrections) {}
 
     /** Behält den lokalen Stand ohne Gegenbuchung bei (externe Differenz akzeptiert) und schließt den Konflikt. */
     public function keepLocal(PendingExternalConflict $conflict, ?int $userId = null): void {
@@ -66,17 +67,21 @@ class InventoryConflictResolver {
                 throw new RuntimeException('Ungültiger Bewegungswert für die Kompensation.');
             }
 
-            // Gegenbuchung: negierter Delta-Wert im selben Zustand hebt die
-            // ursprüngliche Wirkung auf. Idempotenz über einen abgeleiteten Key.
-            $reversal = $this->ledger->correction(
+            // Gegenbuchung: negierter Delta-Wert im selben Zustand hebt die ursprüngliche Wirkung auf, Idempotenz über
+            // einen abgeleiteten Key. Bewertet (MVP-1727): ein zurückgenommener Abgang geht zu seinem Stückwert wieder
+            // ein — so steht der Bestandswert wie vorher —, ohne Kostenwert wie ein manueller Eingang; ein
+            // zurückgenommener Zugang geht nach Verfahren ab.
+            $reversal = $this->corrections->book(new StockPosting(
                 $variant,
                 $warehouse,
                 $movement->stock_state,
                 bcmul($qtyBase, '-1', self::SCALE),
+                StockMovementType::Correction,
                 $movement->ownership_type,
                 idempotencyKey: 'compensate:' . $movement->id,
                 actorUserId: $userId,
-            );
+                source: $movement,
+            ), $movement->cost_unit);
 
             $this->close($conflict, ExternalConflictStatus::Compensated, $userId);
 

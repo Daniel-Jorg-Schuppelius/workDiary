@@ -1,7 +1,7 @@
 ---
 title: "Inventario"
 topic: inventory.counts
-version: 4
+version: 5
 keywords:
     - conta fisica
     - inventario fisico
@@ -40,3 +40,5 @@ Se un articolo ha altre unità, la quantità contata può essere inserita in una
 ## Concludere, riaprire o annullare il conteggio
 
 **Concludere il conteggio** blocca le quantità contate per la verifica; dopo non si può più registrare nulla. Chi approva le differenze può **riaprire il conteggio** per correggere, registrare le differenze o **annullare l'inventario**: un inventario annullato non registra nulla. Il passaggio di verifica è facoltativo; l'approvazione è possibile anche direttamente dal conteggio.
+
+**Differenze valorizzate:** le differenze nella giacenza propria libera sono valorizzate. Un'eccedenza entra come un'entrata manuale (prezzo d'acquisto della variante, altrimenti media del magazzino), un ammanco esce secondo il metodo di valorizzazione — con FIFO e FEFO dagli strati più vecchi o con la scadenza più vicina, con il costo medio ponderato al prezzo medio. Le differenze nella giacenza prenotata o bloccata e nella giacenza di terzi non modificano il valore di magazzino. L'approvazione a quattro occhi misura il valore così registrato; se scatta, non viene registrato nulla.

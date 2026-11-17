@@ -167,14 +167,23 @@ class SaveCustomerRequest extends BaseFormRequest {
             $this->merge(['is_consumer' => $this->boolean('is_consumer')]);
         }
 
-        $this->merge(array_merge($this->partyNormalizedData(), [
-            'billable' => $this->boolean('billable'),
-            'exclude_from_reports' => $this->boolean('exclude_from_reports'),
-            'no_bulk_mail' => $this->boolean('no_bulk_mail'),
-            'survey_opt_out' => $this->boolean('survey_opt_out'),
-            'is_reverse_charge_recipient' => $this->boolean('is_reverse_charge_recipient'),
-            'travel_settings' => $travel === [] ? null : $travel,
-        ]));
+        // Schalter und Anfahrt nur, wenn gesendet (MVP-1724): das Formular sendet jeden Haken mit
+        // verstecktem 0, ein API-Teil-Update ohne sie lässt sie stehen, neu angelegt gilt die Spaltenvorgabe.
+        $sent = [];
+        foreach (['billable', 'exclude_from_reports', 'no_bulk_mail', 'survey_opt_out', 'is_reverse_charge_recipient'] as $flag) {
+            if ($this->has($flag)) {
+                $sent[$flag] = $this->boolean($flag);
+            }
+        }
+        // Ein Verbraucher schuldet nie nach § 13b (Abs. 5 UStG); ohne Angabe folgt das Merkmal daraus.
+        if (! $this->has('is_reverse_charge_recipient') && $this->has('is_consumer') && $this->boolean('is_consumer')) {
+            $sent['is_reverse_charge_recipient'] = false;
+        }
+        if ($this->has('travel_settings')) {
+            $sent['travel_settings'] = $travel === [] ? null : $travel;
+        }
+
+        $this->merge(array_merge($this->partyNormalizedData(), $sent));
     }
 
     /** @return array<string, string> */

@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 23
+version: 24
 keywords:
     - lieu de la prestation
     - prestation du catalogue
@@ -380,7 +380,10 @@ facture. Si les lignes donnent des régimes fiscaux différents, le brouillon le
 signale, la facture ne peut pas être émise et le contrôle avant l’envoi la
 rejette (avec « non imposable » selon la règle BR-O-11) : scindez la facture,
 une par régime fiscal. L’annulation et la facture rectificative reprennent le
-régime fiscal de l’original.
+régime fiscal de l’original. Le contrôle de la facture électronique vérifie un
+brouillon avec le régime fiscal que l’émission figera, par exemple « non
+imposable » (O) au lieu du taux zéro (Z) ; il en va de même pour les mentions du
+PDF du brouillon. Les factures émises conservent leur régime fiscal figé.
 
 **Lieu de situation de l’immeuble.** Si une ligne porte une prestation liée à
 un bien immobilier (par son article ou la règle de facturation), la boîte de

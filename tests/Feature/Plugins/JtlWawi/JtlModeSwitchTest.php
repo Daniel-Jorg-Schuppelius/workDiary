@@ -89,7 +89,7 @@ final class JtlModeSwitchTest extends TestCase {
         ])->save();
 
         $article = Article::factory()->create(['organization_id' => $this->organization->id]);
-        $variant = ArticleVariant::factory()->create(['organization_id' => $this->organization->id, 'article_id' => $article->id, 'sku' => 'SKU-M1']);
+        $variant = ArticleVariant::factory()->create(['organization_id' => $this->organization->id, 'article_id' => $article->id, 'sku' => 'SKU-M1', 'currency' => 'EUR', 'purchase_price' => '2.50']);
         $warehouse = Warehouse::factory()->create(['organization_id' => $this->organization->id]);
         ExternalArticleMapping::query()->create([
             'organization_id' => $this->organization->id,
@@ -124,6 +124,8 @@ final class JtlModeSwitchTest extends TestCase {
             ->where('idempotency_key', 'like', 'takeover:%')
             ->firstOrFail();
         $this->assertSame('7.0000', $movement->qty_base);
+        // MVP-1727: Der Eröffnungsbestand ist bewertet wie eine Inventurdifferenz — zum Einkaufspreis.
+        $this->assertSame(['2.5000', '17.5000'], [$movement->cost_unit?->getAmount(), $movement->cost_total?->getAmount()]);
 
         // Übernahme darf NICHT in die Outbox zurückgespiegelt werden.
         $this->assertDatabaseMissing('inventory_outbox', ['idempotency_key' => $movement->idempotency_key]);

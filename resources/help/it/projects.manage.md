@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 11
+version: 12
 keywords:
     - creare progetto
     - gestione progetti
@@ -114,7 +114,9 @@ o del trasferimento, e il controllo notturno non lo riapre. Una registrazione
 successiva su quel giorno resta fatturabile, perché nulla è stato integrato. Se
 rimuove la posizione, scarta la bozza o annulla la fattura o il trasferimento, lo
 scostamento torna aperto. Confermi a mano gli scostamenti il cui forfait è stato
-fatturato in precedenza.
+fatturato in precedenza. Se un trasferimento non contiene tempo di lavoro del
+progetto, il suo scostamento resta aperto e libero: il trasferimento o la fattura
+successivi con tempo di lavoro del progetto lo chiudono, senza annullare il primo.
 
 La regola di fatturazione indica anche il **luogo della prestazione** dei suoi
 tempi (§ 3a UStG): **Generale**, **Prestazione del catalogo** o **Prestazione

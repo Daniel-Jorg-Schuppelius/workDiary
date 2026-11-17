@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Services;
 
 use App\Enums\Integration\{DataDomain, IntegrationInboxStatus};
-use App\Enums\Inventory\StockState;
+use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Models\Article\ArticleVariant;
 use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
 use App\Models\Inventory\{StockMovement, Warehouse};
@@ -24,7 +24,7 @@ use App\Services\Integration\Attributes\WritesDataDomain;
 use App\Services\Integration\Contracts\OwnershipConflictReplay;
 use App\Services\Integration\DataOwnershipGuard;
 use App\Services\Integration\Dto\OwnershipClaim;
-use App\Services\Inventory\InventoryLedger;
+use App\Services\Inventory\{InventoryLedger, StockCorrection, StockPosting};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -56,6 +56,7 @@ class JtlTakeoverService implements OwnershipConflictReplay {
     public function __construct(
         private readonly JtlStockReader $reader,
         private readonly InventoryLedger $ledger,
+        private readonly StockCorrection $corrections,
     ) {}
 
     /** @return array{pairs: int, booked: int, unmapped_warehouses: int, blocked: int} */
@@ -122,14 +123,17 @@ class JtlTakeoverService implements OwnershipConflictReplay {
             return null;
         }
 
-        return $this->ledger->correction(
+        // Eröffnungsbestand bewertet wie eine Inventurdifferenz (MVP-1727): Mehrbestand zum Einkaufspreis, sonst
+        // Durchschnitt, Minderbestand nach Verfahren.
+        return $this->corrections->book(new StockPosting(
             $variant,
             $warehouse,
             StockState::Physical,
             $delta,
+            StockMovementType::Correction,
             idempotencyKey: sprintf('takeover:%d:%s:%d:%d', $organization->id, $stamp, $variant->id, $warehouse->id),
             actorUserId: $actorUserId,
-        );
+        ));
     }
 
     /** @return list<string> */

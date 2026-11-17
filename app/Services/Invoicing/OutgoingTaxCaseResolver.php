@@ -77,18 +77,16 @@ final class OutgoingTaxCaseResolver {
             return [$this->refine($organization, $invoice->customer, $buyer, $frozen, $goods, $places, $this->noteInText($invoice, $organization, $frozen), $smallBusiness)];
         }
 
-        $resolutions = $invoice->derivesTaxCase()
-            ? $this->taxes->casesForInvoice($invoice)
-            : [$this->taxes->resolve($organization, $invoice->customer, $invoice->serviceDateTo() ?? now(), $goods ? 'goods' : 'services')];
         $cases = [];
-        foreach ($resolutions as $tax) {
-            $cases[] = $this->refine($organization, $invoice->customer, $buyer, $tax['category'], $goods, $places, $tax['note'], $smallBusiness);
+        foreach ($this->taxes->casesToFreeze($invoice) as $tax) {
+            // Storno und Gutschrift übernehmen den Hinweis des Originals im Text.
+            $cases[] = $this->refine($organization, $invoice->customer, $buyer, $tax['category'], $goods, $places, $tax['note'] ?? $this->noteInText($invoice, $organization, $tax['category']), $smallBusiness);
         }
 
         return self::unique($cases);
     }
 
-    /** Eingefrorene Kategorie: ausgestellt die eigene, Storno und Gutschrift die des Originals; null = wie beim Ausstellen ableiten. */
+    /** Beim Ausstellen eingefrorene Kategorie; null = Entwurf, der Fall kommt aus {@see TaxResolver::casesToFreeze()}. */
     private function frozenCategory(Invoice $invoice, bool $smallBusiness): ?string {
         $own = trim((string) data_get($invoice->tax_context, 'category', ''));
         if ($own !== '') {
@@ -97,11 +95,6 @@ final class OutgoingTaxCaseResolver {
         // Ausgestellt vor dem Einfrieren der Kategorie: wie die Buchhaltung über das Reverse-Charge-Merkmal.
         if ($invoice->status !== InvoiceStatus::Draft) {
             return $invoice->is_reverse_charge ? 'AE' : ($smallBusiness ? 'E' : 'S');
-        }
-        if (! $invoice->derivesTaxCase()) {
-            $original = trim((string) data_get($invoice->parent?->tax_context, 'category', ''));
-
-            return $original !== '' ? $original : null;
         }
 
         return null;

@@ -1,7 +1,7 @@
 ---
 title: "Giacenze e scansione"
 topic: inventory.stock
-version: 9
+version: 10
 keywords:
     - magazzino
     - carico merce
@@ -110,3 +110,5 @@ panoramica seguono il metodo di valutazione dell'articolo: con la media mobile
 dal registro delle medie, con FIFO e FEFO dagli strati di valutazione aperti
 (valore delle quantità residue, media = valore ÷ quantità). La classificazione
 ABC dell'inventario ciclico usa gli stessi valori.
+
+**Valorizzazione di trasferimenti e correzioni:** un trasferimento porta con sé il suo valore. Il magazzino di origine preleva secondo il suo metodo e il magazzino di destinazione riceve lo stesso valore: con FIFO e FEFO uno strato per ogni strato consumato, con il suo costo unitario, la data di carico e la data di scadenza; con il costo medio ponderato il magazzino di destinazione ricalcola la sua media. Il valore di magazzino su tutti i magazzini resta invariato. Anche le correzioni della giacenza propria libera sono valorizzate — differenze inventariali, la contropartita di un conflitto con il sistema esterno e l'inventario di subentro al passaggio da un gestionale di magazzino: un'eccedenza come un'entrata manuale (prezzo d'acquisto, altrimenti media), un ammanco secondo il metodo. La contropartita di un prelievo valorizzato rientra al suo costo unitario. Prenotazioni, blocchi, quarantena e giacenza di terzi non modificano il valore di magazzino.

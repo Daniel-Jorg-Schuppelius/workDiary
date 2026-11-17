@@ -15,7 +15,7 @@ namespace App\Contracts\Inventory;
 use App\Enums\Inventory\{StockMovementType, ValuationMethod};
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockMovement, Warehouse, WarehouseBin};
-use App\Services\Inventory\{EnteredQuantity, StockIssue};
+use App\Services\Inventory\{EnteredQuantity, StockIssue, StockPosting};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 
@@ -51,6 +51,20 @@ interface InventoryValuationStrategy {
      * (Durchschnittsbuch bzw. neue Schicht).
      */
     public function returnToStock(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?StockLot $lot = null, ?string $idempotencyKey = null): StockMovement;
+
+    /**
+     * Umlagerung (MVP-1726): Abgang im Quelllager nach Verfahren als TransferOut — Prüfung und Chargenzuteilung wie bei
+     * der Entnahme, je Charge eine Bewegung —, je Teil ein TransferIn im Ziellager mit derselben Charge und demselben
+     * Wert. Das Bewertungsbuch wandert mit, der Bestandswert der Organisation bleibt gleich. Mit Schlüssel idempotent.
+     */
+    public function transfer(ArticleVariant $variant, Warehouse $from, Warehouse $to, string $qty, ?int $actorUserId = null, ?StockLot $lot = null, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null): StockIssue;
+
+    /**
+     * Bewertete Korrektur des physischen Eigenbestands (MVP-1727): ein Zugang zum Stückwert `$unitCost` je Basiseinheit
+     * wie ein Eingang, ein Abgang nach Verfahren aus der Charge der Buchung, ohne Chargenzuteilung. Ein schon gebuchter
+     * Schlüssel liefert die frühere Bewegung, ohne erneut zu bewerten.
+     */
+    public function correct(StockPosting $posting, ?Money $unitCost = null): StockMovement;
 
     /** Bewerteter Bestand in Basiseinheit. @return numeric-string */
     public function onHand(ArticleVariant $variant, Warehouse $warehouse): string;

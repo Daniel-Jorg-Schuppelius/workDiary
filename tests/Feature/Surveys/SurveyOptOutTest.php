@@ -82,8 +82,9 @@ final class SurveyOptOutTest extends TestCase {
             ->assertSessionHasNoErrors();
         $this->assertTrue($customer->fresh()->survey_opt_out);
 
+        // Abgehakt: verstecktes 0 wie im Formular (MVP-1724).
         $this->actingAs($this->admin)
-            ->put(route('customers.update', $customer), ['name' => $customer->name])
+            ->put(route('customers.update', $customer), ['name' => $customer->name, 'survey_opt_out' => '0'])
             ->assertSessionHasNoErrors();
         $this->assertFalse($customer->fresh()->survey_opt_out);
     }

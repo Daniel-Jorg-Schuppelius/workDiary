@@ -1,7 +1,7 @@
 ---
 title: "Conflicts with external systems (stock)"
 topic: inventory.conflicts
-version: 4
+version: 5
 keywords:
     - stock discrepancy
     - sync error
@@ -55,3 +55,5 @@ all conflicts.
 Open conflicts should be reviewed promptly: as long as they exist, local and
 external stock differ — affecting availability, purchase proposals and
 valuation.
+
+**Valuation of the compensation:** The counter-posting in free own stock is valued. A compensated issue comes back in at its unit cost, so the stock value is as before; without a cost value the purchase price applies, otherwise the average. A compensated receipt goes out by the valuation method. Counter-postings in other states and in third-party stock carry no value.

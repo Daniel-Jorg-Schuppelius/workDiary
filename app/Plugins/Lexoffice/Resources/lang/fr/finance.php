@@ -13,7 +13,9 @@ return [
     'tax_case' => [
         'not_taxable_outside_third_country' => 'Pour les prestations non imposables en Allemagne, Lexoffice ne connaît que « prestations de services vers des pays tiers ». Si le lieu de prestation se trouve dans l’UE (par exemple un bien immobilier dans un autre pays de l’UE) ou dans plusieurs zones, il n’existe pas de type de taxe adapté — veuillez facturer dans workDiary ou saisir le document manuellement dans Lexoffice.',
         'contact_required' => 'Pour « :case », Lexoffice exige un contact créé dans Lexoffice ; le client n’y est pas encore lié. Veuillez d’abord transférer le contact.',
-        'time_voucher' => 'Le justificatif issu des temps ne transmet que le taux, pas le type de taxe ; le cas fiscal de ces temps est « :case ». Veuillez les transférer vers Lexoffice via la remise de facturation, qui transmet le type de taxe adapté.',
+        'time_voucher' => 'Pour le cas fiscal « :case », l’interface des justificatifs de Lexoffice ne connaît aucune catégorie comptable (par exemple § 13b en Allemagne ou exonération selon le § 4 UStG). Veuillez transférer les temps vers Lexoffice via la remise de facturation, qui transmet le type de taxe adapté.',
+        'time_voucher_mixed' => 'Les temps donnent plusieurs cas fiscaux (:case) ; un justificatif n’en porte qu’un. Veuillez facturer les temps séparément, par exemple via la remise de facturation par cas fiscal.',
+        'time_voucher_currency' => 'Un justificatif Lexoffice ne contient que des montants en euros, mais le client est facturé en :currency. Veuillez facturer dans workDiary ou saisir le justificatif manuellement dans Lexoffice.',
     ],
     'error' => [
         'lexoffice_contact_missing' => 'Aucun contact Lexoffice pour le client — veuillez d\'abord synchroniser le contact.',

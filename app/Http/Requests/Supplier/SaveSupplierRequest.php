@@ -57,9 +57,13 @@ class SaveSupplierRequest extends BaseFormRequest {
     }
 
     protected function prepareForValidation(): void {
-        $this->merge(array_merge($this->partyNormalizedData(), [
-            'active' => $this->has('active') ? $this->boolean('active') : true,
-            'exclude_from_reports' => $this->boolean('exclude_from_reports'),
-        ]));
+        // Wie beim Kunden nur Gesendetes (MVP-1724); neu angelegt gelten die Spaltenvorgaben (aktiv, nicht ausgeblendet).
+        $sent = [];
+        foreach (['active', 'exclude_from_reports'] as $flag) {
+            if ($this->has($flag)) {
+                $sent[$flag] = $this->boolean($flag);
+            }
+        }
+        $this->merge(array_merge($this->partyNormalizedData(), $sent));
     }
 }

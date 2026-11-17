@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 23
+version: 24
 keywords:
     - luogo della prestazione
     - prestazione del catalogo
@@ -383,7 +383,11 @@ propria categoria fiscale seguono la fattura. Se le posizioni danno regimi
 fiscali diversi, la bozza lo segnala, la fattura non può essere emessa e il
 controllo prima dell’invio la respinge (con «non imponibile» secondo la regola
 BR-O-11): divida la fattura, una per regime fiscale. L’annullamento e la
-fattura rettificativa riprendono il regime fiscale dell’originale.
+fattura rettificativa riprendono il regime fiscale dell’originale. Il controllo
+della fattura elettronica verifica una bozza con il regime fiscale che
+l’emissione fisserà, ad esempio «non imponibile» (O) invece dell’aliquota zero
+(Z); lo stesso vale per le note nel PDF della bozza. Le fatture emesse mantengono
+il regime fiscale fissato.
 
 **Luogo dell’immobile.** Se una posizione riguarda una prestazione relativa a
 un immobile (tramite il suo articolo o la regola di fatturazione), la finestra

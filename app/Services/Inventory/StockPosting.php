@@ -16,6 +16,7 @@ use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{Warehouse, WarehouseBin};
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 /**
  * Wertobjekt einer einzelnen Lagerbuchung (Feature 048, MVP-067). `signedQty`
@@ -49,4 +50,30 @@ final class StockPosting {
         /** Optionaler Lagerplatz (MVP-706); muss zum Lagerort gehören. */
         public readonly ?WarehouseBin $bin = null,
     ) {}
+
+    /** Physischer Eigenbestand — nur er steht im Bewertungsbuch; andere Zustände und Fremdbestand bleiben wertneutral. */
+    public function isValuedStock(): bool {
+        return $this->state === StockState::Physical && $this->ownership === OwnershipType::Own;
+    }
+
+    public function assertValuedStock(): void {
+        if (! $this->isValuedStock()) {
+            throw new InvalidArgumentException('Bewertet wird nur physischer Eigenbestand.');
+        }
+    }
+
+    /**
+     * Dieselbe Buchung mit dem Kostensnapshot der Bewertung.
+     *
+     * @param numeric-string $costUnit
+     * @param numeric-string $costTotal
+     */
+    public function withCost(string $costUnit, string $costTotal, ?string $currency): self {
+        return new self(
+            $this->variant, $this->warehouse, $this->state, $this->signedQty, $this->type, $this->ownership,
+            ownerRef: $this->ownerRef, idempotencyKey: $this->idempotencyKey, originalQty: $this->originalQty, originalUnit: $this->originalUnit,
+            actorUserId: $this->actorUserId, source: $this->source, costUnit: $costUnit, costTotal: $costTotal, currency: $currency,
+            stockLotId: $this->stockLotId, stockSerialId: $this->stockSerialId, bin: $this->bin,
+        );
+    }
 }

@@ -20,7 +20,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
-use App\Plugins\Lexoffice\Services\LexofficeMapper;
+use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeMapper};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -139,7 +139,8 @@ class ProjectBillingRuleTest extends TestCase {
         $this->assertSame((int) $high->id, (int) $resolved?->id);
     }
 
-    public function test_mapper_renders_article_id_and_unit_from_rule(): void {
+    /** MVP-1723: Ein Buchhaltungsbeleg kennt keine Artikel und Einheiten — Satz und Preis der Regel bestimmen Betrag und Steuer. */
+    public function test_mapper_books_rate_and_price_from_rule(): void {
         $project = $this->makeProject();
         $article = LexofficeArticle::create([
             'organization_id' => $this->organization->id,
@@ -173,17 +174,18 @@ class ProjectBillingRuleTest extends TestCase {
         $mapper = new LexofficeMapper;
         $payload = $mapper->timeEntriesToVoucherPayload(
             $this->customer,
-            collect([$entry->fresh(['project'])]),
+            collect([$entry->load('project')]),
             CarbonImmutable::parse('2026-05-01'),
             CarbonImmutable::parse('2026-05-31'),
         );
 
-        $this->assertNotEmpty($payload['voucherItems']);
+        $this->assertCount(1, $payload['voucherItems']);
         $item = $payload['voucherItems'][0];
-        $this->assertSame('art-1', $item['id']);
-        $this->assertSame('Beratungs-Stunde', $item['unitName']);
-        $this->assertSame(7.0, $item['unitPrice']['taxRatePercentage']);
-        $this->assertSame(123.45, $item['unitPrice']['netAmount']);
+        $this->assertSame(['amount', 'taxAmount', 'taxRatePercent', 'categoryId'], array_keys($item));
+        $this->assertSame(7.0, $item['taxRatePercent']);
+        $this->assertSame(246.9, $item['amount'], 'Zwei Stunden zum Preis der Regel.');
+        $this->assertSame(17.28, $item['taxAmount']);
+        $this->assertSame(264.18, $payload['totalGrossAmount']);
     }
 
     public function test_project_show_renders_billing_tab_for_billing_manager(): void {
@@ -277,8 +279,8 @@ class ProjectBillingRuleTest extends TestCase {
         $this->actingAs($admin)->get(route('projects.show', $project))->assertOk()->assertSee('Wartung');
     }
 
-    public function test_mapper_translates_local_article_to_lexoffice_id_via_mapping(): void {
-        $project = $this->makeProject();
+    /** Die Faktura-Übergabe an Lexoffice übersetzt den lokalen Artikel über die Zuordnung des Syncs. */
+    public function test_catalog_translates_local_article_to_lexoffice_id_via_mapping(): void {
         $article = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Wartung', 'sellable' => true]);
         ExternalArticleMapping::query()->create([
             'organization_id' => $this->organization->id,
@@ -287,31 +289,8 @@ class ProjectBillingRuleTest extends TestCase {
             'article_id' => $article->id,
             'sync_status' => 'linked',
         ]);
-        $project->billingRules()->create([
-            'organization_id' => $this->organization->id,
-            'article_ref' => 'art:' . $article->id,
-            'item_type' => 'service',
-        ]);
-        $entry = TimeEntry::create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $project->id,
-            'user_id' => $this->user->id,
-            'kind' => TimeEntryKind::Work->value,
-            'started_at' => CarbonImmutable::parse('2026-05-01 09:00'),
-            'ended_at' => CarbonImmutable::parse('2026-05-01 10:00'),
-            'minutes' => 60,
-            'rate' => 90.0,
-            'billable' => true,
-        ]);
 
-        $payload = (new LexofficeMapper)->timeEntriesToVoucherPayload(
-            $this->customer,
-            collect([$entry->fresh(['project'])]),
-            CarbonImmutable::parse('2026-05-01'),
-            CarbonImmutable::parse('2026-05-31'),
-        );
-
-        $this->assertSame('lx-uuid-7', $payload['voucherItems'][0]['id']);
+        $this->assertSame('lx-uuid-7', app(LexofficeArticleCatalogSource::class)->externalId((int) $this->organization->id, 'art:' . $article->id));
     }
 
     public function test_article_merge_repoints_rule_and_default_service(): void {

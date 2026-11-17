@@ -1,7 +1,7 @@
 ---
 title: "Stocktake"
 topic: inventory.counts
-version: 4
+version: 5
 keywords:
     - inventory count
     - physical inventory
@@ -46,3 +46,5 @@ If an article has further units, the counted quantity can be entered in one of t
 ## Finish, reopen or discard counting
 
 **Finish counting** freezes the counted quantities for review; nothing more can be entered afterwards. Whoever approves differences can **reopen counting** for corrections, post the differences or **discard the stocktake** – a discarded stocktake posts nothing. The review step is optional; approval is also possible directly from counting.
+
+**Valued differences:** Differences in free own stock are valued. A surplus comes in like a manual receipt (purchase price of the variant, otherwise the warehouse average), a shortage goes out by the valuation method — with FIFO and FEFO from the oldest or earliest-expiring layers, with the moving average at the average price. Differences in reserved or blocked stock and in third-party stock do not change the stock value. Four-eyes approval measures the value booked this way; if it applies, nothing is posted.

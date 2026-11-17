@@ -1,7 +1,7 @@
 ---
 title: "Conflictos de Lexoffice"
 topic: admin.lexoffice
-version: 9
+version: 10
 keywords:
     - Lexware Office
     - conflicto de sincronización
@@ -77,8 +77,14 @@ nota fiscal. Salvo «exento», Lexoffice solo acepta estos tipos de impuesto
 con un contacto creado allí. Si un servicio no sujeto se sitúa en la UE (por
 ejemplo, un inmueble en otro país de la UE), Lexoffice no tiene un tipo de
 impuesto adecuado: el traspaso se bloquea con el motivo. El comprobante a
-partir de tiempos en el cliente solo transfiere tiempos sujetos a impuesto;
-los demás casos van por la entrega de facturación.
+partir de tiempos en el cliente es un comprobante contable: por tipo
+impositivo, el importe neto, el impuesto y la categoría contable del caso
+fiscal («Dienstleistungen», «Fremdleistungen § 13b», «Dienstleistungen an
+Drittländer», «Einnahmen als Kleinunternehmer»), con el número de comprobante
+`ZE-<número de cliente>-<fin de la prestación>-<número correlativo>`. Para el
+§ 13b nacional, las operaciones exentas según el § 4, varios casos fiscales o
+una moneda extranjera se bloquea con el motivo; esos tiempos van por la
+entrega de facturación.
 
 Espejo de comprobantes: la sincronización de comprobantes refleja los
 comprobantes de Lexoffice en WorkDiary. También se reflejan los

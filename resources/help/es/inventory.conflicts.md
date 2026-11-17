@@ -1,7 +1,7 @@
 ---
 title: "Conflictos con sistemas externos (existencias)"
 topic: inventory.conflicts
-version: 4
+version: 5
 keywords:
     - discrepancia de stock
     - diferencia de inventario
@@ -58,3 +58,5 @@ almacén. La lista puede filtrarse por conflictos abiertos o todos.
 Los conflictos abiertos deben revisarse con prontitud: mientras existan,
 las existencias locales y externas divergen — con consecuencias para
 disponibilidades, propuestas de pedido y valoración.
+
+**Valoración de la compensación:** el contraasiento en las existencias propias libres se valora. Una salida compensada vuelve a entrar a su coste unitario, de modo que el valor del stock queda como antes; sin valor de coste se aplica el precio de compra y, si no, la media. Una entrada compensada sale según el método de valoración. Los contraasientos en otros estados y en existencias de terceros quedan sin valor.

@@ -41,7 +41,8 @@ trait PartyFormFields {
             'fax' => ['nullable', 'string', 'max:64'],
             'homepage' => ['nullable', 'url', 'max:255'],
             'address' => ['nullable', 'string', 'max:1000'],
-            'currency' => ['required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
+            // Fehlt das Feld (API-Teil-Update), bleibt die Währung; neu angelegt gilt die Spaltenvorgabe EUR.
+            'currency' => ['sometimes', 'required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'timezone' => ['nullable', 'string', 'max:64', 'timezone'],
             'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'comment' => ['nullable', 'string', 'max:5000'],
@@ -85,13 +86,17 @@ trait PartyFormFields {
      * @return array<string, mixed>
      */
     protected function partyNormalizedData(): array {
-        // IBAN/BIC über die Toolkit-Normalisierer (Vollaudit 2026-07, N40) —
-        // Whitespace-Strip + Uppercase, leer → null. Land und Bank nur, wenn
-        // gesendet: ein API-Teil-Update ohne sie lässt sie stehen (MVP-1700).
-        $normalized = [
-            'currency' => $this->string('currency')->upper()->value() ?: 'EUR',
-            'contact_persons' => $this->normalizedContactPersons(),
-        ];
+        // Nur Gesendetes: ein API-Teil-Update ohne Währung, Ansprechpartner, Land
+        // oder Bank lässt sie stehen (MVP-1700, MVP-1724). Das Formular sendet die
+        // Ansprechpartner immer, mindestens eine geleerte Zeile.
+        $normalized = [];
+        if ($this->has('currency')) {
+            $normalized['currency'] = $this->string('currency')->upper()->value() ?: 'EUR';
+        }
+        if ($this->has('contact_persons')) {
+            $normalized['contact_persons'] = $this->normalizedContactPersons();
+        }
+        // IBAN/BIC über die Toolkit-Normalisierer (Vollaudit 2026-07, N40): Leerzeichen raus, Großbuchstaben, leer → null.
         if ($this->has('country')) {
             $normalized['country'] = $this->string('country')->upper()->value() ?: null;
         }

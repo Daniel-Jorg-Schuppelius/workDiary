@@ -61,20 +61,8 @@ class DeliveryService {
         $qty = DecimalQty::positive($qty);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $order, $customer, $allowNegative, $createdBy, $serialIds): StockDelivery {
-            // Lagerbuchung zuerst — schlägt sie fehl (Unterdeckung), entsteht keine Auslieferung. Abgang über das
-            // aktive Bewertungsverfahren (Durchschnitt/FIFO/FEFO), damit der COGS-Kostensnapshot an der Bewegung steht.
-            $organization = Organization::query()->find($variant->organization_id);
-            $issue = $organization instanceof Organization
-                ? ($this->valuation ?? app(InventoryValuationManager::class))->forVariant($variant, $organization)
-                    ->issue($variant, $warehouse, $qty, $allowNegative, $createdBy)
-                : $this->ledger->issue($variant, $warehouse, $qty, allowNegative: $allowNegative);
-
-            // Standard-Buchungspfad → externe Outbox spiegeln, falls die Org extern führt (je Charge eine Bewegung).
-            if ($organization instanceof Organization) {
-                foreach ($issue as $movement) {
-                    ($this->mirror ?? app(ExternalStockMirror::class))->mirror($movement, $organization);
-                }
-            }
+            // Bestand vor der Audit-Kette der Auslieferung sperren — dieselbe Sperrfolge wie die übrigen Abgänge.
+            $this->ledger->availableForUpdate($variant, $warehouse);
 
             $target = $customer !== null
                 ? $this->billingMode->effectiveFor($customer)->value
@@ -103,6 +91,22 @@ class DeliveryService {
                 'delivered_at' => Carbon::now(),
                 'created_by' => $createdBy,
             ]);
+
+            // Die Auslieferung ist Beleg ihres Abgangs: eine Rücksendung findet so den Stückwert (MVP-1728). Schlägt
+            // die Lagerbuchung fehl (Unterdeckung), nimmt die Transaktion die Auslieferung zurück. Abgang über das
+            // aktive Bewertungsverfahren (Durchschnitt/FIFO/FEFO), damit der COGS-Kostensnapshot an der Bewegung steht.
+            $organization = Organization::query()->find($variant->organization_id);
+            $issue = $organization instanceof Organization
+                ? ($this->valuation ?? app(InventoryValuationManager::class))->forVariant($variant, $organization)
+                    ->issue($variant, $warehouse, $qty, $allowNegative, $createdBy, source: $delivery)
+                : $this->ledger->issue($variant, $warehouse, $qty, allowNegative: $allowNegative, source: $delivery);
+
+            // Standard-Buchungspfad → externe Outbox spiegeln, falls die Org extern führt (je Charge eine Bewegung).
+            if ($organization instanceof Organization) {
+                foreach ($issue as $movement) {
+                    ($this->mirror ?? app(ExternalStockMirror::class))->mirror($movement, $organization);
+                }
+            }
 
             // MVP-1163: Vergibt workDiary die Nummer, ist der Lieferschein sofort ausgeliefert;
             // ein Programm überträgt ihn erst nach der Lagerbuchung (ManufacturingOrderController::deliver).
