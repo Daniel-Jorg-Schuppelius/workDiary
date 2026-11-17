@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Blade, Gate, Schema};
+use Illuminate\Support\Facades\{Blade, DB, Gate, Schema};
 use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\WithOrganization;
@@ -48,7 +48,11 @@ final class CarryForwardNotesTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        // Temporär: CREATE/DROP einer echten Tabelle beendet unter MariaDB die Testtransaktion implizit,
+        // danach fehlt jeder Savepoint (Rückrollen in DB::transaction scheitert mit 1305).
+        DB::statement(DB::getDriverName() === 'sqlite' ? 'DROP TABLE IF EXISTS temp.' . self::ALIAS : 'DROP TEMPORARY TABLE IF EXISTS ' . self::ALIAS);
         Schema::create(self::ALIAS, function (Blueprint $table): void {
+            $table->temporary();
             $table->id();
             $table->foreignId('organization_id');
             $table->string('series', 191)->nullable();
