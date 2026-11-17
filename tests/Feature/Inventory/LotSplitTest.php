@@ -40,7 +40,8 @@ final class LotSplitTest extends TestCase {
         $this->lots = app(LotService::class);
         $this->split = app(LotSplitService::class);
         $this->warehouse = Warehouse::factory()->create(['organization_id' => $this->organization->id]);
-        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true]);
+        // Die Schichten wandern beim Teilen mit; Chargenschichten führt FEFO, nicht der Durchschnitt (MVP-1735).
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true, 'valuation_method' => 'fefo']);
         $this->variant = ArticleVariant::factory()->create([
             'organization_id' => $this->organization->id, 'article_id' => $article->id,
             'is_default' => true, 'option_signature' => 'default',

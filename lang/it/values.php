@@ -238,6 +238,7 @@ return [
     'exempt' => 'Esente',
     'reverse_charge' => 'Inversione contabile',
     'export' => 'Esportazione/paese terzo',
+    'intra_community' => 'Cessione intracomunitaria',
     'retired' => 'Ritirata',
     'services' => 'Prestazioni',
     'goods' => 'Beni',

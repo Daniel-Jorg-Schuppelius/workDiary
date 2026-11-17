@@ -27,9 +27,10 @@ use Illuminate\Database\Eloquent\Collection;
  * Charge, der Buchsaldo einer Charge blieb über dem, was von ihr noch da ist.
  * Unter FIFO/FEFO zeigt die Restschicht den echten Rest; liegt der Buchsaldo
  * darüber, bucht `--apply` die Differenz je Topf nach „ohne Charge“ um — der
- * physische Bestand bleibt gleich. Unter gleitendem Durchschnitt sinken die
- * Schichten nie, dort bleibt es bei der Meldung; gesperrte Chargen erst nach
- * der Freigabe (die Sperrbuchung stünde sonst über dem Chargensaldo).
+ * physische Bestand bleibt gleich. Chargen unter gleitendem Durchschnitt
+ * prüft er nicht: dort gibt es keine Chargenschichten (MVP-1735), und ältere
+ * sanken nie; gesperrte Chargen erst nach der Freigabe (die Sperrbuchung
+ * stünde sonst über dem Chargensaldo).
  */
 class RepairLotStockCommand extends Command {
     use IteratesOrganizations;
@@ -51,6 +52,10 @@ class RepairLotStockCommand extends Command {
                     $rest = $this->layerRest($chunk->modelKeys());
                     foreach ($chunk as $lot) {
                         /** @var StockLot $lot */
+                        $variant = $lot->variant;
+                        if (! $variant instanceof ArticleVariant || $methods->methodForVariant($variant, $organization) === ValuationMethod::MovingAverage) {
+                            continue;
+                        }
                         $balance = Decimal::of($book[$lot->id], InventoryLedger::SCALE);
                         $layers = $rest[$lot->id] ?? Decimal::zero(InventoryLedger::SCALE);
                         $excess = $balance->minus($layers);
@@ -63,7 +68,7 @@ class RepairLotStockCommand extends Command {
                             $balance->getValue(),
                             $layers->getValue(),
                             $excess->getValue(),
-                            $this->repair($lot, $excess, $organization, $lots, $methods, $apply),
+                            $this->repair($lot, $excess, $lots, $apply),
                         ];
                     }
                 });
@@ -81,13 +86,9 @@ class RepairLotStockCommand extends Command {
         return $failures > 0 ? self::FAILURE : self::SUCCESS;
     }
 
-    private function repair(StockLot $lot, Decimal $excess, Organization $organization, LotService $lots, ValuationMethodResolver $methods, bool $apply): string {
-        $variant = $lot->variant;
+    private function repair(StockLot $lot, Decimal $excess, LotService $lots, bool $apply): string {
         if (! $excess->isPositive()) {
             return 'Buchsaldo unter Restschicht — keine Korrektur';
-        }
-        if (! $variant instanceof ArticleVariant || $methods->methodForVariant($variant, $organization) === ValuationMethod::MovingAverage) {
-            return 'gleitender Durchschnitt — nur Meldung';
         }
         if ($lot->status === StockLotStatus::Blocked) {
             return 'gesperrt — erst freigeben';

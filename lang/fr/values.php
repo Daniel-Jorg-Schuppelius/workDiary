@@ -238,6 +238,7 @@ return [
     'exempt' => 'Exonéré',
     'reverse_charge' => 'Autoliquidation',
     'export' => 'Export/pays tiers',
+    'intra_community' => 'Livraison intracommunautaire',
     'retired' => 'Retirée',
     'services' => 'Prestations',
     'goods' => 'Biens',

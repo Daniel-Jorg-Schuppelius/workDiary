@@ -1,7 +1,7 @@
 ---
 title: "Conflits Lexoffice"
 topic: admin.lexoffice
-version: 10
+version: 11
 keywords:
     - Lexware Office
     - conflit de synchronisation
@@ -65,7 +65,10 @@ adresse de facturation ou de livraison créée dans WorkDiary reprend lors de la
 première synchronisation l’adresse Lexoffice correspondante au lieu d’être
 créée une seconde fois : l’adresse de facturation principale reprend la
 première de Lexoffice. Ensuite, seule celle-ci est principale ; les autres
-adresses de WorkDiary restent comme adresses supplémentaires.
+adresses de WorkDiary restent comme adresses supplémentaires. Une adresse que
+Lexoffice ne gère plus est supprimée lors de la synchronisation suivante ; les
+adresses sans lien avec Lexoffice restent. Si Lexoffice ne renvoie aucune
+adresse pour un contact, WorkDiary conserve son état actuel.
 
 **Type de taxe lors du transfert :** les factures et brouillons de facture de
 la remise de facturation portent le type de taxe de leur cas fiscal :

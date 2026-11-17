@@ -1,7 +1,7 @@
 ---
 title: "Réclamations & garantie"
 topic: claims.overview
-version: 5
+version: 6
 keywords:
     - plainte client
     - réclamation client
@@ -66,7 +66,7 @@ et le message indique « enregistrée sans écriture de stock ». Les retours
 du portail client apportent la variante et le numéro de série ; vous
 complétez l’entrepôt à la réception.
 
-**Valeur de la remise en stock :** la remise en stock fait passer le retour de la quarantaine au stock disponible et l’y valorise — au coût unitaire de la livraison d’origine si le retour la connaît par son numéro de série, sinon à la moyenne du magasin (sans valorisation existante, au prix d’achat). Tant que le retour est en quarantaine, il n’entre pas dans la valeur du stock ; la mise au rebut et le renvoi au fournisseur depuis la quarantaine restent donc sans valeur.
+**Valeur de la remise en stock :** la remise en stock fait passer le retour de la quarantaine au stock disponible et l’y valorise — au coût unitaire de la livraison d’origine si le retour la connaît (depuis le portail client par la livraison choisie, même sans numéro de série, sinon par son numéro de série), sinon à la moyenne du magasin (sans valorisation existante, au prix d’achat). Tant que le retour est en quarantaine, il n’entre pas dans la valeur du stock ; la mise au rebut et le renvoi au fournisseur depuis la quarantaine restent donc sans valeur.
 
 **Mesures et commande de suivi :** Vous créez reprise, réparation,
 remplacement ou intervention sous « Mesures » avec un délai et une personne

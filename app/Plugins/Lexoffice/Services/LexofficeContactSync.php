@@ -563,7 +563,9 @@ class LexofficeContactSync implements OwnershipConflictReplay {
      * (`billing-0`). Eine lokal angelegte Anschrift ohne Fremd-ID derselben Art
      * übernimmt sie (die primäre die erste Rechnungsanschrift), statt dass eine
      * zweite entsteht (MVP-1702). Danach ist nur die erste Rechnungsanschrift
-     * aus Lexoffice primär.
+     * aus Lexoffice primär. Anschriften mit Lexoffice-Fremd-ID, die der Kontakt
+     * nicht mehr führt, entfallen (MVP-1740) — nur wenn er sein `addresses`-Objekt
+     * mitliefert: fehlt es, ist „keine“ von „nicht geliefert“ nicht zu unterscheiden.
      *
      * @param  array<string, mixed>  $remote
      */
@@ -572,6 +574,7 @@ class LexofficeContactSync implements OwnershipConflictReplay {
             return;
         }
         $orgId = $record->getAttribute('organization_id');
+        $kept = [];
 
         foreach ([ContactAddress::KIND_BILLING, ContactAddress::KIND_SHIPPING] as $kind) {
             $list = (array) data_get($remote, 'addresses.' . $kind, []);
@@ -580,6 +583,7 @@ class LexofficeContactSync implements OwnershipConflictReplay {
                     continue;
                 }
                 $externalId = $kind . '-' . $i;
+                $kept[] = $externalId;
                 $primary = $i === 0 && $kind === ContactAddress::KIND_BILLING;
                 $address = $record->addresses()->where('kind', $kind)->where('external_id', $externalId)->first()
                     ?? $this->unlinkedAddress($record, $kind)
@@ -605,6 +609,35 @@ class LexofficeContactSync implements OwnershipConflictReplay {
                     'is_primary' => $primary,
                 ])->save();
             }
+        }
+
+        if (is_array($remote['addresses'] ?? null)) {
+            $this->dropRemovedAddresses($record, $kept);
+        }
+    }
+
+    /**
+     * Entfernt gespiegelte Anschriften, die Lexoffice nicht mehr führt; einzeln,
+     * damit die Projektion folgt. Bleibt keine primäre Rechnungsanschrift, wird
+     * die erste übrige es.
+     *
+     * @param  list<string>  $kept  in diesem Abgleich gespiegelte Fremd-IDs
+     */
+    private function dropRemovedAddresses(Customer|Supplier $record, array $kept): void {
+        $removed = $record->addresses()->whereNotNull('external_id')->get()
+            ->filter(static fn (ContactAddress $address): bool => preg_match('/^(billing|shipping)-\d+$/', (string) $address->external_id) === 1
+                && ! in_array($address->external_id, $kept, true));
+        if ($removed->isEmpty()) {
+            return;
+        }
+        foreach ($removed as $address) {
+            $address->delete();
+        }
+
+        $billing = $record->addresses()->where('kind', '!=', ContactAddress::KIND_SHIPPING);
+        if (! (clone $billing)->where('is_primary', true)->exists()) {
+            $next = $billing->orderBy('id')->first();
+            $next?->forceFill(['is_primary' => true])->save();
         }
     }
 

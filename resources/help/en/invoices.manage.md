@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 24
+version: 25
 keywords:
     - place of supply
     - catalogue service
@@ -390,6 +390,15 @@ enter the exemption provision as its document notice text, for example "Tax-exem
 medical treatment (§ 4 no. 14 UStG)"; without a rule only "Tax-exempt supply" appears
 and the check before sending warns.
 
+**EU businesses:** goods (material invoices) for businesses in the EU with a valid
+VAT ID are a tax-exempt intra-Community supply (K) without reverse charge, with the
+notice "Tax-exempt intra-Community supply (§ 4 no. 1 (b) in conjunction with § 6a
+UStG)" and delivery country and delivery date in the e-invoice; accounting, field 41
+and the EC sales list stay as before. A tax rule with the rate type "Intra-Community
+supply" replaces the notice. Services to these businesses stay reverse charge (AE).
+Issued invoices keep their case; a draft with reverse charge follows on its next
+edit or issue.
+
 **Non-EU countries:** goods for customers outside the EU are exports (G) with
 the reason "Tax-exempt export supply". Services to businesses outside the EU are
 not subject to German VAT (§ 3a (2) UStG) and appear as "not subject to VAT" (O)
@@ -400,18 +409,20 @@ reprinted unchanged.
 
 The check before sending also reports: a missing customer VAT ID for intra-Community
 supplies, a missing organisation VAT ID for supplies to other EU countries and
-exports, "not subject to VAT" next to other categories, and an item without tax in
-its category but with a tax rate above 0 %. With "not subject to VAT" the e-invoice
-carries no VAT IDs; the tax number is enough. For intra-Community supplies the
-e-invoice states the customer's different delivery address (customer dialog,
-section **Delivery address**), otherwise the customer's address, as the delivery
-address with the delivery country (rule BR-IC-12); the XRechnung needs postcode
-and city there, otherwise the check before sending stops. The delivery address
-is frozen at issue; cancellation and corrective invoice take the one of the
-original. The organisation's register entry (**Branding**, field **Trade
-register**) appears in the e-invoice as the seller's legal registration
-identifier (BT-30), also frozen. Items "not subject to VAT" appear in
-the e-invoice without a tax rate.
+exports, "not subject to VAT" next to other categories, an item without tax in its
+category but with a tax rate above 0 %, and a standard-rated item (S) at 0 % (rule
+BR-S-05); if only the draft is still at 0 % although its tax case is taxable again,
+it warns, because issuing gives the items without their own category the rate of the
+tax case. With "not subject to VAT" the e-invoice carries no VAT IDs; the tax number
+is enough. For intra-Community supplies the e-invoice states the customer's
+different delivery address (customer dialog, section **Delivery address**),
+otherwise the customer's address, as the delivery address with the delivery country
+(rule BR-IC-12); the XRechnung needs postcode and city there, otherwise the check
+before sending stops. The delivery address is frozen at issue; cancellation and
+corrective invoice take the one of the original. The organisation's register entry
+(**Branding**, field **Trade register**) appears in the e-invoice as the seller's
+legal registration identifier (BT-30), also frozen. Items "not subject to VAT"
+appear in the e-invoice without a tax rate.
 
 ## Exemption note in the invoice PDF
 

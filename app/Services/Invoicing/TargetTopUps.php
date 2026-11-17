@@ -34,10 +34,11 @@ use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
 
 /**
- * Auffüllung auf das Projekt-Soll (Feature 194, MVP-1470/1494) für Übergabe
- * und lokale Rechnung: dieselben offenen Befunde, derselbe Preis. Berechnet
- * ist ein Befund, sobald `billed_minutes` gesetzt ist — über eine
- * Übergabeposition oder eine Rechnungsposition (`invoice_item_id`).
+ * Auffüllung auf das Projekt-Soll (Feature 194, MVP-1470/1494/1733) für
+ * Übergabe, lokale Rechnung und Lexoffice-Zeitbeleg: dieselben offenen
+ * Befunde, derselbe Preis. Berechnet ist ein Befund, sobald `billed_minutes`
+ * gesetzt ist — über eine Übergabeposition, eine Rechnungsposition
+ * (`invoice_item_id`) oder einen Zeitbeleg (`external_reference_id`).
  * Rechnet das Projekt pauschal ab, schließt der Beleg mit der Pauschale den
  * Befund statt aufzufüllen — Rechnungslauf (MVP-1708), Übergabe und
  * Lexoffice-Zeitbeleg (MVP-1716).
@@ -191,14 +192,47 @@ final class TargetTopUps {
     /**
      * Dieselbe Schließung durch einen Zeitbeleg im Buchhaltungsprogramm
      * (Lexoffice, MVP-1716): ein Beleg für alle Zeiten des Zeitraums, Verweis
-     * auf seine Fremdreferenz. Befunde aus der Auswahl der Rechnung.
+     * auf seine Fremdreferenz. Befunde aus der Auswahl der Rechnung, sonst die
+     * übergebenen (Reparatur, MVP-1734).
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
      * @param  Collection<int, TimeEntry>  $entries  abgerechnete Zeiten des Belegs
+     * @param  EloquentCollection<int, ProjectTimeShortfall>|null  $shortfalls
      * @return int geschlossene Befunde
      */
-    public function settleFlatRateByVoucher(Customer $customer, array $period, Collection $entries, ExternalReference $voucher): int {
-        return $this->settle($this->openQuery($customer, $period)->orderBy('date')->get(), $customer->organization, new Collection([(int) $voucher->id => $entries]), 'external_reference_id');
+    public function settleFlatRateByVoucher(Customer $customer, array $period, Collection $entries, ExternalReference $voucher, ?EloquentCollection $shortfalls = null): int {
+        return $this->settle($shortfalls ?? $this->openQuery($customer, $period)->orderBy('date')->get(), $customer->organization, new Collection([(int) $voucher->id => $entries]), 'external_reference_id');
+    }
+
+    /**
+     * Auffüllung durch einen Zeitbeleg im Buchhaltungsprogramm (Lexoffice,
+     * MVP-1733): berechnet mit Verweis auf den Beleg. Der Beleg ist schon
+     * angelegt; unter der Sperre neu gelesen bleibt ein Befund, den inzwischen
+     * eine Rechnung, Übergabe oder Nachbuchung übernommen hat, unverändert.
+     *
+     * @param  iterable<TargetTopUpLine>  $lines
+     * @return list<int> Befunde, die der Beleg nicht mehr markieren konnte
+     */
+    public function markBilledByVoucher(iterable $lines, ExternalReference $voucher): array {
+        $conflicts = [];
+        foreach ($lines as $line) {
+            $marked = DB::transaction(function () use ($line, $voucher): bool {
+                $locked = ProjectTimeShortfall::query()->whereKey($line->shortfall->id)->lockForUpdate()->first();
+                if (! $locked instanceof ProjectTimeShortfall || $locked->isBilled() || $locked->status === ShortfallStatus::Resolved
+                    || $locked->invoice_item_id !== null || $locked->billing_transfer_position_id !== null || $locked->external_reference_id !== null) {
+                    return false;
+                }
+                $locked->forceFill(['billed_minutes' => $line->minutes, 'billed_at' => now(), 'external_reference_id' => (int) $voucher->id])->saveQuietly();
+                $line->shortfall->setRawAttributes($locked->getAttributes(), true);
+
+                return true;
+            });
+            if (! $marked) {
+                $conflicts[] = (int) $line->shortfall->id;
+            }
+        }
+
+        return $conflicts;
     }
 
     /**

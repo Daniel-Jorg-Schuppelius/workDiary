@@ -31,8 +31,8 @@ use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
 use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeService, LexofficeTaxConditions, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
-use App\Services\Invoicing\Dto\OutgoingTaxCase;
-use App\Services\Invoicing\{OutgoingTaxCaseResolver, PlaceOfSupplyResolver};
+use App\Services\Invoicing\Dto\{OutgoingTaxCase, TargetTopUpLine};
+use App\Services\Invoicing\{OutgoingTaxCaseResolver, PlaceOfSupplyResolver, TargetTopUps};
 use App\Services\Stammdaten\ContactNumberAdopter;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
@@ -40,7 +40,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\{Cache, Log};
 use Throwable;
 
 /**
@@ -371,6 +371,13 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
     }
 
     public function exportCustomerTime(Customer $customer, CarbonImmutable $from, CarbonImmutable $to): array {
+        // Ein Beleg je Kunde zur Zeit: Zwei Läufe sendeten sonst dieselben Zeiten und Auffüllungen zweimal.
+        return Cache::lock('lexoffice:time-voucher:' . $customer->getKey(), 300)
+            ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, fn (): array => $this->exportCustomerTimeLocked($customer, $from, $to));
+    }
+
+    /** @return array{external_id: string, external_type: string, payload?: array<string, mixed>} */
+    private function exportCustomerTimeLocked(Customer $customer, CarbonImmutable $from, CarbonImmutable $to): array {
         $entries = TimeEntry::query()
             ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id))
             ->whereBetween('date', DateRange::days($from, $to))
@@ -379,14 +386,19 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ->with('project')
             ->get();
 
-        if ($entries->isEmpty()) {
+        // Auffüllung auf das Projekt-Soll wie Rechnungslauf und Übergabe (MVP-1733): dieselben Befunde, derselbe Preis.
+        $topUps = app(TargetTopUps::class);
+        $period = ['from' => $from, 'to' => $to];
+        $topUpLines = $topUps->lines($topUps->openQuery($customer, $period)->orderBy('date')->orderBy('user_id')->get(), $customer, $customer->organization);
+
+        if ($entries->isEmpty() && $topUpLines->isEmpty()) {
             return [
                 'external_id' => '',
                 'external_type' => self::EXT_TYPE_VOUCHER,
                 'payload' => ['skipped' => true, 'reason' => 'no billable entries'],
             ];
         }
-        $taxCase = $this->timeVoucherTaxCase($customer, $entries, $to);
+        $taxCase = $this->timeVoucherTaxCase($customer, $entries, $topUpLines, $to);
 
         $contactRef = ExternalReference::query()
             ->forPlugin($customer->organization_id, self::ID, self::EXT_TYPE_CONTACT)
@@ -402,7 +414,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ->count();
         $voucherNumber = sprintf('ZE-%s-%s-%d', trim((string) $customer->number) !== '' ? trim((string) $customer->number) : $customer->sqid, $to->format('Ymd'), $previous + 1);
 
-        $result = (new LexofficeService((int) $customer->organization_id))->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId, $taxCase, $voucherNumber);
+        $result = (new LexofficeService((int) $customer->organization_id))->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId, $taxCase, $voucherNumber, $topUpLines);
 
         $voucherRef = ExternalReference::create([
             'organization_id' => $customer->organization_id,
@@ -420,8 +432,14 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ->whereIn('id', $entries->pluck('id'))
             ->update(['exported' => true]);
 
+        $conflicts = $topUps->markBilledByVoucher($topUpLines, $voucherRef);
+        if ($conflicts !== []) {
+            // Der Beleg ist schon in Lexoffice: Die Auffüllung dort prüfen, sie ist anderweitig berechnet oder erledigt.
+            Log::warning('Lexoffice time voucher: top-up meanwhile billed or resolved elsewhere', ['external_reference_id' => $voucherRef->id, 'shortfall_ids' => $conflicts]);
+        }
+
         // Pauschal abgerechnete Projekte: Der Beleg schließt ihren Soll-Befund wie der Rechnungslauf (MVP-1716).
-        app(\App\Services\Invoicing\TargetTopUps::class)->settleFlatRateByVoucher($customer, ['from' => $from, 'to' => $to], $entries, $voucherRef);
+        $topUps->settleFlatRateByVoucher($customer, $period, $entries, $voucherRef);
 
         return [
             'external_id' => $voucherRef->external_id,
@@ -432,15 +450,17 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
     /**
      * Steuerfall des Belegs aus Zeiten (MVP-1712, MVP-1723): wie die übrigen
-     * Wege aus Kunde und Leistungsort der Zeiten. Der Beleg trägt ihn als
+     * Wege aus Kunde und Leistungsort der Zeiten, Auffüllungen über die
+     * Leistung ihres Projekts (wie `TransferTaxCases`). Der Beleg trägt ihn als
      * Buchungskategorie; ein Fall ohne Kategorie, mehrere Fälle oder eine
      * Fremdwährung sperren vor dem ersten Aufruf.
      *
      * @param  EloquentCollection<int, TimeEntry>  $entries
+     * @param  iterable<TargetTopUpLine>  $topUpLines
      *
      * @throws UnmappableTaxCaseException
      */
-    private function timeVoucherTaxCase(Customer $customer, EloquentCollection $entries, CarbonImmutable $to): OutgoingTaxCase {
+    private function timeVoucherTaxCase(Customer $customer, EloquentCollection $entries, iterable $topUpLines, CarbonImmutable $to): OutgoingTaxCase {
         $organization = $customer->organization ?? throw new \LogicException('Kunde ohne Organisation.');
         if ($customer->currency !== CurrencyCode::Euro) {
             throw new UnmappableTaxCaseException((string) __('lexoffice::finance.tax_case.time_voucher_currency', ['currency' => $customer->currency->value]));
@@ -448,6 +468,10 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         $places = [];
         foreach ($entries as $entry) {
             $place = app(PlaceOfSupplyResolver::class)->forTimeEntry($organization, $entry);
+            $places[$place->key()] = $place;
+        }
+        foreach ($topUpLines as $line) {
+            $place = app(PlaceOfSupplyResolver::class)->forProject($organization, $line->shortfall->project);
             $places[$place->key()] = $place;
         }
         $cases = app(OutgoingTaxCaseResolver::class)->forPlaces($organization, $customer, $to, false, array_values($places));

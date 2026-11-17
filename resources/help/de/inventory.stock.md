@@ -1,7 +1,7 @@
 ---
 title: "Lagerbestände & Scannen"
 topic: inventory.stock
-version: 10
+version: 11
 keywords:
     - Warenbestand
     - Bestand buchen
@@ -78,8 +78,11 @@ ist. Ihr Administrator prüft das mit dem Befehl `inventory:lots:repair`:
 ohne Zusatz ein Probelauf mit einer Tabelle je Charge (Buchsaldo, Restmenge
 der Bewertungsschichten, Differenz); mit `--apply` bucht er bei FIFO- oder
 FEFO-Bewertung die Differenz nach „ohne Charge“ um, der Gesamtbestand bleibt
-gleich. Bei gleitendem Durchschnitt meldet er die Charge nur, gesperrte
-Chargen erst nach der Freigabe.
+gleich. Chargen unter gleitendem Durchschnitt prüft er nicht — dort führt die
+Bewertung keine Chargenschichten; gesperrte Chargen bucht er erst nach der
+Freigabe um.
+
+**Bewertungsbuch abgleichen.** Bis November 2026 gingen manche Zugänge ohne Wert ins Lager (manueller Eingang, Inventurmehrbestand, Chargen-Eingang beim gleitenden Durchschnitt); das Bewertungsbuch kann deshalb unter dem Bestand liegen. Ihr Administrator prüft das mit dem Befehl `inventory:valuation-check`: eine Tabelle je Variante und Lager mit Eigenbestand, Menge im Bewertungsbuch und Differenz, ohne Werte. Mit `--align` trägt er die fehlende Menge ohne Lagerbewegung nach — zum Einkaufspreis der Variante, sonst zum Durchschnitt des Lagers. Dieser Wert ist geschätzt; das Audit des Lagers hält Menge und Stückwert fest. Bei FIFO und FEFO geht die nachgetragene Menge als älteste zuerst ab. Ein Bewertungsbuch über dem Bestand meldet der Befehl nur.
 
 ## Einheiten, Lagerjournal und Einstellungen
 
@@ -87,7 +90,7 @@ Chargen erst nach der Freigabe.
 
 **Lagerjournal.** Der Reiter **Lagerjournal** listet alle Bewegungen mit Zeitpunkt, Lagerort, Bewegungsart, Menge in Basiseinheit und der Spalte **Erfasst als** (Eingabemenge und Einheit). Suche, Lagerort und der Zeitraum oben grenzen die Liste ein.
 
-**Mindesthaltbarkeit.** Trägt ein Artikel die Eigenschaft „Mindesthaltbarkeit erforderlich“, nimmt das Lager seinen Zugang nur über den Wareneingang der Bestellung mit Charge und Mindesthaltbarkeitsdatum an. Manueller Zugang und Scan-Eingang werden abgewiesen. Eine schon bekannte Charge bringt ihr Datum mit.
+**Mindesthaltbarkeit.** Trägt ein Artikel die Eigenschaft „Mindesthaltbarkeit erforderlich“, nimmt das Lager seinen Zugang nur über den Wareneingang der Bestellung mit Charge und Mindesthaltbarkeitsdatum an. Manueller Zugang und Scan-Eingang werden abgewiesen. Eine schon bekannte Charge bringt ihr Datum mit. Die MHD-Meldung nennt Chargen mit Bestand im Lagerjournal, deren Datum in den Vorlauf fällt — gleich nach welchem Verfahren bewertet wird; aufgebrauchte Chargen meldet sie nicht.
 
 **Lager-Einstellungen.** Mit dem Recht zur Lagerkonfiguration öffnen Sie in der Bestandsübersicht die **Lager-Einstellungen**. Dort wählen Sie das **Bewertungsverfahren** der Organisation (gleitender Durchschnitt, FIFO oder FEFO) und den **Reservierungszeitpunkt** der Fertigung (bei Freigabe oder beim Start). Beim Wechsel zu FIFO oder FEFO erhält vorhandener Bestand eine Anfangsschicht zum bisherigen Durchschnittspreis. Zurück zum gleitenden Durchschnitt geht es erst, wenn kein Bestand mehr in Schichten liegt, weil der Durchschnitt in dieser Zeit nicht fortgeschrieben wurde.
 
@@ -109,7 +112,7 @@ Chargen erst nach der Freigabe.
 
 **Bewertung der Entnahme:** Entnahmen aus Eigenbestand — im Buchungsformular, per Scan, nach einer Vier-Augen-Freigabe, beim Materialverbrauch der Fertigung und bei der Erfüllung einer Reservierung — sind nach dem Bewertungsverfahren des Artikels bewertet wie Auslieferung und Materialverbrauch: FIFO und FEFO verbrauchen die Bewertungsschichten, der gleitende Durchschnitt mindert das Durchschnittsbuch zum aktuellen Durchschnittspreis. Entnahmen aus Fremdbestand (Kunde, Kommission, Lieferant, Projekt) bleiben unbewertet. Die Lagerentnahme in der Kundenakte bucht ebenfalls nach dem Verfahren des Artikels; das Löschen der Zuordnung bucht bei FIFO und FEFO als neue Schicht zum Stückkostenwert der Entnahme zurück, beim gleitenden Durchschnitt ins Durchschnittsbuch.
 
-**Bewertung des Eingangs:** Ein Eingang in Eigenbestand — im Buchungsformular und per Scan — ist bewertet wie der Wareneingang einer Bestellung. Im Feld **Einstandspreis je Einheit** erfassen Sie den Preis je eingegebener Einheit (etwa je Karton), mit Komma oder Punkt; gebucht wird er je Basiseinheit. Leer gilt der Einkaufspreis der Variante (ohne eigenen der des Artikels), ohne Einkaufspreis der aktuelle Durchschnitt des Lagers und ohne jeden Bewertungsstand null. Der Preis gilt in der Währung, in der die Bewertung den Artikel im Lager führt, sonst in der der Organisation; ein Einkaufspreis in anderer Währung bleibt außen vor. Bei FIFO und FEFO legt der Eingang eine Bewertungsschicht an, beim gleitenden Durchschnitt rechnet er den Durchschnitt neu. Eingänge in Fremdbestand bleiben unbewertet.
+**Bewertung des Eingangs:** Ein Eingang in Eigenbestand — im Buchungsformular und per Scan — ist bewertet wie der Wareneingang einer Bestellung. Im Feld **Einstandspreis je Einheit** erfassen Sie den Preis je eingegebener Einheit (etwa je Karton), mit Komma oder Punkt; gebucht wird er je Basiseinheit. Leer gilt der Einkaufspreis der Variante (ohne eigenen der des Artikels), ohne Einkaufspreis der aktuelle Durchschnitt des Lagers und ohne jeden Bewertungsstand null. Der Preis gilt in der Währung, in der die Bewertung den Artikel im Lager führt, sonst in der der Organisation; ein Einkaufspreis in anderer Währung bleibt außen vor. Bei FIFO und FEFO legt der Eingang eine Bewertungsschicht an, beim gleitenden Durchschnitt rechnet er den Durchschnitt neu. Eingänge in Fremdbestand bleiben unbewertet. Der Wareneingang einer Bestellung in eine Charge folgt ebenfalls dem Verfahren: beim gleitenden Durchschnitt geht er ins Durchschnittsbuch, bei FIFO und FEFO wird er eine Schicht mit Charge und Mindesthaltbarkeitsdatum.
 
 **Reservierungen umverteilen:** Im Dialog „Reservierung ändern“ geben Sie offene Menge an eine andere Reservierung desselben Artikels, Lagers und Eigentums ab, etwa an einen Auftrag mit höherer Priorität. Eine jüngere Reservierung verdrängt eine ältere nie still; die Umverteilung steht im Audit-Protokoll, und die Materialposition eines Fertigungsauftrags folgt ihr.
 

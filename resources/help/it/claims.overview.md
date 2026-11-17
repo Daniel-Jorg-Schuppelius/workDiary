@@ -1,7 +1,7 @@
 ---
 title: "Reclami e garanzia"
 topic: claims.overview
-version: 5
+version: 6
 keywords:
     - reclamo cliente
     - contestazione
@@ -67,7 +67,7 @@ indica «registrata senza movimento di giacenza». I resi dal portale
 clienti portano con sé variante e numero di serie; il magazzino si
 completa all’entrata merci.
 
-**Valore del reimmagazzinamento:** il reimmagazzinamento registra il reso dalla quarantena nella giacenza libera e lo valorizza lì — al costo unitario della consegna originale se il reso la conosce tramite il suo numero di serie, altrimenti alla media del magazzino (senza valorizzazione esistente, al prezzo d'acquisto). Finché il reso è in quarantena non conta nel valore di magazzino; la rottamazione e la restituzione al fornitore dalla quarantena restano quindi senza valore.
+**Valore del reimmagazzinamento:** il reimmagazzinamento registra il reso dalla quarantena nella giacenza libera e lo valorizza lì — al costo unitario della consegna originale se il reso la conosce (dal portale clienti tramite la consegna scelta lì, anche senza numero di serie, altrimenti tramite il suo numero di serie), altrimenti alla media del magazzino (senza valorizzazione esistente, al prezzo d'acquisto). Finché il reso è in quarantena non conta nel valore di magazzino; la rottamazione e la restituzione al fornitore dalla quarantena restano quindi senza valore.
 
 **Misure e ordine di follow-up:** rilavorazione, riparazione, sostituzione o
 intervento si creano in «Misure» con scadenza e persona responsabile. Ogni

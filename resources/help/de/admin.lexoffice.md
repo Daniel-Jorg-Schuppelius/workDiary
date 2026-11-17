@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 10
+version: 11
 keywords:
     - Lexware Office
     - Synchronisationskonflikt
@@ -66,6 +66,9 @@ WorkDiary angelegte Rechnungs- oder Lieferanschrift übernimmt beim ersten
 Abgleich die passende Lexoffice-Anschrift, statt ein zweites Mal angelegt zu
 werden: die primäre Rechnungsanschrift die erste aus Lexoffice. Primär ist
 danach nur diese; weitere Anschriften in WorkDiary bleiben als weitere stehen.
+Eine Anschrift, die Lexoffice nicht mehr führt, entfällt beim nächsten Abgleich;
+Anschriften ohne Bezug zu Lexoffice bleiben. Liefert Lexoffice zu einem Kontakt
+gar keine Anschriften, bleibt der Stand in WorkDiary unverändert.
 
 **Steuerart beim Übertragen:** Rechnungen und Rechnungsentwürfe der
 Faktura-Übergabe tragen die Steuerart ihres Steuerfalls: Leistung an

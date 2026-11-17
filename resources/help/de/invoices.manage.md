@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 24
+version: 25
 keywords:
     - Leistungsort
     - Katalogleistung
@@ -404,6 +404,16 @@ Befreiungstatbestand als Beleg-Hinweistext ein, etwa „Steuerfreie Heilbehandlu
 (§ 4 Nr. 14 UStG)“; ohne Regel steht nur „Steuerfreier Umsatz“, und die Prüfung vor
 dem Versand warnt.
 
+**EU-Unternehmen:** Waren (Materialrechnungen) an Unternehmen in der EU mit gültiger
+USt-IdNr. gehen als steuerfreie innergemeinschaftliche Lieferung (K) ohne Reverse
+Charge, mit dem Hinweis „Steuerfreie innergemeinschaftliche Lieferung (§ 4 Nr. 1
+Buchstabe b i. V. m. § 6a UStG)“, Lieferland und Lieferdatum in der E-Rechnung;
+Buchhaltung, Kennziffer 41 und Zusammenfassende Meldung bleiben wie bisher. Eine
+Steuerregel der Satzart „Innergemeinschaftliche Lieferung“ ersetzt den Hinweis.
+Leistungen an diese Unternehmen bleiben Reverse Charge (AE). Gestellte Rechnungen
+behalten ihren Fall; ein Entwurf mit Reverse Charge zieht beim nächsten Bearbeiten
+oder Stellen nach.
+
 **Drittland:** Waren an Kunden außerhalb der EU gehen als Ausfuhr (G) mit dem
 Grund „Steuerfreie Ausfuhrlieferung“. Leistungen an Unternehmen außerhalb der
 EU sind im Inland nicht steuerbar (§ 3a Abs. 2 UStG) und stehen in
@@ -414,19 +424,22 @@ Rechnungen, die vorher mit Kategorie G ausgestellt wurden, bleiben beim
 Nachdruck unverändert.
 
 Die Prüfung vor dem Versand meldet außerdem: fehlende USt-IdNr. des Kunden bei
-innergemeinschaftlicher Lieferung, fehlende USt-IdNr. der Organisation bei
-Lieferung ins EU-Ausland und Ausfuhr, „nicht steuerbar“ neben anderen Kategorien
-und eine Position ohne Steuerkategorie mit Steuersatz über 0 %. Bei „nicht
-steuerbar“ stehen keine USt-IdNrn. in der E-Rechnung, es genügt die Steuernummer.
-Bei innergemeinschaftlicher Lieferung nennt die E-Rechnung die abweichende
-Lieferanschrift des Kunden (Kundendialog, Abschnitt **Lieferanschrift**), ohne
-sie seine Anschrift, als Lieferanschrift mit Lieferland (Regel BR-IC-12); die
-XRechnung braucht dort PLZ und Ort, sonst hält die Prüfung vor dem Versand an.
-Die Lieferanschrift wird beim Ausstellen eingefroren; Storno und
-Korrekturrechnung nehmen die des Originals. Die Registerangabe der Organisation
-(**Branding**, Feld **Handelsregister**) steht als Registerkennung des
-Verkäufers (BT-30) in der E-Rechnung, ebenfalls eingefroren. Positionen
-„nicht steuerbar“ stehen ohne Steuersatz in der E-Rechnung.
+innergemeinschaftlicher Lieferung, fehlende USt-IdNr. der Organisation bei Lieferung
+ins EU-Ausland und Ausfuhr, „nicht steuerbar“ neben anderen Kategorien, eine
+Position ohne Steuerkategorie mit Steuersatz über 0 % und eine steuerpflichtige
+Position (S) mit 0 % (Regel BR-S-05); steht nur der Entwurf noch auf 0 %, obwohl
+sein Steuerfall wieder steuerpflichtig ist, warnt sie, denn das Stellen gibt den
+Positionen ohne eigene Kategorie den Satz des Steuerfalls. Bei „nicht steuerbar“
+stehen keine USt-IdNrn. in der E-Rechnung, es genügt die Steuernummer. Bei
+innergemeinschaftlicher Lieferung nennt die E-Rechnung die abweichende
+Lieferanschrift des Kunden (Kundendialog, Abschnitt **Lieferanschrift**), ohne sie
+seine Anschrift, als Lieferanschrift mit Lieferland (Regel BR-IC-12); die XRechnung
+braucht dort PLZ und Ort, sonst hält die Prüfung vor dem Versand an. Die
+Lieferanschrift wird beim Ausstellen eingefroren; Storno und Korrekturrechnung
+nehmen die des Originals. Die Registerangabe der Organisation (**Branding**, Feld
+**Handelsregister**) steht als Registerkennung des Verkäufers (BT-30) in der
+E-Rechnung, ebenfalls eingefroren. Positionen „nicht steuerbar“ stehen ohne
+Steuersatz in der E-Rechnung.
 
 ## Befreiungshinweis im Rechnungs-PDF
 

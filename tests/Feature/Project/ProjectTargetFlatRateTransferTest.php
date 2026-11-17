@@ -173,8 +173,8 @@ final class ProjectTargetFlatRateTransferTest extends TestCase {
         $this->assertSame(ShortfallStatus::Resolved, $shortfall->refresh()->status, 'Der nächtliche Abgleich öffnet ihn nicht wieder.');
     }
 
-    /** Gegenprobe: Ein Zeitbeleg nach Stunden füllt nicht auf und schließt nichts. */
-    public function test_lexoffice_time_voucher_leaves_an_hourly_finding_open(): void {
+    /** Gegenprobe: Ein Zeitbeleg nach Stunden schließt nichts — er füllt auf (MVP-1733), der Befund bleibt offen und gilt als berechnet. */
+    public function test_lexoffice_time_voucher_fills_up_an_hourly_finding_instead_of_closing_it(): void {
         $this->entry($this->project, '2030-04-01 08:00', '2030-04-01 14:00');
         $shortfall = $this->shortfall($this->project);
         $this->connectLexoffice();
@@ -183,8 +183,9 @@ final class ProjectTargetFlatRateTransferTest extends TestCase {
 
         $shortfall->refresh();
         $this->assertSame(ShortfallStatus::Open, $shortfall->status);
-        $this->assertNull($shortfall->external_reference_id);
-        $this->assertNull($shortfall->billed_minutes);
+        $this->assertSame(120, $shortfall->billed_minutes);
+        $this->assertSame(ExternalReference::query()->where('external_type', LexofficePlugin::EXT_TYPE_VOUCHER)->sole()->id, $shortfall->external_reference_id);
+        $this->assertFalse($shortfall->isSettledByFlatRate());
     }
 
     private function transferred(): BillingTransfer {

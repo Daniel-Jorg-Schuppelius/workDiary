@@ -1,7 +1,7 @@
 ---
 title: "Conflictos de Lexoffice"
 topic: admin.lexoffice
-version: 10
+version: 11
 keywords:
     - Lexware Office
     - conflicto de sincronización
@@ -65,7 +65,10 @@ facturación o de entrega creada en WorkDiary adopta en la primera
 sincronización la dirección de Lexoffice correspondiente en lugar de crearse
 por segunda vez: la dirección de facturación principal adopta la primera de
 Lexoffice. Después solo esa es la principal; las demás direcciones de WorkDiary
-se conservan como adicionales.
+se conservan como adicionales. Una dirección que Lexoffice ya no gestiona se
+elimina en la siguiente sincronización; las direcciones sin vínculo con
+Lexoffice se conservan. Si Lexoffice no devuelve ninguna dirección para un
+contacto, WorkDiary mantiene su estado actual.
 
 **Tipo de impuesto al traspasar:** las facturas y borradores de factura de la
 entrega de facturación llevan el tipo de impuesto de su caso fiscal: servicio

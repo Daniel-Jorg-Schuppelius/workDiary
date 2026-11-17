@@ -217,6 +217,21 @@ class AccountingVatFieldsFromInboxTest extends TestCase {
         $this->assertSame([], $report['unclear']);
     }
 
+    /**
+     * MVP-1731: Neue Materialrechnungen an EU-Unternehmer tragen `K` ohne
+     * Reverse-Charge-Merkmal; sie buchen wie die Altbelege mit `AE` in Kz 41 und
+     * stehen als Lieferung in der Zusammenfassenden Meldung.
+     */
+    public function test_intra_community_supply_frozen_as_k_books_like_the_legacy_form(): void {
+        $this->postFromInbox(PostingSourceKind::SalesInvoice, $this->zeroRatedInvoice('RE-IGL-K', 'K', Invoice::CATEGORY_MATERIAL, '700.00'));
+        $this->postFromInbox(PostingSourceKind::SalesInvoice, $this->zeroRatedInvoice('RE-IGL-AE', 'AE', Invoice::CATEGORY_MATERIAL, '300.00'));
+
+        $this->assertEquals(['41' => ['base' => '1000.00', 'tax' => '0.00']], $this->fields());
+
+        $report = app(\App\Services\Accounting\Filing\RecapitulativeStatementService::class)->report($this->org, $this->startsOn, $this->startsOn->endOfYear());
+        $this->assertSame(['1000.00', '1000.00', '0.00'], [$report['total'], $report['total_goods'], $report['total_services']]);
+    }
+
     /** Steuerfrei ohne nähere Kategorie ist ein Klärungsfall (Kennzeichen ohne Kennziffer), kein stiller Ausfall. */
     public function test_a_plain_tax_free_sale_is_listed_as_unclear(): void {
         $this->postFromInbox(PostingSourceKind::SalesInvoice, $this->zeroRatedInvoice('RE-FREI', 'S', Invoice::CATEGORY_SERVICE, '80.00'));

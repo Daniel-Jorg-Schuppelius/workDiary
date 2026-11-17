@@ -1,7 +1,7 @@
 ---
 title: "Stocks et scan"
 topic: inventory.stock
-version: 10
+version: 11
 keywords:
     - état des stocks
     - entrée de marchandises
@@ -70,8 +70,11 @@ réellement. Votre administrateur le vérifie avec la commande
 `inventory:lots:repair` : sans option, c’est une simulation avec un tableau
 par lot (solde comptable, reste des couches de valorisation, écart) ; avec
 `--apply`, elle reporte l’écart vers « sans lot » en valorisation FIFO ou
-FEFO, le stock total restant inchangé. En prix moyen pondéré, elle signale
-seulement le lot ; les lots bloqués seulement après leur libération.
+FEFO, le stock total restant inchangé. Elle ne contrôle pas les lots en prix moyen pondéré
+— la valorisation n’y tient pas de couches par lot ; les lots bloqués ne sont
+reportés qu’après leur libération.
+
+**Aligner le registre de valorisation.** Jusqu’en novembre 2026, certaines entrées arrivaient en stock sans valeur (entrée manuelle, excédent d’inventaire, entrée en lot en prix moyen pondéré) ; le registre de valorisation peut donc être inférieur au stock. Votre administrateur le vérifie avec la commande `inventory:valuation-check` : un tableau par variante et dépôt avec le stock propre, la quantité du registre de valorisation et l’écart, sans valeurs. Avec `--align`, elle ajoute la quantité manquante sans mouvement de stock — au prix d’achat de la variante, sinon au prix moyen du dépôt. Cette valeur est estimée ; l’audit du dépôt enregistre la quantité et le coût unitaire. En FIFO et FEFO, la quantité ajoutée sort en premier, comme la plus ancienne. Un registre de valorisation supérieur au stock est seulement signalé.
 
 ## Unités, journal de stock et paramètres
 
@@ -79,7 +82,7 @@ seulement le lot ; les lots bloqués seulement après leur libération.
 
 **Journal de stock.** L’onglet **Journal de stock** liste tous les mouvements avec la date, le dépôt, le type de mouvement, la quantité en unité de base et la colonne **Saisi comme** (quantité et unité saisies). La recherche, le dépôt et la période en haut restreignent la liste.
 
-**Durée de conservation.** Si un article porte la propriété « durée de conservation requise », le stock n’accepte son entrée que par la réception de marchandises d’une commande, avec lot et date limite de consommation. Les entrées manuelles et par scan sont refusées. Un lot déjà connu apporte sa date.
+**Durée de conservation.** Si un article porte la propriété « durée de conservation requise », le stock n’accepte son entrée que par la réception de marchandises d’une commande, avec lot et date limite de consommation. Les entrées manuelles et par scan sont refusées. Un lot déjà connu apporte sa date. La notification de date limite liste les lots ayant du stock dans le journal de stock dont la date tombe dans le délai — quelle que soit la méthode de valorisation ; les lots épuisés ne sont pas signalés.
 
 **Paramètres du stock.** Avec le droit de configuration du stock, vous ouvrez les **paramètres du stock** dans l’aperçu des stocks. Vous y choisissez la **méthode de valorisation** de l’organisation (coût moyen pondéré, FIFO ou FEFO) et le **moment de la réservation** en fabrication (à la libération ou au démarrage). Lors du passage à FIFO ou FEFO, le stock existant reçoit une couche initiale au prix moyen précédent. Le retour au coût moyen pondéré n’est possible que lorsqu’il ne reste plus de stock en couches, car la moyenne n’a pas été tenue à jour pendant cette période.
 
@@ -101,7 +104,7 @@ seulement le lot ; les lots bloqués seulement après leur libération.
 
 **Valorisation des sorties :** les sorties de stock propre — dans le formulaire de comptabilisation, par scan, après une validation à quatre yeux, lors de la consommation de matériel en fabrication et lors de l’exécution d’une réservation — sont valorisées selon la méthode de l’article, comme les livraisons et la consommation de matériel : FIFO et FEFO consomment les couches de valorisation, le coût moyen pondéré réduit le registre des moyennes au prix moyen actuel. Les sorties de stock de tiers (client, consignation, fournisseur, projet) restent non valorisées. La sortie de stock dans le dossier client comptabilise elle aussi selon la méthode de l’article ; la suppression de l’affectation la remet en stock comme nouvelle couche au coût unitaire de la sortie en FIFO et FEFO, et dans le registre des moyennes au coût moyen pondéré.
 
-**Valorisation des entrées :** une entrée en stock propre — dans le formulaire de comptabilisation et par scan — est valorisée comme la réception d’une commande fournisseur. Dans le champ **Coût d’entrée par unité**, vous saisissez le prix par unité saisie (par exemple par carton), avec une virgule ou un point ; il est comptabilisé par unité de base. Vide, le prix d’achat de la variante s’applique (à défaut celui de l’article), sans prix d’achat la moyenne actuelle du magasin et sans aucune valorisation zéro. Le prix s’entend dans la devise dans laquelle la valorisation tient l’article dans le magasin, sinon dans celle de l’organisation ; un prix d’achat dans une autre devise est ignoré. En FIFO et FEFO, l’entrée crée une couche de valorisation ; au coût moyen pondéré, elle recalcule la moyenne. Les entrées en stock de tiers restent non valorisées.
+**Valorisation des entrées :** une entrée en stock propre — dans le formulaire de comptabilisation et par scan — est valorisée comme la réception d’une commande fournisseur. Dans le champ **Coût d’entrée par unité**, vous saisissez le prix par unité saisie (par exemple par carton), avec une virgule ou un point ; il est comptabilisé par unité de base. Vide, le prix d’achat de la variante s’applique (à défaut celui de l’article), sans prix d’achat la moyenne actuelle du magasin et sans aucune valorisation zéro. Le prix s’entend dans la devise dans laquelle la valorisation tient l’article dans le magasin, sinon dans celle de l’organisation ; un prix d’achat dans une autre devise est ignoré. En FIFO et FEFO, l’entrée crée une couche de valorisation ; au coût moyen pondéré, elle recalcule la moyenne. Les entrées en stock de tiers restent non valorisées. La réception de marchandises d’une commande dans un lot suit elle aussi la méthode : en prix moyen pondéré, elle entre dans le registre du prix moyen ; en FIFO et FEFO, elle devient une couche avec lot et date limite.
 
 **Redistribuer des réservations :** dans la boîte de dialogue « Modifier la réservation », vous cédez une quantité ouverte à une autre réservation du même article, entrepôt et propriété, par exemple à un ordre plus prioritaire. Une réservation plus récente n’en évince jamais une plus ancienne en silence ; la redistribution figure dans le journal d’audit et la ligne de matière d’un ordre de fabrication la suit.
 

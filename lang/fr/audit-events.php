@@ -672,6 +672,7 @@ return [
         'negativeApproved' => 'Stock négatif approuvé',
         'countApproved' => 'Écarts d’inventaire validés',
         'countStatusChanged' => 'Inventaire : statut modifié',
+        'valuationAligned' => 'Registre de valorisation aligné sur le stock (estimé)',
     ],
     'stock_lot' => [
         'blocked' => 'Lot bloqué',

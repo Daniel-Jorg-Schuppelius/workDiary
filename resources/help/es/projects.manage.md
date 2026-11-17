@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 12
+version: 13
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -85,20 +85,24 @@ detalle muestra de un vistazo qué queda facturable.
 
 ## Tiempos objetivo por persona
 
-Acuerde con el cliente un tiempo de servicio por persona y día y gestiónelo en la pestaña de
-tiempos en **Gestionar tiempos objetivo**: un **valor predeterminado del proyecto** por día de
-la semana se aplica a todas las personas asignables, una fila personal tiene prioridad, una
-**excepción en una fecha** prevalece sobre el día de la semana; vacaciones, enfermedad y
-festivos ponen el objetivo a cero. La comprobación nocturna compara el objetivo con el tiempo
-registrado y notifica los déficits por encima de la tolerancia (ajuste de la organización,
-15 minutos por defecto) a la dirección del proyecto, a la cola de trabajo y al cierre diario de
-la persona; los hallazgos se muestran en la pestaña de tiempos, donde pueden **confirmarse**, y
-un registro tardío los resuelve. Con **Facturar las horas acordadas** en la pestaña de
-facturación, la transferencia y la factura añaden el tiempo que falta como posición «Tiempo de
-servicio acordado»; la vista previa de la factura también muestra estos complementos. Cada
-complemento se factura una sola vez, en una factura o en una transferencia; un registro
-posterior de ese día deja de ser facturable. La anulación de la factura o de la transferencia,
-la eliminación de la posición o el descarte del borrador vuelve a liberar el complemento.
+Acuerde con el cliente un tiempo de servicio por persona y día y gestiónelo en la pestaña
+de tiempos en **Gestionar tiempos objetivo**: un **valor predeterminado del proyecto** por
+día de la semana se aplica a todas las personas asignables, una fila personal tiene
+prioridad, una **excepción en una fecha** prevalece sobre el día de la semana; vacaciones,
+enfermedad y festivos ponen el objetivo a cero. La comprobación nocturna compara el
+objetivo con el tiempo registrado y notifica los déficits por encima de la tolerancia
+(ajuste de la organización, 15 minutos por defecto) a la dirección del proyecto, a la cola
+de trabajo y al cierre diario de la persona; los hallazgos se muestran en la pestaña de
+tiempos, donde pueden **confirmarse**, y un registro tardío los resuelve. Con **Facturar
+las horas acordadas** en la pestaña de facturación, la transferencia y la factura añaden
+el tiempo que falta como posición «Tiempo de servicio acordado»; la vista previa de la
+factura también muestra estos complementos. El justificante de tiempos en Lexoffice
+(«Tiempos como justificante») los factura al mismo precio dentro del importe de su tipo
+impositivo, porque un justificante contable no tiene posiciones individuales. Cada
+complemento se factura una sola vez, en una factura, una transferencia o un justificante
+de tiempos; un registro posterior de ese día deja de ser facturable. La anulación de la
+factura o de la transferencia, la eliminación de la posición o el descarte del borrador
+vuelve a liberar el complemento; workDiary no retira un justificante de tiempos.
 
 Si la regla de facturación del proyecto indica la unidad «global» o «Pauschale»,
 cada pedido factura una línea con cantidad 1 al precio de la regla; el complemento
@@ -106,17 +110,18 @@ hasta las horas acordadas se omite entonces, porque la tarifa plana cubre el
 pedido sea cual sea su duración. Todas las demás unidades, por ejemplo hora, día
 o ud., cuentan por duración.
 
-El documento que liquida la tarifa plana cierra la desviación de un proyecto así
-— la factura, la transferencia al enviarse o el justificante de tiempos en
-Lexoffice: aparece como resuelta en la pestaña de tiempos con el número de la
-factura o de la transferencia, y la comprobación nocturna no la vuelve a abrir. Un
-registro posterior en ese día sigue siendo facturable, porque no se completó nada.
-Si elimina la posición, descarta el borrador o anula la factura o la
-transferencia, la desviación vuelve a quedar abierta. Confirme a mano las
-desviaciones cuya tarifa plana se facturó antes. Si una transferencia no
-contiene tiempo de trabajo del proyecto, su desviación sigue abierta y libre: la
-siguiente transferencia o factura con tiempo de trabajo del proyecto la cierra,
-sin anular la primera.
+El documento que liquida la tarifa plana cierra la desviación de un proyecto así — la
+factura, la transferencia al enviarse o el justificante de tiempos en Lexoffice: aparece
+como resuelta en la pestaña de tiempos con el número de la factura o de la transferencia,
+y la comprobación nocturna no la vuelve a abrir. Un registro posterior en ese día sigue
+siendo facturable, porque no se completó nada. Si elimina la posición, descarta el
+borrador o anula la factura o la transferencia, la desviación vuelve a quedar abierta. Las
+desviaciones cuya tarifa plana se facturó antes de esta versión las cierra tras la
+actualización la reparación de datos (`php artisan projects:settle-flat-rate-shortfalls`,
+primero con `--dry-run`); confirme a mano las que no tengan un documento inequívoco. Si
+una transferencia no contiene tiempo de trabajo del proyecto, su desviación sigue abierta
+y libre: la siguiente transferencia o factura con tiempo de trabajo del proyecto la
+cierra, sin anular la primera.
 
 La regla de facturación indica también el **lugar de la prestación** de sus
 tiempos (§ 3a UStG): **General**, **Servicio del catálogo** o **Servicio

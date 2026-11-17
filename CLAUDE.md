@@ -175,6 +175,7 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `ApprovalInboxSubject` (Gegenstand im Genehmigungs-Eingang; entschieden wird auf dem
   Weg des Gegenstands, Zuständigkeit über `ApprovalResponsibility`, eigene Anträge
   nie über `requesterId()`),
+  `TimeVoucherSource` (Zeitbelege eines Buchhaltungsprogramms mit Zeitraum, MVP-1734; ungefiltert),
   `IncomingInvoiceTransferTarget` (Buchhaltungsziel des Rechnungseingangs; Tor, Journal
   `incoming_einvoice_transfers` und Wiederholung führt der Kern),
   `CalendarEventSource` (Termine eines Moduls im Kalender, etwa Ausschreibungsfristen;

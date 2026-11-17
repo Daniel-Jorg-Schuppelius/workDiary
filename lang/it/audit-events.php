@@ -672,6 +672,7 @@ return [
         'negativeApproved' => 'Scorta negativa approvata',
         'countApproved' => 'Differenze inventariali approvate',
         'countStatusChanged' => 'Inventario: stato modificato',
+        'valuationAligned' => 'Registro di valorizzazione allineato alle giacenze (stimato)',
     ],
     'stock_lot' => [
         'blocked' => 'Lotto bloccato',

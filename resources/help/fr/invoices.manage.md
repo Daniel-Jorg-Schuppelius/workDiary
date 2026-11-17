@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 24
+version: 25
 keywords:
     - lieu de la prestation
     - prestation du catalogue
@@ -415,6 +415,16 @@ saisissez la disposition d'exonération comme mention sur le justificatif, par e
 « Soins médicaux exonérés (§ 4 n° 14 UStG) » ; sans règle, seule la mention
 « Opération exonérée » apparaît et le contrôle avant l'envoi avertit.
 
+**Entreprises de l'UE :** les marchandises (factures de matériel) livrées à des
+entreprises de l'UE disposant d'un numéro de TVA valide sont une livraison
+intracommunautaire exonérée (K) sans autoliquidation, avec la mention « Livraison
+intracommunautaire exonérée (§ 4 n° 1 let. b en liaison avec § 6a UStG) », le pays
+et la date de livraison dans la facture électronique ; la comptabilité, la case 41
+et l'état récapitulatif restent inchangés. Une règle fiscale du type « Livraison
+intracommunautaire » remplace la mention. Les prestations à ces entreprises restent
+en autoliquidation (AE). Les factures émises conservent leur cas ; un brouillon en
+autoliquidation suit lors de sa prochaine modification ou émission.
+
 **Pays tiers :** les marchandises livrées à des clients hors UE sont des
 exportations (G) avec le motif « Livraison à l'exportation exonérée ». Les
 prestations à des entreprises hors UE ne sont pas imposables en Allemagne
@@ -424,20 +434,24 @@ avec le numéro fiscal de l'organisation et sans autre catégorie à côté. San
 numéro fiscal, le contrôle avant envoi s'arrête. Les factures émises auparavant
 avec la catégorie G sont réimprimées sans changement.
 
-Le contrôle avant l'envoi signale en outre : l'absence du numéro de TVA du client pour
-une livraison intracommunautaire, l'absence du numéro de TVA de l'organisation pour
-les livraisons vers un autre pays de l'UE et les exportations, « non imposable » à
-côté d'autres catégories et une position de catégorie sans taxe avec un taux
-supérieur à 0 %. Avec « non imposable », la facture électronique ne porte aucun numéro
-de TVA ; le numéro fiscal suffit. Pour les livraisons intracommunautaires, la
-facture électronique indique l'adresse de livraison distincte du client (dialogue
-client, section **Adresse de livraison**), à défaut son adresse, comme adresse de
-livraison avec le pays de livraison (règle BR-IC-12) ; la XRechnung y exige le
-code postal et la ville, sinon le contrôle avant l'envoi s'arrête. L'adresse de
-livraison est figée à l'émission ; l'annulation et la facture rectificative
-reprennent celle de l'original. L'immatriculation de l'organisation (**Branding**, champ **Registre du commerce**) figure dans la facture électronique comme
-identifiant d'immatriculation du vendeur (BT-30), également figée. Les positions « non imposable »
-figurent sans taux dans la facture électronique.
+Le contrôle avant l'envoi signale en outre : l'absence du numéro de TVA du client
+pour une livraison intracommunautaire, l'absence du numéro de TVA de l'organisation
+pour les livraisons vers un autre pays de l'UE et les exportations, « non imposable
+» à côté d'autres catégories, une position de catégorie sans taxe avec un taux
+supérieur à 0 % et une position taxable (S) à 0 % (règle BR-S-05) ; si seul le
+brouillon est encore à 0 % alors que son cas fiscal est de nouveau taxable, il
+avertit, car l’émission attribue aux positions sans catégorie propre le taux du cas
+fiscal. Avec « non imposable », la facture électronique ne porte aucun numéro de TVA
+; le numéro fiscal suffit. Pour les livraisons intracommunautaires, la facture
+électronique indique l'adresse de livraison distincte du client (dialogue client,
+section **Adresse de livraison**), à défaut son adresse, comme adresse de livraison
+avec le pays de livraison (règle BR-IC-12) ; la XRechnung y exige le code postal et
+la ville, sinon le contrôle avant l'envoi s'arrête. L'adresse de livraison est figée
+à l'émission ; l'annulation et la facture rectificative reprennent celle de
+l'original. L'immatriculation de l'organisation (**Branding**, champ **Registre du
+commerce**) figure dans la facture électronique comme identifiant d'immatriculation
+du vendeur (BT-30), également figée. Les positions « non imposable » figurent sans
+taux dans la facture électronique.
 
 ## Mention d'exonération dans le PDF de la facture
 

@@ -78,6 +78,7 @@ return [
             'not_subject_mixed' => 'Nicht steuerbare Positionen (Kategorie O) dürfen in der E-Rechnung nicht neben anderen Steuerkategorien stehen (BR-O-11) — bitte getrennt abrechnen.',
             'not_subject_tax_number' => 'Nicht steuerbare Umsätze (Kategorie O) tragen keine USt-IdNr. (BR-O-02); die E-Rechnung braucht dafür die Steuernummer in den Organisations-Einstellungen.',
             'line_category_rate' => 'Position „:line“: Die Steuerkategorie :category trägt keine Steuer, die Position aber :rate % — Rechnung und E-Rechnung wichen voneinander ab. Bitte den Steuersatz der Position auf 0 % setzen.',
+            'standard_zero_rate' => 'Position „:line“: steuerpflichtig (Kategorie S) mit 0 % — EN 16931 verlangt bei S einen Steuersatz über 0 % (BR-S-05). Bitte den Steuersatz der Position bzw. der Rechnung eintragen oder der Position eine Kategorie ohne Steuer geben.',
             'missing_iban' => 'IBAN für die SEPA-Überweisung fehlt in den Organisations-Einstellungen.',
             'missing_tax_rate' => 'Die Rechnung trägt keinen Steuersatz.',
             'totals_mismatch' => 'Die Rechnungssummen sind inkonsistent (Positionen, Zwischensumme, Steuer, Gesamt).',
@@ -86,6 +87,7 @@ return [
         'warning' => [
             'missing_seller_contact' => 'Verkäufer-Kontakt unvollständig (Name, Telefon, E-Mail) — die XRechnung verlangt vollständige Kontaktangaben (BR-DE-2).',
             'missing_bic' => 'BIC fehlt (für SEPA-Überweisung empfohlen).',
+            'standard_zero_rate_draft' => 'Der Entwurf steht auf 0 %, sein Steuerfall ist steuerpflichtig (S) — EN 16931 verlangt bei S einen Steuersatz über 0 % (BR-S-05). Das Stellen gibt den Positionen ohne eigene Steuerkategorie den Satz des Steuerfalls (:rate %) und hält einmal zur Prüfung der Summen an.',
             'buyer_address_incomplete' => 'Kundenanschrift unvollständig (Straße/PLZ/Ort).',
             'missing_buyer_email' => 'Kunden-E-Mail fehlt (elektronische Empfängeradresse BT-49).',
             'missing_due_date' => 'Fälligkeitsdatum fehlt — das Standard-Zahlungsziel wird verwendet.',

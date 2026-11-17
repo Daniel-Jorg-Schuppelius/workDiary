@@ -14,21 +14,25 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{StockLotStatus, StockMovementType, StockState};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse};
-use App\Models\Platform\User;
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
+use App\Support\DecimalQty;
+use App\Support\Query\DateRange;
 use Closure;
 use CommonToolkit\ValueObjects\Decimal;
-use Illuminate\Support\{Carbon, Collection};
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
  * Chargen-/Losverwaltung (Feature 047/048, E2): Chargen anlegen (eindeutig je
  * Variante), Wareneingang in eine Charge buchen (mit MHD für FEFO) sowie
- * Verfallsüberwachung und Sperre. Bewertung läuft über die FEFO-Schichten, den
- * Chargenbestand führt das Lagerbuch ({@see LotStockReader}). Die Sperre ist
- * eine Buchung in den Zustand „gesperrt“ je Topf; die Ware bleibt liegen.
+ * Verfallsüberwachung und Sperre. Bewertet wird nach dem Verfahren der
+ * Variante (MVP-1735), den Chargenbestand führt das Lagerbuch
+ * ({@see LotStockReader}). Die Sperre ist eine Buchung in den Zustand
+ * „gesperrt“ je Topf; die Ware bleibt liegen.
  */
 class LotService {
     use AssertsStatusTransition;
@@ -41,7 +45,6 @@ class LotService {
     public const string REPAIR_KEY_PREFIX = 'lot-repair:';
 
     public function __construct(
-        private readonly FefoValuationService $fefo,
         private readonly LotStockReader $lotStock,
         private readonly InventoryLedger $ledger,
     ) {}
@@ -59,9 +62,13 @@ class LotService {
         );
     }
 
-    /** Wareneingang in eine Charge (legt eine FEFO-Bewertungsschicht an). */
-    public function receiveIntoLot(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, StockLot $lot, string $currency = 'EUR', ?int $actorUserId = null, ?EnteredQuantity $entered = null): StockMovement {
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId, $entered): StockMovement {
+    /**
+     * Wareneingang in eine Charge, bewertet nach dem Verfahren der Variante (MVP-1735): der Durchschnitt bucht ins
+     * Durchschnittsbuch, FIFO/FEFO legen eine Schicht mit Charge und MHD an. `$source` ist der Beleg (z. B. die
+     * Bestellzeile). Ohne Organisation gibt es kein Bewertungsbuch — dann nur die Menge.
+     */
+    public function receiveIntoLot(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, StockLot $lot, string $currency = 'EUR', ?int $actorUserId = null, ?EnteredQuantity $entered = null, ?Model $source = null): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId, $entered, $source): StockMovement {
             $this->lockAndRefresh($lot);
             // Ein Zugang an eine zusammengeführte Charge läge an einer Charge, die kein Pickzettel mehr vorschlägt.
             if ($lot->status === StockLotStatus::Merged) {
@@ -72,7 +79,18 @@ class LotService {
                 throw new RuntimeException((string) __('inventory.lot.error.receipt_into_blocked', ['lot' => $lot->lot_no]));
             }
 
-            return $this->fefo->receiptIntoLot($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId, $entered);
+            $organization = $warehouse->organization;
+            if (! $organization instanceof Organization) {
+                return $this->ledger->post(new StockPosting(
+                    $variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt,
+                    originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit,
+                    actorUserId: $actorUserId, source: $source, stockLotId: $lot->id,
+                ));
+            }
+
+            // Der Manager hängt über den Durchschnitt an diesem Dienst — erst hier auflösen, sonst kreist der Container.
+            return app(InventoryValuationManager::class)->forVariant($variant, $organization)
+                ->receipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $entered, lot: $lot);
         });
     }
 
@@ -270,20 +288,32 @@ class LotService {
     }
 
     /**
-     * Bewertungsschichten mit Restbestand, deren MHD bis zum Stichtag fällt
-     * (MHD-Überwachung, frühestes Verfallsdatum zuerst).
+     * Chargen mit Bestand, deren MHD bis zum Stichtag fällt (MHD-Überwachung, frühestes Verfallsdatum zuerst). Der
+     * Bestand ist der Buchsaldo des Lagerbuchs, nicht die Restschicht — der Durchschnitt führt keine Schichten
+     * (MVP-1735), und dort sanken alte Schichten nie.
      *
-     * @return Collection<int, StockValuationLayer>
+     * @return list<array{lot: StockLot, qty: numeric-string}>
      */
-    public function expiringUntil(Carbon $date, ?ArticleVariant $variant = null): Collection {
+    public function expiringUntil(Carbon $date, ?ArticleVariant $variant = null): array {
         $variantId = $variant?->id;
-
-        return StockValuationLayer::query()
+        $lots = StockLot::query()
             ->whereNotNull('best_before')
-            ->where('best_before', '<=', $date)
-            ->where('qty_remaining', '>', 0)
+            ->where('best_before', '<', DateRange::dayAfter($date))
+            ->where('status', '!=', StockLotStatus::Merged->value)
             ->when($variantId !== null, fn ($q) => $q->where('article_variant_id', $variantId))
             ->orderBy('best_before')
+            ->orderBy('id')
             ->get();
+        $balances = $this->lotStock->balancesOf($lots);
+
+        $due = [];
+        foreach ($lots as $lot) {
+            $qty = $balances[$lot->id] ?? '0';
+            if (Decimal::of($qty, InventoryLedger::SCALE)->isPositive()) {
+                $due[] = ['lot' => $lot, 'qty' => $qty];
+            }
+        }
+
+        return $due;
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Matrice des règles fiscales"
 topic: finance.tax-rules
-version: 3
+version: 4
 keywords:
     - taux de TVA
     - TVA
@@ -30,8 +30,8 @@ le catalogue livré lui-même reste inchangé.
 **Structure :** Chaque règle vaut pour un pays (avec une région en
 option), une catégorie (services, goods, shipping, materials, expenses,
 construction, media, other) et un type de taux (standard, reduced, zero,
-exempt, reverse_charge, export) — avec pourcentage, dates de validité
-(de/à), indication de la source et note.
+exempt, reverse_charge, export, intra_community) — avec pourcentage, dates
+de validité (de/à), indication de la source et note.
 
 **Logique de date de référence :** C'est la date de prestation qui fait
 foi, pas la date de facture. Est appliquée la règle active la plus
@@ -63,14 +63,18 @@ catégorie, ventilation de la taxe) est figé sur la pièce. Les
 modifications ultérieures de règles n'agissent ainsi que sur les
 nouvelles pièces, jamais sur celles déjà émises.
 
-**Cas particuliers prioritaires :** Le paramètre de micro-entrepreneur
-(« § 19 UStG ») désactive complètement la mention de la taxe. Un taux de
-taxe par défaut fixé au niveau de l'organisation prime sur la matrice
-pour le marché intérieur. Les clients de l'UE avec un numéro de TVA
+**Cas particuliers prioritaires :** Le paramètre de micro-entrepreneur («
+§ 19 UStG ») désactive complètement la mention de la taxe. Un taux de taxe
+par défaut fixé au niveau de l'organisation prime sur la matrice pour le
+marché intérieur. Les entreprises de l'UE avec un numéro de TVA
 intracommunautaire formellement valide reçoivent automatiquement
-l'autoliquidation (Reverse Charge, 0 %), les clients de pays tiers la
-mention d'export (0 %) — les lignes correspondantes de la matrice
-fournissent pour cela le texte d'information sur la pièce.
+l'autoliquidation (Reverse Charge, 0 %) pour les prestations et la
+livraison intracommunautaire exonérée (0 %, catégorie K, sans
+autoliquidation ; mention du type de taux intra_community, sinon «
+Livraison intracommunautaire exonérée (§ 4 n° 1 let. b en liaison avec §
+6a UStG) ») pour les marchandises, les clients de pays tiers la mention
+d'export (0 %) — les lignes correspondantes de la matrice fournissent pour
+cela le texte d'information sur la pièce.
 
 Pour les pays tiers, le régime fiscal distingue marchandises et prestations :
 le matériel est une exportation (catégorie G) avec la mention « Livraison à

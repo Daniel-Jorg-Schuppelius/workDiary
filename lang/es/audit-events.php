@@ -672,6 +672,7 @@ return [
         'negativeApproved' => 'Stock negativo aprobado',
         'countApproved' => 'Diferencias de inventario aprobadas',
         'countStatusChanged' => 'Inventario: estado cambiado',
+        'valuationAligned' => 'Libro de valoración ajustado al stock (estimado)',
     ],
     'stock_lot' => [
         'blocked' => 'Lote bloqueado',

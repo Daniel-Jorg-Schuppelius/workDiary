@@ -78,6 +78,7 @@ return [
             'not_subject_mixed' => 'Les positions non imposables (catégorie O) ne peuvent pas figurer à côté d’autres catégories de TVA dans une facture électronique (BR-O-11) — veuillez les facturer séparément.',
             'not_subject_tax_number' => 'Les opérations non imposables (catégorie O) ne portent pas de numéro de TVA (BR-O-02) ; la facture électronique a donc besoin du numéro fiscal dans les paramètres de l’organisation.',
             'line_category_rate' => 'Position « :line » : la catégorie de TVA :category ne porte pas de taxe, mais la position porte :rate % — la facture et la facture électronique divergeraient. Veuillez mettre le taux de la position à 0 %.',
+            'standard_zero_rate' => 'Position « :line » : taxable (catégorie S) à 0 % — la norme EN 16931 exige pour S un taux supérieur à 0 % (BR-S-05). Veuillez saisir le taux de la position ou de la facture, ou attribuer à la position une catégorie sans taxe.',
             'missing_iban' => 'L\'IBAN pour le virement SEPA manque dans les paramètres de l\'organisation.',
             'missing_tax_rate' => 'La facture ne porte aucun taux de taxe.',
             'totals_mismatch' => 'Les totaux de la facture sont incohérents (lignes, sous-total, taxe, total).',
@@ -86,6 +87,7 @@ return [
         'warning' => [
             'missing_seller_contact' => 'Contact vendeur incomplet (nom, téléphone, e-mail) — la XRechnung exige des coordonnées complètes (BR-DE-2).',
             'missing_bic' => 'Le BIC manque (recommandé pour les virements SEPA).',
+            'standard_zero_rate_draft' => 'Le brouillon est à 0 %, mais son cas fiscal est taxable (S) — la norme EN 16931 exige pour S un taux supérieur à 0 % (BR-S-05). L’émission attribue aux positions sans catégorie de TVA propre le taux du cas fiscal (:rate %) et s’arrête une fois pour que vous vérifiiez les totaux.',
             'buyer_address_incomplete' => 'Adresse du client incomplète (rue/code postal/ville).',
             'missing_buyer_email' => 'L\'e-mail du client manque (adresse électronique de réception BT-49).',
             'missing_due_date' => 'Date d\'échéance manquante — le délai de paiement par défaut est utilisé.',

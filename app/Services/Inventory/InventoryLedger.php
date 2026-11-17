@@ -183,11 +183,12 @@ class InventoryLedger {
     }
 
     /**
-     * Saldo eines Bestandszustands (optional je Eigentumsart) in Basiseinheit.
+     * Saldo eines Bestandszustands (optional je Eigentumsart) in Basiseinheit; `$forUpdate` sperrt die Bewegungen
+     * (nur in einer Transaktion sinnvoll, Sperrfolge Bestand vor Buch).
      *
      * @return numeric-string
      */
-    public function balance(ArticleVariant $variant, Warehouse $warehouse, StockState $state, ?OwnershipType $ownership = null, ?WarehouseBin $bin = null): string {
+    public function balance(ArticleVariant $variant, Warehouse $warehouse, StockState $state, ?OwnershipType $ownership = null, ?WarehouseBin $bin = null, bool $forUpdate = false): string {
         $query = StockMovement::query()
             ->where('article_variant_id', $variant->id)
             ->where('warehouse_id', $warehouse->id)
@@ -197,6 +198,9 @@ class InventoryLedger {
         }
         if ($bin !== null) {
             $query->where('bin_id', $bin->id);
+        }
+        if ($forUpdate) {
+            $query->lockForUpdate();
         }
 
         $sum = '0';
@@ -330,6 +334,25 @@ class InventoryLedger {
     }
 
     /**
+     * Sperrt den Bestand der Variante in mehreren Lagern in aufsteigender Lager-ID ({@see availableForUpdate()}) und
+     * liefert die Lager in dieser Folge — wer danach Bücher sperrt, nimmt dieselbe Folge (MVP-1738).
+     *
+     * @return list<Warehouse>
+     */
+    public function lockStock(ArticleVariant $variant, Warehouse ...$warehouses): array {
+        $ordered = [];
+        foreach ($warehouses as $warehouse) {
+            $ordered[(int) $warehouse->id] = $warehouse;
+        }
+        ksort($ordered);
+        foreach ($ordered as $warehouse) {
+            $this->availableForUpdate($variant, $warehouse);
+        }
+
+        return array_values($ordered);
+    }
+
+    /**
      * Wie {@see available()}, sperrt aber die zugrunde liegenden Bewegungszeilen
      * des Buckets (`SELECT … FOR UPDATE`). Nur innerhalb einer Transaktion sinnvoll:
      * konkurrierende Abgänge/Reservierungen serialisieren so über denselben Bestand
@@ -366,8 +389,8 @@ class InventoryLedger {
     // `$bin` (MVP-706) und `$entered` (MVP-1584, Eingabe in Artikeleinheit) sind optionale letzte Argumente;
     // `$qty` ist immer die Menge in Basiseinheit.
 
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?EnteredQuantity $entered = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit, actorUserId: $actorUserId, bin: $bin));
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?EnteredQuantity $entered = null, ?Model $source = null): StockMovement {
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit, actorUserId: $actorUserId, source: $source, bin: $bin));
     }
 
     /**
@@ -495,7 +518,10 @@ class InventoryLedger {
         return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::FinishedGoodReceipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }
 
-    /** Signierte Menge auf einen Zustand, unbewertet — Inventurdifferenz und Gegenbuchung laufen über {@see StockCorrection} (MVP-1727). */
+    /**
+     * Signierte Menge auf einen Zustand, unbewertet — Inventurdifferenz und Gegenbuchung laufen über {@see StockCorrection}
+     * (MVP-1727); aus `app/` ruft ihn niemand (Gate `StockCorrectionRuleTest`, MVP-1739).
+     */
     public function correction(ArticleVariant $variant, Warehouse $warehouse, StockState $state, string $signedQty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
         return $this->post(new StockPosting($variant, $warehouse, $state, NumberHelper::normalizeDecimalString($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }

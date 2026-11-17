@@ -23,10 +23,10 @@ use Illuminate\Support\Carbon;
 
 /**
  * MHD-Überwachung (Feature 048 E2; Vollaudit 2026-07, M19): meldet je
- * Organisation Chargen-Bewertungsschichten mit Restbestand, deren
- * Mindesthaltbarkeit innerhalb des Vorlaufs fällt — LotService::expiringUntil
- * war zuvor toter Code ohne Aufrufer. Dedupliziert je Charge über den
- * NotificationDispatcher (Betreff enthält die Lot-ID).
+ * Organisation Chargen mit Bestand im Lagerbuch, deren Mindesthaltbarkeit
+ * innerhalb des Vorlaufs fällt ({@see LotService::expiringUntil()}).
+ * Dedupliziert je Charge über den NotificationDispatcher (Betreff enthält die
+ * Lot-ID).
  */
 #[BelongsToModule('inventory')]
 class InventoryExpiringLotsCommand extends Command {
@@ -44,11 +44,11 @@ class InventoryExpiringLotsCommand extends Command {
         foreach ($this->organizationsToProcess() as $organization) {
             $sent += (int) $this->withOrganizationContext($organization, function (Organization $organization) use ($dispatcher, $lots, $until, $days): int {
                 $count = 0;
-                foreach ($lots->expiringUntil($until) as $layer) {
-                    $lot = $layer->lot;
-                    if ($lot === null || (int) $layer->organization_id !== (int) $organization->id) {
+                foreach ($lots->expiringUntil($until) as ['lot' => $lot, 'qty' => $qty]) {
+                    if ((int) $lot->organization_id !== (int) $organization->id) {
                         continue;
                     }
+                    $date = $lot->best_before?->format('d.m.Y') ?? '';
 
                     $count += $dispatcher->notify(
                         NotificationEvent::InventoryLotExpiring,
@@ -57,15 +57,15 @@ class InventoryExpiringLotsCommand extends Command {
                         [
                             'title' => (string) __('notification.message.inventory_lot_expiring_title', [
                                 'lot' => (string) $lot->lot_no,
-                                'date' => Carbon::parse((string) $layer->best_before)->format('d.m.Y'),
+                                'date' => $date,
                             ]),
                             'title_key' => 'notification.message.inventory_lot_expiring_title',
                             'title_params' => [
                                 'lot' => (string) $lot->lot_no,
-                                'date' => Carbon::parse((string) $layer->best_before)->format('d.m.Y'),
+                                'date' => $date,
                             ],
                             'message' => (string) __('Restbestand :qty — Vorlauf :days Tage.', [
-                                'qty' => (string) $layer->qty_remaining,
+                                'qty' => $qty,
                                 'days' => $days,
                             ]),
                             'url' => route('inventory.lots'),

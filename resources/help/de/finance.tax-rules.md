@@ -1,7 +1,7 @@
 ---
 title: "Steuerregelmatrix"
 topic: finance.tax-rules
-version: 3
+version: 4
 keywords:
     - Steuersätze
     - Mehrwertsteuer
@@ -31,8 +31,8 @@ ausgelieferte Katalog selbst bleibt unverändert.
 **Aufbau:** Jede Regel gilt für ein Land (optional eine Region), eine
 Kategorie (services, goods, shipping, materials, expenses, construction,
 media, other) und eine Satzart (standard, reduced, zero, exempt,
-reverse_charge, export) — mit Prozentsatz, Gültig-ab/-bis, Quellenangabe
-und Notiz.
+reverse_charge, export, intra_community) — mit Prozentsatz,
+Gültig-ab/-bis, Quellenangabe und Notiz.
 
 **Stichtagslogik:** Maßgeblich ist das Leistungsdatum, nicht das
 Rechnungsdatum. Angewendet wird die jüngste zum Stichtag gültige aktive
@@ -63,8 +63,12 @@ wirken damit nur auf neue Belege, nie auf bereits gestellte.
 **Sonderfälle mit Vorrang:** Die Kleinunternehmer-Einstellung (§ 19 UStG)
 schaltet den Steuerausweis komplett ab. Ein fest hinterlegter
 Standardsteuersatz der Organisation geht der Matrix im Inland vor.
-EU-Kunden mit formal gültiger USt-IdNr. erhalten automatisch Reverse
-Charge (0 %), Drittlandskunden den Export-Hinweis (0 %) — passende
+EU-Unternehmen mit formal gültiger USt-IdNr. erhalten für Leistungen
+automatisch Reverse Charge (0 %), für Waren die steuerfreie
+innergemeinschaftliche Lieferung (0 %, Kategorie K, ohne Reverse Charge;
+Hinweis der Satzart intra_community, sonst „Steuerfreie
+innergemeinschaftliche Lieferung (§ 4 Nr. 1 Buchstabe b i. V. m. § 6a
+UStG)“), Drittlandskunden den Export-Hinweis (0 %) — passende
 Matrix-Zeilen liefern dafür den Hinweistext auf dem Beleg.
 
 Beim Drittland unterscheidet der Steuerfall Ware und Leistung: Material geht als

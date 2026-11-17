@@ -32,8 +32,10 @@ use CommonToolkit\Helper\Data\Validator;
  *  - Inland mit Kundenmerkmal „Leistungsempfänger schuldet die Steuer“
  *    (§ 13b Abs. 2 und 5 UStG, z. B. Bauleistungen an Bauleistende, MVP-1622):
  *    0 %, Kategorie AE, Pflichthinweis nach § 14a Abs. 5 UStG.
- *  - EU-Ausland B2B mit formal gültiger USt-IdNr.: 0 % + Reverse Charge
- *    (EN 16931 Kategorie AE) + Pflichthinweis.
+ *  - EU-Ausland B2B mit formal gültiger USt-IdNr.: Leistungen 0 % + Reverse
+ *    Charge (EN 16931 Kategorie AE) + Pflichthinweis; Waren als steuerfreie
+ *    innergemeinschaftliche Lieferung (Kategorie K, § 4 Nr. 1 Buchst. b,
+ *    § 6a UStG) ohne Reverse-Charge-Merkmal (MVP-1731).
  *  - EU-B2C: Verkäuferland-Satz (MVP, bewusst KEIN stiller OSS/IOSS-
  *    Automatismus — MVP-241-Abgrenzung).
  *  - Drittland: 0 %; Waren als Ausfuhrlieferung (Kategorie G), Leistungen
@@ -96,8 +98,20 @@ class TaxResolver {
         $eu = array_map('strtoupper', (array) config('taxation.eu_countries', []));
         $vatId = (string) ($customer->vat_id ?? '');
 
-        // EU-B2B mit formal gültiger USt-IdNr. → Reverse Charge (AE).
+        // EU-B2B mit formal gültiger USt-IdNr.: Ware als innergemeinschaftliche Lieferung (K), Leistung mit Reverse Charge (AE).
         if (in_array($buyerCountry, $eu, true) && ! $consumer && $vatId !== '' && Validator::isValidVatId($vatId)) {
+            if (! $services) {
+                // Steuerfrei beim Lieferer, keine Steuerschuld des Empfängers — kein Reverse-Charge-Merkmal.
+                $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'intra_community', $onDate);
+
+                return [
+                    'rate' => '0.00',
+                    'reverse_charge' => false,
+                    'note' => $rule !== null && $rule->note !== null ? $rule->note : (string) config('taxation.notes.intra_community'),
+                    'category' => 'K',
+                    'rule' => $rule !== null ? $this->ruleMeta($rule) : null,
+                ];
+            }
             $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'reverse_charge', $onDate);
             $note = $rule !== null && $rule->note !== null ? $rule->note : (string) config('taxation.notes.reverse_charge');
 

@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 24
+version: 25
 keywords:
     - lugar de la prestación
     - servicio del catálogo
@@ -413,6 +413,16 @@ una regla con el tipo «Exento» e indique el supuesto de exención como texto d
 del justificante, por ejemplo «Tratamiento médico exento (§ 4 n.º 14 UStG)»; sin
 regla solo figura «Operación exenta» y la comprobación previa al envío avisa.
 
+**Empresas de la UE:** las mercancías (facturas de material) para empresas de la UE
+con un NIF-IVA válido son una entrega intracomunitaria exenta (K) sin inversión del
+sujeto pasivo, con el aviso «Entrega intracomunitaria exenta (§ 4 n.º 1 letra b en
+relación con § 6a UStG)», el país y la fecha de entrega en la factura electrónica;
+la contabilidad, la casilla 41 y la declaración recapitulativa no cambian. Una regla
+fiscal del tipo «Entrega intracomunitaria» sustituye el aviso. Los servicios a estas
+empresas siguen con inversión del sujeto pasivo (AE). Las facturas emitidas
+conservan su caso; un borrador con inversión del sujeto pasivo se ajusta en su
+próxima edición o emisión.
+
 **Terceros países:** las mercancías para clientes fuera de la UE son
 exportaciones (G) con el motivo «Entrega de exportación exenta». Los servicios a
 empresas fuera de la UE no están sujetos al IVA alemán (§ 3a apdo. 2 UStG) y
@@ -424,19 +434,21 @@ cambios.
 
 La comprobación previa al envío indica además: falta del NIF-IVA del cliente en
 entregas intracomunitarias, falta del NIF-IVA de la organización en entregas a otros
-países de la UE y exportaciones, «no sujeto» junto a otras categorías y una posición
-de categoría sin impuesto con un tipo superior al 0 %. Con «no sujeto» la factura
-electrónica no lleva NIF-IVA; basta el número fiscal. En las entregas intracomunitarias, la
-factura electrónica indica la dirección de entrega distinta del cliente (diálogo
-del cliente, sección **Dirección de entrega**), si no la hay, su dirección, como
-dirección de entrega con el país de entrega (regla BR-IC-12); la XRechnung exige
-allí código postal y localidad; de lo contrario, la comprobación previa al envío
-se detiene. La dirección de entrega se congela al emitir; la anulación y la
-factura rectificativa toman la del original. El registro de la organización
-(**Marca**, campo **Registro mercantil**) figura en la factura
-electrónica como identificador de registro del vendedor (BT-30), también
-congelado. Las
-posiciones «no sujeto» figuran sin tipo en la factura electrónica.
+países de la UE y exportaciones, «no sujeto» junto a otras categorías, una posición
+de categoría sin impuesto con un tipo superior al 0 % y una posición sujeta (S) al 0
+% (regla BR-S-05); si solo el borrador sigue al 0 % aunque su caso fiscal vuelva a
+estar sujeto, avisa, porque la emisión asigna a las posiciones sin categoría propia
+el tipo del caso fiscal. Con «no sujeto» la factura electrónica no lleva NIF-IVA;
+basta el número fiscal. En las entregas intracomunitarias, la factura electrónica
+indica la dirección de entrega distinta del cliente (diálogo del cliente, sección
+**Dirección de entrega**), si no la hay, su dirección, como dirección de entrega con
+el país de entrega (regla BR-IC-12); la XRechnung exige allí código postal y
+localidad; de lo contrario, la comprobación previa al envío se detiene. La dirección
+de entrega se congela al emitir; la anulación y la factura rectificativa toman la
+del original. El registro de la organización (**Marca**, campo **Registro
+mercantil**) figura en la factura electrónica como identificador de registro del
+vendedor (BT-30), también congelado. Las posiciones «no sujeto» figuran sin tipo en
+la factura electrónica.
 
 ## Nota de exención en el PDF de la factura
 

@@ -42,7 +42,8 @@ final class LotFefoTest extends TestCase {
         $this->lots = app(LotService::class);
         $this->fefo = app(FefoValuationService::class);
         $this->warehouse = Warehouse::factory()->create(['organization_id' => $this->organization->id]);
-        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true]);
+        // Die Schichten mit Charge und MHD führt FEFO; der Durchschnitt legt keine an (MVP-1735).
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true, 'valuation_method' => 'fefo']);
         $this->variant = ArticleVariant::factory()->create([
             'organization_id' => $this->organization->id, 'article_id' => $article->id,
             'is_default' => true, 'option_signature' => 'default',
@@ -124,7 +125,7 @@ final class LotFefoTest extends TestCase {
         $this->assertSame('5.0000', $this->stock()->balancesOf([$held])[$held->id]);
     }
 
-    public function test_expiring_until_reports_only_due_layers(): void {
+    public function test_expiring_until_reports_only_due_lots(): void {
         $late = $this->lots->register($this->variant, 'LATE', '2026-12-31');
         $soon = $this->lots->register($this->variant, 'SOON', '2026-07-01');
         $this->lots->receiveIntoLot($this->variant, $this->warehouse, '10', '2', $late);
@@ -132,8 +133,27 @@ final class LotFefoTest extends TestCase {
 
         $due = $this->lots->expiringUntil(Carbon::parse('2026-08-01'));
 
-        $this->assertCount(1, $due);
-        $this->assertSame($soon->id, $due->first()?->stock_lot_id);
+        $this->assertSame([[$soon->id, '5.0000']], array_map(fn (array $row): array => [$row['lot']->id, $row['qty']], $due));
+    }
+
+    /**
+     * MVP-1735: Die MHD-Überwachung liest den Chargenbestand aus dem Lagerbuch — auch beim gleitenden Durchschnitt,
+     * der keine Chargenschichten führt; eine aufgebrauchte Charge meldet sie nicht mehr.
+     */
+    public function test_expiring_until_reads_the_lot_stock_of_every_valuation_method(): void {
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true, 'valuation_method' => 'moving_average']);
+        $average = ArticleVariant::factory()->create(['organization_id' => $this->organization->id, 'article_id' => $article->id, 'option_signature' => 'default']);
+        $due = $this->lots->register($average, 'AVG-SOON', '2026-07-01');
+        $used = $this->lots->register($this->variant, 'FEFO-USED', '2026-07-15');
+        $this->lots->receiveIntoLot($average, $this->warehouse, '4', '2', $due);
+        $this->lots->receiveIntoLot($this->variant, $this->warehouse, '3', '2', $used);
+        $this->fefo->issue($this->variant, $this->warehouse, '3', lot: $used);
+
+        $this->assertFalse(StockValuationLayer::query()->where('stock_lot_id', $due->id)->exists());
+        $this->assertSame(
+            [[$due->id, '4.0000']],
+            array_map(fn (array $row): array => [$row['lot']->id, $row['qty']], $this->lots->expiringUntil(Carbon::parse('2026-08-01'))),
+        );
     }
 
     /** Der Chargenbestand ist der Buchsaldo: er sinkt, weil der Abgang die Charge trägt. */

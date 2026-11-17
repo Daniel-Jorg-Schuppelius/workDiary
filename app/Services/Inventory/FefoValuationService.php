@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
  * aber die Entnahme räumt zuerst die Schicht mit dem frühesten Verfallsdatum
  * (`best_before`); Schichten ohne Datum laufen ans Ende und folgen dann der
  * FIFO-Reihenfolge. Setzt Chargen-/MHD-Eingänge voraus
- * ({@see FifoValuationService::receiptIntoLot()}).
+ * ({@see FifoValuationService::receipt()} mit Charge).
  */
 class FefoValuationService extends FifoValuationService {
     public function method(): ValuationMethod {

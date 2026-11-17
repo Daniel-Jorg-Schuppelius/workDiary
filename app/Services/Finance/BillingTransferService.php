@@ -643,9 +643,9 @@ class BillingTransferService {
                 }
             } elseif (MorphMap::is($item->source_type, ProjectTimeShortfall::class)) {
                 // Auffüllung auf Soll (Feature 194): berechnet heißt Minuten, Zeitpunkt und Position am Befund;
-                // eine von einer Rechnung berechnete Auffüllung gehört der Rechnung.
+                // eine von einer Rechnung oder einem Zeitbeleg (MVP-1733) berechnete Auffüllung gehört dorthin.
                 $shortfall = ProjectTimeShortfall::query()->find($item->source_id);
-                if ($shortfall === null || $shortfall->invoice_item_id !== null) {
+                if ($shortfall === null || $shortfall->invoice_item_id !== null || $shortfall->external_reference_id !== null) {
                     continue;
                 }
                 if ($consumed) {

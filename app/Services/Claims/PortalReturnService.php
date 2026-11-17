@@ -108,6 +108,8 @@ final class PortalReturnService {
                 'article_id' => $claim->article_id,
                 'article_variant_id' => $delivery?->article_variant_id,
                 'stock_serial_id' => $serial?->id,
+                // Die Wiedereinlagerung bewertet zum Stückwert dieser Auslieferung, auch ohne Seriennummer (MVP-1737).
+                'stock_delivery_id' => $delivery?->id,
             ]);
             foreach ($photos as $photo) {
                 $this->files->store($claim, $photo, $portalUser->id);

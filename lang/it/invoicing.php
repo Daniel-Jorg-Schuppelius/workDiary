@@ -78,6 +78,7 @@ return [
             'not_subject_mixed' => 'Le posizioni non imponibili (categoria O) non possono stare accanto ad altre categorie IVA in una fattura elettronica (BR-O-11): le fatturi separatamente.',
             'not_subject_tax_number' => 'Le operazioni non imponibili (categoria O) non riportano la partita IVA (BR-O-02); la fattura elettronica richiede quindi il codice fiscale nelle impostazioni dell’organizzazione.',
             'line_category_rate' => 'Posizione «:line»: la categoria IVA :category non prevede imposta, ma la posizione riporta il :rate %: fattura e fattura elettronica differirebbero. Imposti l’aliquota della posizione allo 0 %.',
+            'standard_zero_rate' => 'Posizione «:line»: imponibile (categoria S) allo 0 %: la EN 16931 richiede per S un’aliquota superiore allo 0 % (BR-S-05). Inserisca l’aliquota della posizione o della fattura oppure assegni alla posizione una categoria senza imposta.',
             'missing_iban' => 'Manca l\'IBAN per il bonifico SEPA nelle impostazioni dell\'organizzazione.',
             'missing_tax_rate' => 'La fattura non riporta alcuna aliquota fiscale.',
             'totals_mismatch' => 'I totali della fattura sono incoerenti (posizioni, subtotale, imposta, totale).',
@@ -86,6 +87,7 @@ return [
         'warning' => [
             'missing_seller_contact' => 'Contatto del venditore incompleto (nome, telefono, e-mail) — la XRechnung richiede dati di contatto completi (BR-DE-2).',
             'missing_bic' => 'Manca il BIC (consigliato per i bonifici SEPA).',
+            'standard_zero_rate_draft' => 'La bozza è allo 0 %, ma il suo caso fiscale è imponibile (S): la EN 16931 richiede per S un’aliquota superiore allo 0 % (BR-S-05). L’emissione assegna alle posizioni senza categoria IVA propria l’aliquota del caso fiscale (:rate %) e si ferma una volta perché Lei controlli i totali.',
             'buyer_address_incomplete' => 'Indirizzo del cliente incompleto (via/CAP/città).',
             'missing_buyer_email' => 'Manca l\'e-mail del cliente (indirizzo elettronico di ricezione BT-49).',
             'missing_due_date' => 'Data di scadenza mancante — viene usato il termine di pagamento predefinito.',

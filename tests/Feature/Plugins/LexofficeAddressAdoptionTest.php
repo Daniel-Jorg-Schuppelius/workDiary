@@ -106,6 +106,51 @@ final class LexofficeAddressAdoptionTest extends TestCase {
         $this->assertSame('Lokalweg 1', $customer->address_street);
     }
 
+    /** MVP-1740: Eine Anschrift, die Lexoffice nicht mehr führt, entfällt; lokale ohne Fremd-ID bleiben. */
+    public function test_addresses_lexoffice_no_longer_has_are_removed(): void {
+        $customer = $this->customer();
+        $this->fakeContact();
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
+        $customer->addresses()->create(['organization_id' => $this->organization->id, 'kind' => ContactAddress::KIND_BILLING, 'street' => 'Historie 7', 'city' => 'Altstadt', 'is_primary' => false]);
+        $this->assertNotNull($customer->shippingAddress());
+
+        $this->fakeContact(withShipping: false, version: 2);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
+
+        $customer->refresh();
+        $this->assertNull($customer->shippingAddress(), 'Die Lieferanschrift führt Lexoffice nicht mehr.');
+        $this->assertSame(['billing-0', null], $customer->addresses()->orderBy('id')->pluck('external_id')->all(), 'Rechnungsanschrift und lokale Anschrift bleiben.');
+        $this->assertSame('Hauptstr. 1', $customer->address_street);
+    }
+
+    /** Ohne Rechnungsanschrift in Lexoffice wird die übrige lokale Rechnungsanschrift primär. */
+    public function test_removed_primary_billing_address_hands_over_to_the_local_one(): void {
+        $customer = $this->customer();
+        $this->fakeContact(withShipping: false);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
+        $customer->addresses()->create(['organization_id' => $this->organization->id, 'kind' => ContactAddress::KIND_BILLING, 'street' => 'Historie 7', 'city' => 'Altstadt', 'is_primary' => false]);
+
+        $this->fakeContact(withShipping: true, version: 2, withBilling: false);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
+
+        $customer->refresh();
+        $primary = $customer->primaryAddress();
+        $this->assertSame(['Historie 7', true], [$primary?->street, $primary?->is_primary]);
+        $this->assertSame('Historie 7', $customer->address_street, 'Die Projektion folgt der neuen primären Anschrift.');
+    }
+
+    /** Gegenprobe: Liefert der Kontakt kein `addresses`-Objekt, bleibt alles stehen. */
+    public function test_contact_without_addresses_object_removes_nothing(): void {
+        $customer = $this->customer();
+        $this->fakeContact();
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
+
+        $this->fakeContact(version: 2, withAddresses: false);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
+
+        $this->assertSame(2, $customer->addresses()->count());
+    }
+
     /** @param array<string, mixed> $attributes */
     private function customer(array $attributes = []): Customer {
         return Customer::factory()->create($attributes + [
@@ -117,8 +162,11 @@ final class LexofficeAddressAdoptionTest extends TestCase {
         ]);
     }
 
-    private function fakeContact(bool $withShipping = true, int $version = 1): void {
-        $addresses = ['billing' => [['street' => 'Hauptstr. 1', 'zip' => '10115', 'city' => 'Berlin', 'countryCode' => 'DE']]];
+    private function fakeContact(bool $withShipping = true, int $version = 1, bool $withBilling = true, bool $withAddresses = true): void {
+        $addresses = [];
+        if ($withBilling) {
+            $addresses['billing'] = [['street' => 'Hauptstr. 1', 'zip' => '10115', 'city' => 'Berlin', 'countryCode' => 'DE']];
+        }
         if ($withShipping) {
             $addresses['shipping'] = [['street' => 'Lieferung 9', 'zip' => '20095', 'city' => 'Hamburg', 'countryCode' => 'DE']];
         }
@@ -127,8 +175,10 @@ final class LexofficeAddressAdoptionTest extends TestCase {
             'version' => $version,
             'company' => ['name' => 'Abgleich GmbH', 'vatRegistrationId' => self::VAT_ID],
             'emailAddresses' => ['business' => ['info@abgleich.test']],
-            'addresses' => $addresses,
         ];
+        if ($withAddresses) {
+            $contact['addresses'] = $addresses;
+        }
         FakePluginHttp::fake([
             'https://api.lexware.io/v1/contacts*' => static fn () => FakePluginHttp::response(['content' => [$contact], 'totalPages' => 1], 200),
         ]);

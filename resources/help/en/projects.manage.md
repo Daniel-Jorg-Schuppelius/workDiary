@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 12
+version: 13
 keywords:
     - create project
     - project management
@@ -86,30 +86,35 @@ detail view shows at a glance what is billable and open.
 Agree a service time per person and day with the customer and maintain it on the time tab
 under **Manage target times**: a **project default** per weekday applies to all assignable
 people, a personal row takes precedence, an **exception on a date** beats the weekday;
-vacation, sickness and public holidays set the target to zero. The nightly check compares the
-target with the booked time and reports shortfalls above the tolerance (organization setting,
-default 15 minutes) to the project leads, to the work queue and to the person's day close; the
-findings are listed on the time tab, where they can be **acknowledged**, and a late booking
-resolves them. With **Bill agreed hours** on the billing tab, the transfer and the invoice add
-the missing time as a position “Agreed service time”; the invoice preview lists these top-ups as
-well. Each top-up is billed only once, either in an invoice or in a transfer; a later booking on
-that day is then not billable. Cancelling the invoice or the transfer, removing the position or
-discarding the draft releases the top-up again.
+vacation, sickness and public holidays set the target to zero. The nightly check compares
+the target with the booked time and reports shortfalls above the tolerance (organization
+setting, default 15 minutes) to the project leads, to the work queue and to the person's
+day close; the findings are listed on the time tab, where they can be **acknowledged**,
+and a late booking resolves them. With **Bill agreed hours** on the billing tab, the
+transfer and the invoice add the missing time as a position “Agreed service time”; the
+invoice preview lists these top-ups as well. The time voucher in Lexoffice (“Times as
+voucher”) bills them at the same price within the amount of their tax rate, because a
+bookkeeping voucher has no individual lines. Each top-up is billed only once, in an
+invoice, a transfer or a time voucher; a later booking on that day is then not billable.
+Cancelling the invoice or the transfer, removing the position or discarding the draft
+releases the top-up again; workDiary does not withdraw a time voucher.
 
 If the project's billing rule names the unit "flat" or "Pauschale", each order
 bills one line with quantity 1 at the rule's price; the top-up to agreed hours does
 not apply then, because the flat rate covers the order regardless of its duration.
 All other units, such as hour, day or pcs, bill by duration.
 
-The document that bills the flat rate closes the shortfall of such a project —
-the invoice, the transfer when it is sent, or the time voucher in Lexoffice: it
-shows as resolved on the time tab with the number of the invoice or transfer, and
-the nightly check does not reopen it. A later booking on that day stays billable,
-because nothing was topped up. If you remove the line, discard the draft or cancel
-the invoice or the transfer, the shortfall is open again. Acknowledge shortfalls
-whose flat rate was billed earlier by hand. If a transfer contains no working
-time of the project, its shortfall stays open and free: the next transfer or
-invoice with working time of the project closes it, without cancelling the first.
+The document that bills the flat rate closes the shortfall of such a project — the
+invoice, the transfer when it is sent, or the time voucher in Lexoffice: it shows as
+resolved on the time tab with the number of the invoice or transfer, and the nightly check
+does not reopen it. A later booking on that day stays billable, because nothing was topped
+up. If you remove the line, discard the draft or cancel the invoice or the transfer, the
+shortfall is open again. Shortfalls whose flat rate was billed before this version are
+closed by the data repair after the update
+(`php artisan projects:settle-flat-rate-shortfalls`, first with `--dry-run`); acknowledge
+those without a clear document by hand. If a transfer contains no working time of the
+project, its shortfall stays open and free: the next transfer or invoice with working time
+of the project closes it, without cancelling the first.
 
 The billing rule also names the **place of supply** of its times (§ 3a UStG):
 **General**, **Catalogue service** or **Service connected with immovable

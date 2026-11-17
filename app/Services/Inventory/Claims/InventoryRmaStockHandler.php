@@ -125,12 +125,13 @@ final class InventoryRmaStockHandler implements RmaStockHandler {
 
     /**
      * Stückwert der Wiedereinlagerung (MVP-1728): der des ursprünglichen Abgangs, wenn die Rücksendung ihn kennt —
-     * über die Auslieferung ihrer Seriennummer, deren Abgang die Auslieferung als Beleg trägt —, sonst der Durchschnitt
-     * des Lagers. Ohne beides entscheidet die Preisfolge des manuellen Eingangs.
+     * über ihre Auslieferung (Portal, MVP-1737), sonst die Auslieferung ihrer Seriennummer; deren Abgang trägt die
+     * Auslieferung als Beleg —, sonst der Durchschnitt des Lagers. Ohne beides entscheidet die Preisfolge des
+     * manuellen Eingangs.
      */
     private function restockUnitCost(ClaimRmaReturn $rma, ArticleVariant $variant, Warehouse $warehouse, Organization $organization): ?Money {
-        $deliveryId = $rma->stockSerial?->stock_delivery_id;
-        if ($deliveryId !== null) {
+        // Ohne Abgang der Variante an der ersten Auslieferung (etwa wenn der Wareneingang die Variante korrigiert hat) zählt die nächste.
+        foreach (array_unique(array_filter([$rma->stock_delivery_id, $rma->stockSerial?->stock_delivery_id])) as $deliveryId) {
             $issued = StockMovement::query()->withoutGlobalScopes()
                 ->where('organization_id', $rma->organization_id)
                 ->where('source_type', MorphMap::alias(StockDelivery::class))

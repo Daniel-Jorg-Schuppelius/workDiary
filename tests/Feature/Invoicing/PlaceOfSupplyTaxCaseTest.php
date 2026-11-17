@@ -103,7 +103,8 @@ final class PlaceOfSupplyTaxCaseTest extends TestCase {
         // Unternehmen wie bisher: EU mit USt-IdNr. Reverse Charge, Drittland nicht steuerbar — gleich welche Art.
         yield 'Unternehmen EU allgemein' => [['country' => 'AT', 'vat_id' => 'ATU13585627', 'is_consumer' => false], $general, 'services', 'AE', '0.00', true];
         yield 'Unternehmen EU Katalog' => [['country' => 'AT', 'vat_id' => 'ATU13585627', 'is_consumer' => false], $catalog, 'services', 'AE', '0.00', true];
-        yield 'Unternehmen EU Ware' => [['country' => 'AT', 'vat_id' => 'ATU13585627', 'is_consumer' => false], $general, 'goods', 'AE', '0.00', true];
+        // Ware: innergemeinschaftliche Lieferung ohne Reverse-Charge-Merkmal (MVP-1731).
+        yield 'Unternehmen EU Ware' => [['country' => 'AT', 'vat_id' => 'ATU13585627', 'is_consumer' => false], $general, 'goods', 'K', '0.00', false];
         yield 'Unternehmen Drittland allgemein' => [['country' => 'CH', 'is_consumer' => false], $general, 'services', 'O', '0.00', false];
         yield 'Unternehmen Drittland Katalog' => [['country' => 'CH', 'is_consumer' => false], $catalog, 'services', 'O', '0.00', false];
 

@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 24
+version: 25
 keywords:
     - luogo della prestazione
     - prestazione del catalogo
@@ -419,6 +419,15 @@ norma di esenzione come testo di avviso del giustificativo, ad esempio «Cure me
 esenti (§ 4 n. 14 UStG)»; senza regola compare solo «Operazione esente» e il
 controllo prima dell'invio avvisa.
 
+**Imprese UE:** le merci (fatture di materiale) per imprese dell'UE con partita IVA
+valida sono una cessione intracomunitaria esente (K) senza inversione contabile, con
+l'avviso «Cessione intracomunitaria esente (§ 4 n. 1 lett. b in combinato disposto
+con § 6a UStG)», paese e data di consegna nella fattura elettronica; contabilità,
+rigo 41 ed elenco riepilogativo restano invariati. Una regola fiscale del tipo
+«Cessione intracomunitaria» sostituisce l'avviso. Le prestazioni a queste imprese
+restano in inversione contabile (AE). Le fatture emesse mantengono il loro caso; una
+bozza con inversione contabile si adegua alla prossima modifica o emissione.
+
 **Paesi terzi:** le merci per clienti fuori dall'UE sono esportazioni (G) con
 il motivo «Cessione all'esportazione esente». Le prestazioni a imprese fuori
 dall'UE non sono imponibili in Germania (§ 3a co. 2 UStG) e figurano come «non
@@ -428,20 +437,24 @@ senza altre categorie accanto. Senza codice fiscale il controllo prima
 dell'invio si blocca. Le fatture emesse in precedenza con la categoria G vengono
 ristampate senza modifiche.
 
-Il controllo prima dell'invio segnala inoltre: partita IVA del cliente mancante nelle
-cessioni intracomunitarie, partita IVA dell'organizzazione mancante nelle cessioni
-verso altri paesi UE e nelle esportazioni, «non imponibile» accanto ad altre
-categorie e una posizione di categoria senza imposta con aliquota superiore allo 0 %.
-Con «non imponibile» la fattura elettronica non riporta partite IVA; basta il codice
-fiscale. Nelle cessioni intracomunitarie la fattura
-elettronica indica l'indirizzo di consegna diverso del cliente (dialogo cliente,
-sezione **Indirizzo di consegna**), altrimenti il suo indirizzo, come indirizzo
-di consegna con il paese di consegna (regola BR-IC-12); la XRechnung vi richiede
-CAP e città, altrimenti il controllo prima dell'invio si ferma. L'indirizzo di
-consegna viene congelato all'emissione; storno e fattura di rettifica riprendono
-quello dell'originale. La registrazione dell'organizzazione (**Branding**, campo **Registro delle imprese**) compare nella fattura elettronica come
-identificativo di registrazione del venditore (BT-30), anch'essa congelata. Le posizioni «non imponibile» compaiono
-senza aliquota nella fattura elettronica.
+Il controllo prima dell'invio segnala inoltre: partita IVA del cliente mancante
+nelle cessioni intracomunitarie, partita IVA dell'organizzazione mancante nelle
+cessioni verso altri paesi UE e nelle esportazioni, «non imponibile» accanto ad
+altre categorie, una posizione di categoria senza imposta con aliquota superiore
+allo 0 % e una posizione imponibile (S) allo 0 % (regola BR-S-05); se solo la bozza
+è ancora allo 0 % benché il suo caso fiscale sia tornato imponibile, avvisa, perché
+l’emissione assegna alle posizioni senza categoria propria l’aliquota del caso
+fiscale. Con «non imponibile» la fattura elettronica non riporta partite IVA; basta
+il codice fiscale. Nelle cessioni intracomunitarie la fattura elettronica indica
+l'indirizzo di consegna diverso del cliente (dialogo cliente, sezione **Indirizzo di
+consegna**), altrimenti il suo indirizzo, come indirizzo di consegna con il paese di
+consegna (regola BR-IC-12); la XRechnung vi richiede CAP e città, altrimenti il
+controllo prima dell'invio si ferma. L'indirizzo di consegna viene congelato
+all'emissione; storno e fattura di rettifica riprendono quello dell'originale. La
+registrazione dell'organizzazione (**Branding**, campo **Registro delle imprese**)
+compare nella fattura elettronica come identificativo di registrazione del venditore
+(BT-30), anch'essa congelata. Le posizioni «non imponibile» compaiono senza aliquota
+nella fattura elettronica.
 
 ## Indicazione di esenzione nel PDF della fattura
 

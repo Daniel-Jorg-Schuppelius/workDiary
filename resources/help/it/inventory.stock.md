@@ -1,7 +1,7 @@
 ---
 title: "Giacenze e scansione"
 topic: inventory.stock
-version: 10
+version: 11
 keywords:
     - magazzino
     - carico merce
@@ -70,8 +70,11 @@ resta davvero. Il Suo amministratore lo verifica con il comando
 `inventory:lots:repair`: senza opzioni è una simulazione con una tabella per
 lotto (saldo contabile, residuo degli strati di valutazione, differenza);
 con `--apply` trasferisce la differenza a «senza lotto» con valutazione FIFO
-o FEFO, e la giacenza totale resta invariata. Con il prezzo medio mobile
-segnala soltanto il lotto; i lotti bloccati solo dopo lo sblocco.
+o FEFO, e la giacenza totale resta invariata. Non controlla i lotti con il prezzo medio mobile —
+lì la valutazione non tiene strati per lotto; i lotti bloccati vengono
+trasferiti solo dopo lo sblocco.
+
+**Allineare il registro di valorizzazione.** Fino a novembre 2026 alcune entrate arrivavano in magazzino senza valore (entrata manuale, eccedenza inventariale, entrata in lotto con prezzo medio mobile); il registro di valorizzazione può quindi essere inferiore alla giacenza. Il Suo amministratore lo verifica con il comando `inventory:valuation-check`: una tabella per variante e magazzino con giacenza propria, quantità nel registro di valorizzazione e differenza, senza valori. Con `--align` aggiunge la quantità mancante senza movimento di magazzino — al prezzo d’acquisto della variante, altrimenti alla media del magazzino. Questo valore è stimato; l’audit del magazzino registra quantità e costo unitario. Con FIFO e FEFO la quantità aggiunta esce per prima, come la più vecchia. Un registro di valorizzazione superiore alla giacenza viene soltanto segnalato.
 
 ## Unità, giornale di magazzino e impostazioni
 
@@ -79,7 +82,7 @@ segnala soltanto il lotto; i lotti bloccati solo dopo lo sblocco.
 
 **Giornale di magazzino.** La scheda **Giornale di magazzino** elenca tutti i movimenti con data e ora, magazzino, tipo di movimento, quantità in unità base e la colonna **Registrato come** (quantità e unità inserite). Ricerca, magazzino e periodo in alto restringono l’elenco.
 
-**Scadenza.** Se un articolo ha la proprietà «scadenza obbligatoria», il magazzino accetta la sua entrata solo tramite il ricevimento merci di un ordine, con lotto e data di scadenza. Le entrate manuali e da scansione vengono rifiutate. Un lotto già noto porta con sé la propria data.
+**Scadenza.** Se un articolo ha la proprietà «scadenza obbligatoria», il magazzino accetta la sua entrata solo tramite il ricevimento merci di un ordine, con lotto e data di scadenza. Le entrate manuali e da scansione vengono rifiutate. Un lotto già noto porta con sé la propria data. La notifica di scadenza elenca i lotti con giacenza nel giornale di magazzino la cui data cade nel preavviso, qualunque sia il metodo di valutazione; i lotti esauriti non vengono segnalati.
 
 **Impostazioni di magazzino.** Con il diritto di configurazione del magazzino Lei apre le **impostazioni di magazzino** nella panoramica delle giacenze. Lì sceglie il **metodo di valutazione** dell’organizzazione (media mobile, FIFO o FEFO) e il **momento della prenotazione** in produzione (al rilascio o all’avvio). Passando a FIFO o FEFO, la giacenza esistente riceve uno strato iniziale al prezzo medio precedente. Il ritorno alla media mobile è possibile solo quando non resta giacenza negli strati, perché la media non è stata aggiornata in questo periodo.
 
@@ -101,7 +104,7 @@ segnala soltanto il lotto; i lotti bloccati solo dopo lo sblocco.
 
 **Valorizzazione dei prelievi:** i prelievi dalla giacenza propria — nel modulo di registrazione, tramite scansione, dopo un’approvazione a quattro occhi, nel consumo di materiale della produzione e all’evasione di una prenotazione — sono valorizzati secondo il metodo dell’articolo, come consegne e consumo di materiale: FIFO e FEFO consumano gli strati di valorizzazione, il costo medio ponderato riduce il libro delle medie al prezzo medio attuale. I prelievi da giacenza di terzi (cliente, conto deposito, fornitore, progetto) restano non valorizzati. Anche il prelievo di magazzino nella scheda cliente registra secondo il metodo dell’articolo; eliminare l’assegnazione lo riporta in giacenza come nuovo strato al costo unitario del prelievo con FIFO e FEFO, e nel libro delle medie con il costo medio ponderato.
 
-**Valorizzazione delle entrate:** un’entrata nella giacenza propria — nel modulo di registrazione e tramite scansione — è valorizzata come il ricevimento merci di un ordine d’acquisto. Nel campo **Costo di carico per unità** indichi il prezzo per unità inserita (ad esempio per cartone), con virgola o punto; viene registrato per unità base. Se vuoto vale il prezzo d’acquisto della variante (in mancanza quello dell’articolo), senza prezzo d’acquisto la media attuale del magazzino e senza alcuna valorizzazione zero. Il prezzo è nella valuta in cui la valorizzazione tiene l’articolo nel magazzino, altrimenti in quella dell’organizzazione; un prezzo d’acquisto in un’altra valuta non viene considerato. Con FIFO e FEFO l’entrata crea uno strato di valorizzazione; con il costo medio ponderato ricalcola la media. Le entrate nella giacenza di terzi restano non valorizzate.
+**Valorizzazione delle entrate:** un’entrata nella giacenza propria — nel modulo di registrazione e tramite scansione — è valorizzata come il ricevimento merci di un ordine d’acquisto. Nel campo **Costo di carico per unità** indichi il prezzo per unità inserita (ad esempio per cartone), con virgola o punto; viene registrato per unità base. Se vuoto vale il prezzo d’acquisto della variante (in mancanza quello dell’articolo), senza prezzo d’acquisto la media attuale del magazzino e senza alcuna valorizzazione zero. Il prezzo è nella valuta in cui la valorizzazione tiene l’articolo nel magazzino, altrimenti in quella dell’organizzazione; un prezzo d’acquisto in un’altra valuta non viene considerato. Con FIFO e FEFO l’entrata crea uno strato di valorizzazione; con il costo medio ponderato ricalcola la media. Le entrate nella giacenza di terzi restano non valorizzate. Anche il ricevimento merci di un ordine in un lotto segue il metodo: con il prezzo medio mobile entra nel registro della media, con FIFO e FEFO diventa uno strato con lotto e data di scadenza.
 
 **Ridistribuire le prenotazioni:** nella finestra «Modifica prenotazione» cedete la quantità aperta a un’altra prenotazione dello stesso articolo, magazzino e proprietà, ad esempio a un ordine con priorità più alta. Una prenotazione più recente non ne scalza mai una più vecchia in silenzio; la ridistribuzione compare nel protocollo di audit e la riga materiale di un ordine di produzione la segue.
 

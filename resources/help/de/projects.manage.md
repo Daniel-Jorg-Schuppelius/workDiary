@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 12
+version: 13
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -87,19 +87,22 @@ Blick, was abrechenbar offen ist.
 ## Sollzeiten je Person
 
 Vereinbaren Sie mit dem Kunden eine Einsatzzeit je Person und Tag, pflegen Sie sie am
-Zeitreiter unter **Sollzeiten pflegen**: eine **Projektvorgabe** je Wochentag gilt für alle
-zuweisbaren Personen, eine Personenzeile geht vor, eine **Ausnahme an einem Datum** vor dem
-Wochentag; Urlaub, Krankheit und Feiertage setzen das Soll auf null. Der nächtliche Abgleich
-vergleicht das Soll mit der gebuchten Zeit und meldet Unterschreitungen über der Toleranz
-(Organisationseinstellung, Vorgabe 15 Minuten) an die Projektleitung, in den Arbeitsvorrat
-und in den Tagesabschluss der Person; die Befunde stehen am Zeitreiter und lassen sich dort
-**bestätigen**, eine Nachbuchung erledigt sie. Mit **Vereinbarte Stunden abrechnen** im
-Abrechnungsreiter ergänzen Übergabe und Rechnung die fehlende Zeit als Position „Vereinbarte
-Einsatzzeit“; die Rechnungsvorschau zeigt diese Auffüllungen mit an. Berechnet wird jede
-Auffüllung nur einmal, entweder in einer Rechnung oder in einer Übergabe; eine spätere
-Nachbuchung auf diesen Tag ist dann nicht abrechenbar. Ein Storno der Rechnung oder der
-Übergabe, das Entfernen der Position oder das Verwerfen des Entwurfs gibt die Auffüllung
-wieder frei.
+Zeitreiter unter **Sollzeiten pflegen**: eine **Projektvorgabe** je Wochentag gilt für
+alle zuweisbaren Personen, eine Personenzeile geht vor, eine **Ausnahme an einem Datum**
+vor dem Wochentag; Urlaub, Krankheit und Feiertage setzen das Soll auf null. Der
+nächtliche Abgleich vergleicht das Soll mit der gebuchten Zeit und meldet
+Unterschreitungen über der Toleranz (Organisationseinstellung, Vorgabe 15 Minuten) an die
+Projektleitung, in den Arbeitsvorrat und in den Tagesabschluss der Person; die Befunde
+stehen am Zeitreiter und lassen sich dort **bestätigen**, eine Nachbuchung erledigt sie.
+Mit **Vereinbarte Stunden abrechnen** im Abrechnungsreiter ergänzen Übergabe und Rechnung
+die fehlende Zeit als Position „Vereinbarte Einsatzzeit“; die Rechnungsvorschau zeigt
+diese Auffüllungen mit an. Der Zeitbeleg an Lexoffice („Zeiten als Beleg“) rechnet sie zum
+selben Preis im Betrag ihres Steuersatzes mit ab, denn ein Buchhaltungsbeleg kennt keine
+Einzelpositionen. Berechnet wird jede Auffüllung nur einmal, in einer Rechnung, einer
+Übergabe oder einem Zeitbeleg; eine spätere Nachbuchung auf diesen Tag ist dann nicht
+abrechenbar. Ein Storno der Rechnung oder der Übergabe, das Entfernen der Position oder
+das Verwerfen des Entwurfs gibt die Auffüllung wieder frei; einen Zeitbeleg nimmt
+workDiary nicht zurück.
 
 Nennt die Abrechnungsregel des Projekts die Einheit „Pauschale“, rechnet jeder
 Auftrag eine Position mit Menge 1 zum Preis der Regel; die Auffüllung auf
@@ -107,17 +110,17 @@ vereinbarte Stunden entfällt dann, weil die Pauschale den Auftrag unabhängig v
 der Dauer abdeckt. Alle anderen Einheiten, etwa Stunde, Tag oder Stk, rechnen
 nach Dauer.
 
-Den Befund eines solchen Projekts schließt der Beleg, der die Pauschale
-abrechnet — die Rechnung, die Übergabe beim Übertragen oder der Zeitbeleg an
-Lexoffice: Er steht am Zeitreiter als erledigt mit der Nummer der Rechnung bzw.
-der Übergabe, und der nächtliche Abgleich öffnet ihn nicht wieder. Eine
-Nachbuchung auf diesen Tag bleibt abrechenbar, denn aufgefüllt wurde nichts.
-Entfernen Sie die Position, verwerfen Sie den Entwurf oder stornieren Sie die
-Rechnung oder die Übergabe, ist der Befund wieder offen. Befunde, deren
-Pauschale schon früher abgerechnet wurde, bestätigen Sie von Hand. Enthält eine
-Übergabe keine Arbeitszeit des Projekts, bleibt sein Befund offen und frei: Die
-nächste Übergabe oder Rechnung mit Arbeitszeit des Projekts schließt ihn, ohne
-dass die erste storniert werden muss.
+Den Befund eines solchen Projekts schließt der Beleg, der die Pauschale abrechnet — die
+Rechnung, die Übergabe beim Übertragen oder der Zeitbeleg an Lexoffice: Er steht am
+Zeitreiter als erledigt mit der Nummer der Rechnung bzw. der Übergabe, und der nächtliche
+Abgleich öffnet ihn nicht wieder. Eine Nachbuchung auf diesen Tag bleibt abrechenbar, denn
+aufgefüllt wurde nichts. Entfernen Sie die Position, verwerfen Sie den Entwurf oder
+stornieren Sie die Rechnung oder die Übergabe, ist der Befund wieder offen. Befunde, deren
+Pauschale vor diesem Stand abgerechnet wurde, schließt nach dem Update die Datenreparatur
+(`php artisan projects:settle-flat-rate-shortfalls`, erst mit `--dry-run`); ohne
+eindeutigen Beleg bestätigen Sie sie von Hand. Enthält eine Übergabe keine Arbeitszeit des
+Projekts, bleibt sein Befund offen und frei: Die nächste Übergabe oder Rechnung mit
+Arbeitszeit des Projekts schließt ihn, ohne dass die erste storniert werden muss.
 
 Die Abrechnungsregel nennt auch den **Leistungsort** ihrer Zeiten (§ 3a UStG):
 **Allgemein**, **Katalogleistung** oder **Grundstücksleistung**. Leer gilt der

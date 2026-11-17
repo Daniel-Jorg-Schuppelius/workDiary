@@ -17,6 +17,7 @@ use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, Valuation
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
+use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -41,16 +42,8 @@ class FifoValuationService implements InventoryValuationStrategy {
         return ValuationMethod::Fifo;
     }
 
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt): StockMovement {
-        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, null, $source, $entered, $bin, $type);
-    }
-
-    /** Wareneingang einer konkreten Charge (E2): Schicht trägt Los + Verfallsdatum (FEFO). */
-    public function receiptIntoLot(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, StockLot $lot, string $currency = 'EUR', ?int $actorUserId = null, ?EnteredQuantity $entered = null): StockMovement {
-        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, null, $entered);
-    }
-
-    private function applyReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency, ?int $actorUserId, ?StockLot $lot, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt): StockMovement {
+    /** Wareneingang als neue Schicht; mit Charge trägt die Schicht Charge und Verfallsdatum (FEFO, E2). */
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt, ?StockLot $lot = null): StockMovement {
         $qty = DecimalQty::positive($qty);
         $unitCost = DecimalQty::positive($unitCost);
 
@@ -144,6 +137,11 @@ class FifoValuationService implements InventoryValuationStrategy {
      */
     public function transfer(ArticleVariant $variant, Warehouse $from, Warehouse $to, string $qty, ?int $actorUserId = null, ?StockLot $lot = null, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null): StockIssue {
         return DB::transaction(function () use ($variant, $from, $to, $qty, $actorUserId, $lot, $entered, $idempotencyKey): StockIssue {
+            // Feste Folge statt Quelle vor Ziel: gegenläufige Umlagerungen warten aufeinander, statt sich zu verklemmen (MVP-1738).
+            foreach ($this->ledger->lockStock($variant, $from, $to) as $warehouse) {
+                $this->bookQuery($variant, $warehouse)->lockForUpdate()->get(['id']);
+            }
+
             $slices = [];
             $leaving = $this->ledger->issue(
                 $variant, $from, $qty,
@@ -201,6 +199,8 @@ class FifoValuationService implements InventoryValuationStrategy {
 
             $variant = $posting->variant;
             $warehouse = $posting->warehouse;
+            // Bestand vor Schichten wie bei der Entnahme (MVP-1738).
+            $this->ledger->availableForUpdate($variant, $warehouse);
             $lot = $posting->stockLotId !== null ? StockLot::query()->find($posting->stockLotId) : null;
             $qty = DecimalQty::positive($posting->signedQty);
             if (! NumberHelper::isPositivePrecise($posting->signedQty, self::SCALE)) {
@@ -227,6 +227,44 @@ class FifoValuationService implements InventoryValuationStrategy {
 
             return $movement;
         });
+    }
+
+    /** Die fehlende Menge wird eine Schicht ohne Bewegung, eine Sekunde vor der ältesten Schicht (MVP-1736). */
+    public function raiseBook(ArticleVariant $variant, Warehouse $warehouse, string $physicalQty, Money $unitCost): string {
+        return DB::transaction(function () use ($variant, $warehouse, $physicalQty, $unitCost): string {
+            $layers = $this->bookQuery($variant, $warehouse)->lockForUpdate()->get(['id', 'qty_remaining', 'acquired_at']);
+            $booked = Decimal::sum($layers->map(static fn (StockValuationLayer $layer): Decimal => Decimal::of((string) $layer->qty_remaining, self::SCALE))->all(), self::SCALE);
+            $missing = Decimal::of($physicalQty, self::SCALE)->minus($booked);
+            if (! $missing->isPositive()) {
+                return bcadd('0', '0', self::SCALE);
+            }
+
+            // Die Lücke stammt aus früheren unbewerteten Zugängen — sie geht als älteste Ware zuerst ab.
+            $oldest = $layers->pluck('acquired_at')->filter()->min();
+            StockValuationLayer::query()->create([
+                'organization_id' => $variant->organization_id,
+                'article_variant_id' => $variant->id,
+                'warehouse_id' => $warehouse->id,
+                'qty_remaining' => $missing->getValue(),
+                'unit_cost' => $unitCost->withScale(self::SCALE)->getAmount(),
+                'currency' => $unitCost->getCurrency(),
+                'acquired_at' => $oldest instanceof CarbonInterface ? $oldest->copy()->subSecond() : Carbon::now(),
+            ]);
+
+            return $missing->getValue();
+        });
+    }
+
+    /**
+     * Alle Schichten der Variante im Lager, auch verbrauchte — gesperrt hält das auch neue Schichten des Lagers an.
+     *
+     * @return Builder<StockValuationLayer>
+     */
+    private function bookQuery(ArticleVariant $variant, Warehouse $warehouse): Builder {
+        return StockValuationLayer::query()
+            ->where('article_variant_id', $variant->id)
+            ->where('warehouse_id', $warehouse->id)
+            ->orderBy('id');
     }
 
     /**

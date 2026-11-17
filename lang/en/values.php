@@ -255,6 +255,7 @@ return [
     'exempt' => 'Exempt',
     'reverse_charge' => 'Reverse charge',
     'export' => 'Export/third country',
+    'intra_community' => 'Intra-Community supply',
     'retired' => 'Retired',
     'services' => 'Services',
     'goods' => 'Goods',

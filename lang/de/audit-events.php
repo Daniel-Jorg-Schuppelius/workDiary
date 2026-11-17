@@ -672,6 +672,7 @@ return [
         'negativeApproved' => 'Negativbestand genehmigt',
         'countApproved' => 'Inventurdifferenzen freigegeben',
         'countStatusChanged' => 'Inventur: Status geändert',
+        'valuationAligned' => 'Bewertungsbuch an den Bestand angeglichen (geschätzt)',
     ],
     'stock_lot' => [
         'blocked' => 'Charge gesperrt',

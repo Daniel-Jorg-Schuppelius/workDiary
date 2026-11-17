@@ -1,7 +1,7 @@
 ---
 title: "Claims & warranty"
 topic: claims.overview
-version: 5
+version: 6
 keywords:
     - complaint
     - customer complaint
@@ -60,7 +60,7 @@ the inventory module the return is only documented, and the message reads
 variant and serial number with them; you add the warehouse at goods
 receipt.
 
-**Value of restocking:** Restocking posts the return from quarantine into free stock and values it there — at the unit cost of the original delivery if the return knows it through its serial number, otherwise at the warehouse average (without any valuation at the purchase price). While the return is in quarantine it does not count towards the stock value; scrapping and returning to the supplier from quarantine therefore carry no value.
+**Value of restocking:** Restocking posts the return from quarantine into free stock and values it there — at the unit cost of the original delivery if the return knows it (from the customer portal through the delivery chosen there, even without a serial number, otherwise through its serial number), otherwise at the warehouse average (without any valuation at the purchase price). While the return is in quarantine it does not count towards the stock value; scrapping and returning to the supplier from quarantine therefore carry no value.
 
 **Actions and follow-up order:** Create rework, repair, replacement or a
 service visit under “Measures” with a deadline and a responsible person. Each

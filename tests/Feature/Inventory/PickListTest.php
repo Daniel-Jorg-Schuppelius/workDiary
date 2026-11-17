@@ -274,6 +274,8 @@ final class PickListTest extends TestCase {
     public function test_migration_backfills_the_target_of_legacy_merged_lots(): void {
         $lots = app(LotService::class);
         $variant = $this->makeVariant('LOT-BACKFILL');
+        // Altbestand aus der Schichtzeit: Chargenschichten führt FEFO (MVP-1735).
+        $variant->article?->update(['valuation_method' => 'fefo']);
         $target = $lots->register($variant, 'L-TARGET');
         $source = $lots->register($variant, 'L-SOURCE');
         $split = $lots->register($variant, 'L-SPLIT');

@@ -78,6 +78,7 @@ return [
             'not_subject_mixed' => 'Las posiciones no sujetas (categoría O) no pueden figurar junto a otras categorías de IVA en una factura electrónica (BR-O-11); factúrelas por separado.',
             'not_subject_tax_number' => 'Las operaciones no sujetas (categoría O) no llevan NIF-IVA (BR-O-02); la factura electrónica necesita para ello el número fiscal en la configuración de la organización.',
             'line_category_rate' => 'Posición «:line»: la categoría de IVA :category no lleva impuesto, pero la posición lleva un :rate %; la factura y la factura electrónica diferirían. Ponga el tipo impositivo de la posición en 0 %.',
+            'standard_zero_rate' => 'Posición «:line»: sujeta (categoría S) al 0 %; EN 16931 exige para S un tipo impositivo superior al 0 % (BR-S-05). Introduzca el tipo impositivo de la posición o de la factura, o asigne a la posición una categoría sin impuesto.',
             'missing_iban' => 'Falta el IBAN para la transferencia SEPA en la configuración de la organización.',
             'missing_tax_rate' => 'La factura no tiene tipo impositivo.',
             'totals_mismatch' => 'Los totales de la factura son incoherentes (posiciones, subtotal, impuesto, total).',
@@ -86,6 +87,7 @@ return [
         'warning' => [
             'missing_seller_contact' => 'Contacto del vendedor incompleto (nombre, teléfono, correo) — la XRechnung exige datos de contacto completos (BR-DE-2).',
             'missing_bic' => 'Falta el BIC (recomendado para transferencias SEPA).',
+            'standard_zero_rate_draft' => 'El borrador está al 0 %, pero su caso fiscal es sujeto (S); EN 16931 exige para S un tipo impositivo superior al 0 % (BR-S-05). La emisión asigna a las posiciones sin categoría de IVA propia el tipo del caso fiscal (:rate %) y se detiene una vez para que revise los totales.',
             'buyer_address_incomplete' => 'Dirección del cliente incompleta (calle/CP/ciudad).',
             'missing_buyer_email' => 'Falta el correo del cliente (dirección electrónica de recepción BT-49).',
             'missing_due_date' => 'Falta la fecha de vencimiento — se usa el plazo de pago predeterminado.',

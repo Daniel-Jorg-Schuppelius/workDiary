@@ -78,6 +78,7 @@ return [
             'not_subject_mixed' => 'Items not subject to VAT (category O) must not appear next to other VAT categories in an e-invoice (BR-O-11) — please invoice them separately.',
             'not_subject_tax_number' => 'Supplies not subject to VAT (category O) carry no VAT ID (BR-O-02); the e-invoice therefore needs the tax number in the organisation settings.',
             'line_category_rate' => 'Item “:line”: VAT category :category carries no tax, but the item carries :rate % — the invoice and the e-invoice would differ. Please set the item\'s tax rate to 0 %.',
+            'standard_zero_rate' => 'Item “:line”: standard rated (category S) at 0 % — EN 16931 requires a VAT rate above 0 % for S (BR-S-05). Please enter the tax rate of the item or the invoice, or give the item a category without tax.',
             'missing_iban' => 'IBAN for the SEPA credit transfer is missing in the organisation settings.',
             'missing_tax_rate' => 'The invoice has no tax rate.',
             'totals_mismatch' => 'The invoice totals are inconsistent (lines, subtotal, tax, total).',
@@ -86,6 +87,7 @@ return [
         'warning' => [
             'missing_seller_contact' => 'Seller contact incomplete (name, phone, email) — XRechnung requires full contact details (BR-DE-2).',
             'missing_bic' => 'BIC is missing (recommended for SEPA credit transfers).',
+            'standard_zero_rate_draft' => 'The draft is at 0 %, but its tax case is standard rated (S) — EN 16931 requires a VAT rate above 0 % for S (BR-S-05). Issuing gives the items without their own VAT category the rate of the tax case (:rate %) and stops once so that you can check the totals.',
             'buyer_address_incomplete' => 'Customer address incomplete (street/ZIP/city).',
             'missing_buyer_email' => 'Customer email is missing (electronic delivery address BT-49).',
             'missing_due_date' => 'Due date missing — the default payment term is used.',

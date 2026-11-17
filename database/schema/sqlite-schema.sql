@@ -9470,6 +9470,7 @@ CREATE TABLE IF NOT EXISTS "claim_rma_returns"(
   "disposed_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "stock_delivery_id" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("claim_case_id") references "claim_cases"("id") on delete cascade,
   foreign key("received_by") references "users"("id") on delete set null,
@@ -26330,6 +26331,9 @@ CREATE INDEX "ine_org_source_sha_idx" on "incoming_einvoices"(
 CREATE INDEX "pts_external_reference_idx" on "project_time_shortfalls"(
   "external_reference_id"
 );
+CREATE INDEX "crr_stock_delivery_idx" on "claim_rma_returns"(
+  "stock_delivery_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -27473,3 +27477,4 @@ INSERT INTO migrations VALUES(1139,'2027_04_23_200100_create_presence_statuses_t
 INSERT INTO migrations VALUES(1140,'2027_04_24_300000_bind_iban_confirmations_and_protect_split_originals',1);
 INSERT INTO migrations VALUES(1141,'2027_04_25_100000_add_property_country_to_invoices',1);
 INSERT INTO migrations VALUES(1142,'2027_04_25_100100_add_external_reference_to_project_time_shortfalls',1);
+INSERT INTO migrations VALUES(1143,'2027_04_26_120000_add_stock_delivery_to_claim_rma_returns',1);

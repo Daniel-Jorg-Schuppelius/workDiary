@@ -1,7 +1,7 @@
 ---
 title: "Tax rule matrix"
 topic: finance.tax-rules
-version: 3
+version: 4
 keywords:
     - tax rates
     - VAT
@@ -31,8 +31,8 @@ never modified.
 **Structure:** Each rule applies to a country (optionally a region), a
 category (services, goods, shipping, materials, expenses, construction,
 media, other) and a rate type (standard, reduced, zero, exempt,
-reverse_charge, export) — with a percentage, valid-from/valid-to dates, a
-source reference and a note.
+reverse_charge, export, intra_community) — with a percentage,
+valid-from/valid-to dates, a source reference and a note.
 
 **Effective-date logic:** The service date is decisive, not the invoice
 date. The most recent active rule valid on that date is applied;
@@ -59,12 +59,15 @@ actually used (rate, rule source, effective date, category, tax
 breakdown) is frozen onto the document. Later rule changes therefore only
 affect new documents, never issued ones.
 
-**Special cases with precedence:** The small-business setting (German
-§ 19 UStG) disables tax display entirely. A fixed default tax rate of the
+**Special cases with precedence:** The small-business setting (German § 19
+UStG) disables tax display entirely. A fixed default tax rate of the
 organisation takes precedence over the matrix for domestic invoices. EU
-customers with a formally valid VAT ID automatically receive reverse
-charge (0 %), non-EU customers the export note (0 %) — matching matrix
-rows provide the note text shown on the document.
+businesses with a formally valid VAT ID automatically receive reverse
+charge (0 %) for services and the tax-exempt intra-Community supply (0 %,
+category K, without reverse charge; note of the rate type intra_community,
+otherwise "Tax-exempt intra-Community supply (§ 4 no. 1 (b) in conjunction
+with § 6a UStG)") for goods, non-EU customers the export note (0 %) —
+matching matrix rows provide the note text shown on the document.
 
 For non-EU customers the tax case distinguishes goods from services: material
 is an export (category G) with the note "Tax-exempt export supply"; a service to

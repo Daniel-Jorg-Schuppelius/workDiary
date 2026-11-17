@@ -1,7 +1,7 @@
 ---
 title: "Reklamation & Gewährleistung"
 topic: claims.overview
-version: 5
+version: 6
 keywords:
     - Mängelrüge
     - Kundenreklamation
@@ -62,7 +62,7 @@ Rückläufer nur dokumentiert, die Meldung lautet dann „ohne Bestandsbuchung
 erfasst“. Rücksendungen aus dem Kundenportal bringen Variante und
 Seriennummer mit; das Lager ergänzen Sie beim Wareneingang.
 
-**Wert der Wiedereinlagerung:** Die Wiedereinlagerung bucht den Rückläufer aus der Quarantäne in den freien Bestand und bewertet ihn dort — zum Stückwert der ursprünglichen Auslieferung, wenn die Rücksendung sie über ihre Seriennummer kennt, sonst zum Durchschnitt des Lagers (ohne Bewertungsstand zum Einkaufspreis). Solange der Rückläufer in Quarantäne liegt, zählt er nicht zum Bestandswert; Verschrottung und Rücksendung an den Lieferanten aus der Quarantäne bleiben deshalb ohne Wert.
+**Wert der Wiedereinlagerung:** Die Wiedereinlagerung bucht den Rückläufer aus der Quarantäne in den freien Bestand und bewertet ihn dort — zum Stückwert der ursprünglichen Auslieferung, wenn die Rücksendung sie kennt (aus dem Kundenportal über die dort gewählte Auslieferung, auch ohne Seriennummer, sonst über ihre Seriennummer), sonst zum Durchschnitt des Lagers (ohne Bewertungsstand zum Einkaufspreis). Solange der Rückläufer in Quarantäne liegt, zählt er nicht zum Bestandswert; Verschrottung und Rücksendung an den Lieferanten aus der Quarantäne bleiben deshalb ohne Wert.
 
 **Maßnahmen und Folgeauftrag:** Nacharbeit, Reparatur, Ersatz oder
 Serviceeinsatz legen Sie unter „Maßnahmen“ mit Frist und verantwortlicher

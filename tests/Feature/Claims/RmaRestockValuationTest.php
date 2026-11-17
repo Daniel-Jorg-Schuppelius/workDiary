@@ -19,7 +19,7 @@ use App\Models\Claims\ClaimRmaReturn;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockDelivery, StockMovement, StockSerial, StockValuation, StockValuationLayer, Warehouse};
 use App\Models\Platform\User;
-use App\Services\Claims\{ClaimCaseService, ClaimRmaService};
+use App\Services\Claims\{ClaimCaseService, ClaimRmaService, PortalReturnService};
 use App\Services\Inventory\Claims\InventoryRmaStockHandler;
 use App\Services\Inventory\{FifoValuationService, InventoryLedger, SerialService, ValuationService};
 use App\Services\Manufacturing\DeliveryService;
@@ -33,8 +33,8 @@ use Tests\TestCase;
 /**
  * MVP-1728: Die Wiedereinlagerung eines Rückläufers in den freien Bestand ist
  * bewertet — zum Stückwert des ursprünglichen Abgangs, wenn die Rücksendung
- * ihn über die Auslieferung ihrer Seriennummer kennt, sonst zum Durchschnitt
- * des Lagers. Quarantäne-Eingang und Umbuchung aus der Quarantäne bleiben
+ * ihn über ihre Auslieferung (Portal, MVP-1737) oder die ihrer Seriennummer
+ * kennt, sonst zum Durchschnitt des Lagers. Quarantäne-Eingang und Umbuchung aus der Quarantäne bleiben
  * wertneutral, eine Wiederholung bewertet nicht erneut.
  */
 final class RmaRestockValuationTest extends TestCase {
@@ -128,6 +128,31 @@ final class RmaRestockValuationTest extends TestCase {
         $this->assertCount(2, $quarantine);
         $this->assertSame([null, null], $quarantine->map(fn (StockMovement $movement) => $movement->cost_total)->all());
         $this->assertSame('5.0000', app(InventoryLedger::class)->balance($this->variant, $this->warehouse, StockState::Physical));
+    }
+
+    /** MVP-1737: Die Portal-Rücksendung ohne Seriennummer speichert ihre Auslieferung — die Wiedereinlagerung nimmt deren Stückwert. */
+    public function test_a_portal_return_without_serial_takes_the_cost_of_its_delivery(): void {
+        app(ValuationService::class)->receipt($this->variant, $this->warehouse, '3', '6.00');
+        $delivery = app(DeliveryService::class)->deliver($this->variant, $this->warehouse, '2', customer: $this->customer);
+        // Danach steigt der Durchschnitt: (1 × 6 + 2 × 12) / 3 = 10.
+        app(ValuationService::class)->receipt($this->variant, $this->warehouse, '2', '12.00');
+        $portalUser = User::factory()->kunde((int) $this->customer->id, (int) $this->organization->id)->create(['organization_id' => $this->organization->id]);
+
+        $rma = app(PortalReturnService::class)->submit($portalUser, $this->customer, [
+            'delivery_id' => $delivery->id,
+            'quantity' => '1',
+            'title' => 'Ventil undicht',
+            'description' => 'Tropft nach dem Einbau.',
+        ])['rma'];
+        $this->assertSame([$delivery->id, null], [$rma->stock_delivery_id, $rma->stock_serial_id]);
+
+        $received = app(ClaimRmaService::class)->receive($rma->fresh() ?? $rma, $this->admin, ['warehouse_id' => $this->warehouse->id, 'stock_state' => StockState::Quality]);
+        $this->restock($received);
+
+        // Nicht der Durchschnitt (10), sondern der Wert der Auslieferung.
+        $this->assertSame(['1.0000', '6.0000', '6.0000'], [(string) $this->restockIn($received)->qty_base, $this->restockIn($received)->cost_unit?->getAmount(), $this->restockIn($received)->cost_total?->getAmount()]);
+        // (30 + 6) / 4
+        $this->assertSame(['4.0000', '9.0000'], [bcadd((string) $this->book()->qty_on_hand, '0', 4), $this->book()->avg_cost?->getAmount()]);
     }
 
     public function test_without_a_known_delivery_the_restock_takes_the_average(): void {

@@ -16,11 +16,11 @@ use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Services\Billing\DocumentTotalsCalculator;
-use App\Services\Invoicing\Dto\OutgoingTaxCase;
+use App\Services\Invoicing\Dto\{OutgoingTaxCase, TargetTopUpLine};
 use App\Services\Stammdaten\ContactPersons;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\PersonNameHelper;
+use CommonToolkit\Helper\Data\{DateHelper, PersonNameHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 
@@ -35,6 +35,28 @@ use Illuminate\Support\Collection;
  * is the conventional construction pattern in the Lexoffice SDK.
  */
 class LexofficeMapper {
+    /** Belegtext des Zeitbelegs mit dem Abrechnungszeitraum; nur er nennt den Beginn ({@see timeVoucherPeriod()}). */
+    private const string TIME_VOUCHER_REMARK = 'Zeiterfassung %s – %s: %s';
+
+    private const string TIME_VOUCHER_PERIOD_PATTERN = '/^Zeiterfassung (\d{2}\.\d{2}\.\d{4}) – (\d{2}\.\d{2}\.\d{4})/u';
+
+    /**
+     * Abrechnungszeitraum eines gespeicherten Zeitbelegs aus seinem Belegtext
+     * (Nutzlast der Fremdreferenz); null, wenn der Text ihn nicht trägt.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{from: CarbonImmutable, to: CarbonImmutable}|null
+     */
+    public static function timeVoucherPeriod(array $payload): ?array {
+        if (preg_match(self::TIME_VOUCHER_PERIOD_PATTERN, (string) ($payload['remark'] ?? ''), $match) !== 1) {
+            return null;
+        }
+        $from = DateHelper::normalizeToIso($match[1]);
+        $to = DateHelper::normalizeToIso($match[2]);
+
+        return $from !== null && $to !== null ? ['from' => CarbonImmutable::parse($from)->startOfDay(), 'to' => CarbonImmutable::parse($to)->endOfDay()] : null;
+    }
+
     /**
      * @param  array<string, mixed>  $defaults
      * @return array<string, mixed>
@@ -262,10 +284,14 @@ class LexofficeMapper {
      * Belegnummer, Datum, Leistungsdatum und Summen. Je Projekt, Art und
      * Pauschal-Auftrag gilt der Betrag wie in der Rechnung (Taktung, Satz,
      * Pauschale je Auftrag, MVP-1678); Positionen mit Artikel und Einheit
-     * kennt ein Buchhaltungsbeleg nicht.
+     * kennt ein Buchhaltungsbeleg nicht. Die Auffüllung auf das Projekt-Soll
+     * ({@see \App\Services\Invoicing\TargetTopUps::lines()}, MVP-1733) geht
+     * mit Menge und Preis wie in Rechnung und Übergabe in den Betrag ihres
+     * Steuersatzes ein.
      *
      * @param  Collection<int, TimeEntry>  $entries
      * @param  array<string, mixed>  $defaults
+     * @param  iterable<TargetTopUpLine>  $topUps
      * @return array<string, mixed>
      *
      * @throws \App\Exceptions\UnmappableTaxCaseException Steuerfall ohne Buchungskategorie
@@ -277,6 +303,7 @@ class LexofficeMapper {
         CarbonImmutable $to,
         array $defaults = [],
         OutgoingTaxCase $taxCase = new OutgoingTaxCase(SalesTaxCase::Standard),
+        iterable $topUps = [],
     ): array {
         $categoryId = LexofficeTaxConditions::voucherCategory($taxCase);
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
@@ -328,6 +355,13 @@ class LexofficeMapper {
                 $projects[$project->id] = $project->name;
             }
         }
+        foreach ($topUps as $topUp) {
+            $rate = $taxCase->zeroRated() ? 0.0 : ($topUp->service !== null && $topUp->service->vatRate !== null ? $topUp->service->vatRate : $vatRate);
+            $key = DocumentTotalsCalculator::rateKey(DocumentTotalsCalculator::percent($rate));
+            $net = DocumentTotalsCalculator::lineNet($topUp->hours, $topUp->price->rate, currency: $currency)->withScale(2);
+            $netByRate[$key] = isset($netByRate[$key]) ? $netByRate[$key]->plus($net) : $net;
+            $projects[$topUp->shortfall->project_id] = $topUp->shortfall->project->name;
+        }
         ksort($netByRate);
 
         $items = [];
@@ -360,7 +394,7 @@ class LexofficeMapper {
             'taxType' => 'net',
             'useCollectiveContact' => false,
             'contactId' => $defaults['external_contact_id'] ?? null,
-            'remark' => mb_substr(trim(sprintf('Zeiterfassung %s – %s: %s', $from->format('d.m.Y'), $to->format('d.m.Y'), implode(', ', $projects)), ' :'), 0, 255),
+            'remark' => mb_substr(trim(sprintf(self::TIME_VOUCHER_REMARK, $from->format('d.m.Y'), $to->format('d.m.Y'), implode(', ', $projects)), ' :'), 0, 255),
             'voucherItems' => $items,
         ];
     }

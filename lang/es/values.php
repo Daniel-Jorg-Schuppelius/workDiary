@@ -238,6 +238,7 @@ return [
     'exempt' => 'Exento',
     'reverse_charge' => 'Inversión del sujeto pasivo',
     'export' => 'Exportación/tercer país',
+    'intra_community' => 'Entrega intracomunitaria',
     'retired' => 'Retirada',
     'services' => 'Servicios',
     'goods' => 'Bienes',

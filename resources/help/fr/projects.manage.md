@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 12
+version: 13
 keywords:
     - créer un projet
     - gestion de projet
@@ -88,20 +88,24 @@ vue de détail montre d'un coup d'œil ce qui reste facturable.
 
 ## Temps cibles par personne
 
-Convenez avec le client d’un temps d’intervention par personne et par jour et gérez-le dans
-l’onglet Temps sous **Gérer les temps cibles** : une **valeur par défaut du projet** par jour
-de semaine s’applique à toutes les personnes assignables, une ligne personnelle prime, une
-**exception à une date** prime sur le jour de semaine ; congés, maladie et jours fériés mettent
-la cible à zéro. Le contrôle nocturne compare la cible au temps saisi et signale les écarts
-au-delà de la tolérance (réglage d’organisation, 15 minutes par défaut) aux responsables du
-projet, dans la file de travail et dans la clôture de journée de la personne ; les constats
-figurent dans l’onglet Temps, où ils peuvent être **confirmés**, et une saisie tardive les
-résout. Avec **Facturer les heures convenues** dans l’onglet Facturation, le transfert et la
-facture ajoutent le temps manquant comme position « Temps d’intervention convenu » ; l’aperçu
-de la facture affiche aussi ces compléments. Chaque complément n’est facturé qu’une fois, soit
-dans une facture, soit dans un transfert ; une saisie ultérieure sur ce jour n’est alors plus
+Convenez avec le client d’un temps d’intervention par personne et par jour et gérez-le
+dans l’onglet Temps sous **Gérer les temps cibles** : une **valeur par défaut du projet**
+par jour de semaine s’applique à toutes les personnes assignables, une ligne personnelle
+prime, une **exception à une date** prime sur le jour de semaine ; congés, maladie et
+jours fériés mettent la cible à zéro. Le contrôle nocturne compare la cible au temps saisi
+et signale les écarts au-delà de la tolérance (réglage d’organisation, 15 minutes par
+défaut) aux responsables du projet, dans la file de travail et dans la clôture de journée
+de la personne ; les constats figurent dans l’onglet Temps, où ils peuvent être
+**confirmés**, et une saisie tardive les résout. Avec **Facturer les heures convenues**
+dans l’onglet Facturation, le transfert et la facture ajoutent le temps manquant comme
+position « Temps d’intervention convenu » ; l’aperçu de la facture affiche aussi ces
+compléments. La pièce de temps dans Lexoffice (« Temps en tant que pièce ») les facture au
+même prix dans le montant de leur taux de TVA, car une pièce comptable ne connaît pas de
+lignes individuelles. Chaque complément n’est facturé qu’une fois, dans une facture, un
+transfert ou une pièce de temps ; une saisie ultérieure sur ce jour n’est alors plus
 facturable. L’annulation de la facture ou du transfert, la suppression de la position ou
-l’abandon du brouillon libère à nouveau le complément.
+l’abandon du brouillon libère à nouveau le complément ; workDiary ne reprend pas une pièce
+de temps.
 
 Si la règle de facturation du projet indique l'unité « forfait » ou « Pauschale »,
 chaque commande facture une ligne de quantité 1 au prix de la règle ; le
@@ -109,16 +113,17 @@ complément jusqu'aux heures convenues est alors supprimé, car le forfait couvr
 commande quelle que soit sa durée. Toutes les autres unités, par exemple heure,
 jour ou pièce, comptent selon la durée.
 
-La pièce qui facture le forfait clôt l’écart d’un tel projet — la facture, le
-transfert lors de son envoi ou la pièce de temps dans Lexoffice : il apparaît comme
-résolu dans l’onglet des temps avec le numéro de la facture ou du transfert, et le
-contrôle nocturne ne le rouvre pas. Une saisie ultérieure sur ce jour reste
-facturable, car rien n’a été complété. Si vous supprimez la ligne, abandonnez le
-brouillon ou annulez la facture ou le transfert, l’écart est de nouveau ouvert.
-Confirmez à la main les écarts dont le forfait a été facturé auparavant. Si un
-transfert ne contient aucun temps de travail du projet, son écart reste ouvert et
-libre : le prochain transfert ou la prochaine facture avec du temps de travail du
-projet le clôt, sans annuler le premier.
+La pièce qui facture le forfait clôt l’écart d’un tel projet — la facture, le transfert
+lors de son envoi ou la pièce de temps dans Lexoffice : il apparaît comme résolu dans
+l’onglet des temps avec le numéro de la facture ou du transfert, et le contrôle nocturne
+ne le rouvre pas. Une saisie ultérieure sur ce jour reste facturable, car rien n’a été
+complété. Si vous supprimez la ligne, abandonnez le brouillon ou annulez la facture ou le
+transfert, l’écart est de nouveau ouvert. Les écarts dont le forfait a été facturé avant
+cette version sont clos après la mise à jour par la réparation des données
+(`php artisan projects:settle-flat-rate-shortfalls`, d’abord avec `--dry-run`) ; confirmez
+à la main ceux sans pièce univoque. Si un transfert ne contient aucun temps de travail du
+projet, son écart reste ouvert et libre : le prochain transfert ou la prochaine facture
+avec du temps de travail du projet le clôt, sans annuler le premier.
 
 La règle de facturation indique aussi le **lieu de la prestation** de ses temps
 (§ 3a UStG) : **Générale**, **Prestation du catalogue** ou **Prestation liée à

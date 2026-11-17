@@ -49,6 +49,32 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Übergaben, eine vorhandene Auffüllposition oder ein Projekt, das heute nach
   Stunden abrechnet, meldet er nur. Ausgabe mit Sqids und IDs, `--dry-run`
   ändert nichts.
+- Abgleich des Bewertungsbuchs (`MVP-1736`): Der Befehl
+  `inventory:valuation-check` vergleicht je Variante und Lager den physischen
+  Eigenbestand mit dem Bewertungsbuch des Verfahrens (gleitender Durchschnitt:
+  geführte Menge, FIFO und FEFO: Restmenge der Schichten) und nennt
+  Abweichungen mit Variante, SKU, Lager und Mengen, ohne Werte. Mit `--align`
+  trägt er eine fehlende Menge ohne Lagerbewegung nach — zum Einkaufspreis der
+  Variante, sonst zum Durchschnitt des Lagers, sonst null. Der Wert ist
+  geschätzt; das Audit des Lagers hält Menge und Stückwert fest. Bei FIFO und
+  FEFO wird die Menge eine Schicht vor der ältesten und geht zuerst ab. Ein
+  Buch über dem Bestand meldet er nur. `--dry-run` zeigt, was nachgetragen
+  würde; eine Wiederholung findet nichts mehr.
+- Datenreparatur Soll-Befunde von Pauschal-Projekten (`MVP-1734`): Der Befehl
+  `projects:settle-flat-rate-shortfalls` schließt offene oder bestätigte
+  Soll-Befunde von Projekten mit Abrechnung nach Soll und Pauschale, deren
+  Arbeitszeit vor `MVP-1708` schon abgerechnet wurde, über den Beleg, der
+  Arbeitszeit des Projekts in einem Zeitraum mit dem Befundtag abgerechnet
+  hat: Rechnung aus Zeiten (Leistungszeitraum ihrer Positionen), übertragene
+  Übergabe (ihr Zeitraum) oder Lexoffice-Zeitbeleg (Zeitraum aus dem
+  Belegtext), bevorzugt den mit Arbeitszeit der Person an dem Tag — auf
+  demselben Weg wie heute. Mehrere gleichrangige Belege meldet er nur, ohne
+  Beleg bleibt der Befund offen; Stunden-Projekte bleiben unberührt. Ausgabe
+  mit Sqids und IDs, `--dry-run` ändert nichts, eine Wiederholung findet
+  nichts mehr.
+- Steuerregelmatrix: Satzart „Innergemeinschaftliche Lieferung“
+  (`intra_community`, `MVP-1731`); ihr Hinweistext ersetzt den Standardhinweis
+  bei Waren an EU-Unternehmen.
 
 ### Behoben
 
@@ -265,6 +291,64 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   ließ sich kein Entwurf ausstellen, auch kein gültiger — die Prüfung verlangte
   den Status „gestellt“ und prüfte den Entwurf selbst. Geprüft wird jetzt der
   Beleg, wie er ausgestellt aussähe, wie schon beim Versand (`MVP-1730`).
+- Lexoffice „Lexoffice gewinnt“: Eine Rechnungs- oder Lieferanschrift, die
+  Lexoffice nicht mehr führt, entfällt beim nächsten Abgleich; Anschriften
+  ohne Lexoffice-Bezug bleiben, und entfällt die primäre, wird die nächste
+  Rechnungsanschrift primär. Liefert Lexoffice zu einem Kontakt gar keine
+  Anschriften, bleibt der Stand unverändert (`MVP-1740`).
+- Lager: Der Wareneingang in eine Charge legte immer eine FEFO-Schicht an,
+  auch beim gleitenden Durchschnitt. Dessen Buch erfuhr nichts vom Zugang,
+  und Abgänge drückten es unter den Bestand. Der Eingang folgt jetzt dem
+  Verfahren der Variante — beim Durchschnitt ins Durchschnittsbuch (die
+  Charge steht an der Bewegung), bei FIFO und FEFO als Schicht mit Charge und
+  Mindesthaltbarkeit — und nennt die Bestellzeile als Beleg wie der Eingang
+  ohne Charge; die Lieferantenbewertung sieht damit auch Chargen-Eingänge.
+  Ohne Organisation bucht der Wareneingang als Eingang statt als
+  Fertigerzeugnis-Zugang. Die MHD-Überwachung liest den Chargenbestand aus dem
+  Lagerbuch statt aus den Schichten und meldet aufgebrauchte Chargen nicht
+  mehr; `inventory:lots:repair` prüft Chargen unter gleitendem Durchschnitt
+  nicht mehr, dort gibt es keine Chargenschichten (`MVP-1735`).
+- Reklamation: Eine Rücksendung aus dem Kundenportal speichert ihre
+  Auslieferung. Die Wiedereinlagerung bewertet so auch ohne Seriennummer zum
+  Stückwert der Auslieferung statt zum Durchschnitt des Lagers (`MVP-1737`).
+- Lager: Eine Umlagerung sperrte erst das Bewertungsbuch der Quelle, dann das
+  des Ziels; zwei gleichzeitige Umlagerungen derselben Variante in
+  Gegenrichtung konnten sich verklemmen, die Datenbank brach eine ab. Bestand
+  und Buch beider Lager werden jetzt vor der ersten Buchung in fester Folge
+  gesperrt; Eingang, Rückbuchung und Korrektur sperren wie die Entnahme erst
+  den Bestand, dann das Buch (`MVP-1738`). Ein Architektur-Gate hält Korrekturen des
+  Eigenbestands auf dem bewerteten Weg über `StockCorrection` (`MVP-1739`).
+- Waren an EU-Unternehmen (`MVP-1731`): Materialrechnungen an Unternehmen in
+  der EU mit gültiger USt-IdNr. trugen Reverse Charge (Kategorie `AE`, Hinweis
+  „Steuerschuldnerschaft des Leistungsempfängers“); E-Rechnung und PDF wiesen
+  damit eine Steuerschuldumkehr aus, die es bei Lieferungen nicht gibt. Sie
+  sind jetzt eine steuerfreie innergemeinschaftliche Lieferung: Kategorie `K`
+  ohne Reverse-Charge-Merkmal, Hinweis „Steuerfreie innergemeinschaftliche
+  Lieferung (§ 4 Nr. 1 Buchstabe b i. V. m. § 6a UStG)“, E-Rechnung mit
+  `VATEX-EU-IC`, Lieferland (BT-80) und Lieferdatum. Buchhaltung (Kennziffer
+  41, Zusammenfassende Meldung), DATEV und Buchhaltungsprogramme behandelten
+  Waren unter `AE` schon als innergemeinschaftliche Lieferung und bleiben
+  gleich. Storno und Gutschrift übernehmen den Fall des Originals; Leistungen
+  an EU-Unternehmen bleiben `AE`.
+- E-Rechnungsprüfung: Eine steuerpflichtige Position (`S`) mit 0 % meldet der
+  Preflight jetzt, denn EN 16931 verlangt bei `S` einen Satz über 0 %
+  (BR-S-05). Steht nur der Entwurf noch auf 0 %, obwohl sein Steuerfall wieder
+  steuerpflichtig ist, warnt er — das Stellen gibt den Positionen ohne eigene
+  Kategorie den Satz des Falls; sonst (Kategorie `S` an der Position, eigener
+  0 %-Satz neben einem steuerpflichtigen Kopf, ausgestellte Rechnung) ist es
+  ein Fehler. Vorher erschien der Entwurf in der Prüfung als `S` 0 % ohne
+  Hinweis (`MVP-1732`).
+- Lexoffice „Zeiten als Beleg“ füllt auf das Projekt-Soll auf (`MVP-1733`):
+  Wie Rechnungslauf und Übergabe ergänzt der Zeitbeleg bei Projekten mit
+  Abrechnung nach Soll die fehlende Zeit offener Stunden-Befunde — dieselben
+  Befunde, derselbe Preis — im Betrag ihres Steuersatzes und markiert die
+  Befunde als berechnet mit Verweis auf den Beleg; eine Nachbuchung auf diese
+  Tage ist danach nicht abrechenbar. Vorher fehlte die Auffüllung, und der
+  Befund blieb für die nächste Abrechnung offen. Pauschal-Befunde schließt der
+  Beleg weiter, ohne aufzufüllen. Ein Übergabe-Entwurf nimmt eine so
+  berechnete Auffüllung nicht noch einmal auf und gibt sie beim Verwerfen
+  nicht frei; zwei gleichzeitige Zeitbelege für denselben Kunden schließen
+  sich aus.
 
 ### Hinweise zum Update
 
@@ -338,6 +422,40 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   angelegt worden, prüfen Sie ihn in Lexoffice. Die Zuordnung Steuerfall → Buchungskategorie (insbesondere „Fremdleistungen
   §13b“ für Leistungen an EU-Unternehmen) lassen Sie von der Steuerberatung
   bestätigen.
+- Lager, Phase 182 (`MVP-1735`–`MVP-1737`): Migration
+  `2027_04_26_120000_add_stock_delivery_to_claim_rma_returns` (Spalte
+  `claim_rma_returns.stock_delivery_id`, im Bestand leer — Portal-Rücksendungen
+  vor dem Update gehen weiter über die Seriennummer, sonst zum Durchschnitt
+  ein). Chargen-Eingänge beim gleitenden Durchschnitt vor dem Update fehlen im
+  Durchschnittsbuch; ihre alten FEFO-Schichten bleiben stehen. Einmal nach dem
+  Deploy `scripts/artisan.sh inventory:valuation-check` (zeigt Variante, SKU,
+  Lager und Mengen), danach bei Bedarf `--align --dry-run` und `--align`. Der
+  nachgetragene Wert ist geschätzt; lassen Sie ihn vor einem Bilanzstichtag
+  prüfen. Der Hinweis zu `MVP-1726`–`MVP-1728`, abweichende Bewertungsbücher
+  blieben so, gilt nur ohne diesen Abgleich.
+- Waren an EU-Unternehmen (`MVP-1731`): Keine Migration. Ausgestellte
+  Rechnungen mit `AE` an Waren bleiben, wie sie sind (Nachdruck, E-Rechnung,
+  Buchung). Offene Materialentwürfe mit Reverse Charge zieht die nächste
+  Bearbeitung auf `K` nach; das Ausstellen eines solchen Entwurfs hält einmal
+  zur Prüfung an. Den Wortlaut des Hinweises lassen Sie von der Steuerberatung
+  bestätigen; eine eigene Fassung tragen Sie als Steuerregel der Satzart
+  „Innergemeinschaftliche Lieferung“ ein.
+- Preflight `S` mit 0 % (`MVP-1732`): Rechnungen, deren E-Rechnung `S` mit
+  0 % trägt — etwa bei einer Organisationsvorgabe von 0 % statt § 19 oder einer
+  Steuerbefreiung (Kategorie `E`) —, lassen sich nicht mehr als E-Rechnung
+  erzeugen oder versenden; vorher entstand eine E-Rechnung, die jede Prüfung
+  nach EN 16931 abweist. Ordnen Sie solche Positionen der passenden Kategorie
+  zu.
+- Lexoffice-Zeitbeleg (`MVP-1733`): Keine Migration. Zeitbelege vor dem Update
+  enthielten keine Auffüllung; deren Stunden-Befunde bleiben offen und gehen
+  in die nächste Abrechnung des Zeitraums. Einen Zeitbeleg nimmt workDiary
+  nicht zurück: Wird er in Lexoffice storniert, bleiben Zeiten und Auffüllung
+  berechnet (`billing:reopen-times` öffnet nur die Zeiten).
+- Soll-Befunde von Pauschal-Projekten (`MVP-1734`): Keine Migration. Nach dem
+  Deploy `scripts/artisan.sh projects:settle-flat-rate-shortfalls --dry-run`,
+  prüfen, dann ohne `--dry-run`. Der Hinweis zu Phase 180 (`MVP-1708`), diese
+  Befunde am Zeitreiter zu bestätigen, gilt nur noch für die als nicht
+  eindeutig oder ohne Beleg gemeldeten.
 
 ## [1.4.0] - 2026-11-13
 

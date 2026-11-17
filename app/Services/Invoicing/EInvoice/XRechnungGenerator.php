@@ -127,19 +127,34 @@ class XRechnungGenerator {
         $headerCategory = $this->taxCategory($invoice, $seller);
         $categories = $this->lineCategories($invoice, $headerCategory);
         $has = static fn (TaxCategory $category): bool => in_array($category, $categories, true);
-        // Eine Kategorie ohne Steuer steht in der E-Rechnung mit 0 %; rechnet der Beleg Steuer darauf, wichen beide ab.
-        if (! (bool) $invoice->is_reverse_charge) {
-            foreach ($invoice->pricedItems() as $item) {
-                $itemCategory = $this->itemTaxCategory($item, $headerCategory);
-                $rate = $item->tax_rate ?? $invoice->tax_rate;
-                if (! $itemCategory->isTaxable() && $rate !== null && $rate->isPositive()) {
-                    $errors[] = (string) __('invoicing.einvoice.error.line_category_rate', [
-                        'line' => Str::limit(trim((string) $item->description), 40, '…'),
-                        'category' => $itemCategory->value,
-                        'rate' => NumberHelper::toGermanFormat((float) $rate->getNumericValue(), 2),
-                    ]);
+        $pending = $this->casesToFreeze($invoice);
+        // Entwurf mit 0 % im Kopf, dessen Fall Steuer trägt: Das Ausstellen gibt Positionen ohne eigene Kategorie den Satz des Falls.
+        $caseRate = $pending !== null && count($pending) === 1 && $invoice->derivesTaxCase() && ($invoice->tax_rate?->isZero() ?? false)
+            && is_numeric($pending[0]['rate']) && (float) $pending[0]['rate'] > 0.0 ? (float) $pending[0]['rate'] : null;
+        $alignedOnIssue = false;
+        foreach ($invoice->pricedItems() as $item) {
+            $itemCategory = $this->itemTaxCategory($item, $headerCategory);
+            $rate = $item->tax_rate ?? $invoice->tax_rate;
+            $line = Str::limit(trim((string) $item->description), 40, '…');
+            // Eine Kategorie ohne Steuer steht in der E-Rechnung mit 0 %; rechnet der Beleg Steuer darauf, wichen beide ab.
+            if (! (bool) $invoice->is_reverse_charge && ! $itemCategory->isTaxable() && $rate !== null && $rate->isPositive()) {
+                $errors[] = (string) __('invoicing.einvoice.error.line_category_rate', [
+                    'line' => $line,
+                    'category' => $itemCategory->value,
+                    'rate' => NumberHelper::toGermanFormat((float) $rate->getNumericValue(), 2),
+                ]);
+            }
+            // BR-S-05: Steuerpflichtig (S) verlangt einen Satz über 0 % (MVP-1732); was das Ausstellen angleicht, ist nur eine Warnung.
+            if ($itemCategory === TaxCategory::STANDARD && $rate !== null && $rate->isZero()) {
+                if ($caseRate !== null && trim((string) $item->tax_category) === '' && $item->settled_invoice_id === null) {
+                    $alignedOnIssue = true;
+                } else {
+                    $errors[] = (string) __('invoicing.einvoice.error.standard_zero_rate', ['line' => $line]);
                 }
             }
+        }
+        if ($alignedOnIssue && $caseRate !== null) {
+            $warnings[] = (string) __('invoicing.einvoice.warning.standard_zero_rate_draft', ['rate' => NumberHelper::toGermanFormat($caseRate, 2)]);
         }
         $buyerVatId = trim($buyer['vat_id']);
         // BR-AE-02 bis -04: USt-IdNr. (BT-48) oder Registerkennung (BT-47) des Käufers. Die Registerkennung genügt nur im
@@ -165,7 +180,7 @@ class XRechnungGenerator {
             $errors[] = (string) __('invoicing.einvoice.error.seller_vat_id_required');
         }
         // Leistungsort je Position (MVP-1688): Vor dem Ausstellen muss der Beleg genau einen Steuerfall ergeben; mit O ist das BR-O-11.
-        $cases = array_column($this->casesToFreeze($invoice) ?? [], 'category');
+        $cases = array_column($pending ?? [], 'category');
         if (count($cases) > 1) {
             $errors[] = (string) __(in_array(TaxCategory::OUT_OF_SCOPE->value, $cases, true) ? 'invoicing.einvoice.error.not_subject_mixed' : 'invoicing.tax_case.place_of_supply_mixed');
         }

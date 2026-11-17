@@ -27,7 +27,8 @@ use CommonToolkit\Helper\Data\StringHelper;
  * Kategorie offen lässt — wie die Buchhaltung
  * (`SalesInvoiceAdapter::zeroRatedCategory()`): `AE` mit Empfänger im Inland
  * ist § 13b, bei Waren an EU-Unternehmer eine innergemeinschaftliche
- * Lieferung; `G` an Leistungen (Belege vor MVP-1684) ist nicht steuerbar;
+ * Lieferung (Belege vor MVP-1731, seitdem `K`); `G` an Leistungen (Belege vor
+ * MVP-1684) ist nicht steuerbar;
  * `E` ist § 19 nur beim Kleinunternehmer.
  */
 final class OutgoingTaxCaseResolver {

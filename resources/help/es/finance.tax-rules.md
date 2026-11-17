@@ -1,7 +1,7 @@
 ---
 title: "Matriz de reglas fiscales"
 topic: finance.tax-rules
-version: 3
+version: 4
 keywords:
     - tipos de IVA
     - IVA
@@ -27,11 +27,11 @@ facturación local obtiene sus tipos impositivos. WorkDiary suministra un
 catálogo base; las filas propias de la organización lo sobrescriben —
 el catálogo suministrado en sí permanece inalterado.
 
-**Estructura:** Cada regla se aplica a un país (opcionalmente una
-región), una categoría (services, goods, shipping, materials, expenses,
+**Estructura:** Cada regla se aplica a un país (opcionalmente una región),
+una categoría (services, goods, shipping, materials, expenses,
 construction, media, other) y un tipo de tasa (standard, reduced, zero,
-exempt, reverse_charge, export) — con porcentaje, válido desde/hasta,
-indicación de fuente y nota.
+exempt, reverse_charge, export, intra_community) — con porcentaje, válido
+desde/hasta, indicación de fuente y nota.
 
 **Lógica de fecha de referencia:** Lo determinante es la fecha de la
 prestación, no la fecha de la factura. Se aplica la regla activa más
@@ -62,14 +62,17 @@ categoría, desglose de impuestos) se congela en el documento. Los
 cambios de reglas posteriores solo afectan así a documentos nuevos,
 nunca a los ya emitidos.
 
-**Casos especiales con prioridad:** La configuración de pequeño
-empresario (§ 19 UStG) desactiva por completo el desglose de impuestos.
-Un tipo impositivo estándar fijado por la organización prevalece sobre
-la matriz en el ámbito nacional. Los clientes de la UE con NIF-IVA
-formalmente válido reciben automáticamente inversión del sujeto pasivo
-(reverse charge, 0 %), y los clientes de terceros países la indicación
-de exportación (0 %) — las filas correspondientes de la matriz aportan
-para ello el texto indicativo en el documento.
+**Casos especiales con prioridad:** La configuración de pequeño empresario
+(§ 19 UStG) desactiva por completo el desglose de impuestos. Un tipo
+impositivo estándar fijado por la organización prevalece sobre la matriz
+en el ámbito nacional. Las empresas de la UE con NIF-IVA formalmente
+válido reciben automáticamente inversión del sujeto pasivo (reverse
+charge, 0 %) en los servicios y la entrega intracomunitaria exenta (0 %,
+categoría K, sin inversión del sujeto pasivo; aviso del tipo
+intra_community, si no «Entrega intracomunitaria exenta (§ 4 n.º 1 letra b
+en relación con § 6a UStG)») en las mercancías, y los clientes de terceros
+países la indicación de exportación (0 %) — las filas correspondientes de
+la matriz aportan para ello el texto indicativo en el documento.
 
 En terceros países, el supuesto fiscal distingue mercancía y servicio: el
 material es una exportación (categoría G) con la indicación «Entrega de

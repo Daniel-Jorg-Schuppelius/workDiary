@@ -1,7 +1,7 @@
 ---
 title: "Existencias y escaneo"
 topic: inventory.stock
-version: 10
+version: 11
 keywords:
     - stock
     - almacén
@@ -73,8 +73,11 @@ realmente queda de él. Su administrador lo comprueba con el comando
 `inventory:lots:repair`: sin opciones es una simulación con una tabla por
 lote (saldo contable, resto de las capas de valoración, diferencia); con
 `--apply` traspasa la diferencia a «sin lote» en valoración FIFO o FEFO, y
-las existencias totales no cambian. Con precio medio móvil solo informa del
-lote; los lotes bloqueados, solo tras su liberación.
+las existencias totales no cambian. No revisa los lotes con precio medio móvil —allí
+la valoración no lleva capas por lote—; los lotes bloqueados solo se
+traspasan tras su liberación.
+
+**Ajustar el libro de valoración.** Hasta noviembre de 2026 algunas entradas llegaban al almacén sin valor (entrada manual, excedente de inventario, entrada en lote con precio medio móvil); por eso el libro de valoración puede quedar por debajo de las existencias. Su administrador lo comprueba con el comando `inventory:valuation-check`: una tabla por variante y almacén con existencias propias, cantidad en el libro de valoración y diferencia, sin valores. Con `--align` añade la cantidad que falta sin movimiento de almacén —al precio de compra de la variante; si no, a la media del almacén—. Ese valor es una estimación; la auditoría del almacén registra cantidad y coste unitario. Con FIFO y FEFO, la cantidad añadida sale primero, como la más antigua. Un libro de valoración por encima de las existencias solo se notifica.
 
 ## Unidades, diario de almacén y ajustes
 
@@ -82,7 +85,7 @@ lote; los lotes bloqueados, solo tras su liberación.
 
 **Diario de almacén.** La pestaña **Diario de almacén** lista todos los movimientos con fecha y hora, almacén, tipo de movimiento, cantidad en unidad base y la columna **Registrado como** (cantidad y unidad introducidas). La búsqueda, el almacén y el periodo superior acotan la lista.
 
-**Caducidad.** Si un artículo tiene la propiedad «caducidad obligatoria», el almacén solo acepta su entrada mediante la recepción de mercancía de un pedido, con lote y fecha de consumo preferente. Se rechazan las entradas manuales y por escaneo. Un lote ya conocido aporta su fecha.
+**Caducidad.** Si un artículo tiene la propiedad «caducidad obligatoria», el almacén solo acepta su entrada mediante la recepción de mercancía de un pedido, con lote y fecha de consumo preferente. Se rechazan las entradas manuales y por escaneo. Un lote ya conocido aporta su fecha. El aviso de caducidad lista los lotes con existencias en el diario de almacén cuya fecha cae dentro del plazo previo, sea cual sea el método de valoración; los lotes agotados no se notifican.
 
 **Ajustes de almacén.** Con el permiso de configuración de almacén, usted abre los **ajustes de almacén** en la vista de existencias. Allí elige el **método de valoración** de la organización (promedio móvil, FIFO o FEFO) y el **momento de la reserva** en fabricación (al liberar o al iniciar). Al cambiar a FIFO o FEFO, las existencias reciben una capa inicial al precio medio anterior. Solo se puede volver al promedio móvil cuando ya no queden existencias en capas, porque el promedio no se actualizó durante ese tiempo.
 
@@ -104,7 +107,7 @@ lote; los lotes bloqueados, solo tras su liberación.
 
 **Valoración de las salidas:** las salidas de existencias propias —en el formulario de registro, por escaneo, tras una aprobación a cuatro ojos, en el consumo de material de fabricación y al cumplir una reserva— se valoran según el método del artículo, como las entregas y el consumo de material: FIFO y FEFO consumen las capas de valoración, el precio medio ponderado reduce el libro de medias al precio medio actual. Las salidas de existencias de terceros (cliente, consignación, proveedor, proyecto) quedan sin valorar. La salida de almacén en la ficha del cliente también registra según el método del artículo; eliminar la asignación la devuelve como nueva capa al coste unitario de la salida en FIFO y FEFO, y al libro de medias con el precio medio ponderado.
 
-**Valoración de las entradas:** una entrada en existencias propias —en el formulario de registro y por escaneo— se valora como la recepción de un pedido de compra. En el campo **Coste de entrada por unidad** indique el precio por unidad introducida (por ejemplo, por caja), con coma o punto; se registra por unidad base. Si queda vacío, se aplica el precio de compra de la variante (sin uno propio, el del artículo); sin precio de compra, la media actual del almacén, y sin ninguna valoración, cero. El precio está en la moneda en la que la valoración lleva el artículo en el almacén; si no, en la de la organización; un precio de compra en otra moneda no se tiene en cuenta. Con FIFO y FEFO la entrada crea una capa de valoración; con el precio medio ponderado recalcula la media. Las entradas en existencias de terceros quedan sin valorar.
+**Valoración de las entradas:** una entrada en existencias propias —en el formulario de registro y por escaneo— se valora como la recepción de un pedido de compra. En el campo **Coste de entrada por unidad** indique el precio por unidad introducida (por ejemplo, por caja), con coma o punto; se registra por unidad base. Si queda vacío, se aplica el precio de compra de la variante (sin uno propio, el del artículo); sin precio de compra, la media actual del almacén, y sin ninguna valoración, cero. El precio está en la moneda en la que la valoración lleva el artículo en el almacén; si no, en la de la organización; un precio de compra en otra moneda no se tiene en cuenta. Con FIFO y FEFO la entrada crea una capa de valoración; con el precio medio ponderado recalcula la media. Las entradas en existencias de terceros quedan sin valorar. La recepción de mercancía de un pedido en un lote también sigue el método: con el precio medio móvil entra en el libro de la media; con FIFO y FEFO se convierte en una capa con lote y fecha de caducidad.
 
 **Redistribuir reservas:** en el diálogo «Modificar reserva» cede la cantidad abierta a otra reserva del mismo artículo, almacén y propiedad, por ejemplo a una orden con mayor prioridad. Una reserva más reciente nunca desplaza en silencio a una más antigua; la redistribución queda en el registro de auditoría y la línea de material de una orden de fabricación la sigue.
 

@@ -45,7 +45,7 @@ class TaxRule extends Model {
 
     public const array CATEGORIES = ['services', 'goods', 'shipping', 'materials', 'expenses', 'construction', 'media', 'other'];
 
-    public const array RATE_TYPES = ['standard', 'reduced', 'zero', 'exempt', 'reverse_charge', 'export'];
+    public const array RATE_TYPES = ['standard', 'reduced', 'zero', 'exempt', 'reverse_charge', 'export', 'intra_community'];
 
     protected $fillable = [
         'organization_id', 'country', 'region', 'category', 'rate_type', 'rate',

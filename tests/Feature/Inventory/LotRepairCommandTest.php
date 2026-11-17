@@ -12,7 +12,7 @@ namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Models\Article\{Article, ArticleVariant};
-use App\Models\Inventory\{StockLot, StockMovement, Warehouse, WarehouseBin};
+use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse, WarehouseBin};
 use App\Models\Platform\User;
 use App\Services\Inventory\{InventoryLedger, LotService, LotStockReader, StockPosting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,16 +96,19 @@ final class LotRepairCommandTest extends TestCase {
         $this->assertCount(4, $this->repairs());
     }
 
-    /** Gleitender Durchschnitt: die Schichten sinken nie — nur Meldung; gesperrte Chargen erst nach der Freigabe. */
-    public function test_average_valuation_and_blocked_lots_are_only_reported(): void {
-        $this->legacyLot('L-DURCHSCHNITT', '5', '2', $this->makeVariant(['valuation_method' => 'moving_average']));
+    /**
+     * Gleitender Durchschnitt: keine Chargenschichten (MVP-1735), die Charge wird nicht geprüft; gesperrte Chargen nur
+     * gemeldet, gebucht erst nach der Freigabe.
+     */
+    public function test_average_lots_are_skipped_and_blocked_lots_only_reported(): void {
+        $average = $this->legacyLot('L-DURCHSCHNITT', '5', '2', $this->makeVariant(['valuation_method' => 'moving_average']));
         $held = $this->legacyLot('L-GESPERRT', '5', '2');
         $this->lots->block($held, 'Rückruf', User::factory()->create(['organization_id' => $this->organization->id]));
         $journal = StockMovement::query()->count();
+        $this->assertFalse(StockValuationLayer::query()->where('stock_lot_id', $average->id)->exists(), 'Der Durchschnitt legt keine Chargenschicht an.');
 
         $this->artisan('inventory:lots:repair', ['--apply' => true])
             ->expectsTable(self::HEADERS, [
-                [$this->organization->name, 'L-DURCHSCHNITT', '5.0000', '3.0000', '2.0000', 'gleitender Durchschnitt — nur Meldung'],
                 [$this->organization->name, 'L-GESPERRT', '5.0000', '3.0000', '2.0000', 'gesperrt — erst freigeben'],
             ])
             ->assertSuccessful();

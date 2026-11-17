@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 10
+version: 11
 keywords:
     - Lexware Office
     - sync conflict
@@ -65,7 +65,10 @@ their own; WorkDiary matches them by type and order. A billing or delivery
 address created in WorkDiary takes over the matching Lexoffice address on the
 first sync instead of being created a second time: the primary billing address
 takes the first one from Lexoffice. Afterwards only that one is primary; further
-addresses in WorkDiary remain as additional ones.
+addresses in WorkDiary remain as additional ones. An address that Lexoffice no
+longer keeps is removed on the next sync; addresses without a link to Lexoffice
+remain. If Lexoffice returns no addresses at all for a contact, WorkDiary keeps
+its current state.
 
 **Tax type on transfer:** invoices and invoice drafts from the invoicing
 handover carry the tax type of their tax case: service to an EU business as

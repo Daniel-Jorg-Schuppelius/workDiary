@@ -54,12 +54,14 @@ class ValuationService implements InventoryValuationStrategy {
         return $valuation->exists ? bcadd($valuation->qty_on_hand, '0', self::SCALE) : '0';
     }
 
-    /** Wareneingang mit Einzelkosten: aktualisiert den gleitenden Durchschnitt. */
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt): StockMovement {
+    /** Wareneingang mit Einzelkosten: aktualisiert den gleitenden Durchschnitt; die Charge steht nur an der Bewegung. */
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null, ?WarehouseBin $bin = null, StockMovementType $type = StockMovementType::Receipt, ?StockLot $lot = null): StockMovement {
         $qty = DecimalQty::positive($qty);
         $unitCost = DecimalQty::positive($unitCost);
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $entered, $bin, $type): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $entered, $bin, $type, $lot): StockMovement {
+            // Bestand vor Buch wie bei der Entnahme (MVP-1738), sonst verklemmen sich Eingang und Abgang.
+            $this->ledger->availableForUpdate($variant, $warehouse);
             $addValue = bcmul($qty, $unitCost, self::SCALE);
             $this->addToBook($variant, $warehouse, $qty, $addValue, $unitCost, $currency);
 
@@ -77,6 +79,7 @@ class ValuationService implements InventoryValuationStrategy {
                 costUnit: $unitCost,
                 costTotal: $addValue,
                 currency: $currency,
+                stockLotId: $lot?->id,
                 bin: $bin,
             ));
         });
@@ -104,6 +107,7 @@ class ValuationService implements InventoryValuationStrategy {
         $unitCost = DecimalQty::positive($unitCost);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $lot, $idempotencyKey): StockMovement {
+            $this->ledger->availableForUpdate($variant, $warehouse);
             $addValue = bcmul($qty, $unitCost, self::SCALE);
             $this->addToBook($variant, $warehouse, $qty, $addValue, $unitCost, $currency);
 
@@ -152,6 +156,11 @@ class ValuationService implements InventoryValuationStrategy {
      */
     public function transfer(ArticleVariant $variant, Warehouse $from, Warehouse $to, string $qty, ?int $actorUserId = null, ?StockLot $lot = null, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null): StockIssue {
         return DB::transaction(function () use ($variant, $from, $to, $qty, $actorUserId, $lot, $entered, $idempotencyKey): StockIssue {
+            // Feste Folge statt Quelle vor Ziel: gegenläufige Umlagerungen warten aufeinander, statt sich zu verklemmen (MVP-1738).
+            foreach ($this->ledger->lockStock($variant, $from, $to) as $warehouse) {
+                $this->valuationFor($variant, $warehouse, lock: true);
+            }
+
             $leaving = $this->ledger->issue(
                 $variant, $from, $qty,
                 idempotencyKey: $idempotencyKey,
@@ -188,6 +197,7 @@ class ValuationService implements InventoryValuationStrategy {
 
             $variant = $posting->variant;
             $warehouse = $posting->warehouse;
+            $this->ledger->availableForUpdate($variant, $warehouse);
             $qty = DecimalQty::positive($posting->signedQty);
             if (NumberHelper::isPositivePrecise($posting->signedQty, self::SCALE)) {
                 $unit = $unitCost?->withScale(self::SCALE)->getAmount() ?? '0';
@@ -201,6 +211,22 @@ class ValuationService implements InventoryValuationStrategy {
             $cost = $this->takeFromBook($variant, $warehouse, $qty);
 
             return $this->ledger->post($posting->withCost($cost['unit'], $cost['total'], $cost['currency']));
+        });
+    }
+
+    /** Fehlende Menge geht zum Stückwert ins Buch wie ein Eingang, nur ohne Bewegung (MVP-1736). */
+    public function raiseBook(ArticleVariant $variant, Warehouse $warehouse, string $physicalQty, Money $unitCost): string {
+        return DB::transaction(function () use ($variant, $warehouse, $physicalQty, $unitCost): string {
+            $valuation = $this->valuationFor($variant, $warehouse, lock: true);
+            $missing = bcsub($physicalQty, $valuation->exists ? $valuation->qty_on_hand : '0', self::SCALE);
+            if (! NumberHelper::isPositivePrecise($missing, self::SCALE)) {
+                return bcadd('0', '0', self::SCALE);
+            }
+
+            $unit = $unitCost->withScale(self::SCALE)->getAmount();
+            $this->addToBook($variant, $warehouse, $missing, bcmul($missing, $unit, self::SCALE), $unit, $unitCost->getCurrency()->value);
+
+            return $missing;
         });
     }
 

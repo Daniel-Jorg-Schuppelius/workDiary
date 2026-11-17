@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 12
+version: 13
 keywords:
     - creare progetto
     - gestione progetti
@@ -86,20 +86,25 @@ mostra a colpo d'occhio cosa resta fatturabile.
 
 ## Tempi obiettivo per persona
 
-Concordi con il cliente un tempo di intervento per persona e giorno e lo gestisca nella scheda
-tempi sotto **Gestire i tempi obiettivo**: un **valore predefinito del progetto** per giorno
-della settimana vale per tutte le persone assegnabili, una riga personale ha la precedenza,
-un’**eccezione in una data** prevale sul giorno della settimana; ferie, malattia e festivi
-azzerano l’obiettivo. Il controllo notturno confronta l’obiettivo con il tempo registrato e
-segnala gli scostamenti oltre la tolleranza (impostazione dell’organizzazione, 15 minuti di
-default) ai responsabili del progetto, nella coda di lavoro e nella chiusura giornaliera della
-persona; i rilievi sono elencati nella scheda tempi, dove possono essere **confermati**, e una
-registrazione tardiva li risolve. Con **Fatturare le ore concordate** nella scheda fatturazione
-il trasferimento e la fattura aggiungono il tempo mancante come posizione «Tempo di intervento
-concordato»; l’anteprima della fattura mostra anche queste integrazioni. Ogni integrazione viene
-fatturata una sola volta, in una fattura o in un trasferimento; una registrazione successiva su
-quel giorno non è più fatturabile. L’annullamento della fattura o del trasferimento, la
-rimozione della posizione o l’eliminazione della bozza libera di nuovo l’integrazione.
+Concordi con il cliente un tempo di intervento per persona e giorno e lo gestisca nella
+scheda tempi sotto **Gestire i tempi obiettivo**: un **valore predefinito del progetto**
+per giorno della settimana vale per tutte le persone assegnabili, una riga personale ha la
+precedenza, un’**eccezione in una data** prevale sul giorno della settimana; ferie,
+malattia e festivi azzerano l’obiettivo. Il controllo notturno confronta l’obiettivo con
+il tempo registrato e segnala gli scostamenti oltre la tolleranza (impostazione
+dell’organizzazione, 15 minuti di default) ai responsabili del progetto, nella coda di
+lavoro e nella chiusura giornaliera della persona; i rilievi sono elencati nella scheda
+tempi, dove possono essere **confermati**, e una registrazione tardiva li risolve. Con
+**Fatturare le ore concordate** nella scheda fatturazione il trasferimento e la fattura
+aggiungono il tempo mancante come posizione «Tempo di intervento concordato»; l’anteprima
+della fattura mostra anche queste integrazioni. Il giustificativo dei tempi in Lexoffice
+(«Tempi come giustificativo») le addebita allo stesso prezzo nell’importo della loro
+aliquota, perché un giustificativo contabile non ha posizioni singole. Ogni integrazione
+viene fatturata una sola volta, in una fattura, in un trasferimento o in un giustificativo
+dei tempi; una registrazione successiva su quel giorno non è più fatturabile.
+L’annullamento della fattura o del trasferimento, la rimozione della posizione o
+l’eliminazione della bozza libera di nuovo l’integrazione; workDiary non ritira un
+giustificativo dei tempi.
 
 Se la regola di fatturazione del progetto indica l'unità «forfait» o «Pauschale»,
 ogni ordine fattura una riga con quantità 1 al prezzo della regola;
@@ -107,15 +112,17 @@ l'integrazione fino alle ore concordate viene quindi meno, perché il forfait
 copre l'ordine indipendentemente dalla durata. Tutte le altre unità, ad esempio
 ora, giorno o pz., contano in base alla durata.
 
-Il documento che addebita il forfait chiude lo scostamento di un tale progetto —
-la fattura, il trasferimento al momento dell’invio o il giustificativo dei tempi in
-Lexoffice: compare come risolto nella scheda dei tempi con il numero della fattura
-o del trasferimento, e il controllo notturno non lo riapre. Una registrazione
-successiva su quel giorno resta fatturabile, perché nulla è stato integrato. Se
-rimuove la posizione, scarta la bozza o annulla la fattura o il trasferimento, lo
-scostamento torna aperto. Confermi a mano gli scostamenti il cui forfait è stato
-fatturato in precedenza. Se un trasferimento non contiene tempo di lavoro del
-progetto, il suo scostamento resta aperto e libero: il trasferimento o la fattura
+Il documento che addebita il forfait chiude lo scostamento di un tale progetto — la
+fattura, il trasferimento al momento dell’invio o il giustificativo dei tempi in
+Lexoffice: compare come risolto nella scheda dei tempi con il numero della fattura o del
+trasferimento, e il controllo notturno non lo riapre. Una registrazione successiva su quel
+giorno resta fatturabile, perché nulla è stato integrato. Se rimuove la posizione, scarta
+la bozza o annulla la fattura o il trasferimento, lo scostamento torna aperto. Gli
+scostamenti il cui forfait è stato fatturato prima di questa versione vengono chiusi dopo
+l’aggiornamento dalla riparazione dei dati
+(`php artisan projects:settle-flat-rate-shortfalls`, prima con `--dry-run`); confermi a
+mano quelli senza un documento univoco. Se un trasferimento non contiene tempo di lavoro
+del progetto, il suo scostamento resta aperto e libero: il trasferimento o la fattura
 successivi con tempo di lavoro del progetto lo chiudono, senza annullare il primo.
 
 La regola di fatturazione indica anche il **luogo della prestazione** dei suoi

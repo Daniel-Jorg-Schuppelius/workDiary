@@ -5271,6 +5271,7 @@ CREATE TABLE `claim_rma_returns` (
   `article_variant_id` bigint(20) unsigned DEFAULT NULL,
   `stock_serial_id` bigint(20) unsigned DEFAULT NULL,
   `stock_lot_id` bigint(20) unsigned DEFAULT NULL,
+  `stock_delivery_id` bigint(20) unsigned DEFAULT NULL,
   `serial_no` varchar(255) DEFAULT NULL,
   `qty` decimal(12,4) DEFAULT NULL,
   `stock_state` varchar(20) DEFAULT NULL,
@@ -5291,6 +5292,7 @@ CREATE TABLE `claim_rma_returns` (
   KEY `claim_rma_returns_stock_serial_id_foreign` (`stock_serial_id`),
   KEY `claim_rma_returns_stock_lot_id_foreign` (`stock_lot_id`),
   KEY `claim_rma_returns_disposed_by_foreign` (`disposed_by`),
+  KEY `crr_stock_delivery_fk` (`stock_delivery_id`),
   CONSTRAINT `claim_rma_returns_article_id_foreign` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `claim_rma_returns_article_variant_id_foreign` FOREIGN KEY (`article_variant_id`) REFERENCES `article_variants` (`id`) ON DELETE SET NULL,
   CONSTRAINT `claim_rma_returns_claim_case_id_foreign` FOREIGN KEY (`claim_case_id`) REFERENCES `claim_cases` (`id`) ON DELETE CASCADE,
@@ -5299,7 +5301,8 @@ CREATE TABLE `claim_rma_returns` (
   CONSTRAINT `claim_rma_returns_received_by_foreign` FOREIGN KEY (`received_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `claim_rma_returns_stock_lot_id_foreign` FOREIGN KEY (`stock_lot_id`) REFERENCES `stock_lots` (`id`) ON DELETE SET NULL,
   CONSTRAINT `claim_rma_returns_stock_serial_id_foreign` FOREIGN KEY (`stock_serial_id`) REFERENCES `stock_serials` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `claim_rma_returns_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL
+  CONSTRAINT `claim_rma_returns_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `crr_stock_delivery_fk` FOREIGN KEY (`stock_delivery_id`) REFERENCES `stock_deliveries` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `claim_supplier_recourses`;
@@ -29826,3 +29829,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1139,'2027_04_23_2
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1140,'2027_04_24_300000_bind_iban_confirmations_and_protect_split_originals',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1141,'2027_04_25_100000_add_property_country_to_invoices',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1142,'2027_04_25_100100_add_external_reference_to_project_time_shortfalls',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1143,'2027_04_26_120000_add_stock_delivery_to_claim_rma_returns',1);

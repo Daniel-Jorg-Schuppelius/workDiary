@@ -93,18 +93,18 @@ class GoodsReceiptService {
             $line = PurchaseOrderLine::query()->lockForUpdate()->find($line->id) ?? $line;
 
             if (trim((string) $lotNo) !== '') {
-                // Chargen-Eingang über die FEFO-Schicht (M19): Lot anlegen/finden
-                // und bewertet in die Charge buchen — statt anonymem Bestand.
+                // Chargen-Eingang (M19) nach dem Verfahren der Variante (MVP-1735): Lot anlegen/finden und bewertet in die
+                // Charge buchen — statt anonymem Bestand; die Bestellzeile ist der Beleg wie beim Eingang ohne Charge.
                 $lot = $this->lots->register($variant, (string) $lotNo, $bestBefore);
                 // Eine schon bekannte Charge bringt ihr Datum mit.
                 if (($variant->article->shelf_life_required ?? false) && $lot->best_before === null) {
                     throw new RuntimeException((string) __('inventory.error.shelf_life_required'));
                 }
-                $movement = $this->lots->receiveIntoLot($variant, $warehouse, $baseQty, $cost, $lot, $line->currency->value, $actorUserId, $entered);
+                $movement = $this->lots->receiveIntoLot($variant, $warehouse, $baseQty, $cost, $lot, $line->currency->value, $actorUserId, $entered, $line);
             } else {
                 $movement = $organization instanceof Organization
                     ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $baseQty, $cost, $line->currency->value, $actorUserId, $line, $entered)
-                    : $this->ledger->finishedGoodReceipt($variant, $warehouse, $baseQty);
+                    : $this->ledger->receipt($variant, $warehouse, $baseQty, actorUserId: $actorUserId, entered: $entered, source: $line);
             }
 
             if (trim((string) $serialNo) !== '') {

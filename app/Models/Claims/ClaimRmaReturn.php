@@ -15,7 +15,7 @@ namespace App\Models\Claims;
 use App\Enums\Claims\{ClaimRmaDisposition, ClaimRmaStatus};
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Inventory\{StockLot, StockSerial, Warehouse};
+use App\Models\Inventory\{StockDelivery, StockLot, StockSerial, Warehouse};
 use App\Models\Platform\User;
 use App\Models\Shipping\Shipment;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property ClaimRmaStatus $status
  * @property \Illuminate\Support\Carbon|null $expected_at
  * @property \Illuminate\Support\Carbon|null $received_at
+ * @property int|null $stock_delivery_id Auslieferung, auf die sich die Rücksendung bezieht (MVP-1737)
  * @property string|null $serial_no
  * @property string|null $qty
  * @property \App\Enums\Inventory\StockState|null $stock_state
@@ -51,7 +52,7 @@ class ClaimRmaReturn extends Model {
         'organization_id', 'claim_case_id', 'rma_number', 'status',
         'expected_at', 'received_at', 'received_by', 'warehouse_id',
         'article_id', 'article_variant_id', 'stock_serial_id', 'stock_lot_id',
-        'serial_no', 'qty', 'stock_state', 'condition_note', 'disposition',
+        'stock_delivery_id', 'serial_no', 'qty', 'stock_state', 'condition_note', 'disposition',
         'disposition_note', 'disposed_at', 'disposed_by',
     ];
 
@@ -94,6 +95,11 @@ class ClaimRmaReturn extends Model {
     /** @return BelongsTo<StockLot, $this> */
     public function stockLot(): BelongsTo {
         return $this->belongsTo(StockLot::class);
+    }
+
+    /** @return BelongsTo<StockDelivery, $this> */
+    public function stockDelivery(): BelongsTo {
+        return $this->belongsTo(StockDelivery::class);
     }
 
     /** @return BelongsTo<User, $this> */

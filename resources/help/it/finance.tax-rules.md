@@ -1,7 +1,7 @@
 ---
 title: "Matrice delle regole fiscali"
 topic: finance.tax-rules
-version: 3
+version: 4
 keywords:
     - aliquote IVA
     - IVA
@@ -28,9 +28,9 @@ un catalogo di base; le righe proprie dell'organizzazione lo
 sovrascrivono — il catalogo fornito resta di per sé invariato.
 
 **Struttura:** ogni regola vale per un paese (facoltativamente una
-regione), una categoria (services, goods, shipping, materials,
-expenses, construction, media, other) e un tipo di aliquota (standard,
-reduced, zero, exempt, reverse_charge, export) — con percentuale,
+regione), una categoria (services, goods, shipping, materials, expenses,
+construction, media, other) e un tipo di aliquota (standard, reduced,
+zero, exempt, reverse_charge, export, intra_community) — con percentuale,
 valido dal/al, indicazione della fonte e nota.
 
 **Logica della data di riferimento:** determinante è la data della
@@ -64,12 +64,15 @@ regola, data di riferimento, categoria, dettaglio delle imposte) viene
 congelato sul documento. Le successive modifiche delle regole hanno
 quindi effetto solo sui nuovi documenti, mai su quelli già emessi.
 
-**Casi speciali con precedenza:** l'impostazione di piccolo
-imprenditore (§ 19 UStG) disattiva completamente l'esposizione
-dell'imposta. Un'aliquota fiscale predefinita fissa dell'organizzazione
-prevale sulla matrice per le operazioni nazionali. I clienti UE con
-partita IVA formalmente valida ricevono automaticamente il reverse
-charge (0 %), i clienti di paesi terzi la dicitura di esportazione
+**Casi speciali con precedenza:** l'impostazione di piccolo imprenditore
+(§ 19 UStG) disattiva completamente l'esposizione dell'imposta.
+Un'aliquota fiscale predefinita fissa dell'organizzazione prevale sulla
+matrice per le operazioni nazionali. Le imprese UE con partita IVA
+formalmente valida ricevono automaticamente il reverse charge (0 %) per le
+prestazioni e la cessione intracomunitaria esente (0 %, categoria K, senza
+reverse charge; avviso del tipo intra_community, altrimenti «Cessione
+intracomunitaria esente (§ 4 n. 1 lett. b in combinato disposto con § 6a
+UStG)») per le merci, i clienti di paesi terzi la dicitura di esportazione
 (0 %) — le righe corrispondenti della matrice forniscono a tal fine il
 testo informativo sul documento.
 

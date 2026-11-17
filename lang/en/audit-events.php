@@ -672,6 +672,7 @@ return [
         'negativeApproved' => 'Negative stock approved',
         'countApproved' => 'Stock count differences approved',
         'countStatusChanged' => 'Stocktake: status changed',
+        'valuationAligned' => 'Valuation book aligned with stock (estimated)',
     ],
     'stock_lot' => [
         'blocked' => 'Lot blocked',

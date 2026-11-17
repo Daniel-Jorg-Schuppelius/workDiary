@@ -1,7 +1,7 @@
 ---
 title: "Stock levels & scanning"
 topic: inventory.stock
-version: 10
+version: 11
 keywords:
     - inventory
     - stock on hand
@@ -72,8 +72,11 @@ administrator checks this with the command `inventory:lots:repair`: without
 options it is a dry run with a table per lot (ledger balance, remaining
 quantity of the valuation layers, difference); with `--apply` it re-posts
 the difference to “without lot” under FIFO or FEFO valuation, and the total
-stock stays the same. Under moving average it only reports the lot, and
-blocked lots only after their release.
+stock stays the same. It does not check lots under moving average —
+there the valuation keeps no lot layers; blocked lots are re-posted only
+after their release.
+
+**Aligning the valuation book.** Until November 2026 some receipts entered the warehouse without a value (manual receipts, stock count surpluses, lot receipts under moving average), so the valuation book can be below the stock. Your administrator checks this with the command `inventory:valuation-check`: a table per variant and warehouse with own stock, quantity in the valuation book and difference, without values. With `--align` it adds the missing quantity without a stock movement — at the variant's purchase price, otherwise at the warehouse average. This value is an estimate; the warehouse audit records quantity and unit cost. Under FIFO and FEFO the added quantity is issued first, as the oldest. A valuation book above the stock is only reported.
 
 ## Units, stock journal and settings
 
@@ -81,7 +84,7 @@ blocked lots only after their release.
 
 **Stock journal.** The **stock journal** tab lists all movements with time, warehouse, movement type, quantity in the base unit and the column **Entered as** (quantity and unit entered). Search, warehouse and the period at the top narrow the list.
 
-**Shelf life.** If an article carries the property “shelf life required”, the warehouse accepts its receipt only via the goods receipt of a purchase order with lot and best-before date. Manual receipts and scan receipts are rejected. A lot that is already known brings its date with it.
+**Shelf life.** If an article carries the property “shelf life required”, the warehouse accepts its receipt only via the goods receipt of a purchase order with lot and best-before date. Manual receipts and scan receipts are rejected. A lot that is already known brings its date with it. The best-before notification lists lots with stock in the stock journal whose date falls within the lead time — whatever the valuation method; used-up lots are not reported.
 
 **Inventory settings.** With the right to configure inventory you open the **inventory settings** in the stock overview. There you choose the **valuation method** of the organisation (moving average, FIFO or FEFO) and the **reservation timing** of manufacturing (on release or at start). When switching to FIFO or FEFO, existing stock receives an opening layer at the previous average price. Switching back to the moving average is only possible once no stock remains in layers, because the average was not maintained during that time.
 
@@ -103,7 +106,7 @@ blocked lots only after their release.
 
 **Valuation of issues:** Issues from own stock — in the posting form, by scan, after a four-eyes approval, for material consumption in manufacturing and when a reservation is fulfilled — are valued by the item's valuation method like deliveries and material usage: FIFO and FEFO consume the valuation layers, the moving average reduces the average book at the current average price. Issues from third-party stock (customer, consignment, supplier, project) remain unvalued. The stock issue in the customer file also posts by the item's method; deleting the allocation returns it as a new layer at the issue's unit cost for FIFO and FEFO, and into the average book for the moving average.
 
-**Valuation of receipts:** A receipt into own stock — in the posting form and by scan — is valued like the goods receipt of a purchase order. In the **Unit cost** field you enter the price per entered unit (for example per carton), with a comma or a point; it is posted per base unit. If left empty, the purchase price of the variant applies (without its own, that of the item), without a purchase price the current average of the warehouse, and without any valuation zero. The price is in the currency in which the valuation keeps the item in the warehouse, otherwise in that of the organisation; a purchase price in another currency is ignored. With FIFO and FEFO the receipt adds a valuation layer; with the moving average it recalculates the average. Receipts into third-party stock remain unvalued.
+**Valuation of receipts:** A receipt into own stock — in the posting form and by scan — is valued like the goods receipt of a purchase order. In the **Unit cost** field you enter the price per entered unit (for example per carton), with a comma or a point; it is posted per base unit. If left empty, the purchase price of the variant applies (without its own, that of the item), without a purchase price the current average of the warehouse, and without any valuation zero. The price is in the currency in which the valuation keeps the item in the warehouse, otherwise in that of the organisation; a purchase price in another currency is ignored. With FIFO and FEFO the receipt adds a valuation layer; with the moving average it recalculates the average. Receipts into third-party stock remain unvalued. The goods receipt of a purchase order into a lot follows the method as well: under moving average it goes into the average book, under FIFO and FEFO it becomes a layer with lot and best-before date.
 
 **Redistributing reservations:** In the “Edit reservation” dialog you hand over open quantity to another reservation of the same article, warehouse and ownership, for example to an order with higher priority. A newer reservation never silently displaces an older one; the redistribution is recorded in the audit log and the material line of a manufacturing order follows it.
 

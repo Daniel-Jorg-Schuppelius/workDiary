@@ -296,10 +296,10 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
      * Steuerkategorie eines Umsatzes ohne Steuer (EN 16931) aus dem
      * eingefrorenen Steuerkontext des Belegs — dieselbe Kategorie, die
      * E-Rechnung und Befreiungshinweis lesen: EU-B2B ist bei Material eine
-     * innergemeinschaftliche Lieferung (K), sonst eine sonstige Leistung mit
-     * Steuerschuld des Empfängers (AE); Drittland ist bei Material eine Ausfuhr
-     * (G), sonst nicht steuerbar (O, seit MVP-1684 vom TaxResolver eingefroren;
-     * ältere Belege tragen dort G). Alles andere steuerfrei (E). `AE` an einen
+     * innergemeinschaftliche Lieferung (K; Belege vor MVP-1731 tragen dort AE),
+     * sonst eine sonstige Leistung mit Steuerschuld des Empfängers (AE);
+     * Drittland ist bei Material eine Ausfuhr (G), sonst nicht steuerbar (O,
+     * seit MVP-1684 vom TaxResolver eingefroren; ältere Belege tragen dort G). Alles andere steuerfrei (E). `AE` an einen
      * Kunden im Inland ist ein steuerpflichtiger Umsatz, für den der Empfänger
      * die Steuer schuldet (§ 13b Abs. 5 UStG, Kennziffer 60, MVP-1622).
      * Kleinunternehmer melden keine Kennziffern (null), maßgeblich ist der Stand

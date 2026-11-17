@@ -266,6 +266,7 @@ return [
     'exempt' => 'Befreit',
     'reverse_charge' => 'Reverse Charge',
     'export' => 'Export/Drittland',
+    'intra_community' => 'Innergemeinschaftliche Lieferung',
     'retired' => 'Stillgelegt',
     'services' => 'Leistungen',
     'goods' => 'Waren',

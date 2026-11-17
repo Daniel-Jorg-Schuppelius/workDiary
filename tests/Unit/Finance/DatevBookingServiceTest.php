@@ -120,6 +120,8 @@ class DatevBookingServiceTest extends TestCase {
         $zero = ['tax_rate' => '0.00', 'tax_amount' => '0.00', 'total' => '100.00'];
         $cases = [
             'IGL' => [$eu, Invoice::CATEGORY_MATERIAL, 'AE', '8125', '4125'],
+            // Seit MVP-1731 friert der TaxResolver Waren an EU-Unternehmer als K ein: dasselbe Konto wie der Altbeleg mit AE.
+            'IGL als K' => [$eu, Invoice::CATEGORY_MATERIAL, 'K', '8125', '4125'],
             'RC21' => [$eu, Invoice::CATEGORY_SERVICE, 'AE', '8336', '4336'],
             'RC60' => [$domestic, Invoice::CATEGORY_SERVICE, 'AE', '8337', '4337'],
             'AUSF' => [$abroad, Invoice::CATEGORY_MATERIAL, 'G', '8120', '4120'],

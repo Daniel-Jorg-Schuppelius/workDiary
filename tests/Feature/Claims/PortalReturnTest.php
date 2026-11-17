@@ -79,6 +79,8 @@ final class PortalReturnTest extends TestCase {
         $this->assertNotNull($claim->stock_serial_id);
         $rma = $claim->rmaReturns()->sole();
         $this->assertSame(ClaimRmaStatus::Announced, $rma->status);
+        // MVP-1737: die Rücksendung kennt ihre Auslieferung, nicht nur über die Seriennummer.
+        $this->assertSame($this->delivery->id, $rma->stock_delivery_id);
         $this->assertSame(1, Attachment::query()->where('attachable_id', $claim->id)->count());
         $this->actingAs($this->portalUser, 'customer')->get(route('customer.claims.show', $claim))->assertOk()->assertSee($rma->rma_number);
     }

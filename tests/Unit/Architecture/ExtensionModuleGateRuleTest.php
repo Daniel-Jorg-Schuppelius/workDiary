@@ -63,6 +63,8 @@ class ExtensionModuleGateRuleTest extends TestCase {
         'ProjectEconomicsDimension', 'LiquidityForecastSource', 'DocumentChainSource', 'DocumentRelationSource', 'DocumentIssuer',
         'CommissionDocumentSource', 'IncomingInvoiceTransferTarget', 'IncomingPartyLookup', 'ExternalInvoiceProvider', 'CalendarImportFeed',
         'OwnershipConflictReplay',
+        // Reparatur über Altbelege: ein inzwischen abgeschaltetes Programm hat die Zeit trotzdem abgerechnet (MVP-1734).
+        'TimeVoucherSource',
     ];
 
     public function test_gated_extension_points_are_read_through_the_module_gate(): void {

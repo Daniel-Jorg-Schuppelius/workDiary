@@ -20,7 +20,7 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException};
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Services\Finance\Accounting\ContactPushService;
-use App\Services\Invoicing\Dto\OutgoingTaxCase;
+use App\Services\Invoicing\Dto\{OutgoingTaxCase, TargetTopUpLine};
 use App\Services\Stammdaten\ContactIdentity;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{JsonHelper, PersonNameHelper};
@@ -246,9 +246,11 @@ class LexofficeService {
 
     /**
      * Create a sales invoice voucher representing aggregated time for the
-     * given customer in [$from, $to].
+     * given customer in [$from, $to], including the top-up to the project
+     * target (MVP-1733).
      *
      * @param  Collection<int, TimeEntry>  $entries
+     * @param  iterable<TargetTopUpLine>  $topUps
      * @return array{external_id: string, payload: array<string, mixed>}
      */
     public function createTimeVoucher(
@@ -259,9 +261,10 @@ class LexofficeService {
         ?string $externalContactId,
         OutgoingTaxCase $taxCase,
         string $voucherNumber,
+        iterable $topUps = [],
     ): array {
         $defaults = $this->defaults() + ['external_contact_id' => $externalContactId, 'voucher_number' => $voucherNumber];
-        $payload = $this->mapper->timeEntriesToVoucherPayload($customer, $entries, $from, $to, $defaults, $taxCase);
+        $payload = $this->mapper->timeEntriesToVoucherPayload($customer, $entries, $from, $to, $defaults, $taxCase, $topUps);
 
         $endpoint = new VouchersEndpoint($this->client());
         $voucher = Voucher::fromJson(JsonHelper::encode($payload));

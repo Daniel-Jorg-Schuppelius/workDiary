@@ -179,8 +179,8 @@ class BillingPositionBuilder {
      * Auffüllung auf das Projekt-Soll (Feature 194, MVP-1470): je Befund eine
      * Position „Vereinbarte Einsatzzeit“ mit Person und Datum über
      * {@see TargetTopUps::lines()}, dieselbe Bepreisung wie in der lokalen
-     * Rechnung. Hat eine Rechnung den Befund inzwischen berechnet, entfällt
-     * die Position.
+     * Rechnung. Hat eine Rechnung oder ein Zeitbeleg den Befund inzwischen
+     * berechnet, entfällt die Position.
      *
      * @return Collection<int, BillingTransferPosition>
      */
@@ -193,6 +193,7 @@ class BillingPositionBuilder {
         $shortfalls = ProjectTimeShortfall::query()
             ->whereIn('id', $ids)
             ->whereNull('invoice_item_id')
+            ->whereNull('external_reference_id')
             ->orderBy('date')
             ->orderBy('user_id')
             ->get();
