@@ -19,6 +19,7 @@ use App\Models\Fleet\Vehicle;
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
 use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsValidatedTransition;
+use App\Services\Diary\OrderService;
 use App\Services\Invoicing\TaxResolver;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -46,6 +47,8 @@ class PassengerRideService {
 
     /** Branchenprofil-Code (Seed unter database/data/branchprofiles). */
     public const string PROFILE_CODE = 'taxi-mietwagen';
+
+    public function __construct(private readonly OrderService $orders) {}
 
     /**
      * Fahrtannahme (Gate „Fahrtannahme", Konzept §6).
@@ -414,7 +417,14 @@ class PassengerRideService {
             'payment_method' => $payment,
         ])->save();
 
-        $ride->diaryEntry?->forceFill(['status' => Status::Done, 'end_at' => now()])->save();
+        $entry = $ride->diaryEntry;
+        if ($entry instanceof DiaryEntry && (bool) $entry->requires_review) {
+            // Prüfpflicht (Feature 198): zur Prüfung vorlegen statt erledigen, über den Lebenszyklus mit Journal.
+            $entry->forceFill(['end_at' => now()])->save();
+            $this->orders->submitFinishedWork($entry, $actor);
+        } else {
+            $entry?->forceFill(['status' => Status::Done, 'end_at' => now()])->save();
+        }
         $ride->audit('passenger.ride_completed', [
             'meter_net' => $meterNet,
             'deviation' => $ride->refresh()->fareDeviation(),

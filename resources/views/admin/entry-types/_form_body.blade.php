@@ -112,6 +112,31 @@
     @endforeach
 </x-form-group>
 
+{{-- Periodenaufträge mit interner Prüfung (Feature 198). --}}
+@php($entryTypePeriodKinds = array_map(static fn (\App\Enums\Period\PeriodKind $kind): string => $kind->value, $entryType->exists ? $entryType->requiredPeriodKinds() : []))
+<x-form-group :legend="__('diary.entry_type.legend')" icon="date_range" tone="info" cols="2"
+              :description="__('diary.entry_type.description')">
+    <div class="fieldset">
+        <span class="fieldset-label">{{ __('diary.entry_type.requires_period') }}</span>
+        <div class="flex flex-wrap gap-3">
+            @foreach (\App\Enums\Period\PeriodKind::cases() as $kind)
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="checkbox" name="requires_period[]" value="{{ $kind->value }}" class="checkbox checkbox-sm checkbox-primary"
+                           @checked(in_array($kind->value, (array) old('requires_period', $entryTypePeriodKinds), true))>
+                    <span class="label-text">{{ $kind->label() }}</span>
+                </label>
+            @endforeach
+        </div>
+        <p class="text-xs text-muted">{{ __('diary.entry_type.requires_period_hint') }}</p>
+    </div>
+    <label class="label cursor-pointer justify-start gap-3">
+        <input type="hidden" name="requires_review" value="0">
+        <input type="checkbox" name="requires_review" value="1" class="checkbox checkbox-sm checkbox-primary"
+               @checked(old('requires_review', $entryType->requires_review ?? false))>
+        <span class="label-text">{{ __('diary.entry_type.requires_review') }}</span>
+    </label>
+</x-form-group>
+
 <x-form-group :legend="__('Standardwerte')" icon="tune" tone="success" cols="3">
     <x-filter-field show-label :label="__('Status (Default)')" for="entrytype-default-status">
         <select id="entrytype-default-status" name="default_status" class="select select-bordered select-sm w-full">

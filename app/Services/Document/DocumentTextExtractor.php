@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Document;
 
+use App\Enums\Attachments\MailFileFormat;
 use App\Enums\Document\DocumentTextFailure;
-use App\Exceptions\DocumentTextUnavailableException;
+use App\Exceptions\{DocumentTextUnavailableException, MailFileUnreadableException};
 use App\Models\Document\DocumentVersion;
+use App\Services\Attachments\Mail\MailFileReader;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder};
 use CommonToolkit\Helper\Office\OfficeHelper;
 use Illuminate\Support\Facades\Storage;
@@ -25,7 +27,8 @@ use Throwable;
 /**
  * Text einer Dokumentversion über das php-pdf-toolkit: PDF inklusive OCR,
  * Bilder über Tesseract, Klartext direkt, Textverarbeitung (DOCX/DOC/ODT/RTF)
- * über LibreOffice (MVP-913). Andere Formate liefern keinen Text.
+ * über LibreOffice (MVP-913), Mail-Dateien (`.eml`/`.msg`) über den
+ * Mail-Leser (Feature 204). Andere Formate liefern keinen Text.
  *
  * Lag bis MVP-819 privat im KI-Vorschlagsdienst; seit der Tätigkeitsindex
  * denselben Text braucht, steht die Extraktion an einer Stelle. Der Aufrufer
@@ -52,6 +55,19 @@ class DocumentTextExtractor {
         $extension = mb_strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
         $mime = mb_strtolower($mime);
 
+        // Mail-Datei (Feature 204): Betreff, Absender, Empfänger und Text über den
+        // Mail-Leser — vor dem Klartext-Zweig, denn eine .eml ist oft text/plain.
+        $mail = MailFileFormat::detect($originalName, $mime);
+        if ($mail !== null) {
+            try {
+                $text = trim($this->mailText($path, $mail));
+            } catch (MailFileUnreadableException $e) {
+                throw new DocumentTextUnavailableException(DocumentTextFailure::Failed, $e);
+            }
+
+            return $text !== '' ? $text : throw new DocumentTextUnavailableException(DocumentTextFailure::Empty);
+        }
+
         try {
             $text = match (true) {
                 $extension === 'pdf' || $mime === 'application/pdf' => PDFReaderRegistry::getInstance()
@@ -76,6 +92,13 @@ class DocumentTextExtractor {
         }
 
         return $text;
+    }
+
+    /** @throws MailFileUnreadableException */
+    private function mailText(string $path, MailFileFormat $format): string {
+        $reader = app(MailFileReader::class);
+
+        return $reader->searchText($reader->readFile($path, $format));
     }
 
     private function officeText(string $path): string {

@@ -60,6 +60,8 @@ final class LearningBookingWorkItemSource implements WorkItemSource {
                 title: (string) __('work-queue.item.learning_booking', ['name' => $booking->bookerName() !== '' ? $booking->bookerName() : '—']),
                 url: route(self::ROUTE),
                 detail: $booking->course?->title,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($booking->updated_at),
             );
         }
     }

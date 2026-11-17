@@ -17,22 +17,39 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Bekanntes Anmelde-Gerät eines Nutzers (Feature 096, MVP-446).
  *
+ * Zwei Arten von Zeilen: der Fingerprint (UA-Familie + Land) für die Meldung
+ * „neues Gerät“ und — mit `device_hash` — das über ein signiertes Cookie
+ * erkannte Gerät, das für die Anmeldung von außerhalb der Büronetze eine
+ * Freigabe braucht (Feature 205, MVP-1655).
+ *
  * @property int $id
  * @property int $user_id
  * @property string $fingerprint
+ * @property string|null $device_hash
  * @property string $label
  * @property string|null $country
  * @property \Illuminate\Support\Carbon $last_seen_at
+ * @property \Illuminate\Support\Carbon|null $approval_requested_at
+ * @property \Illuminate\Support\Carbon|null $approved_at
+ * @property int|null $approved_by
+ * @property \Illuminate\Support\Carbon|null $rejected_at
+ * @property int|null $rejected_by
  */
 class UserKnownDevice extends Model {
     protected $fillable = [
         'user_id',
         'fingerprint',
+        'device_hash',
         'label',
         'country',
         'latitude',
         'longitude',
         'last_seen_at',
+        'approval_requested_at',
+        'approved_at',
+        'approved_by',
+        'rejected_at',
+        'rejected_by',
     ];
 
     /** @var array<string, string> */
@@ -40,10 +57,28 @@ class UserKnownDevice extends Model {
         'latitude' => 'float',
         'longitude' => 'float',
         'last_seen_at' => 'datetime',
+        'approval_requested_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
     ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function approver(): BelongsTo {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function rejecter(): BelongsTo {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    /** Freigabeanfrage offen: weder freigegeben noch abgelehnt. */
+    public function isPending(): bool {
+        return $this->approved_at === null && $this->rejected_at === null;
     }
 }

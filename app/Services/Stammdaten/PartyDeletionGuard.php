@@ -44,6 +44,10 @@ final class PartyDeletionGuard {
         'customers' => [
             'ai_memory_entries', 'b2b_catalog_accesses', 'customer_circular_recipients', 'customer_geofences',
             'invoice_schedules', 'invoice_sender_rules', 'sales_discount_group_overrides', 'sites',
+            // Kundenfristen (Feature 197): Merkmale, Leistungsumfang und Fristen samt Verlauf hängen am Kunden.
+            'customer_deadline_profiles', 'customer_deadlines', 'customer_services',
+            // Leistungsplan (Feature 199): „entfällt“ sowie Unterlagen/Bemerkung je Zelle hängen am Kunden.
+            'customer_service_period_notes', 'customer_service_waivers',
         ],
         'suppliers' => [
             'article_supplies', 'invoice_sender_rules', 'pricing_margin_rules', 'resale_provider_suppliers', 'supplier_catalog_items',

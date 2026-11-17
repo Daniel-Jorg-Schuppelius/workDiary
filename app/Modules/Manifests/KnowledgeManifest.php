@@ -35,7 +35,7 @@ final class KnowledgeManifest extends Manifest {
     }
 
     public function description(): string {
-        return 'Wissensbasis und Problemhistorie.';
+        return 'Wissensbasis und Problemhistorie, interne Wissensdatenbank mit Fassungen, Pflichtlektüre und Notfallhandbuch.';
     }
 
     /** @return list<string> */
@@ -55,6 +55,18 @@ final class KnowledgeManifest extends Manifest {
             'content_references',
             'knowledge_article_feedback',
             'knowledge_articles',
+            // Interne Wissensdatenbank (Feature 191, MVP-1664–1668).
+            'knowledge_glossary_terms',
+            'knowledge_guide_steps',
+            'knowledge_page_assignments',
+            'knowledge_page_reads',
+            'knowledge_page_versions',
+            'knowledge_page_visits',
+            'knowledge_pages',
+            'knowledge_search_gaps',
+            'knowledge_sections',
+            'knowledge_space_readers',
+            'knowledge_spaces',
         ];
     }
 
@@ -88,6 +100,25 @@ final class KnowledgeManifest extends Manifest {
         return [
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Knowledge\Demo\KnowledgeDemoBlock::class,
+                \App\Services\Knowledge\Pages\Demo\KnowledgePagesDemoBlock::class,
+            ],
+            // Interne Wissensdatenbank (Feature 191): globale Suche, Arbeitsvorrat, Cockpit, Prüfintervall.
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Knowledge\Pages\Search\KnowledgePageSearchDomain::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Knowledge\Pages\WorkQueue\KnowledgeReadingWorkItemSource::class,
+                \App\Services\Knowledge\Pages\WorkQueue\KnowledgeReviewWorkItemSource::class,
+            ],
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Knowledge\Pages\Cockpit\KnowledgePageCockpitPanel::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Knowledge\Pages\DeadlineScans\KnowledgePageReviewScan::class,
+            ],
+            // Seitenverantwortung im Austritts- und Übergabe-Dialog (Feature 191/202).
+            \App\Services\Org\Contracts\OffboardingHandover::class => [
+                \App\Services\Knowledge\Pages\Offboarding\KnowledgePageOffboardingHandover::class,
             ],
             \App\Services\Navigation\Contracts\NavigationCondition::class => [
                 \App\Services\Collections\Navigation\KnowledgeHubCondition::class,

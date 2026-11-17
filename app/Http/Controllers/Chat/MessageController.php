@@ -292,8 +292,9 @@ class MessageController extends Controller {
     }
 
     private function attach(Message $message, \Illuminate\Http\UploadedFile $file): void {
-        // Endung und am Inhalt erkannter Typ gegen die gemeinsame Positivliste aller Anhänge.
-        if (! FileAttacher::accepts($file)) {
+        // Endung und am Inhalt erkannter Typ gegen die gemeinsame Positivliste aller Anhänge;
+        // als interne Fläche auch Mail-Dateien (Feature 204).
+        if (! FileAttacher::accepts($file, \App\Enums\Attachments\UploadPurpose::Internal)) {
             return;
         }
         $ext = strtolower($file->getClientOriginalExtension() ?: (string) $file->extension());

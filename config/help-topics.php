@@ -58,6 +58,9 @@ return [
         'print.*',
         // Technische Endpunkte: Dateien, JSON, API-Dokumentation.
         'attachments.download',
+        // Mail-Dateien (Feature 204): Original-HTML im Rahmen und Anhang-Download.
+        'attachments.mail.html',
+        'attachments.mail.part',
         'branding.logo',
         'push.vapid',
         'security.txt',
@@ -333,6 +336,9 @@ return [
         // Fehlermeldesystem (Feature 041, MVP-053)
         'problem-reports.*' => 'support.report-problem',
         'admin.problem-reports.*' => 'support.report-problem',
+        // Wünsche an die App (Feature 206): Liste der Organisation und Plattformsicht.
+        'wishes.*' => 'wishes.overview',
+        'admin.wishes.*' => 'admin.wishes',
 
         // Tagesübersicht, Kanban und interne Kommunikation
         'today.*' => 'work.overview',
@@ -350,6 +356,13 @@ return [
         'diary.edit' => 'diary-entries.edit',
         'diary.case-file*' => 'diary-entries.edit',
         'diary.export.*' => 'diary-entries.create',
+        // Periodenaufträge mit interner Prüfung (Feature 198).
+        'diary.review-queue' => 'diary-entries.review',
+        'diary.follow-up.*' => 'diary-entries.follow-up',
+        // Leistungsplan je Kunde und Periode (Feature 199): Sichten und Zelle, Import und Kundenabgleich.
+        'service-plan.import.*' => 'service-plan.import',
+        'service-plan.reconcile.*' => 'service-plan.import',
+        'service-plan.*' => 'service-plan.overview',
         // Aufmaßblatt (MVP-1058/1059)
         'takeoffs.*' => 'takeoffs',
 
@@ -400,6 +413,9 @@ return [
         'expense-approvals.*' => 'travel-expenses.manage',
         'approvals.*' => 'approvals.inbox',
         'work-queue.*' => 'work-queue.overview',
+        // Vertretung bei Abwesenheit (Feature 202). Die Merker (Feature 201) haben nur
+        // Schreibwege; ihr Topic `carry-forward.notes` verlinkt die Komponente am Träger.
+        'delegations.*' => 'delegations.manage',
         'per-diem-trips.*' => 'travel-expenses.manage',
         // Urlaubskonto (Phase 38, MVP-413)
         'vacation-entitlements.*' => 'absences.entitlements',
@@ -586,8 +602,17 @@ return [
 
         // Dokumente, Formulare, Wissensbasis, Kommunikationsnotizen
         'documents.*' => 'documents.manage',
+        // Mail-Dateien ablegen und ansehen (Feature 204).
+        'attachments.mail.show' => 'attachments.mail',
         'form-templates.*' => 'forms.templates',
         'form-submissions.*' => 'forms.fill',
+        // Interne Wissensdatenbank (Feature 191) — VOR knowledge.*.
+        'knowledge.pages.*' => 'knowledge.pages',
+        'knowledge.readings.*' => 'knowledge.pages',
+        'knowledge.glossary.*' => 'knowledge.pages',
+        'knowledge.gaps.*' => 'knowledge.pages',
+        'knowledge.spaces.*' => 'knowledge.pages',
+        'knowledge.sections.*' => 'knowledge.pages',
         'knowledge.*' => 'knowledge.articles',
         'collections.*' => 'knowledge.collections',
         'references.*' => 'knowledge.collections',
@@ -598,6 +623,12 @@ return [
         // Stammdaten und operative Fachmodule
         // Sonderkonditionen & Abrechnungskonto (Feature 098) — VOR customers.*.
         'customers.billing.*' => 'customers.billing',
+        // Kundenfristen aus Regelsätzen (Feature 197) — Dialoge am Kunden VOR customers.*.
+        'customers.deadline-profile.*' => 'customers.deadlines',
+        'customers.services.*' => 'customers.deadlines',
+        'customer-deadlines.*' => 'customers.deadlines',
+        // Aufnahmeakte am Lead (Feature 200) — VOR leads.*.
+        'leads.intakes.*' => 'sales.lead-intakes',
         'leads.*' => 'sales.leads',
         'access-media.*' => 'access.media',
         'surveys.*' => 'sales.surveys',
@@ -696,6 +727,8 @@ return [
         'reports.absence-calendar' => 'reports.absence-calendar',
         // Aktuelle Personal-Belegung (MVP-524).
         'presence.board' => 'presence.board',
+        // Selbstauskunft am Board (Feature 103, MVP-1669).
+        'presence.status.*' => 'presence.board',
         'key-handovers.*' => 'key-handovers',
         'meter-readings.*' => 'meter-readings',
         'foreign-customers.*' => 'foreign-customers',
@@ -761,6 +794,8 @@ return [
         // Quelltext-Integrität (Feature 095): eigene Seite, eigenes Topic.
         'admin.integrity.*' => 'admin.integrity',
         'admin.sessions.*' => 'admin.security', // Sitzungs-/Token-Verwaltung = Sicherheitsseite
+        // Anmelderichtlinie der Organisation (Feature 205): Zeiten, Netze, Passkey-Pflicht, Notaus.
+        'admin.login-policy.*' => 'admin.login-policy',
         'admin.components.*' => 'admin.security',
         'admin.support.report.*' => 'admin.support',
         'admin.support.access-audit.*' => 'admin.support',

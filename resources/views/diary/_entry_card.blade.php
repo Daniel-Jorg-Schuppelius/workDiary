@@ -16,6 +16,11 @@
 <x-card as="article" class="grid gap-4 transition hover:border-primary/30 md:grid-cols-[minmax(0,1fr)_auto]">
     <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-3 mb-3">
+            {{-- Mehrfachauswahl „Zuständigkeit ändern“ (Feature 202, MVP-1648); nur in der Auftragsliste. --}}
+            @if (($bulkAssign ?? false) && Gate::allows('update', $entry))
+                <input type="checkbox" class="checkbox checkbox-sm" data-bulk-checkbox name="ids[]" value="{{ $entry->sqid }}"
+                       aria-label="{{ __('delegation.reassign.select_entry', ['title' => \CommonToolkit\Helper\Data\StringHelper::truncate((string) $entry->content, 60)]) }}">
+            @endif
             <x-status-badge :tone="$entry->status->tone()">{{ $entry->statusLabel() }}</x-status-badge>
             @php($dispatchStatus = app(\App\Services\Dispatch\DispatchStatusResolver::class)->resolve($entry))
             @if ($dispatchStatus !== \App\Enums\Diary\DispatchStatus::Unplanned)
@@ -28,6 +33,10 @@
                 <x-status-badge tone="ghost" outline>{{ __('Remote') }}</x-status-badge>
             @elseif ($entry->location_mode === \App\Enums\Diary\LocationMode::Hybrid)
                 <x-status-badge tone="ghost" outline>{{ __('Hybrid') }}</x-status-badge>
+            @endif
+            @if ($entry->period_key)
+                {{-- Periode (Feature 198) --}}
+                <x-status-badge tone="info" outline :title="__('diary.period.label')">{{ $entry->period_key->label() }}</x-status-badge>
             @endif
             @if ($entry->is_archived)
                 <x-status-badge tone="neutral">{{ __('Archiviert') }}</x-status-badge>

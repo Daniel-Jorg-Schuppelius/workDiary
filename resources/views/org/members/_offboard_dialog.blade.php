@@ -49,17 +49,12 @@
     </x-form-group>
 
     @if ($checklist['handovers'] !== [])
-        <x-form-group :legend="__('hr.offboarding.handovers')" icon="move_up" tone="primary">
-            <p class="text-sm text-muted">{{ __('hr.offboarding.handovers_hint') }}</p>
-            @foreach ($checklist['handovers'] as $handover)
-                <x-select-field :name="'handovers[' . $handover['key'] . ']'" :id="'handover-' . $handover['key']" :label="$handover['label']">
-                    <option value="">{{ __('hr.offboarding.no_handover') }}</option>
-                    @foreach ($deputyCandidates as $candidate)
-                        <option value="{{ $candidate->sqid }}">{{ $candidate->name }}</option>
-                    @endforeach
-                </x-select-field>
-            @endforeach
-        </x-form-group>
+        @include('org.members._handover_fields', [
+            'handovers' => $checklist['handovers'],
+            'candidates' => $deputyCandidates,
+            'legend' => __('hr.offboarding.handovers'),
+            'hint' => __('hr.offboarding.handovers_hint'),
+        ])
     @endif
 
     @if ($checklist['deputies']->isNotEmpty())

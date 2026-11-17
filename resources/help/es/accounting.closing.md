@@ -1,7 +1,7 @@
 ---
 title: "Cierre e informes"
 topic: accounting.closing
-version: 3
+version: 4
 keywords:
     - cierre mensual
     - cierre anual
@@ -15,6 +15,10 @@ keywords:
     - exportación auditoría fiscal
     - reparto de costes
     - exportación DATEV
+    - revisión fiscal DATEV
+    - cuenta automática
+    - BU 40
+    - falta NIF-IVA
 audience:
     - admin
     - geschaeftsfuehrung
@@ -68,3 +72,19 @@ contabiliza igualmente. En la previsión de liquidez usted añade **partidas
 planificadas** (por ejemplo, pagos a cuenta de impuestos o cuotas de préstamos);
 cada lunes la aplicación registra el estado semanal y «plan/real» lo
 compara después con los movimientos bancarios reales.
+
+**Revisión fiscal antes de la exportación DATEV:** **Revisar y exportar** en la
+entrega a DATEV muestra primero los hallazgos del periodo, cada uno con enlace
+al asiento. Los **errores** bloquean la exportación: una línea de ingreso o
+gasto sin código de impuesto aunque el asiento muestra IVA repercutido o
+soportado; una entrega intracomunitaria o inversión del sujeto pasivo en otro
+país de la UE sin NIF-IVA del socio; un asiento en una cuenta desactivada. Los
+**avisos** son para revisar: apuntes en los que la exportación anula el
+automatismo de la cuenta con BU 40 (con número y cuenta), un tipo que difiere
+del código de la cuenta automática y la inversión del sujeto pasivo nacional
+sin NIF-IVA. La revisión lee las cuentas automáticas del plan contable y no
+cambia el fichero. Un error desaparece en cuanto se corrigen el asiento o los
+datos maestros. Si en su caso es correcto, una persona con el permiso
+**Liberar la revisión fiscal antes de la exportación DATEV** lo libera con
+motivo; la liberación queda en la cadena de pruebas de la contabilidad y solo
+vale para los errores mostrados.

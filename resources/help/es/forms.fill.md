@@ -1,7 +1,7 @@
 ---
 title: "Rellenar formularios"
 topic: forms.fill
-version: 3
+version: 4
 keywords:
     - rellenar checklist
     - completar formulario
@@ -12,6 +12,11 @@ keywords:
     - imprimir formulario
     - formularios completados
     - lista de comprobación
+    - guardar borrador de formulario
+    - borrador
+    - seguir rellenando
+    - modo conversación
+    - secciones
 audience: []
 modules:
     - module.forms
@@ -51,6 +56,34 @@ impresión utilizan siempre esta instantánea; los cambios posteriores en
 la plantilla (o incluso su eliminación) nunca modifican a posteriori su
 formulario cumplimentado. En la vista de un formulario dispone de
 **Imprimir** y **Descargar PDF**.
+
+Formularios largos: si una plantilla tiene secciones, cada sección
+aparece como una tarjeta propia con número, título y «x de y
+respondidas»; delante de cada pregunta, un punto indica si está abierta
+(anillo) o respondida (marca). A partir de cuatro secciones, un índice
+lleva a cada sección. Las preguntas de selección con hasta seis
+opciones aparecen como botones: con la tecla Tab entra en el grupo, con
+las flechas elige y, en la selección múltiple, con la barra
+espaciadora. Algunas preguntas de selección tienen un campo
+**Complemento** para una observación. En la tableta, **Modo
+conversación** amplía las zonas táctiles.
+
+Guardar por campo: cada respuesta se guarda en cuanto sale del campo;
+arriba aparece entonces «Todas las respuestas guardadas.». Hasta
+**Enviar**, el formulario sigue siendo un **Borrador**; los campos
+obligatorios solo se comprueban al enviar. Sus borradores se encuentran
+en la vista general **Formularios**, en **Mis borradores**, y en la
+tarjeta **Formularios** del encargo: **Seguir rellenando** vuelve a
+abrir un borrador y **Descartar borrador** lo elimina. Los archivos, las
+fotos y las firmas solo se transfieren al enviar. Si el borrador se ha
+modificado entretanto en otro lugar (por ejemplo, en una segunda
+ventana), no se sobrescribe nada sin aviso: usted elige **Guardar mi
+entrada** o **Cargar la versión actual**. Solo quien creó un borrador
+puede verlo.
+
+La impresión y el PDF muestran el formulario como una plantilla en
+papel: tabla de cabecera, una tabla «Tema / Datos» por sección,
+selecciones como ☐/☑ y, en el pie, estado, referencia y número de página.
 
 Permisos: puede rellenar formularios quien tenga el permiso **Rellenar
 formularios**. En la vista general, las personas con el permiso **Ver

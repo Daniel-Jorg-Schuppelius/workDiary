@@ -406,6 +406,8 @@ Route::middleware('auth')->group(function () {
     Route::post('account/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->middleware('reauth')->name('account.2fa.webauthn.options');
     Route::post('account/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->middleware('reauth')->name('account.2fa.webauthn.register');
     Route::delete('account/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->middleware('throttle:6,1')->name('account.2fa.credential.destroy');
+    // Passkeys benennen (Feature 205, MVP-1656).
+    Route::patch('account/two-factor/credential/{credential}', [TwoFactorController::class, 'renameCredential'])->middleware('throttle:30,1')->name('account.2fa.credential.update');
     Route::delete('account/two-factor', [TwoFactorController::class, 'disable'])->middleware('throttle:6,1')->name('account.2fa.disable');
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
@@ -1032,6 +1034,18 @@ Route::middleware('auth')->group(function () {
             ->name('admin.sessions.terminals.deactivate');
         Route::delete('admin/sessions/{id}', [SessionController::class, 'destroySession'])->name('admin.sessions.destroy');
 
+        // Anmelderichtlinie der Organisation (Feature 205, MVP-1654–1657):
+        // Zeiten, Netze, Passkey-Pflicht, Gerätefreigaben und Notaus. Rechte im Controller.
+        Route::get('admin/anmelderichtlinie', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'index'])->name('admin.login-policy.index');
+        Route::get('admin/anmelderichtlinie/bearbeiten', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'edit'])->name('admin.login-policy.edit');
+        Route::put('admin/anmelderichtlinie', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'update'])->middleware('throttle:30,1')->name('admin.login-policy.update');
+        Route::post('admin/anmelderichtlinie/geraete/{deviceSqid}/freigeben', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'approveDevice'])->name('admin.login-policy.devices.approve');
+        Route::post('admin/anmelderichtlinie/geraete/{deviceSqid}/ablehnen', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'rejectDevice'])->name('admin.login-policy.devices.reject');
+        Route::delete('admin/anmelderichtlinie/geraete/{deviceSqid}', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'forgetDevice'])->name('admin.login-policy.devices.destroy');
+        Route::get('admin/anmelderichtlinie/notaus', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'lockdownDialog'])->name('admin.login-policy.lockdown.create');
+        Route::post('admin/anmelderichtlinie/notaus', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'engageLockdown'])->middleware('throttle:6,1')->name('admin.login-policy.lockdown.store');
+        Route::delete('admin/anmelderichtlinie/notaus', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'liftLockdown'])->middleware('throttle:6,1')->name('admin.login-policy.lockdown.destroy');
+
         // Backup- & Restore-Status (Feature 017) — plattformweite Admin-Sicht
         Route::get('admin/backup', [BackupStatusController::class, 'status'])->name('admin.backup.status');
         Route::get('admin/backup/restore-tests/create', [BackupStatusController::class, 'createRestoreTest'])
@@ -1163,11 +1177,36 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('holidays', HolidayController::class)->except('show');
 
+        // Periodenaufträge mit interner Prüfung (Feature 198): Prüf-Warteschlange und
+        // Folgeperiode gesammelt — vor der Ressource, sonst greift diary/{diary}.
+        Route::get('diary/review-queue', [\App\Http\Controllers\Diary\DiaryReviewController::class, 'queue'])->name('diary.review-queue');
+        Route::get('diary/follow-up', [\App\Http\Controllers\Diary\DiaryFollowUpController::class, 'index'])->name('diary.follow-up.index');
+        Route::post('diary/follow-up', [\App\Http\Controllers\Diary\DiaryFollowUpController::class, 'bulkStore'])->name('diary.follow-up.bulk');
+        Route::post('diary/{diary}/follow-up', [\App\Http\Controllers\Diary\DiaryFollowUpController::class, 'store'])->name('diary.follow-up.store');
+        Route::patch('diary/{diary}/review-requirement', [\App\Http\Controllers\Diary\DiaryReviewController::class, 'requirement'])->name('diary.review-requirement');
+        // Mehrfachauswahl „Zuständigkeit ändern“ der Auftragsliste (Feature 202, MVP-1648) — vor der Ressource.
+        Route::post('diary/zustaendigkeit', [\App\Http\Controllers\Diary\DiaryAssignmentController::class, 'bulk'])->name('diary.bulk-assign');
+        // Leistungsplan je Kunde und Periode (Feature 199, MVP-1638–1640): Sichten, Zelle, Perioden anlegen, Import, Kundenabgleich.
+        Route::get('leistungsplan', [\App\Http\Controllers\ServicePlan\ServicePlanController::class, 'index'])->name('service-plan.index');
+        Route::get('leistungsplan/perioden', [\App\Http\Controllers\ServicePlan\ServicePlanController::class, 'periods'])->name('service-plan.periods.index');
+        Route::get('leistungsplan/perioden/anlegen', [\App\Http\Controllers\ServicePlan\ServicePlanController::class, 'createPeriodsDialog'])->name('service-plan.periods.create-dialog');
+        Route::post('leistungsplan/perioden/anlegen', [\App\Http\Controllers\ServicePlan\ServicePlanController::class, 'createPeriods'])->name('service-plan.periods.create');
+        Route::get('leistungsplan/zelle', [\App\Http\Controllers\ServicePlan\ServicePlanCellController::class, 'edit'])->name('service-plan.cell.edit');
+        Route::post('leistungsplan/zelle', [\App\Http\Controllers\ServicePlan\ServicePlanCellController::class, 'update'])->name('service-plan.cell.update');
+        Route::get('leistungsplan/zelle/auftrag', [\App\Http\Controllers\ServicePlan\ServicePlanCellController::class, 'order'])->name('service-plan.cell.order');
+        Route::get('leistungsplan/import', [\App\Http\Controllers\ServicePlan\ServicePlanImportController::class, 'create'])->name('service-plan.import.create');
+        Route::get('leistungsplan/import/vorlage/{kind}.csv', [\App\Http\Controllers\ServicePlan\ServicePlanImportController::class, 'template'])->whereIn('kind', ['jahresliste', 'periodenliste'])->name('service-plan.import.template');
+        Route::post('leistungsplan/import', [\App\Http\Controllers\ServicePlan\ServicePlanImportController::class, 'preview'])->name('service-plan.import.preview');
+        Route::post('leistungsplan/import/uebernehmen', [\App\Http\Controllers\ServicePlan\ServicePlanImportController::class, 'store'])->name('service-plan.import.store');
+        Route::get('leistungsplan/kundenabgleich', [\App\Http\Controllers\ServicePlan\CustomerReconciliationController::class, 'create'])->name('service-plan.reconcile.create');
+        Route::get('leistungsplan/kundenabgleich/vorlage.csv', [\App\Http\Controllers\ServicePlan\CustomerReconciliationController::class, 'template'])->name('service-plan.reconcile.template');
+        Route::post('leistungsplan/kundenabgleich', [\App\Http\Controllers\ServicePlan\CustomerReconciliationController::class, 'preview'])->name('service-plan.reconcile.preview');
+        Route::post('leistungsplan/kundenabgleich/uebernehmen', [\App\Http\Controllers\ServicePlan\CustomerReconciliationController::class, 'store'])->name('service-plan.reconcile.store');
         Route::resource('diary', DiaryController::class)->parameters(['diary' => 'diary']);
         Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->name('diary.archive');
         Route::post('diary/{diary}/restore', [DiaryController::class, 'restore'])->name('diary.restore');
         Route::post('diary/{diary}/lifecycle/{action}', DiaryLifecycleController::class)
-            ->whereIn('action', ['accept', 'reject', 'start', 'pause', 'resume', 'complete', 'handover', 'markInvoiced', 'cancel'])
+            ->whereIn('action', ['accept', 'reject', 'start', 'pause', 'resume', 'complete', 'handover', 'markInvoiced', 'cancel', 'submitReview', 'withdrawReview', 'approveReview', 'queryReview', 'resubmitReview', 'approveAndComplete'])
             ->name('diary.lifecycle');
         Route::get('diary/{diary}/case-file', DiaryCaseFileController::class)->name('diary.case-file');
         // Interne Fallakte als serverseitiges PDF (MVP-349): gleicher Daten-
@@ -1274,8 +1313,20 @@ Route::middleware('auth')->group(function () {
 
         Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
             ->whereIn('type', array_keys(AttachmentController::TYPE_MAP))
+            // Gedrosselt (Feature 204): Uploads prüfen Mail-Dateien vorab am Inhalt.
+            ->middleware('throttle:60,1')
             ->name('attachments.store');
         Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
+        // Mail-Dateien (.eml/.msg, Feature 204): Ansicht, Original-HTML abgeschottet, Anhänge, Übernahme.
+        // HTML und Anhänge nur signiert (wie der Download); gelesen wird einmal im Hintergrund, die Wege sind gedrosselt.
+        Route::get('attachments/{attachment}/mail', [\App\Http\Controllers\Attachments\MailAttachmentController::class, 'show'])
+            ->middleware('throttle:120,1')->name('attachments.mail.show');
+        Route::get('attachments/{attachment}/mail/html', [\App\Http\Controllers\Attachments\MailAttachmentController::class, 'html'])
+            ->middleware('throttle:60,1')->name('attachments.mail.html');
+        Route::get('attachments/{attachment}/mail/parts/{part}', [\App\Http\Controllers\Attachments\MailAttachmentController::class, 'part'])
+            ->where('part', '[0-9.]+')->middleware('throttle:60,1')->name('attachments.mail.part');
+        Route::post('attachments/{attachment}/mail/parts/{part}/adopt', [\App\Http\Controllers\Attachments\MailAttachmentController::class, 'adopt'])
+            ->where('part', '[0-9.]+')->middleware('throttle:30,1')->name('attachments.mail.adopt');
         // Kundenfreigabe je Anhang fürs Portal (Rang 54, Toggle).
         Route::patch('attachments/{attachment}/customer-visibility', [AttachmentController::class, 'toggleCustomerVisibility'])->name('attachments.customer-visibility');
         Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
@@ -1473,6 +1524,24 @@ Route::middleware('auth')->group(function () {
         Route::post('leads/{lead}/status', [\App\Http\Controllers\Sales\LeadController::class, 'transition'])->name('leads.transition');
         Route::post('leads/{lead}/konvertieren', [\App\Http\Controllers\Sales\LeadController::class, 'convert'])->name('leads.convert');
         Route::post('leads/{lead}/angebot', [\App\Http\Controllers\Sales\LeadController::class, 'startQuote'])->name('leads.quote');
+        // Aufnahmeakte am Lead (Feature 200, MVP-1641–1644): Bogen, Stufen, Unterlagen, Entscheidung,
+        // zweiter Blick, Aktualisierung, PDF; Rechte über customer.* und lead.intake.*, Modul module.vertrieb.
+        Route::get('aufnahmen', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'index'])->name('leads.intakes.index');
+        Route::get('aufnahmen/einstellungen', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'settings'])->name('leads.intakes.settings.edit');
+        Route::post('aufnahmen/einstellungen', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'updateSettings'])->name('leads.intakes.settings.update');
+        Route::get('aufnahmen/kunden/{customer}/geschaeftsbeziehung', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'relationship'])->name('leads.intakes.relationship.edit');
+        Route::post('aufnahmen/kunden/{customer}/geschaeftsbeziehung', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'updateRelationship'])->name('leads.intakes.relationship.update');
+        Route::post('leads/{lead}/aufnahme', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'store'])->name('leads.intakes.store');
+        Route::get('leads/{lead}/aufnahme/{intake}', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'show'])->name('leads.intakes.show');
+        Route::post('leads/{lead}/aufnahme/{intake}/bogen', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'save'])->name('leads.intakes.save');
+        Route::post('leads/{lead}/aufnahme/{intake}/stufe', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'stage'])->name('leads.intakes.stage');
+        Route::get('leads/{lead}/aufnahme/{intake}/entscheidung', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'decision'])->name('leads.intakes.decision');
+        Route::post('leads/{lead}/aufnahme/{intake}/entscheidung', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'decide'])->name('leads.intakes.decide');
+        Route::post('leads/{lead}/aufnahme/{intake}/zweiter-blick', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'secondReview'])->name('leads.intakes.second-review');
+        Route::post('leads/{lead}/aufnahme/{intake}/unterlagen', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'document'])->name('leads.intakes.document');
+        Route::post('leads/{lead}/aufnahme/{intake}/aktualisieren', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'refresh'])->name('leads.intakes.refresh');
+        Route::get('leads/{lead}/aufnahme/{intake}/pdf', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'pdf'])->name('leads.intakes.pdf');
+        Route::post('leads/{lead}/aufnahme/{intake}/ablegen', [\App\Http\Controllers\Sales\LeadIntakeController::class, 'archive'])->name('leads.intakes.archive');
 
         // Provisionen (Feature 146, MVP-729): Regeln, Provisionszeilen je Beleg
         // und Abrechnungsläufe. Rechte über commission.* (Policies auf
@@ -1561,6 +1630,17 @@ Route::middleware('auth')->group(function () {
         Route::get('customers/{customer}/billing/payments/create', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'create'])->name('customers.billing.payments.create');
         Route::post('customers/{customer}/billing/agreement', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'save'])->name('customers.billing.agreement.save');
         Route::post('customers/{customer}/billing/recalculate', [\App\Http\Controllers\Customers\BillingStatementController::class, 'recalculate'])->name('customers.billing.recalculate');
+        // Kundenfristen aus Regelsätzen (Feature 197, MVP-1630–1633): Fristmerkmale und Leistungsumfang im Cockpit-Dialog.
+        Route::get('customers/{customer}/fristmerkmale', [\App\Http\Controllers\Customer\CustomerDeadlineProfileController::class, 'edit'])->name('customers.deadline-profile.edit');
+        Route::post('customers/{customer}/fristmerkmale', [\App\Http\Controllers\Customer\CustomerDeadlineProfileController::class, 'store'])->name('customers.deadline-profile.store');
+        Route::get('customers/{customer}/leistungsumfang', [\App\Http\Controllers\Customer\CustomerServiceController::class, 'index'])->name('customers.services.index');
+        Route::post('customers/{customer}/leistungsumfang', [\App\Http\Controllers\Customer\CustomerServiceController::class, 'store'])->name('customers.services.store');
+        Route::post('customers/{customer}/leistungsumfang/{customerService}/beenden', [\App\Http\Controllers\Customer\CustomerServiceController::class, 'end'])->name('customers.services.end');
+        Route::get('kundenfristen', [\App\Http\Controllers\Customer\CustomerDeadlineController::class, 'index'])->name('customer-deadlines.index');
+        Route::get('kundenfristen/einstellungen', [\App\Http\Controllers\Customer\CustomerDeadlineSettingsController::class, 'edit'])->name('customer-deadlines.settings.edit');
+        Route::post('kundenfristen/einstellungen', [\App\Http\Controllers\Customer\CustomerDeadlineSettingsController::class, 'update'])->name('customer-deadlines.settings.update');
+        Route::get('kundenfristen/{customerDeadline}', [\App\Http\Controllers\Customer\CustomerDeadlineController::class, 'edit'])->name('customer-deadlines.edit');
+        Route::post('kundenfristen/{customerDeadline}', [\App\Http\Controllers\Customer\CustomerDeadlineController::class, 'update'])->name('customer-deadlines.update');
         Route::get('customers/{customer}/billing/statements/{statement}', [\App\Http\Controllers\Customers\BillingStatementController::class, 'show'])->name('customers.billing.statements.show');
         Route::post('customers/{customer}/billing/statements/{statement}/close', [\App\Http\Controllers\Customers\BillingStatementController::class, 'close'])->name('customers.billing.statements.close');
         Route::post('customers/{customer}/billing/statements/{statement}/reopen', [\App\Http\Controllers\Customers\BillingStatementController::class, 'reopen'])->name('customers.billing.statements.reopen');
@@ -2522,6 +2602,9 @@ Route::middleware('auth')->group(function () {
             // Monatsbudget je Familie (Feature 025, MVP-399/1620) — statisch VOR {connection}.
             Route::get('budget', [\App\Http\Controllers\Admin\Ai\AiBudgetController::class, 'edit'])->name('budget.edit');
             Route::put('budget', [\App\Http\Controllers\Admin\Ai\AiBudgetController::class, 'update'])->name('budget.update');
+            // Datenschutz: Freigabepflicht, Frist, Maskierung lokaler Verbindungen (MVP-1671/1672) — statisch VOR {connection}.
+            Route::get('datenschutz', [\App\Http\Controllers\Admin\Ai\AiPrivacyController::class, 'edit'])->name('privacy.edit');
+            Route::put('datenschutz', [\App\Http\Controllers\Admin\Ai\AiPrivacyController::class, 'update'])->name('privacy.update');
             Route::get('gedaechtnis', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'index'])->name('memory');
             // DSGVO-Export des Gedächtnisses (Vollaudit 2026-07, M9), optional ?kunde=<id>.
             Route::get('gedaechtnis/export', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'export'])->name('memory.export');
@@ -2539,6 +2622,10 @@ Route::middleware('auth')->group(function () {
             Route::post('{connection}/pruefen', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'test'])->name('test');
             Route::post('{connection}/sperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'block'])->name('block');
             Route::post('{connection}/entsperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'unblock'])->name('unblock');
+            // Datenschutzfreigabe je Verbindung (MVP-1672, ai.approve).
+            Route::get('{connection}/freigabe', [\App\Http\Controllers\Admin\Ai\AiPrivacyController::class, 'approval'])->name('approval.edit');
+            Route::post('{connection}/freigabe', [\App\Http\Controllers\Admin\Ai\AiPrivacyController::class, 'approve'])->name('approval.store');
+            Route::delete('{connection}/freigabe', [\App\Http\Controllers\Admin\Ai\AiPrivacyController::class, 'revoke'])->name('approval.destroy');
             Route::delete('{connection}', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'destroy'])->name('destroy');
         });
 
@@ -3436,6 +3523,8 @@ Route::middleware('auth')->group(function () {
                 ->name('gl-accounts.export');
             Route::get('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'show'])->name('show');
             Route::post('{batch}/finalisieren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'finalize'])->name('finalize');
+            // Steuerprüfung: sperrende Befunde begründet freigeben (Feature 207, MVP-1661).
+            Route::post('{batch}/steuerpruefung/freigabe', [\App\Http\Controllers\Finance\DatevBookingController::class, 'releaseTaxCheck'])->name('tax-check.release');
             Route::get('{batch}/download', [\App\Http\Controllers\Finance\DatevBookingController::class, 'download'])->name('download');
             // Übermittlung an die Kanzlei und Begleitbericht (MVP-1277/1278).
             Route::get('{batch}/uebermittlung', [\App\Http\Controllers\Finance\DatevBookingController::class, 'transmissionDialog'])->name('transmission.dialog');
@@ -3484,6 +3573,12 @@ Route::middleware('auth')->group(function () {
             // Steuerfall der Eingangsrechnung (MVP-1621): § 13b, innergemeinschaftlicher Erwerb oder Vorsteuer aus der Rechnung.
             Route::get('{incoming}/steuerfall', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'taxCaseForm'])->name('tax-case.form');
             Route::put('{incoming}/steuerfall', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'taxCase'])->name('tax-case');
+            // Sammel-PDF (Feature 208, MVP-1662): Grenzen prüfen, verschieben und bestätigen oder als eine Rechnung behalten.
+            Route::get('{incoming}/aufteilen', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'form'])->name('split.form');
+            Route::get('{incoming}/aufteilen/seite/{page}', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'page'])->where('page', '[0-9]{1,4}')->name('split.page');
+            Route::post('{incoming}/aufteilen/zuruecksetzen', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'reset'])->name('split.reset');
+            Route::post('{incoming}/aufteilen', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'split'])->middleware('throttle:6,1')->name('split');
+            Route::post('{incoming}/eine-rechnung', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'dismiss'])->name('split.dismiss');
             Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
             Route::post('{incoming}/uebergeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'transfer'])->name('transfer');
             Route::post('{incoming}/kein-doppel', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'clearDuplicate'])->name('duplicate.clear');
@@ -3620,6 +3715,9 @@ Route::middleware('auth')->group(function () {
                 // Bankumsatz ohne Beleg direkt aufs Sachkonto (MVP-1557).
                 Route::get('sachkonto/{transaction}', [\App\Http\Controllers\Finance\PostingInboxController::class, 'bankDirectForm'])->name('bank-direct.create');
                 Route::post('sachkonto/{transaction}', [\App\Http\Controllers\Finance\PostingInboxController::class, 'storeBankDirect'])->name('bank-direct.store');
+                // Kontierungsvorschläge für Bankumsätze ohne Beleg, gebündelt bestätigen (Feature 207, MVP-1660).
+                Route::get('kontierung', [\App\Http\Controllers\Finance\BankBookingSuggestionController::class, 'index'])->name('suggestions.index');
+                Route::post('kontierung/bestaetigen', [\App\Http\Controllers\Finance\BankBookingSuggestionController::class, 'confirm'])->name('suggestions.confirm');
                 Route::get('umbuchung/neu', [\App\Http\Controllers\Finance\PostingInboxController::class, 'transferForm'])->name('transfer.create');
                 Route::post('umbuchung', [\App\Http\Controllers\Finance\PostingInboxController::class, 'storeTransfer'])->name('transfer.store');
             });
@@ -3639,6 +3737,9 @@ Route::middleware('auth')->group(function () {
                 // Startsalden-Übernahme und DATEV-Übergabe aus dem Journal (MVP-677).
                 Route::post('startsalden', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'importOpeningBalances'])->name('opening-balances');
                 Route::post('datev', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'datevExport'])->name('datev');
+                // Steuerprüfung vor der Übergabe mit begründeter Freigabe (Feature 207, MVP-1661).
+                Route::get('datev/pruefung', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'datevCheck'])->name('datev-check');
+                Route::post('datev/freigabe', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'datevRelease'])->name('datev-release');
             });
 
             // Wiederkehrende Vorgänge (MVP-675): Belegerwartungen und
@@ -4672,6 +4773,67 @@ Route::middleware('auth')->group(function () {
         Route::delete('knowledge/{article}/links/{link}', [\App\Http\Controllers\Knowledge\KnowledgeArticleController::class, 'destroyLink'])->name('knowledge.links.destroy');
         Route::delete('knowledge/{article}', [\App\Http\Controllers\Knowledge\KnowledgeArticleController::class, 'destroy'])->name('knowledge.destroy');
 
+        // ── Interne Wissensdatenbank (Feature 191, MVP-1664–1668) ─ Gate knowledge.* → module.knowledge
+        Route::get('wissen/seiten', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'index'])->name('knowledge.pages.index');
+        Route::get('wissen/seiten/neu', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'create'])->name('knowledge.pages.create');
+        Route::post('wissen/seiten', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'store'])->name('knowledge.pages.store');
+        Route::get('wissen/seiten/papierkorb', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'trash'])->name('knowledge.pages.trash');
+        Route::get('wissen/seiten/notfallhandbuch', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'emergencyPdf'])->name('knowledge.pages.emergency-pdf');
+        Route::get('wissen/seiten/import', [\App\Http\Controllers\Knowledge\KnowledgePageImportController::class, 'create'])->name('knowledge.pages.import');
+        Route::post('wissen/seiten/import', [\App\Http\Controllers\Knowledge\KnowledgePageImportController::class, 'store'])->name('knowledge.pages.import.store');
+        Route::post('wissen/seiten/{page}/wiederherstellen', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'restore'])->name('knowledge.pages.restore');
+        Route::delete('wissen/seiten/{page}/endgueltig', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'forceDelete'])->name('knowledge.pages.force-delete');
+        Route::get('wissen/seiten/{page}', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'show'])->name('knowledge.pages.show');
+        Route::get('wissen/seiten/{page}/bearbeiten', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'edit'])->name('knowledge.pages.edit');
+        Route::put('wissen/seiten/{page}', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'update'])->name('knowledge.pages.update');
+        Route::delete('wissen/seiten/{page}', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'destroy'])->name('knowledge.pages.destroy');
+        Route::post('wissen/seiten/{page}/freigeben', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'approve'])->name('knowledge.pages.approve');
+        Route::post('wissen/seiten/{page}/veraltet', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'outdate'])->name('knowledge.pages.outdate');
+        Route::post('wissen/seiten/{page}/aktuell', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'review'])->name('knowledge.pages.review');
+        Route::get('wissen/seiten/{page}/verantwortung', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'responsibility'])->name('knowledge.pages.responsibility');
+        Route::put('wissen/seiten/{page}/verantwortung', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'updateResponsibility'])->name('knowledge.pages.responsibility.update');
+        Route::get('wissen/seiten/{page}/fassungen', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'versions'])->name('knowledge.pages.versions');
+        Route::post('wissen/seiten/{page}/fassungen/{version}/zurueckholen', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'restoreVersion'])->name('knowledge.pages.versions.restore');
+        Route::get('wissen/seiten/{page}/pdf', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'pdf'])->name('knowledge.pages.pdf');
+        Route::post('wissen/seiten/{page}/gelesen', [\App\Http\Controllers\Knowledge\KnowledgePageController::class, 'confirmRead'])->name('knowledge.pages.confirm-read');
+        // Pflichtlektüre (MVP-1666).
+        Route::get('wissen/lektuere', [\App\Http\Controllers\Knowledge\KnowledgeReadingController::class, 'index'])->name('knowledge.readings.index');
+        Route::get('wissen/seiten/{page}/pflichtlektuere', [\App\Http\Controllers\Knowledge\KnowledgeReadingController::class, 'show'])->name('knowledge.pages.readings');
+        Route::post('wissen/seiten/{page}/pflichtlektuere', [\App\Http\Controllers\Knowledge\KnowledgeReadingController::class, 'store'])->name('knowledge.pages.assignments.store');
+        Route::delete('wissen/seiten/{page}/pflichtlektuere/{assignment}', [\App\Http\Controllers\Knowledge\KnowledgeReadingController::class, 'destroy'])->name('knowledge.pages.assignments.destroy');
+        // Verweise auf Kunde, Projekt, Asset, Auftrag, Ticket, Prozedur (MVP-1667).
+        Route::get('wissen/seiten/{page}/verknuepfen', [\App\Http\Controllers\Knowledge\KnowledgePageLinkController::class, 'create'])->name('knowledge.pages.links.create');
+        Route::post('wissen/verknuepfungen', [\App\Http\Controllers\Knowledge\KnowledgePageLinkController::class, 'store'])->name('knowledge.pages.links.store');
+        Route::delete('wissen/seiten/{page}/verknuepfungen/{reference}', [\App\Http\Controllers\Knowledge\KnowledgePageLinkController::class, 'destroy'])->name('knowledge.pages.links.destroy');
+        // Bildanleitung (MVP-1668).
+        Route::get('wissen/seiten/{page}/schritte/neu', [\App\Http\Controllers\Knowledge\KnowledgeGuideController::class, 'create'])->name('knowledge.pages.steps.create');
+        Route::post('wissen/seiten/{page}/schritte', [\App\Http\Controllers\Knowledge\KnowledgeGuideController::class, 'store'])->name('knowledge.pages.steps.store');
+        Route::get('wissen/seiten/{page}/schritte/{step}', [\App\Http\Controllers\Knowledge\KnowledgeGuideController::class, 'edit'])->name('knowledge.pages.steps.edit');
+        Route::put('wissen/seiten/{page}/schritte/{step}', [\App\Http\Controllers\Knowledge\KnowledgeGuideController::class, 'update'])->name('knowledge.pages.steps.update');
+        Route::delete('wissen/seiten/{page}/schritte/{step}', [\App\Http\Controllers\Knowledge\KnowledgeGuideController::class, 'destroy'])->name('knowledge.pages.steps.destroy');
+        Route::post('wissen/seiten/{page}/schritte/{step}/verschieben', [\App\Http\Controllers\Knowledge\KnowledgeGuideController::class, 'move'])->name('knowledge.pages.steps.move');
+        Route::get('wissen/seiten/{page}/abspielen', [\App\Http\Controllers\Knowledge\KnowledgeGuideController::class, 'play'])->name('knowledge.pages.play');
+        // Bereiche und Rubriken (MVP-1664), Leserecht je Bereich (MVP-1667).
+        Route::get('wissen/bereiche/neu', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'create'])->name('knowledge.spaces.create');
+        Route::post('wissen/bereiche', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'store'])->name('knowledge.spaces.store');
+        Route::get('wissen/bereiche/{space}/bearbeiten', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'edit'])->name('knowledge.spaces.edit');
+        Route::put('wissen/bereiche/{space}', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'update'])->name('knowledge.spaces.update');
+        Route::delete('wissen/bereiche/{space}', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'destroy'])->name('knowledge.spaces.destroy');
+        Route::get('wissen/bereiche/{space}/rubriken/neu', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'createSection'])->name('knowledge.sections.create');
+        Route::post('wissen/bereiche/{space}/rubriken', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'storeSection'])->name('knowledge.sections.store');
+        Route::get('wissen/rubriken/{section}/bearbeiten', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'editSection'])->name('knowledge.sections.edit');
+        Route::put('wissen/rubriken/{section}', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'updateSection'])->name('knowledge.sections.update');
+        Route::delete('wissen/rubriken/{section}', [\App\Http\Controllers\Knowledge\KnowledgeSpaceController::class, 'destroySection'])->name('knowledge.sections.destroy');
+        // Glossar und Suchlücken (MVP-1667).
+        Route::get('wissen/glossar', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'index'])->name('knowledge.glossary.index');
+        Route::get('wissen/glossar/neu', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'create'])->name('knowledge.glossary.create');
+        Route::post('wissen/glossar', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'store'])->name('knowledge.glossary.store');
+        Route::get('wissen/glossar/{term}/bearbeiten', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'edit'])->name('knowledge.glossary.edit');
+        Route::put('wissen/glossar/{term}', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'update'])->name('knowledge.glossary.update');
+        Route::delete('wissen/glossar/{term}', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'destroy'])->name('knowledge.glossary.destroy');
+        Route::get('wissen/suchluecken', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'gaps'])->name('knowledge.gaps.index');
+        Route::post('wissen/suchluecken/{gap}/erledigt', [\App\Http\Controllers\Knowledge\KnowledgeGlossaryController::class, 'dismissGap'])->name('knowledge.gaps.dismiss');
+
         // ── Sammlungen (MVP-809, Feature 155) ─ Kern: die Inhalte bringen ihr Tarifmodul selbst mit
         // Einstieg „Wissen“ (MVP-813): Baum, Liste/Kacheln und Filter über alle Sammlungstypen.
         Route::get('wissen', [\App\Http\Controllers\Knowledge\KnowledgeHubController::class, 'index'])->name('knowledge-hub.index');
@@ -4870,8 +5032,18 @@ Route::middleware('auth')->group(function () {
         Route::get('form-submissions', [\App\Http\Controllers\Form\FormSubmissionController::class, 'index'])->name('form-submissions.index');
         Route::get('form-submissions/create', [\App\Http\Controllers\Form\FormSubmissionController::class, 'create'])->name('form-submissions.create');
         Route::post('form-submissions', [\App\Http\Controllers\Form\FormSubmissionController::class, 'store'])->name('form-submissions.store');
+        // Lange Formulare (Feature 203, MVP-1650): Entwurf anlegen, fortsetzen, verwerfen.
+        Route::post('form-submissions/drafts', [\App\Http\Controllers\Form\FormSubmissionController::class, 'storeDraft'])->name('form-submissions.drafts.store');
+        Route::get('form-submissions/{submission}/edit', [\App\Http\Controllers\Form\FormSubmissionController::class, 'edit'])->name('form-submissions.edit');
+        Route::delete('form-submissions/{submission}', [\App\Http\Controllers\Form\FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
         Route::get('form-submissions/{submission}/pdf', [\App\Http\Controllers\Form\FormSubmissionController::class, 'pdf'])->name('form-submissions.pdf'); // Feature 032 Rang 31
         Route::get('form-submissions/{submission}', [\App\Http\Controllers\Form\FormSubmissionController::class, 'show'])->name('form-submissions.show');
+        // Speichern je Feld für jeden Träger von AutosavesFieldDocument (Feature 203, MVP-1650).
+        // Großzügig gedrosselt (je angemeldeter Person): jede Feldänderung ist ein Aufruf.
+        Route::patch('field-documents/{type}/{document}/fields/{field}', \App\Http\Controllers\Fields\FieldAutosaveController::class)
+            ->where(['type' => '[a-z][a-z0-9_]*', 'document' => '[A-Za-z0-9]+', 'field' => '[A-Za-z0-9_]+'])
+            ->middleware('throttle:120,1')
+            ->name('field-documents.autosave');
 
         // ── Protokolle (MVP-020) ───────────────────────────────────────────
         // Detailseite (Rang 28): Trägerseite für Panels (externe Beteiligte, Wetter, Verlauf).
@@ -5151,6 +5323,44 @@ Route::middleware('auth')->group(function () {
         Route::redirect('servicedesk/approvals', '/genehmigungen');
         // Zentraler Arbeitsvorrat (Feature 179): bündelt die Quellen der Module, bearbeitet wird dort.
         Route::get('arbeitsvorrat', \App\Http\Controllers\WorkQueue\WorkQueueController::class)->name('work-queue.index');
+        // Schwelle „ruhend“ der Organisation (Feature 179, MVP-1670).
+        Route::get('arbeitsvorrat/einstellungen', [\App\Http\Controllers\WorkQueue\WorkQueueSettingsController::class, 'edit'])->name('work-queue.settings.edit');
+        Route::post('arbeitsvorrat/einstellungen', [\App\Http\Controllers\WorkQueue\WorkQueueSettingsController::class, 'update'])->name('work-queue.settings.update');
+        // Vertretung bei Abwesenheit (Feature 202, MVP-1647): Plattform, ohne eigenes Lizenzmodul.
+        Route::get('vertretungen', [\App\Http\Controllers\Delegation\WorkDelegationController::class, 'index'])->name('delegations.index');
+        Route::get('vertretungen/anlegen', [\App\Http\Controllers\Delegation\WorkDelegationController::class, 'create'])->name('delegations.create');
+        Route::post('vertretungen', [\App\Http\Controllers\Delegation\WorkDelegationController::class, 'store'])->name('delegations.store');
+        Route::patch('vertretungen/{workDelegation}/beenden', [\App\Http\Controllers\Delegation\WorkDelegationController::class, 'end'])->name('delegations.end');
+        // Endgültige Übergabe ohne Austritt (MVP-1648): Bereiche eines aktiven Mitglieds an Nachfolgen.
+        // Personenwahl als Einstieg auf der Seite „Vertretungen“ (auch ohne Zugang zur Mitgliederliste).
+        Route::get('vertretungen/uebergabe', [\App\Http\Controllers\Delegation\WorkHandoverController::class, 'choose'])->name('delegations.handover.choose');
+        Route::get('vertretungen/uebergabe/{member}', [\App\Http\Controllers\Delegation\WorkHandoverController::class, 'dialog'])->name('delegations.handover.dialog');
+        Route::post('vertretungen/uebergabe/{member}', [\App\Http\Controllers\Delegation\WorkHandoverController::class, 'store'])->name('delegations.handover.store');
+        // Wünsche an die App (Feature 206, MVP-1658/1659): Plattform, ohne eigenes Lizenzmodul.
+        // Die Tagesgrenze (30 je Person) prüft der Dienst; die Drossel fängt nur Serienanfragen ab.
+        Route::get('wuensche', [\App\Http\Controllers\Wishes\AppWishController::class, 'index'])->name('wishes.index');
+        Route::get('wuensche/neu', [\App\Http\Controllers\Wishes\AppWishController::class, 'create'])->name('wishes.create');
+        Route::post('wuensche', [\App\Http\Controllers\Wishes\AppWishController::class, 'store'])->middleware('throttle:20,1')->name('wishes.store');
+        Route::get('wuensche/{appWish}/bearbeiten', [\App\Http\Controllers\Wishes\AppWishController::class, 'edit'])->name('wishes.edit');
+        Route::put('wuensche/{appWish}', [\App\Http\Controllers\Wishes\AppWishController::class, 'update'])->name('wishes.update');
+        Route::post('wuensche/{appWish}/stimme', [\App\Http\Controllers\Wishes\AppWishController::class, 'vote'])->name('wishes.vote');
+        Route::delete('wuensche/{appWish}/stimme', [\App\Http\Controllers\Wishes\AppWishController::class, 'unvote'])->name('wishes.unvote');
+        Route::get('wuensche/{appWish}/antwort', [\App\Http\Controllers\Wishes\AppWishController::class, 'answerDialog'])->name('wishes.answer.edit');
+        Route::put('wuensche/{appWish}/antwort', [\App\Http\Controllers\Wishes\AppWishController::class, 'answer'])->name('wishes.answer.update');
+        Route::get('wuensche/{appWish}/weitergeben', [\App\Http\Controllers\Wishes\AppWishController::class, 'forwardDialog'])->name('wishes.forward.create');
+        Route::post('wuensche/{appWish}/weitergeben', [\App\Http\Controllers\Wishes\AppWishController::class, 'forward'])->name('wishes.forward.store');
+        // Plattformsicht (MVP-1659) und Herstellerkanal (MVP-1677): nur Plattform-Betreiber (Controller).
+        Route::get('admin/wuensche', [\App\Http\Controllers\Wishes\PlatformWishController::class, 'index'])->name('admin.wishes.index');
+        Route::get('admin/wuensche/{wish}', [\App\Http\Controllers\Wishes\PlatformWishController::class, 'show'])->where('wish', '[A-Za-z0-9]+')->name('admin.wishes.show');
+        Route::put('admin/wuensche/{wish}', [\App\Http\Controllers\Wishes\PlatformWishController::class, 'update'])->where('wish', '[A-Za-z0-9]+')->name('admin.wishes.update');
+        Route::put('admin/wuensche/{wish}/buendel', [\App\Http\Controllers\Wishes\PlatformWishController::class, 'bundle'])->where('wish', '[A-Za-z0-9]+')->name('admin.wishes.bundle');
+        Route::put('admin/wuensche/{wish}/hersteller-text', [\App\Http\Controllers\Wishes\PlatformWishController::class, 'vendorText'])->where('wish', '[A-Za-z0-9]+')->name('admin.wishes.vendor-text');
+        Route::post('admin/wuensche/{wish}/hersteller', [\App\Http\Controllers\Wishes\PlatformWishController::class, 'vendorSend'])->where('wish', '[A-Za-z0-9]+')->name('admin.wishes.vendor.send');
+        Route::put('admin/wuensche/{wish}/hersteller-antwort', [\App\Http\Controllers\Wishes\PlatformWishController::class, 'vendorAnswer'])->where('wish', '[A-Za-z0-9]+')->name('admin.wishes.vendor-answer');
+        // Merker für die nächste Periode (Feature 201, MVP-1645): Schreibwege der Komponente am Vorkommen.
+        Route::post('merker', [\App\Http\Controllers\CarryForward\CarryForwardNoteController::class, 'store'])->name('carry-forward-notes.store');
+        Route::patch('merker/{carryForwardNote}/abhaken', [\App\Http\Controllers\CarryForward\CarryForwardNoteController::class, 'resolve'])->name('carry-forward-notes.resolve');
+        Route::delete('merker/{carryForwardNote}', [\App\Http\Controllers\CarryForward\CarryForwardNoteController::class, 'destroy'])->name('carry-forward-notes.destroy');
         // Aktivitäts-Feed (Feature 183): lesbare Sicht auf die Audit-Kette, Recht des Audit-Protokolls.
         Route::get('aktivitaet', \App\Http\Controllers\Timeline\ActivityFeedController::class)->name('activity.index');
         // Problem-Management (Feature 065, MVP-156) — servicedesk.* → module.service_desk!
@@ -5290,6 +5500,10 @@ Route::middleware('auth')->group(function () {
         // ── Gleitzeit ───────────────────────────────────────────────────────────
         // ── Aktuelle Personal-Belegung (MVP-524, Opt-in je Org) ─────────────────
         Route::get('belegung', [\App\Http\Controllers\Time\PresenceBoardController::class, 'index'])->name('presence.board');
+        // Selbstauskunft am Board (Feature 103, MVP-1669): nur der eigene Stand.
+        Route::get('belegung/mein-stand', [\App\Http\Controllers\Time\PresenceStatusController::class, 'edit'])->name('presence.status.edit');
+        Route::post('belegung/mein-stand', [\App\Http\Controllers\Time\PresenceStatusController::class, 'update'])->name('presence.status.update');
+        Route::delete('belegung/mein-stand', [\App\Http\Controllers\Time\PresenceStatusController::class, 'destroy'])->name('presence.status.destroy');
 
         Route::get('flex', [FlexController::class, 'index'])->name('flex.index');
         Route::get('flex/admin', [FlexController::class, 'admin'])->name('flex.admin');
@@ -5651,6 +5865,10 @@ Route::middleware('auth')->group(function () {
             ->name('admin.organizations.export');
         Route::delete('admin/organizations/{organization}/purge', [OrganizationController::class, 'purge'])
             ->name('admin.organizations.purge');
+        // Notaus einer Organisation aufheben (Feature 205, MVP-1657): Plattformbetrieb, frische Anmeldung.
+        Route::delete('admin/organizations/{organization}/notaus', [\App\Http\Controllers\Auth\LoginPolicyController::class, 'liftForOrganization'])
+            ->middleware(['reauth', 'throttle:6,1'])
+            ->name('admin.organizations.lockdown.destroy');
 
         // Org-Switcher: globalen Admins erlauben, den aktiven
         // Organisations-Kontext per Session umzuschalten.

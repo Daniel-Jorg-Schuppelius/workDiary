@@ -1,8 +1,11 @@
 ---
 title: "KI-Dienste"
 topic: ai.services
-version: 5
+version: 6
 keywords:
+    - Maskierung
+    - AVV
+    - Datenschutzfreigabe
     - KI
     - künstliche Intelligenz
     - AI
@@ -79,3 +82,33 @@ eine Obergrenze je Kalendermonat fest – für Sprachmodelle in Token, für
 dieser Familie bis zum Monatsende mit einer Meldung ab; die Kacheln zeigen die
 Auslastung. Leer gilt die Vorgabe des Betreibers, ohne Vorgabe ist der Verbrauch
 unbegrenzt.
+
+**Maskierung:** Vor jeder Cloud-Verbindung ersetzt workDiary IBAN,
+USt-IdNr., Steuernummer, Steuer-Identifikationsnummer, E-Mail-Adressen und
+Telefonnummern durch Platzhalter wie `[IBAN-1]` oder `[EMAIL-2]`. Derselbe Wert
+erhält innerhalb einer Anfrage immer denselben Platzhalter. In Entwürfen,
+Zusammenfassungen, Übersetzungen und erkannten Feldwerten setzt workDiary die
+Werte vor der Anzeige wieder ein; der Anbieter sieht sie nie. Erkannt wird nur,
+was die Prüfung besteht (Prüfziffer bei IBAN, USt-IdNr. und Steuer-ID) –
+Beträge und Datumsangaben bleiben unberührt. Kundennamen aus dem eigenen
+Stamm werden wie bisher immer maskiert. Lokale Verbindungen sehen die Werte im
+Klartext, solange unter **Datenschutz** „Auch vor lokalen Verbindungen
+maskieren“ aus ist. Das Audit-Protokoll zählt die maskierten Werte je Art,
+ohne sie zu nennen.
+
+**Datenschutzfreigabe:** Je Verbindung hält „Datenschutzfreigabe“ fest, dass
+ein Auftragsverarbeitungsvertrag vorliegt (bei Cloud-Diensten mit Dokument),
+die Verarbeitung in der EU stattfindet und der Anbieter nicht mit Ihren Daten
+trainiert – samt Datum und prüfender Person. Bei einer lokalen Verbindung ist
+der Vertrag nur nötig, wenn ein Dienstleister das Modell betreibt. Die
+Freigabe gilt so viele Monate, wie unter **Datenschutz** eingestellt (Vorgabe
+12); 30 Tage vor dem Ablauf erinnert der Arbeitsvorrat. Freigabe und Widerruf
+stehen im Audit-Protokoll. Freigaben erteilt, wer das Recht
+„Datenschutzfreigabe von KI-Verbindungen erteilen und widerrufen“ hat.
+
+**Nur freigegebene Verbindungen:** Ist dieser Schalter unter **Datenschutz**
+an, nutzt keine KI-Funktion eine Verbindung ohne gültige Freigabe; der
+Prüflauf und die Fehlermeldung nennen den Grund. Neue Organisationen starten
+mit eingeschaltetem Schalter. In Organisationen, die es schon vor dieser
+Version gab, bleibt er aus, bis ein Admin ihn einschaltet – bis dahin stehen die
+offenen Freigaben als Aufgabe im Arbeitsvorrat.

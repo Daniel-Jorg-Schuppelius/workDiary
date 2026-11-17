@@ -19,7 +19,9 @@ return [
     // v3: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
     // v4: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
     // v5: Leistungsort-Vorgabe „Katalogleistung“ (§ 3a Abs. 4 UStG, MVP-1688); eigene Einstellungen bleiben.
-    'version' => 5,
+    // v6: Eintragsart Wartung/Betreuung und Leistungsvorlage Monatsbetreuung (Feature 199, MVP-1674).
+    // v7: Prüfpaket B2B-Neukunde der Aufnahmeakte, einschaltbar (Feature 200, MVP-1675).
+    'version' => 7,
     'settings' => ['invoicing.place_of_supply_kind' => 'catalog'],
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
     'nav_focus_default' => 'service',
@@ -28,6 +30,9 @@ return [
     'entry_type_defaults' => ['general', 'service', 'it_ticket'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
+    // Feature 200 (MVP-1675): Prüfpaket B2B-Neukunde der Aufnahmeakte (Katalog database/data/intake_packages.php) —
+    // übernommen, aber aus; einschalten im Einstellungsdialog der Aufnahmen. Ergänzt nur.
+    'intake_packages' => [['code' => 'b2b_new_customer', 'enabled' => false]],
     'modules_recommended' => [
         'module.planung',
         'module.spesen',
@@ -101,6 +106,15 @@ return [
             ['code' => 'virtualization', 'label' => 'Virtualisierung'],
             ['code' => 'saas', 'label' => 'SaaS'],
         ],
+    ],
+    // Feature 199 (MVP-1674): Eintragsart zum Code `maintenance` (nur, wenn sie fehlt) und
+    // Leistungsvorlage Monatsbetreuung für den Leistungsplan. Wartung an Geräten bleibt beim Prüfplan.
+    'entry_type_rules' => [
+        ['slug' => 'maintenance', 'label' => 'Wartung und Betreuung', 'icon' => 'build_circle'],
+    ],
+    'service_catalog' => [
+        ['entry_type' => 'maintenance', 'period_kind' => 'month', 'mandatory' => true, 'label' => 'Monatsbetreuung',
+            'label_i18n' => ['en' => 'Monthly support', 'es' => 'Asistencia mensual', 'fr' => 'Assistance mensuelle', 'it' => 'Assistenza mensile']],
     ],
     'classification_requirements' => [
         [

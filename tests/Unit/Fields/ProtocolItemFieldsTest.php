@@ -70,7 +70,8 @@ class ProtocolItemFieldsTest extends TestCase {
 
     public function test_extensions_validate_and_display_their_values(): void {
         $registry = app(FieldExtensionRegistry::class);
-        $this->assertSame([AttachmentsField::KEY, DefectField::KEY, MeasurementSeriesField::KEY, SignatureField::KEY], collect(array_keys($registry->all()))->sort()->values()->all());
+        // Fachtyp USt-IdNr. der Aufnahmeakte (Feature 200) kommt aus dem Vertriebsmodul.
+        $this->assertSame([AttachmentsField::KEY, DefectField::KEY, MeasurementSeriesField::KEY, SignatureField::KEY, \App\Services\Sales\Intake\Fields\VatIdField::KEY], collect(array_keys($registry->all()))->sort()->values()->all());
 
         $fields = app(ProtocolItemFields::class);
         $validator = app(FieldValidator::class);

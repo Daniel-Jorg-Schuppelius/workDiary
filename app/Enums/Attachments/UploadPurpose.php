@@ -23,11 +23,19 @@ use App\Services\Attachments\FileAttacher;
 enum UploadPurpose: string {
     case General = 'general';
     case PrintData = 'print_data';
+    /**
+     * Anhänge auf internen, angemeldeten Mitarbeiterflächen (Anhänge an
+     * Trägern, Dokumente, Chat): wie General, zusätzlich Mail-Dateien
+     * (Feature 204). Nie in Portalen, im Auskunftsportal oder im Kundeneingang.
+     */
+    case Internal = 'internal';
 
     /** @return list<string> */
     public function extensions(): array {
         return match ($this) {
             self::General => FileAttacher::ALLOWED_EXTENSIONS,
+            // Mail-Dateien nur intern (Feature 204): Typ und Aufbau prüft FileAttacher::rejection().
+            self::Internal => [...FileAttacher::ALLOWED_EXTENSIONS, ...FileAttacher::MAIL_EXTENSIONS],
             // SVG nur ablegen und herunterladen, nie im Browser rendern.
             self::PrintData => ['pdf', 'tif', 'tiff', 'eps', 'ai', 'jpg', 'jpeg', 'png', 'svg', 'zip'],
         };
@@ -41,7 +49,8 @@ enum UploadPurpose: string {
      */
     public function mimes(): array {
         return match ($this) {
-            self::General => FileAttacher::ALLOWED_MIMES,
+            // Mail-Typen stehen bewusst nicht in der flachen Liste: sie gelten nur zur passenden Endung.
+            self::General, self::Internal => FileAttacher::ALLOWED_MIMES,
             self::PrintData => [
                 'application/pdf',
                 'application/postscript',
@@ -59,7 +68,7 @@ enum UploadPurpose: string {
     /** Höchstzahl Dateien je Einreichung. */
     public function maxFiles(): int {
         return match ($this) {
-            self::General => 10,
+            self::General, self::Internal => 10,
             self::PrintData => 20,
         };
     }
@@ -67,7 +76,7 @@ enum UploadPurpose: string {
     /** Gesamtgröße je Einreichung in KB. */
     public function maxTotalKb(): int {
         return match ($this) {
-            self::General => 262144,
+            self::General, self::Internal => 262144,
             self::PrintData => 1048576,
         };
     }

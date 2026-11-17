@@ -21,6 +21,11 @@ use App\Models\Platform\Organization;
  * Prompttext, BEVOR der Text einen (ggf. Cloud-)Provider erreicht. Namen
  * unter 4 Zeichen bleiben unberührt (False-Positive-Schutz); Obergrenze
  * 5000 Namen je Organisation.
+ *
+ * Werte, die ohne Stammdaten erkennbar sind (IBAN, USt-IdNr., Steuer-IDs,
+ * E-Mail, Telefon), maskiert {@see SensitiveDataMask} je Verbindung im
+ * {@see \App\Services\Ai\AiInvocationService} — umkehrbar, mit Rückersetzung
+ * in der Antwort (MVP-1671).
  */
 final class CustomerNameMasker {
     public const string PLACEHOLDER = '[Kunde]';

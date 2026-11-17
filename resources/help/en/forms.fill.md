@@ -1,7 +1,7 @@
 ---
 title: "Filling in forms"
 topic: forms.fill
-version: 3
+version: 4
 keywords:
     - fill out checklist
     - complete form
@@ -12,6 +12,11 @@ keywords:
     - print form
     - submitted forms
     - inspection checklist
+    - save form draft
+    - draft
+    - continue filling in
+    - conversation mode
+    - sections
 audience: []
 modules:
     - module.forms
@@ -47,6 +52,30 @@ as a **snapshot**. Display and print always use this snapshot – later
 changes to the template (or even its deletion) never alter your completed
 form retroactively. When viewing a form, **Print** and **Download PDF**
 are available.
+
+Long forms: if a template has sections, each section appears as its own
+card with number, title and “x of y answered”; in front of each question a
+dot shows whether it is open (ring) or answered (tick). From four sections
+on, a table of contents leads to each section. Choice questions with up to
+six options appear as buttons: the Tab key takes you into the group, the
+arrow keys select, and for multiple choice the space bar. Some choice
+questions have an **Additional note** field for a remark. On a tablet,
+**Conversation mode** enlarges the touch targets.
+
+Saving per field: each answer is saved as soon as you leave the field –
+the top then reads “All answers saved.” Until you **Submit**, the form
+remains a **Draft**; mandatory fields are only checked on submission. You
+find your drafts in the **Forms** overview under **My drafts** and in the
+**Forms** card of the order: **Continue filling in** reopens a draft,
+**Discard draft** deletes it. Files, photos and signatures are only
+transferred on submission. If the draft has been changed elsewhere in the
+meantime (for instance in a second window), nothing is overwritten
+silently: you choose **Save my entry** or **Load current version**. Only
+the person who created a draft can see it.
+
+Print and PDF show the form like a paper template: header table, one
+“Topic / Details” table per section, choices as ☐/☑ and, in the footer,
+as-of date, reference and page number.
 
 Permissions: anyone with the **Fill out forms** permission may fill in
 forms. In the overview, people with the **See form templates**

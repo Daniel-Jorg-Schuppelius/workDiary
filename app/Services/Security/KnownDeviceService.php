@@ -53,8 +53,9 @@ class KnownDeviceService {
             return;
         }
 
-        // Erst-Anmeldung überhaupt = Enrollment, kein Alarm.
-        $isFirstDevice = ! UserKnownDevice::query()->where('user_id', $user->id)->exists();
+        // Erst-Anmeldung überhaupt = Enrollment, kein Alarm. Freigabezeilen
+        // der Anmelderichtlinie (Feature 205, `device_hash`) zählen nicht mit.
+        $isFirstDevice = ! UserKnownDevice::query()->where('user_id', $user->id)->whereNull('device_hash')->exists();
 
         UserKnownDevice::query()->create([
             'user_id' => $user->id,

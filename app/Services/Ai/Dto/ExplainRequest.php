@@ -51,4 +51,13 @@ final class ExplainRequest implements AiRequestInterface {
     public function estimatedUnits(): int {
         return $this->estimateTokens(JsonHelper::encode($this->facts), (string) $this->question);
     }
+
+    /** Textwerte der Kennzahlen und die Frage; Zahlen und Schlüssel bleiben. */
+    public function mapTexts(\Closure $map): static {
+        return new self(
+            array_map(static fn (string|int|float|bool|null $value): string|int|float|bool|null => is_string($value) ? $map($value) : $value, $this->facts),
+            $this->question === null ? null : $map($this->question),
+            $this->language,
+        );
+    }
 }

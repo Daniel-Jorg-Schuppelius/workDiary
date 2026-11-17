@@ -54,7 +54,8 @@ class ServiceTicketController extends Controller {
             $query->where('priority', $priorityFilter);
         }
         if ($assigneeFilter === 'me' && $request->user() !== null) {
-            $query->where('assigned_to_user_id', $request->user()->getAuthIdentifier());
+            // „Mir zugewiesen“ schließt während einer Vertretung die Tickets der Vertretenen ein (Feature 202, MVP-1648).
+            $query->whereIn('assigned_to_user_id', app(\App\Services\Delegation\ActsForResolver::class)->assigneeIds($this->authUser()));
         } elseif ($assigneeFilter === 'unassigned') {
             $query->whereNull('assigned_to_user_id');
         }

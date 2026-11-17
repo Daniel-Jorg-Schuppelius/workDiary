@@ -11,7 +11,7 @@
     // kanban.js gereicht (Zeigergeste UND „Verschieben nach"-Menü). Abnahme
     // (handover) bewusst nie per Zug: sie braucht ein signiertes Protokoll und
     // läuft im Auftrag.
-    $lifecycleActions = collect($entry->status->allowedActions())
+    $lifecycleActions = collect($entry->lifecycleActions())
         ->reject(fn (string $action) => $action === 'handover')
         ->filter(fn (string $action) => \Illuminate\Support\Facades\Gate::allows($action, $entry))
         ->mapWithKeys(fn (string $action) => [$action => route('diary.lifecycle', [$entry, 'action' => $action])]);
@@ -21,12 +21,15 @@
     Stift) und braucht einen Container, der neben dem Eintrags-Link auch den
     Menü-Button trägt. `touch-pan-y` überlässt das vertikale Scrollen der
     Spalte dem Browser; `draggable="false"` schaltet das native Link-Dragging
-    ab, das sonst die Zeigergeste abwürgt.
+    ab, das sonst die Zeigergeste abwürgt. `data-requires-review`: mit
+    Prüfpflicht (Feature 198) führt „Erledigt“ über die Vorlage im Auftrag —
+    kanban.js weist darauf hin, statt den Zug nur abzulehnen.
 --}}
 <div class="group relative touch-pan-y"
      data-kanban-card
      data-id="{{ $entry->id }}"
      data-status="{{ $entry->status->value }}"
+     data-requires-review="{{ $entry->requires_review ? '1' : '0' }}"
      data-actions="{{ $lifecycleActions->toJson(JSON_UNESCAPED_SLASHES) }}">
     <x-order-link :entry="$entry" as="div"
        data-entry-modal-trigger

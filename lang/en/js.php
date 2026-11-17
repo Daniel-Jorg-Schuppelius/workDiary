@@ -89,6 +89,8 @@ return [
         'invalid_move' => 'This status change is not part of the order workflow.',
         'not_allowed' => 'You are not authorised to perform this order action.',
         'handover_via_order' => 'Handover requires a signed protocol and is performed directly in the order.',
+        // Prüfspalten und Prüfpflicht (Feature 198): Vorlage und Freigabe laufen im Auftrag.
+        'review_via_order' => 'The internal review runs through the order: open it to submit it for review, approve it or send back a question.',
         'no_targets' => 'There is currently no permitted move for this card.',
     ],
     'entry_bar' => [

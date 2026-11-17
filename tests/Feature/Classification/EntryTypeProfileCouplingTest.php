@@ -86,8 +86,9 @@ class EntryTypeProfileCouplingTest extends TestCase {
 
         $this->assertSame(1, $result['created']['entry_types']);
         $this->assertSame(2, $result['skipped']['entry_types']);
+        // `maintenance` kommt seit Profilversion 5 über `entry_type_rules` (Feature 199, Leistungsvorlage Monatsbetreuung).
         $this->assertSame(
-            [EntryType::SLUG_GENERAL, EntryType::SLUG_SERVICE, EntryType::SLUG_IT_TICKET],
+            [EntryType::SLUG_GENERAL, EntryType::SLUG_SERVICE, EntryType::SLUG_IT_TICKET, 'maintenance'],
             $this->slugsFor($org)
         );
         $this->assertSame('Mein Typ', EntryType::query()->withoutGlobalScopes()

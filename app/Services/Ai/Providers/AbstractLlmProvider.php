@@ -14,6 +14,7 @@ namespace App\Services\Ai\Providers;
 
 use App\Services\Ai\Contracts\LlmProviderInterface;
 use App\Services\Ai\Dto\{AiClassificationResult, AiExtractionResult, AiFindResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExamplePair, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, GlossaryEntry, SummarizeRequest, TranslateRequest};
+use App\Services\Ai\Support\SensitiveDataMask;
 use CommonToolkit\Helper\Data\JsonHelper;
 
 /**
@@ -39,6 +40,7 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
             // Kundennamen-Regel (Feature 084 MVP-402, Vollaudit 2026-07 M35).
             'VERBINDLICH: Nenne niemals den Namen des Kunden oder Empfängers — formuliere neutral (z. B. „der Kunde"), auch wenn Namen in der Eingabe stehen.',
             'Antworte NUR mit dem umformulierten Text, ohne Anführungszeichen oder Erklärungen.',
+            $this->placeholderRule($request->text, ...$request->contextHints),
             $this->styleBlock($request->styleRules),
             $this->glossaryBlock($request->glossary),
             $this->exampleBlock($request->examples),
@@ -57,6 +59,7 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
             'VERBINDLICH: Nenne niemals den Namen des Kunden oder Empfängers — formuliere neutral (z. B. „der Kunde").',
             $request->period !== null ? 'Leistungszeitraum: ' . $request->period . ' (im Text nennen).' : null,
             'Antworte NUR mit dem zusammengefassten Text.',
+            $this->placeholderRule(...$request->items),
             $this->styleBlock($request->styleRules),
             $this->glossaryBlock($request->glossary),
         ]));
@@ -87,13 +90,14 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
     }
 
     public function explain(ExplainRequest $request): AiTextResult {
-        $system = implode("\n", [
+        $user = JsonHelper::encode($request->facts, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $system = implode("\n", array_filter([
             'Du erklärst Kennzahlen/Fehlercodes verständlich und gibst eine kurze, konkrete Handlungsempfehlung (Sprache: ' . $request->language . ').',
             'VERBINDLICH: Stütze dich nur auf die übergebenen Werte; keine erfundenen Ursachen als Fakten darstellen (Hypothesen als solche kennzeichnen).',
             'Antworte NUR mit der Erklärung.',
-        ]);
+            $this->placeholderRule($user, (string) $request->question),
+        ]));
 
-        $user = JsonHelper::encode($request->facts, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         if ($request->question !== null) {
             $user .= "\n\nFrage: " . $request->question;
         }
@@ -137,6 +141,7 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
             ...$schemaLines,
             'Antworte NUR mit einem JSON-Objekt: je Zielfeld ein Objekt {"value": <string|null>, "confidence": <0-100>}.',
             'Nicht gefundene Felder: {"value": null, "confidence": 0}.',
+            ...array_filter([$this->placeholderRule($request->text)]),
         ]);
 
         $completion = $this->complete($system, $request->text, expectJson: true);
@@ -175,6 +180,7 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
                 ))
                 : null,
             'Antworte NUR mit der Übersetzung.',
+            $this->placeholderRule($request->text),
         ]));
 
         $completion = $this->complete($system, $request->text);
@@ -187,6 +193,20 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
             detectedSourceLanguage: null,
             usage: $completion->usage,
         );
+    }
+
+    /**
+     * Hinweis, wenn die Anfrage maskierte Werte enthält (MVP-1671): Nur ein
+     * unverändert übernommener Platzhalter kann zurückersetzt werden.
+     */
+    private function placeholderRule(string ...$texts): ?string {
+        foreach ($texts as $text) {
+            if (SensitiveDataMask::containsPlaceholder($text)) {
+                return 'VERBINDLICH: Platzhalter in eckigen Klammern wie [IBAN-1] oder [EMAIL-2] stehen für geschützte Werte — übernimm sie unverändert und erfinde keine Werte dafür.';
+            }
+        }
+
+        return null;
     }
 
     /** @param list<string> $rules */

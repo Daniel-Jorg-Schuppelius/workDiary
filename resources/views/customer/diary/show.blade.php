@@ -17,7 +17,7 @@
     <x-page-toolbar :title="$diary->title" :subtitle="optional($diary->start_at)->fdate()" :back="route('customer.diary.index')" :back-label="__('Auftragsbuch')" class="mb-4">
         @if ($diary->status)
             <x-slot:badges>
-                <x-status-badge size="sm" outline>{{ $diary->status->label() }}</x-status-badge>
+                <x-status-badge size="sm" outline>{{ $diary->status->customerLabel() }}</x-status-badge>
             </x-slot:badges>
         @endif
         <x-slot:actions>

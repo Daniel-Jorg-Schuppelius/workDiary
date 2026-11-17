@@ -427,6 +427,8 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\Finance\EbicsConnectionEvent::class,
         // MVP-1074: Journal des Kundeneingangs — Mandant über `customer_intakes`.
         \App\Models\Customer\CustomerIntakeEvent::class,
+        // Feature 197: Journal der Kundenfrist — Mandant über `customer_deadlines`.
+        \App\Models\Customer\CustomerDeadlineEvent::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

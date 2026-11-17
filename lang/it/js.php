@@ -84,6 +84,8 @@ return [
         'invalid_move' => 'Questo cambio di stato non è previsto nel flusso di lavoro dell\'ordine.',
         'not_allowed' => 'Non è autorizzato a eseguire questa azione sull\'ordine.',
         'handover_via_order' => 'Il collaudo richiede un protocollo firmato e viene eseguito direttamente nell\'ordine.',
+        // Prüfspalten und Prüfpflicht (Feature 198): Vorlage und Freigabe laufen im Auftrag.
+        'review_via_order' => 'La verifica interna passa dall\'ordine: lo apra per presentarlo alla verifica, approvarlo o porre una domanda.',
         'no_targets' => 'Al momento non è possibile alcuno spostamento consentito per questa scheda.',
     ],
     'entry_bar' => [

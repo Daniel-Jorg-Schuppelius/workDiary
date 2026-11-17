@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Invoicing;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition};
+use App\Enums\Invoicing\IncomingInvoiceRecognition;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\{Organization, User};
 use App\Notifications\Finance\IncomingInvoicesDigestNotification;
@@ -35,7 +35,7 @@ class IncomingInvoicesDigestCommand extends Command {
         $this->forEachOrganization(function (Organization $org): void {
             $open = IncomingEInvoice::query()
                 ->whereNull('supplier_id')->whereNull('customer_id')
-                ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value);
+                ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES);
             $openCount = (clone $open)->count();
             if ($openCount === 0) {
                 return;

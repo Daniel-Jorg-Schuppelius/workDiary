@@ -1,7 +1,7 @@
 ---
 title: "Gestionar plantillas de formularios"
 topic: forms.templates
-version: 3
+version: 4
 keywords:
     - crear formulario
     - editor de formularios
@@ -14,6 +14,8 @@ keywords:
     - activar formulario
     - archivar formulario
     - formularios personalizados
+    - secciones
+    - permitir complemento
 audience:
     - admin
     - geschaeftsfuehrung
@@ -65,6 +67,16 @@ los antiguos permanecen inalterados y evaluables. Ni siquiera
 Permisos: puede crear, editar, activar, archivar y eliminar plantillas
 de formulario quien tenga el permiso **Gestionar plantillas de
 formulario** (de forma predeterminada, los jefes de equipo).
+
+Formularios largos: estructure las plantillas largas con campos del tipo
+«Sección»; al rellenar, cada sección se convierte en una tarjeta con su
+progreso y, a partir de cuatro secciones, con índice; hasta seis
+preguntas, el formulario sigue siendo una sola tarjeta. En «Selección» y
+«Selección múltiple», **Permitir complemento** añade un campo adicional
+para una observación sobre la respuesta. Las selecciones con hasta seis
+opciones aparecen como botones; las más largas, como lista desplegable.
+Si cambia el tipo de respuesta de una pregunta mientras alguien rellena
+un borrador, su respuesta anterior se conserva allí como complemento.
 
 Consejo: el sistema deriva la asignación interna de un campo de su
 etiqueta. Por eso, mantenga las etiquetas de campo si desea comparar

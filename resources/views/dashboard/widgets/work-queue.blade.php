@@ -31,6 +31,9 @@
                     @if ($item->count > 1)
                         <x-status-badge size="xs" tone="neutral">{{ $item->count }}</x-status-badge>
                     @endif
+                    @if ($item->onBehalfOf !== null)
+                        <x-status-badge size="xs" tone="info">{{ __('work-queue.assignment.on_behalf_of', ['name' => $item->onBehalfOf]) }}</x-status-badge>
+                    @endif
                     <span class="text-xs text-muted">{{ $sources[$item->source]->label() }}@if ($item->dueAt !== null) · {{ $item->dueAt->fdate() }}@endif</span>
                 </li>
             @endforeach

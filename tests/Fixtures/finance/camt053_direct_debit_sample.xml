@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Erfundener CAMT.053-Auszug (Feature 207, MVP-1660): eine SEPA-Lastschrift mit
+  Gläubiger-ID (Beispiel-ID der Bundesbank) und Mandatsreferenz sowie eine
+  Gutschrift mit strukturierter Gläubigerreferenz (RF…), die keine Gläubiger-ID
+  ist. IBANs mit Bankleitzahl 99999999 und gültiger Prüfziffer.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+    <BkToCstmrStmt>
+        <GrpHdr>
+            <MsgId>TEST-CAMT-053-SEPA-DD</MsgId>
+            <CreDtTm>2026-03-31T23:59:00+02:00</CreDtTm>
+        </GrpHdr>
+        <Stmt>
+            <Id>STMT-DD-0001</Id>
+            <Acct>
+                <Id>
+                    <IBAN>DE27999999990000000025</IBAN>
+                </Id>
+                <Ccy>EUR</Ccy>
+            </Acct>
+            <Bal>
+                <Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+                <Amt Ccy="EUR">5000.00</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <Dt><Dt>2026-03-01</Dt></Dt>
+            </Bal>
+            <Bal>
+                <Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>
+                <Amt Ccy="EUR">3869.00</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <Dt><Dt>2026-03-31</Dt></Dt>
+            </Bal>
+            <Ntry>
+                <NtryRef>0001</NtryRef>
+                <Amt Ccy="EUR">1250.00</Amt>
+                <CdtDbtInd>DBIT</CdtDbtInd>
+                <Sts><Cd>BOOK</Cd></Sts>
+                <BookgDt><Dt>2026-03-03</Dt></BookgDt>
+                <ValDt><Dt>2026-03-03</Dt></ValDt>
+                <NtryDtls>
+                    <TxDtls>
+                        <Refs>
+                            <EndToEndId>MIETE-2026-03</EndToEndId>
+                            <MndtId>DEMO-MIETE-0001</MndtId>
+                        </Refs>
+                        <Amt Ccy="EUR">1250.00</Amt>
+                        <RltdPties>
+                            <Cdtr>
+                                <Nm>Muster Hausverwaltung GmbH</Nm>
+                                <Id>
+                                    <PrvtId>
+                                        <Othr>
+                                            <Id>DE98ZZZ09999999999</Id>
+                                            <SchmeNm><Prtry>SEPA</Prtry></SchmeNm>
+                                        </Othr>
+                                    </PrvtId>
+                                </Id>
+                            </Cdtr>
+                            <CdtrAcct>
+                                <Id><IBAN>DE49999999990000000017</IBAN></Id>
+                            </CdtrAcct>
+                        </RltdPties>
+                        <RmtInf>
+                            <Ustrd>Miete Büro Musterstraße 03/2026</Ustrd>
+                        </RmtInf>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+            <Ntry>
+                <NtryRef>0002</NtryRef>
+                <Amt Ccy="EUR">119.00</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <Sts><Cd>BOOK</Cd></Sts>
+                <BookgDt><Dt>2026-03-10</Dt></BookgDt>
+                <ValDt><Dt>2026-03-10</Dt></ValDt>
+                <NtryDtls>
+                    <TxDtls>
+                        <Refs>
+                            <EndToEndId>RE-2026-0042</EndToEndId>
+                        </Refs>
+                        <Amt Ccy="EUR">119.00</Amt>
+                        <RltdPties>
+                            <Dbtr>
+                                <Nm>Muster GmbH</Nm>
+                            </Dbtr>
+                            <DbtrAcct>
+                                <Id><IBAN>DE49999999990000000017</IBAN></Id>
+                            </DbtrAcct>
+                        </RltdPties>
+                        <RmtInf>
+                            <Strd>
+                                <CdtrRefInf>
+                                    <Ref>RF18539007547034</Ref>
+                                </CdtrRefInf>
+                            </Strd>
+                        </RmtInf>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+        </Stmt>
+    </BkToCstmrStmt>
+</Document>

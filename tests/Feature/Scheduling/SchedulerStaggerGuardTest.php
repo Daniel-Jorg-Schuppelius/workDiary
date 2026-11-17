@@ -31,6 +31,15 @@ use Tests\TestCase;
 final class SchedulerStaggerGuardTest extends TestCase {
     use RefreshDatabase;
 
+    protected function setUp(): void {
+        parent::setUp();
+        // Vorgabe: alle Jobs einschließlich der Plugin-Jobs; die Tests zur
+        // Vorprüfung schalten sie selbst ein (Befund 2026-11-12, Memo von
+        // PluginBinding aus einem App-Start ohne Tabelle).
+        config(['scheduler.skip_inactive_plugins' => false]);
+        PluginBinding::reset();
+    }
+
     public function test_offsets_stay_inside_their_slot_and_avoid_the_full_hour(): void {
         foreach (app(JobRegistry::class)->all() as $key => $definition) {
             foreach ([CadenceType::Hourly, CadenceType::EveryFifteenMinutes, CadenceType::EveryFiveMinutes, CadenceType::EveryThirtyMinutes] as $type) {

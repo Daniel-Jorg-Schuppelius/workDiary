@@ -36,6 +36,28 @@ final class SalesRetentionPolicies implements RetentionPolicyProvider {
                     app(\App\Services\Sales\LeadService::class)->anonymize($subject);
                 },
             ),
+            // Aufnahmeakten (Feature 200, MVP-1643): Frist je Akte aus der Regel
+            // ihres Pakets (GwG: fünf Jahre ab Schluss des Kalenderjahres, in dem
+            // die Geschäftsbeziehung endet, § 8 Abs. 4 GwG). Vorher werden die
+            // Fristen nachgeführt (Ende der Geschäftsbeziehung am Kunden); bis
+            // dahin übersteht die Akte die Anonymisierung des Leads. Legal Hold
+            // am Kunden sperrt über `customer_id`.
+            new RetentionPolicy(
+                area: 'lead_intakes',
+                modelClass: \App\Models\Sales\LeadIntake::class,
+                overdueQuery: function ($organization, $cutoff) {
+                    app(\App\Services\Sales\Intake\LeadIntakeRetention::class)->refreshOrganization($organization);
+
+                    return \App\Models\Sales\LeadIntake::query()
+                        ->withoutGlobalScopes()
+                        ->where('organization_id', $organization->id)
+                        ->whereNotNull('retention_until')
+                        ->where('retention_until', '<', \App\Support\Query\DateRange::day(\Carbon\CarbonImmutable::today()));
+                },
+                purge: function (\App\Models\Sales\LeadIntake $subject): void {
+                    app(\App\Services\Sales\Intake\LeadIntakeRetention::class)->purge($subject);
+                },
+            ),
         ];
     }
 }

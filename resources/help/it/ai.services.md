@@ -1,8 +1,11 @@
 ---
 title: "Servizi IA"
 topic: ai.services
-version: 5
+version: 6
 keywords:
+    - mascheramento
+    - accordo sul trattamento
+    - approvazione protezione dati
     - IA
     - AI
     - intelligenza artificiale
@@ -81,3 +84,36 @@ caratteri per le traduzioni. Una volta raggiunto, workDiary rifiuta con un
 messaggio ulteriori chiamate di questa famiglia fino a fine mese; i riquadri
 mostrano l'utilizzo. Se vuoto vale il predefinito del gestore; senza
 predefinito il consumo è illimitato.
+
+**Mascheramento:** Prima di ogni connessione cloud, workDiary sostituisce IBAN,
+partite IVA, numeri fiscali, codici di identificazione fiscale, indirizzi
+e-mail e numeri di telefono con segnaposto come `[IBAN-1]` o `[EMAIL-2]`.
+All’interno di una richiesta lo stesso valore riceve sempre lo stesso
+segnaposto. In bozze, riepiloghi, traduzioni e valori di campo riconosciuti
+workDiary reinserisce i valori prima della visualizzazione; il fornitore non li
+vede mai. Viene riconosciuto solo ciò che supera il controllo (cifre di
+controllo di IBAN, partita IVA e codice fiscale) – importi e date restano
+invariati. I nomi dei clienti della propria anagrafica vengono mascherati come
+sempre. Le connessioni locali vedono i valori in chiaro finché in **Protezione
+dei dati** «Mascherare anche davanti alle connessioni locali» è disattivato. Il
+registro di audit conta i valori mascherati per tipo, senza nominarli.
+
+**Approvazione sulla protezione dei dati:** Per ogni connessione,
+«Approvazione sulla protezione dei dati» registra che esiste un accordo sul
+trattamento dei dati (per i servizi cloud con il documento), che il
+trattamento avviene nell’UE e che il fornitore non addestra modelli con i Suoi
+dati – con data e persona che ha verificato. Per una connessione locale
+l’accordo serve solo se un fornitore gestisce il modello. L’approvazione vale
+per i mesi impostati in **Protezione dei dati** (predefinito 12); 30 giorni
+prima della scadenza la coda di lavoro lo ricorda. Approvazione e revoca
+compaiono nel registro di audit. Le approvazioni le concede chi ha il diritto
+«Concedere e revocare l’approvazione sulla protezione dei dati delle
+connessioni IA».
+
+**Solo connessioni approvate:** Se questo interruttore in **Protezione dei
+dati** è attivo, nessuna funzione IA usa una connessione senza approvazione
+valida; il test preliminare e il messaggio di errore indicano il motivo. Le
+nuove organizzazioni partono con l’interruttore attivo. Nelle organizzazioni
+già esistenti prima di questa versione resta disattivato finché un
+amministratore non lo attiva – fino ad allora le approvazioni in sospeso
+compaiono come attività nella coda di lavoro.

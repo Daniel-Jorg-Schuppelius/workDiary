@@ -70,6 +70,8 @@ final class RentalRequestWorkItemSource implements WorkItemSource {
                 url: route(self::ROUTE),
                 detail: CarbonFmt::fdatetime($request->starts_at) . ' – ' . CarbonFmt::fdatetime($request->ends_at),
                 dueAt: CarbonImmutable::instance($request->starts_at),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($request->updated_at),
             );
         }
     }

@@ -66,7 +66,9 @@ class DemoSeederServiceTest extends TestCase {
         // an, daher wird hier auf "mindestens" geprüft, nicht auf exakte Zahl.
         $this->assertGreaterThanOrEqual(3, Customer::query()->where('organization_id', $org->id)->count());
         $this->assertGreaterThanOrEqual(5, Project::query()->where('organization_id', $org->id)->count());
-        $this->assertSame(26, DiaryEntry::query()->where('organization_id', $org->id)->count());
+        // 26 Blueprint-Aufträge + 2 Periodenaufträge mit Prüfung und Merker (Feature 198, PeriodOrderDemoBlock)
+        // + 5 Aufträge des Leistungsplans (Feature 199, ServicePlanDemoBlock).
+        $this->assertSame(33, DiaryEntry::query()->where('organization_id', $org->id)->count());
         $this->assertGreaterThanOrEqual(3, TimeEntry::query()->where('organization_id', $org->id)->count());
         $this->assertSame(3, Material::query()->where('organization_id', $org->id)->count());
         $this->assertSame(1, Asset::query()->where('organization_id', $org->id)->count());
@@ -154,7 +156,9 @@ class DemoSeederServiceTest extends TestCase {
 
         $this->assertSame(3, $countsAfterReset['customers']);
         $this->assertSame(5, $countsAfterReset['projects']);
-        $this->assertSame(26, DiaryEntry::query()->where('organization_id', $org->id)->count());
+        // 26 Blueprint-Aufträge + 2 Periodenaufträge mit Prüfung und Merker (Feature 198, PeriodOrderDemoBlock)
+        // + 5 Aufträge des Leistungsplans (Feature 199, ServicePlanDemoBlock).
+        $this->assertSame(33, DiaryEntry::query()->where('organization_id', $org->id)->count());
         $this->assertSame(1, OpenIssue::query()
             ->where('organization_id', $org->id)
             ->where('subject_type', MorphMap::alias(DiaryEntry::class))

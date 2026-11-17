@@ -1,7 +1,7 @@
 ---
 title: "Clôture et analyses"
 topic: accounting.closing
-version: 3
+version: 4
 keywords:
     - clôture mensuelle
     - clôture annuelle
@@ -15,6 +15,10 @@ keywords:
     - export contrôle fiscal
     - répartition des coûts
     - export DATEV
+    - contrôle fiscal DATEV
+    - compte automatique
+    - BU 40
+    - numéro de TVA manquant
 audience:
     - admin
     - geschaeftsfuehrung
@@ -69,3 +73,19 @@ Dans la prévision de trésorerie, vous ajoutez des **postes planifiés** (par
 exemple des acomptes d'impôt ou des mensualités de crédit) ; chaque lundi,
 l'application enregistre l'état de la semaine, et « prévu/réel » le compare
 ensuite aux mouvements bancaires effectifs.
+
+**Contrôle fiscal avant l'export DATEV :** **Contrôler et exporter** dans la
+remise DATEV affiche d'abord les constats de la période, chacun avec un lien
+vers l'écriture. Les **erreurs** bloquent l'export : une ligne de produit ou de
+charge sans code de TVA alors que l'écriture porte de la TVA collectée ou
+déductible ; une livraison intracommunautaire ou une autoliquidation dans un
+autre pays de l'UE sans numéro de TVA du partenaire ; une écriture sur un
+compte désactivé. Les **remarques** sont à relire : enregistrements sur
+lesquels l'export lève l'automatisme du compte avec BU 40 (avec nombre et
+compte), un taux différent du code du compte automatique et l'autoliquidation
+nationale sans numéro de TVA. Le contrôle lit les comptes automatiques du plan
+comptable et ne modifie pas le fichier. Une erreur disparaît dès que
+l'écriture ou les données de base sont corrigées. Si elle est justifiée dans
+votre cas, une personne disposant du droit **Lever le contrôle fiscal avant
+l'export DATEV** la lève avec un motif ; la levée figure dans la chaîne de
+preuves de la comptabilité et ne vaut que pour les erreurs affichées.

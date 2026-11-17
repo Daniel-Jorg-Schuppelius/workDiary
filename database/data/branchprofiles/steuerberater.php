@@ -16,7 +16,11 @@ return [
     'description' => 'Steuerberatung: Finanzbuchführung, Lohn, Jahresabschluss, Steuererklärungen und Voranmeldungen mit Fristen und Vier-Augen-Freigaben.',
     // v2: Kommunikations-Domäne, EÜR, Kategorien und Tags nach der Profilseite (MVP-1509).
     // v3: Leistungsort-Vorgabe „Katalogleistung“ (§ 3a Abs. 4 UStG, MVP-1688); eigene Einstellungen bleiben.
-    'version' => 3,
+    // v4: Eintragsarten mit Pflicht-Periode für Fibu, Lohn, Voranmeldung, Steuererklärung und Abschluss (Feature 198, MVP-1634).
+    // v5: Kundenfristen aus dem Regelsatz Steuerberatung eingeschaltet (Feature 197, MVP-1631/1676).
+    // v6: Leistungsvorlagen für den Leistungsplan (Feature 199, MVP-1674).
+    // v7: Prüfpaket GwG der Aufnahmeakte eingeschaltet (Feature 200, MVP-1642).
+    'version' => 7,
     'settings' => ['invoicing.place_of_supply_kind' => 'catalog'],
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
     'nav_focus_default' => 'finance',
@@ -103,6 +107,44 @@ return [
             ['code' => 'elster', 'label' => 'ELSTER'],
             ['code' => 'behoerde', 'label' => 'Behörde'],
         ],
+    ],
+    // Feature 198 (MVP-1634): Eintragsarten der Aufträge mit Pflicht-Periode (Profilseite § 4).
+    // Die Installation legt nur fehlende an; vorhandene Eintragsarten bleiben, wie sie sind.
+    'entry_type_rules' => [
+        ['slug' => 'fibu', 'label' => 'Finanzbuchführung', 'icon' => 'account_balance', 'requires_period' => ['month']],
+        ['slug' => 'lohn', 'label' => 'Lohn', 'icon' => 'payments', 'requires_period' => ['month']],
+        ['slug' => 'voranmeldung', 'label' => 'Voranmeldung', 'icon' => 'event_upcoming', 'requires_period' => ['month', 'quarter']],
+        ['slug' => 'steuererklaerung', 'label' => 'Steuererklärung', 'icon' => 'description', 'requires_period' => ['year']],
+        ['slug' => 'abschluss', 'label' => 'Jahresabschluss', 'icon' => 'summarize', 'requires_period' => ['year']],
+    ],
+    // Feature 197: Steuer- und Beitragstermine der Kunden (USt-VA, Sondervorauszahlung, LSt-Anmeldung,
+    // ZM, Jahreserklärungen je Leistung, Sozialversicherung bei der Leistung `lohn`); ergänzt nur.
+    'deadline_rule_sets' => ['tax_advisory'],
+    // Feature 200 (MVP-1642): Aufnahmeakte mit Prüfpaket Geldwäschegesetz (Klasse GwgIntakeCheckPackage);
+    // ohne Annahme kein Umwandeln des Leads. Ergänzt nur.
+    'intake_packages' => ['gwg'],
+    // Feature 199 (MVP-1674): Leistungsvorlagen des Leistungsplans — Erklärungen je Steuerart,
+    // Jahresabschluss bzw. EÜR, Fibu, Lohn und Umsatzsteuer-Voranmeldung monatlich. Ergänzt nur;
+    // der Dialog „Kunde anlegen“ schlägt sie als Leistungsumfang vor.
+    'service_catalog' => [
+        ['entry_type' => 'steuererklaerung', 'product_group' => 'einkommensteuer', 'period_kind' => 'year', 'mandatory' => true, 'label' => 'Einkommensteuererklärung',
+            'label_i18n' => ['en' => 'Income tax return', 'es' => 'Declaración del impuesto sobre la renta', 'fr' => 'Déclaration d’impôt sur le revenu', 'it' => 'Dichiarazione dei redditi']],
+        ['entry_type' => 'steuererklaerung', 'product_group' => 'koerperschaftsteuer', 'period_kind' => 'year', 'mandatory' => true, 'label' => 'Körperschaftsteuererklärung',
+            'label_i18n' => ['en' => 'Corporate income tax return', 'es' => 'Declaración del impuesto sobre sociedades', 'fr' => 'Déclaration d’impôt sur les sociétés', 'it' => 'Dichiarazione dell’imposta sulle società']],
+        ['entry_type' => 'steuererklaerung', 'product_group' => 'gewerbesteuer', 'period_kind' => 'year', 'mandatory' => true, 'label' => 'Gewerbesteuererklärung',
+            'label_i18n' => ['en' => 'Trade tax return', 'es' => 'Declaración del impuesto municipal sobre actividades económicas', 'fr' => 'Déclaration de taxe professionnelle', 'it' => 'Dichiarazione dell’imposta comunale sulle attività']],
+        ['entry_type' => 'steuererklaerung', 'product_group' => 'umsatzsteuer', 'period_kind' => 'year', 'mandatory' => true, 'label' => 'Umsatzsteuererklärung',
+            'label_i18n' => ['en' => 'Annual VAT return', 'es' => 'Declaración anual del IVA', 'fr' => 'Déclaration annuelle de TVA', 'it' => 'Dichiarazione IVA annuale']],
+        ['entry_type' => 'abschluss', 'product_group' => 'jahresabschluss', 'period_kind' => 'year', 'mandatory' => true, 'label' => 'Jahresabschluss',
+            'label_i18n' => ['en' => 'Annual accounts', 'es' => 'Cierre anual', 'fr' => 'Bilan annuel', 'it' => 'Bilancio annuale']],
+        ['entry_type' => 'abschluss', 'product_group' => 'eur', 'period_kind' => 'year', 'mandatory' => true, 'label' => 'Einnahmenüberschussrechnung',
+            'label_i18n' => ['en' => 'Cash-basis profit statement', 'es' => 'Cuenta de ingresos y gastos', 'fr' => 'Compte recettes-dépenses', 'it' => 'Rendiconto entrate-uscite']],
+        ['entry_type' => 'fibu', 'period_kind' => 'month', 'mandatory' => true, 'label' => 'Finanzbuchführung',
+            'label_i18n' => ['en' => 'Bookkeeping', 'es' => 'Contabilidad financiera', 'fr' => 'Comptabilité', 'it' => 'Contabilità']],
+        ['entry_type' => 'lohn', 'period_kind' => 'month', 'mandatory' => true, 'label' => 'Lohnabrechnung',
+            'label_i18n' => ['en' => 'Payroll', 'es' => 'Nóminas', 'fr' => 'Paie', 'it' => 'Paghe']],
+        ['entry_type' => 'voranmeldung', 'product_group' => 'umsatzsteuer', 'period_kind' => 'month', 'mandatory' => true, 'label' => 'Umsatzsteuer-Voranmeldung',
+            'label_i18n' => ['en' => 'VAT advance return', 'es' => 'Declaración previa del IVA', 'fr' => 'Déclaration de TVA', 'it' => 'Liquidazione IVA periodica']],
     ],
     'classification_requirements' => [
         [

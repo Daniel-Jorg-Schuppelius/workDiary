@@ -110,14 +110,14 @@
             </x-card>
 
             <x-card :title="__('accounting.datev.title')" icon="account_tree" :subtitle="__('accounting.datev.subtitle')">
-                <form method="POST" action="{{ route('finance.accounting.closing.datev') }}" class="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                    @csrf
+                {{-- Erst die Steuerprüfung (Feature 207, MVP-1661), dann der Export von der Prüfseite. --}}
+                <form method="GET" action="{{ route('finance.accounting.closing.datev-check') }}" class="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                     <x-date-range layout="split" from-name="from" to-name="to"
                                   :from-label="__('accounting.ledger.column.from')"
                                   :to-label="__('accounting.ledger.column.to')"
                                   :from="now()->startOfYear()->toDateString()"
                                   :to="now()->toDateString()" />
-                    <x-button type="submit">{{ __('accounting.datev.action.export') }}</x-button>
+                    <x-button type="submit">{{ __('accounting.datev.action.check') }}</x-button>
                 </form>
                 <p class="mt-2 text-xs text-muted">{{ __('accounting.datev.hint') }}</p>
             </x-card>

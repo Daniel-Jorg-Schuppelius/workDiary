@@ -188,6 +188,14 @@
         @endcan
     </x-card>
 
+    {{-- Merker für die nächste Periode (Feature 201, MVP-1646): je offener wiederkehrender Pflicht; Reihe = Vertrag × Pflichtart. --}}
+    @foreach ($contract->obligations as $obligation)
+        @if ($obligation->status === \App\Enums\Contract\ContractObligationStatus::Open && $obligation->carryForwardSeries() !== null)
+            <x-carry-forward-notes :subject="$obligation" :anchor="'carry-forward-' . $obligation->sqid"
+                                   :subtitle="$obligation->kind->label() . ' · ' . $obligation->title . ' · ' . $obligation->due_on->fdate()" />
+        @endif
+    @endforeach
+
     {{-- Unterzeichnung (Feature 157, MVP-822): nur bei AVV/NDA ($signingRevisions sonst null). --}}
     @if ($signingRevisions !== null)
         @include('contracts.signing._panel', ['contract' => $contract, 'signingRevisions' => $signingRevisions])

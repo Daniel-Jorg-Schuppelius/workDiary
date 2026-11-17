@@ -288,6 +288,23 @@ return [
         ],
     ],
 
+    /*
+     * Datenschutz der Verbindungen (MVP-1671/1672), je Organisation
+     * überschreibbar (Settings-Registry, Dialog „Datenschutz“ der KI-Dienste):
+     *  - require_approval: nur freigegebene Verbindungen nutzen (AVV, EU, kein
+     *    Training, geprüft). Vorgabe an für NEUE Organisationen; der Bestand
+     *    steht per Migration 2027_04_18_500100 ausdrücklich auf aus.
+     *  - approval_months: Gültigkeit einer Freigabe; 30 Tage vor Ablauf
+     *    erinnert der Arbeitsvorrat.
+     *  - mask_local: IBAN, USt-IdNr., Steuer-IDs, E-Mail und Telefon auch vor
+     *    lokalen Verbindungen maskieren (Cloud-Verbindungen immer).
+     */
+    'privacy' => [
+        'require_approval' => true,
+        'approval_months' => 12,
+        'mask_local' => false,
+    ],
+
     /* Ergebnis-Cache in Tagen (gleicher Input + Prompt-Version + Verbindung). */
     'cache_ttl_days' => 7,
 

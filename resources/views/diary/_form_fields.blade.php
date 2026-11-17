@@ -126,6 +126,60 @@
             </select>
             @error('priority')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
+
+        {{-- Periode (Feature 198, MVP-1634): Pflicht, wenn die Eintragsart sie verlangt; sonst nur bei vorhandenem Wert. --}}
+        @php
+            $periodSuggestions = $periodSuggestions ?? [];
+            $currentPeriod = old('period_key', $entry?->period_key?->key());
+        @endphp
+        <div class="fieldset" x-show="flags.requires_period || {{ $currentPeriod ? 'true' : 'false' }}" x-cloak>
+            <label class="fieldset-label" for="period_key">{{ __('diary.period.label') }}<span x-show="flags.requires_period"> *</span></label>
+            <input type="text" id="period_key" name="period_key" maxlength="10" autocomplete="off"
+                   value="{{ $currentPeriod }}"
+                   :list="'period-options-' + entryTypeId"
+                   placeholder="{{ __('diary.period.placeholder') }}"
+                   class="input input-bordered w-full @error('period_key') input-error @enderror">
+            @foreach ($periodSuggestions as $typeSqid => $suggestions)
+                <datalist id="period-options-{{ $typeSqid }}">
+                    @foreach ($suggestions as $suggestion)
+                        <option value="{{ $suggestion['key'] }}">{{ $suggestion['label'] }}</option>
+                    @endforeach
+                </datalist>
+            @endforeach
+            <p class="text-xs text-muted">{{ __('diary.period.hint') }}</p>
+            @error('period_key')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        @if (($productGroupOptions ?? collect())->isNotEmpty())
+            @php
+                $currentProductGroup = old('product_group', $entry?->productGroupCode());
+            @endphp
+            <div class="fieldset" x-show="hasEntryType" x-cloak>
+                <label class="fieldset-label" for="product_group">{{ __('diary.product_group.label') }}</label>
+                <select id="product_group" name="product_group" class="select select-bordered w-full @error('product_group') select-error @enderror">
+                    <option value="">—</option>
+                    @foreach ($productGroupOptions as $group)
+                        <option value="{{ $group->code }}" @selected($currentProductGroup === $group->code)>{{ $group->display_label }}</option>
+                    @endforeach
+                </select>
+                @error('product_group')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+        @endif
+
+        {{-- Benannte prüfende Person (Feature 198, MVP-1635), nur bei Eintragsarten mit Prüfpflicht. --}}
+        @if (($reviewerOptions ?? collect())->isNotEmpty())
+            <div class="fieldset" x-show="flags.requires_review" x-cloak>
+                <label class="fieldset-label" for="reviewer_user_id">{{ __('diary.review.reviewer_label') }}</label>
+                <select id="reviewer_user_id" name="reviewer_user_id" class="select select-bordered w-full @error('reviewer_user_id') select-error @enderror">
+                    <option value="">{{ __('diary.review.reviewer_any') }}</option>
+                    @foreach ($reviewerOptions as $u)
+                        <option value="{{ $u->sqid }}" @selected((string) old('reviewer_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $entry?->reviewer_user_id)) === $u->sqid)>{{ $u->name }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-muted">{{ __('diary.review.reviewer_hint') }}</p>
+                @error('reviewer_user_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+        @endif
     </x-form-group>
 @else
     <input type="hidden" name="entry_type_id" value="0">

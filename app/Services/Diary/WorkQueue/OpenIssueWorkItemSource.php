@@ -63,6 +63,8 @@ final class OpenIssueWorkItemSource implements WorkItemSource {
                 detail: $issue->severity->label(),
                 dueAt: $issue->due_at !== null ? CarbonImmutable::instance($issue->due_at) : null,
                 personal: true,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($issue->updated_at),
             );
         }
     }

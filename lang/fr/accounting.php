@@ -636,6 +636,63 @@ return [
             'already_assigned' => 'Le mouvement est déjà affecté à une pièce.',
         ],
     ],
+    // Kontierungsvorschläge für Bankumsätze ohne Beleg (Feature 207, MVP-1660).
+    'suggestions' => [
+        'title' => 'Propositions d\'imputation',
+        'subtitle' => 'Opérations bancaires sans pièce que votre organisation a déjà comptabilisées ainsi.',
+        'hint' => 'Seul ce que votre organisation a déjà comptabilisé ainsi est proposé — reconnu par la référence du mandat, l\'identifiant créancier, l\'IBAN de la contrepartie ou les mots-clés du libellé, dans cet ordre. L\'écriture la plus récente détermine la proposition ; une correction s\'applique la fois suivante. Seul ce que vous confirmez est comptabilisé.',
+        'empty' => 'Aucune opération bancaire ouverte avec une proposition à confirmer.',
+        'reason' => 'Comptabilisé ainsi :count fois, la dernière en :month, :basis',
+        'reason_mixed' => ':count sur :total écritures similaires ainsi, la dernière en :month, :basis',
+        'deviates' => 'Le montant diffère de plus de 10 % par rapport à la dernière fois (dernier : :last).',
+        'basis' => [
+            'mandate' => 'même référence de mandat',
+            'creditor' => 'même identifiant créancier',
+            'iban' => 'même IBAN de la contrepartie',
+            'keywords' => 'mêmes mots-clés dans le libellé',
+        ],
+        'strength' => [
+            'strong' => 'Proposition forte',
+            'medium' => 'Proposition moyenne',
+            'weak' => 'Proposition faible',
+        ],
+        'warning' => [
+            'account_inactive' => 'Le compte de la dernière écriture est désactivé — veuillez en choisir un autre.',
+            'tax_code_invalid' => 'Le code de TVA de la dernière écriture n\'est pas valable à la date comptable — veuillez vérifier.',
+        ],
+        'dialog' => [
+            'title' => 'Proposition tirée de vos écritures précédentes',
+        ],
+        'kpi' => [
+            'groups' => 'Groupes à confirmer',
+            'singles' => 'À vérifier une à une',
+            'without' => 'Ouvertes sans proposition',
+        ],
+        'column' => [
+            'date' => 'Date comptable',
+            'counterparty' => 'Contrepartie et libellé',
+            'booking' => 'Aperçu de l\'écriture',
+            'suggestion' => 'Proposition',
+        ],
+        'preview' => [
+            'credit' => 'Banque à :account',
+            'debit' => ':account à banque',
+        ],
+        'singles' => [
+            'title' => 'Vérifier une à une',
+            'subtitle' => 'Montant différent ou remarque sur la proposition — comptabilisez ces opérations une à une dans la boîte de dialogue préremplie.',
+        ],
+        'action' => [
+            'open' => 'Propositions d\'imputation',
+            'confirm_group' => 'Comptabiliser l\'opération|Comptabiliser les :count opérations',
+        ],
+        'confirm' => [
+            'group' => 'Comptabiliser cette opération comme indiqué ?|Comptabiliser les :count opérations comme indiqué ?',
+        ],
+        'flash' => [
+            'confirmed' => 'Comptabilisées : :posted, soumises à validation : :submitted, ignorées : :skipped.',
+        ],
+    ],
     // Offener Posten strittig (MVP-1559).
     'dispute' => [
         'title' => 'Marquer le poste comme litigieux',
@@ -1191,6 +1248,61 @@ return [
         'hint' => 'Généré à partir des écritures comptabilisées — non redérivé des pièces.',
         'action' => [
             'export' => 'Exporter',
+            'check' => 'Contrôler et exporter',
+        ],
+    ],
+
+    // Steuerprüfung vor dem DATEV-Export (Feature 207, MVP-1661).
+    'datev_check' => [
+        'title' => 'Contrôle fiscal avant l\'export DATEV',
+        'subtitle' => 'Période :from – :to',
+        'hint' => 'Vérifie les comptes et codes de TVA par rapport aux comptes automatiques du plan comptable avant l\'écriture du lot. Le contrôle ne modifie pas le fichier d\'export. Les erreurs bloquent l\'export jusqu\'à leur correction ou leur levée motivée ; les remarques sont à relire.',
+        'counts' => ':errors erreurs · :hints remarques',
+        'clean' => 'Aucun constat — le lot peut être exporté.',
+        'blocked' => 'L\'export est bloqué : :count erreurs ne sont ni corrigées ni levées.',
+        'released_badge' => 'Levée',
+        'column' => [
+            'severity' => 'Type',
+            'finding' => 'Constat',
+            'reference' => 'Écriture',
+        ],
+        'severity' => [
+            'error' => 'Erreur',
+            'hint' => 'Remarque',
+        ],
+        'message' => [
+            'missing_tax_code' => 'Ligne sur :account sans code de TVA alors que l\'écriture porte de la TVA sur le compte :tax_account.',
+            'missing_tax_code_batch' => 'Pièce :ref : taux :rate % sans clé de TVA sur le compte :account, qui n\'est pas un compte automatique.',
+            'missing_vat_id' => 'Code :code (:name) sans numéro de TVA du partenaire.',
+            'missing_vat_id_domestic' => 'Code :code (:name) sans numéro de TVA du partenaire — en autoliquidation nationale, le numéro fiscal suffit ; veuillez vérifier.',
+            'missing_vat_id_batch' => 'Pièce :ref : livraison intracommunautaire exonérée ou autoliquidation sans numéro de TVA du client.',
+            'missing_vat_id_batch_domestic' => 'Pièce :ref : autoliquidation nationale, client sans numéro de TVA — le numéro fiscal suffit ; veuillez vérifier.',
+            'inactive_account' => 'Le compte :account est désactivé.',
+            'automatic_suspended' => ':count enregistrements lèvent l\'automatisme sur le compte :account avec BU 40.',
+            'rate_mismatch' => 'Le compte :account porte :automatic (:automatic_rate %), la ligne :code (:rate %).',
+            'rate_mismatch_batch' => 'Pièce :ref : taux :rate % sur le compte automatique :account à :automatic_rate %.',
+        ],
+        'reference' => [
+            'journal' => 'Journal :no',
+            'document' => 'Pièce :ref',
+        ],
+        'action' => [
+            'export' => 'Exporter',
+            'release' => 'Lever avec motif',
+            'back' => 'Retour à la clôture',
+        ],
+        'release' => [
+            'title' => 'Lever les erreurs avec un motif',
+            'hint' => 'Certains cas sont corrects même si le contrôle les signale, par exemple un cas particulier du cabinet. La levée vaut pour les erreurs affichées et est journalisée avec votre motif ; une nouvelle erreur bloque à nouveau.',
+            'reason' => 'Motif',
+            'no_permission' => 'La levée requiert le droit « Lever le contrôle fiscal avant l\'export DATEV ».',
+        ],
+        'flash' => [
+            'released' => ':count erreurs levées avec motif.',
+            'nothing_to_release' => 'Il n\'y a aucune erreur ouverte à lever.',
+        ],
+        'error' => [
+            'blocked' => 'L\'export DATEV est bloqué : le contrôle fiscal signale des erreurs ni corrigées ni levées.',
         ],
     ],
 

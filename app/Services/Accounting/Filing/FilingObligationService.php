@@ -16,6 +16,7 @@ use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, VatFilingIn
 use App\Models\Accounting\{AccountingFilingObligation, AccountingProfile};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\VatFilingProfileResolver;
+use App\Services\Calendar\Filing\FilingDeadlineCalculator;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -97,7 +98,7 @@ class FilingObligationService {
             $expected[] = [
                 'kind' => FilingObligationKind::VatAdvance,
                 'period_key' => $period->key,
-                'due_on' => $this->deadlines->vatAdvance($organization, $period),
+                'due_on' => $this->deadlines->vatAdvance($this->profile->filingProfile($organization, $period->to), $period->periodKey()),
             ];
         }
 
@@ -107,7 +108,7 @@ class FilingObligationService {
             $expected[] = [
                 'kind' => FilingObligationKind::Recapitulative,
                 'period_key' => 'ZM-' . $period->key,
-                'due_on' => $this->deadlines->recapitulative($period),
+                'due_on' => $this->deadlines->recapitulative($this->profile->filingProfile($organization, $period->to), $period->periodKey()),
             ];
         }
 
@@ -117,7 +118,7 @@ class FilingObligationService {
             $expected[] = [
                 'kind' => FilingObligationKind::SpecialPrepayment,
                 'period_key' => sprintf('%d-SVZ', $year),
-                'due_on' => $this->deadlines->specialPrepayment($year),
+                'due_on' => $this->deadlines->specialPrepayment($this->profile->filingProfile($organization, CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year, 2, 10))), $year),
             ];
         }
 
@@ -127,7 +128,7 @@ class FilingObligationService {
             $expected[] = [
                 'kind' => FilingObligationKind::AnnualReturn,
                 'period_key' => sprintf('%d-J', $year),
-                'due_on' => $this->deadlines->annualReturn($year, $this->taxAdvised()),
+                'due_on' => $this->deadlines->annualReturn($this->profile->filingProfile($organization, CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year, 12, 31)), $this->taxAdvised()), $year),
             ];
         }
 

@@ -110,6 +110,24 @@ final class HolidayRegions {
         return array_merge(...array_map(array_keys(...), array_values(self::REGIONS)));
     }
 
+    /**
+     * Regionen eines Landes ohne die landesweite Auswahl, in der aktiven
+     * Sprache — etwa die 16 Bundesländer für Finanzamt und Einzugsstelle
+     * (Feature 197): [Provider-Pfad => Anzeigename].
+     *
+     * @return array<string, string>
+     */
+    public static function subdivisions(string $country): array {
+        $out = [];
+        foreach (self::REGIONS[$country] ?? [] as $provider => $key) {
+            if (str_contains($provider, '\\')) {
+                $out[$provider] = (string) __('holidays.region.' . $key);
+            }
+        }
+
+        return $out;
+    }
+
     public static function isValid(string $provider): bool {
         return in_array($provider, self::providers(), true);
     }

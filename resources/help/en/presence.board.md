@@ -1,8 +1,11 @@
 ---
 title: "Current presence"
 topic: presence.board
-version: 1
+version: 2
 keywords:
+    - Do not disturb
+    - Briefly away
+    - My status
     - who is in
     - in out board
     - presence board
@@ -29,3 +32,15 @@ settings.
 
 For emergencies (evacuation) there is a separate, protected emergency
 attendance list with more detail.
+
+## My status
+
+Under **My status** you set how you can be reached right now: **Do not
+disturb**, **Briefly away** or **Out of the office**. “Briefly away” and “Out
+of the office” need an end – choose a duration or an exact time; “Do not
+disturb” can run without an end. The status appears next to your name on the
+board, in the chat’s direct message and in the person selection.
+
+Only your **current** status is stored: it ends at its end time, when you
+clock out or via **Reset status**. There is no history and no evaluation; you
+never give a reason. Nobody can set another person’s status.

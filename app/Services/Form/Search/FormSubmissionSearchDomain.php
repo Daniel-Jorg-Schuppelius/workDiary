@@ -50,6 +50,8 @@ final class FormSubmissionSearchDomain implements SearchDomain {
             return [];
         }
         $query = FormSubmission::query()
+            // Entwürfe (Feature 203) sind persönlich und haben keinen Absendezeitpunkt.
+            ->submitted()
             ->where('organization_id', $organizationId)
             ->with(['template', 'submitter'])
             ->whereHas('template', fn ($q) => $q->whereLikeEscaped('name', $term))
@@ -63,7 +65,7 @@ final class FormSubmissionSearchDomain implements SearchDomain {
             ->map(fn (FormSubmission $s) => [
                 'id' => $s->id,
                 'title' => $s->template->name ?? __('form.title.submissions') . ' #' . $s->id,
-                'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($s->submitted_at))
+                'subtitle' => ($s->submitted_at !== null ? CarbonFmt::fdate(CarbonFmt::orgTz($s->submitted_at)) : '—')
                     . ($s->submitter ? ' · ' . $s->submitter->name : ''),
                 'url' => route('form-submissions.show', $s),
             ])

@@ -85,6 +85,9 @@ class UserOffboardingService {
         'personnel_file_acknowledgements' => 'user_id',
         'comments' => 'user_id',
         'crisis_room_presences' => 'user_id',
+        // Lesebestätigungen der Pflichtlektüre (Feature 191, MVP-1666) — Muster
+        // der Kenntnisnahme in der Personalakte; sie hingen per CASCADE am Konto.
+        'knowledge_page_reads' => 'user_id',
     ];
 
     /**
@@ -236,17 +239,25 @@ class UserOffboardingService {
     }
 
     /**
-     * Überträgt je gewähltem Abschnitt an die Nachfolge.
+     * Überträgt je gewähltem Abschnitt an die Nachfolge — beim Austritt und bei
+     * der endgültigen Übergabe ohne Austritt (Feature 202, MVP-1648).
      *
      * @param  array<string, User>  $successors  Abschnittsschlüssel → Nachfolge
+     * @return array<string, array{successor_user_id: int, count: int}> übertragene Anzahl je Abschnitt
      */
-    public function handOver(User $member, array $successors, User $actor): void {
+    public function handOver(User $member, array $successors, User $actor): array {
+        $result = [];
         foreach ($this->handoverProviders() as $provider) {
             $successor = $successors[$provider->key()] ?? null;
             if ($successor instanceof User && $successor->id !== $member->id) {
-                $provider->handOver($member, $successor, $actor);
+                $result[$provider->key()] = [
+                    'successor_user_id' => (int) $successor->id,
+                    'count' => $provider->handOver($member, $successor, $actor),
+                ];
             }
         }
+
+        return $result;
     }
 
     /** @return list<OffboardingHandover> */

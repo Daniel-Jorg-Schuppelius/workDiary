@@ -66,6 +66,16 @@ class Vacation extends Model {
         'status' => VacationStatus::class,
     ];
 
+    protected static function booted(): void {
+        // Vertretung (Feature 202, MVP-1648): entfällt der Urlaub, endet die Vertretung aus ihm.
+        static::updated(static function (self $vacation): void {
+            if ($vacation->wasChanged('status') && in_array($vacation->status, [VacationStatus::Cancelled, VacationStatus::Rejected], true)) {
+                $actor = auth()->user();
+                app(\App\Services\Delegation\WorkDelegationService::class)->endForAbsence($vacation, $actor instanceof User ? $actor : null);
+            }
+        });
+    }
+
     // ── Relations ──────────────────────────────────────────────────────────
 
     /** @return BelongsTo<User, $this> */

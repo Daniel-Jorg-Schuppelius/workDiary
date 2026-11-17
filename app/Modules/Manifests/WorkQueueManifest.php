@@ -18,6 +18,7 @@ use App\Modules\Manifest;
 /**
  * Zentraler Arbeitsvorrat (Feature 179): Erweiterungspunkt `WorkItemSource`,
  * Liste und Dashboard-Kachel. Die Quellen melden die Fachmodule an.
+ * Liegezeit (MVP-1670): Kennzahl „ruhende Vorgänge“ der Leitungssicht.
  */
 final class WorkQueueManifest extends Manifest {
     public function code(): string {
@@ -49,5 +50,15 @@ final class WorkQueueManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            // Ruhende Vorgänge des Betrachters in der Leitungssicht (Feature 179/184, MVP-1670).
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\WorkQueue\Management\DormantWorkKpiSource::class,
+            ],
+        ];
     }
 }

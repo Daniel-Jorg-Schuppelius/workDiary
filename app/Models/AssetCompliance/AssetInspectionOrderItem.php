@@ -15,6 +15,8 @@ namespace App\Models\AssetCompliance;
 use App\Enums\AssetCompliance\AssetInspectionResult;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Contracts\PeriodicOccurrence;
+use App\Support\Period\PeriodKey;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -22,6 +24,10 @@ use Illuminate\Support\Carbon;
 /**
  * Prüfmittel eines Prüfauftrags (MVP-938) mit der Rückmeldung des
  * Dienstleisters; übernommen wird sie als Prüfereignis.
+ *
+ * Vorkommen der Merker für die nächste Periode (Feature 201, MVP-1646): Reihe
+ * ist die Prüfpflicht, Periode der Prüftag, sonst die Fälligkeit des Termins
+ * oder der Pflicht.
  *
  * @property int $id
  * @property int $organization_id
@@ -36,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $note
  * @property int|null $asset_inspection_event_id
  */
-class AssetInspectionOrderItem extends Model {
+class AssetInspectionOrderItem extends Model implements PeriodicOccurrence {
     use BelongsToOrganization;
     use HasAttachments;
     use HasSqid;
@@ -52,6 +58,22 @@ class AssetInspectionOrderItem extends Model {
     /** @return BelongsTo<AssetInspectionOrder, $this> */
     public function order(): BelongsTo {
         return $this->belongsTo(AssetInspectionOrder::class, 'asset_inspection_order_id');
+    }
+
+    public function carryForwardSeries(): ?string {
+        return $this->assignment?->carryForwardSeries();
+    }
+
+    public function carryForwardPeriod(): ?PeriodKey {
+        $assignment = $this->assignment;
+        $date = $this->performed_on ?? $this->schedule->due_on ?? $assignment?->next_due_on;
+
+        return $assignment !== null && $date !== null ? $assignment->carryForwardPeriodAt($date) : null;
+    }
+
+    /** @return BelongsTo<AssetInspectionSchedule, $this> */
+    public function schedule(): BelongsTo {
+        return $this->belongsTo(AssetInspectionSchedule::class, 'asset_inspection_schedule_id');
     }
 
     /** @return BelongsTo<Asset, $this> */

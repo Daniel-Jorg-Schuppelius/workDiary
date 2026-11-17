@@ -54,4 +54,8 @@ final class ClassifyRequest implements AiRequestInterface {
     public function estimatedUnits(): int {
         return $this->estimateTokens($this->text, implode(' ', $this->catalog));
     }
+
+    public function mapTexts(\Closure $map): static {
+        return new self($map($this->text), $this->catalog, $this->multiple, $this->language);
+    }
 }

@@ -66,6 +66,11 @@
         @endforeach
     </select>
 </x-filter-field>
+{{-- Periode (Feature 198): Schlüssel wie 2026, 2026-Q1, 2026-03. --}}
+<x-filter-field :label="__('diary.period.label')" for="{{ $idPrefix }}-period" class="min-w-32">
+    <input id="{{ $idPrefix }}-period" type="text" name="period" value="{{ $filters['period'] ?? '' }}" maxlength="10"
+           placeholder="{{ __('diary.period.placeholder') }}" class="input input-bordered input-sm w-full">
+</x-filter-field>
 <label class="flex shrink-0 items-center gap-2 cursor-pointer">
     <input type="checkbox" id="{{ $idPrefix }}-mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="toggle toggle-primary toggle-sm">
     <span class="text-sm text-base-content/75">{{ __('Nur meine') }}</span>

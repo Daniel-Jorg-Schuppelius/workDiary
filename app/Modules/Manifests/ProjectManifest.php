@@ -78,6 +78,14 @@ final class ProjectManifest extends Manifest {
                 \App\Services\Project\WorkQueue\TaskWorkItemSource::class,
                 \App\Services\Project\WorkQueue\ProjectTimeShortfallWorkItemSource::class,
             ],
+            // Vertretung (Feature 202): zugewiesene Aufgaben übernimmt die Vertretung.
+            \App\Services\Delegation\Contracts\DelegableWork::class => [
+                \App\Services\Project\WorkQueue\TaskWorkItemSource::class,
+            ],
+            // Endgültige Übergabe und Austritt (Feature 202/126): offene Aufgaben an eine Nachfolge.
+            \App\Services\Org\Contracts\OffboardingHandover::class => [
+                \App\Services\Project\Offboarding\AssignedTaskOffboardingHandover::class,
+            ],
             \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
                 \App\Services\Project\Management\ProjectTimeShortfallKpiSource::class,
             ],
@@ -92,6 +100,10 @@ final class ProjectManifest extends Manifest {
             ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Project\Import\ProjectSpec::class,
+            ],
+            // Offene Merker an wiederkehrenden Aufträgen (Feature 201, MVP-1646).
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Project\Cockpit\RecurringOrderCarryForwardCockpitPanel::class,
             ],
         ];
     }

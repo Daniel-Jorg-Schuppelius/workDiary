@@ -59,12 +59,38 @@
                     </li>
                 @endif
                 @foreach ($credentials as $cred)
-                    <li class="flex items-center justify-between py-2">
-                        <span class="flex items-center gap-2 text-sm"><x-icon :name="$cred->type->icon()" /> {{ $cred->type->label() }} <span class="text-muted">{{ $cred->label }}</span></span>
-                        <form method="POST" action="{{ route('account.2fa.credential.destroy', $cred) }}">
-                            @csrf @method('DELETE')
-                            <x-icon-btn icon="delete" tone="error" size="sm" type="submit" :label="__('Entfernen')" />
-                        </form>
+                    <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                        <span class="flex flex-wrap items-center gap-2 text-sm">
+                            <x-icon :name="$cred->type->icon()" /> {{ $cred->type->label() }} <span class="text-muted">{{ $cred->label }}</span>
+                            {{-- Feature 205 (MVP-1656): letzte Nutzung je Anmeldemittel --}}
+                            <span class="text-xs text-muted">{{ __('login_policy.passkey.last_used', ['date' => $cred->last_used_at ? \App\Support\Tz::toLocal($cred->last_used_at)?->translatedFormat('d.m.Y H:i') : '—']) }}</span>
+                        </span>
+                        <span class="flex flex-wrap items-center gap-2">
+                            @if ($cred->type === TwoFactorType::Webauthn)
+                                <form method="POST" action="{{ route('account.2fa.credential.update', $cred) }}" class="flex items-center gap-1">
+                                    @csrf @method('PATCH')
+                                    <input type="text" name="label" value="{{ $cred->label }}" maxlength="100" required
+                                           aria-label="{{ __('login_policy.passkey.name') }}" class="input input-xs input-bordered w-40">
+                                    <x-icon-btn icon="edit" size="sm" type="submit" :label="__('login_policy.passkey.rename')" />
+                                </form>
+                            @endif
+                            {{-- Entfernen nur mit erneuter Anmeldung (Passwort bzw. App-/Wiederherstellungscode). --}}
+                            <form method="POST" action="{{ route('account.2fa.credential.destroy', $cred) }}" class="flex items-center gap-1">
+                                @csrf @method('DELETE')
+                                @unless ($recentlyAuthenticated ?? false)
+                                    @if (auth()->user()->is_new_system)
+                                        <input type="password" name="current_password" autocomplete="current-password" required
+                                               aria-label="{{ __('login_policy.passkey.confirm_password') }}" placeholder="{{ __('login_policy.passkey.confirm_password') }}"
+                                               class="input input-xs input-bordered w-36">
+                                    @else
+                                        <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code"
+                                               aria-label="{{ __('App- oder Recovery-Code') }}" placeholder="{{ __('App- oder Recovery-Code') }}"
+                                               class="input input-xs input-bordered w-36">
+                                    @endif
+                                @endunless
+                                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" :label="__('Entfernen')" />
+                            </form>
+                        </span>
                     </li>
                 @endforeach
             </ul>
@@ -131,12 +157,22 @@
             <div class="rounded-box border border-base-300 p-4 space-y-3 md:col-span-2" data-webauthn-block>
                 <p class="flex items-center gap-2 font-semibold"><x-icon name="key" /> {{ __('Sicherheitsschlüssel / Passkey (FIDO2)') }}</p>
                 <p class="text-sm text-base-content/70">{{ __('Phishing-resistente Anmeldung mit Passkey, Smartphone oder Hardware-Schlüssel.') }}</p>
+                <p class="text-sm text-base-content/70">{{ __('login_policy.passkey.login_hint') }}</p>
+                @if ($passkeyRequired ?? false)
+                    {{-- Feature 205 (MVP-1656): Passkey-Pflicht der Rolle --}}
+                    <p class="text-sm text-warning">{{ __('login_policy.passkey.required_hint') }}</p>
+                @endif
                 <p id="passkey-error" class="hidden text-sm text-error"></p>
-                <x-icon-btn icon="key" tone="primary" size="sm" show-label
-                            data-webauthn-register
-                            data-options="{{ route('account.2fa.webauthn.options') }}"
-                            data-target="{{ route('account.2fa.webauthn.register') }}"
-                            data-error="passkey-error">{{ __('Passkey hinzufügen') }}</x-icon-btn>
+                <div class="flex flex-wrap items-center gap-2">
+                    <input type="text" id="passkey-label" maxlength="100" placeholder="{{ __('login_policy.passkey.name_placeholder') }}"
+                           aria-label="{{ __('login_policy.passkey.name') }}" class="input input-sm input-bordered w-56">
+                    <x-icon-btn icon="key" tone="primary" size="sm" show-label
+                                data-webauthn-register
+                                data-label-input="passkey-label"
+                                data-options="{{ route('account.2fa.webauthn.options') }}"
+                                data-target="{{ route('account.2fa.webauthn.register') }}"
+                                data-error="passkey-error">{{ __('Passkey hinzufügen') }}</x-icon-btn>
+                </div>
             </div>
         </div>
     </x-card>

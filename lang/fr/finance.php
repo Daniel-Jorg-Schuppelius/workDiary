@@ -90,6 +90,7 @@ return [
         'failed' => 'Échoué',
         'voided' => 'Annulé',
         'cancelled' => 'Extourné',
+        'tax_check_released' => 'Contrôle fiscal levé avec motif',
     ],
 
     'hint' => [

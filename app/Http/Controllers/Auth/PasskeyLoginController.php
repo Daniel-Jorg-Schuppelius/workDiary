@@ -10,10 +10,11 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
+use App\Http\Controllers\Auth\Concerns\{CompletesLogin, ResolvesWorkMode};
 use App\Http\Controllers\Controller;
 use App\Models\Auth\SsoConnection;
 use App\Models\Platform\User;
+use App\Services\Auth\LoginPolicy\LoginPolicyGate;
 use App\Services\Auth\WebAuthnService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -31,8 +32,11 @@ use Illuminate\Support\Facades\Auth;
  *   (Break-Glass-Semantik wie im LoginController).
  * - Optionen sind einmalig (Session-pull) und tragen die Challenge; die
  *   Signaturprüfung läuft über den geteilten {@see WebAuthnService}.
+ * - Die Anmelderichtlinie der Organisation (Feature 205, MVP-1656) gilt wie
+ *   bei jedem anderen Anmeldeweg; ein Passkey zählt als zwei Faktoren.
  */
 class PasskeyLoginController extends Controller {
+    use CompletesLogin;
     use ResolvesWorkMode;
 
     public function __construct(private readonly WebAuthnService $webauthn) {}
@@ -86,8 +90,18 @@ class PasskeyLoginController extends Controller {
             return response()->json(['message' => __('Sicherheitsschlüssel ungültig.')], 422);
         }
 
+        // Anmelderichtlinie der Organisation (Feature 205): Notaus, Zeitfenster,
+        // Netz und Gerätefreigabe gelten auch ohne Passwort.
+        $policy = app(LoginPolicyGate::class)->checkLogin($user, $request, 'passkey');
+        if (! $policy->allowed()) {
+            return response()->json(['message' => $policy->message()], 403);
+        }
+
         Auth::login($user);
         $request->session()->regenerate();
+
+        // Break-Glass-Nachweis wie beim Passwort- und 2FA-Weg (DoD MVP-120).
+        $this->auditBreakGlassIfApplicable($user);
 
         return response()->json(['redirect' => $this->applyWorkModeAndRedirect($request, $user)->getTargetUrl()]);
     }

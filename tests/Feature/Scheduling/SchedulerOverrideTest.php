@@ -28,6 +28,11 @@ class SchedulerOverrideTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->service = app(SchedulerOverrideService::class);
+        // Plugin-Jobs (toggl:import) ohne Vorprüfung: Sonst hängt das Ergebnis
+        // daran, ob PluginBinding beim ersten App-Start noch „no such table“
+        // sah und sich jedes Plugin als aktiv merkte (Befund 2026-11-12).
+        config(['scheduler.skip_inactive_plugins' => false]);
+        \App\Scheduling\PluginBinding::reset();
     }
 
     /** @return array<string, string> command => cron expression */

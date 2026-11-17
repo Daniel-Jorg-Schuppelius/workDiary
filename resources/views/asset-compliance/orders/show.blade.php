@@ -75,5 +75,11 @@
             </form>
         @endif
     </x-card>
+
+    {{-- Merker für die nächste Periode (Feature 201, MVP-1646): je Position; Reihe = Prüfpflicht des Prüfmittels. --}}
+    @foreach ($order->items as $item)
+        <x-carry-forward-notes :subject="$item" :anchor="'carry-forward-' . $item->sqid"
+                               :subtitle="trim(($item->asset?->name ?? '—') . ' · ' . ($item->assignment?->profile?->name ?? ''), ' ·')" />
+    @endforeach
 </x-index-page>
 @endsection

@@ -19,6 +19,7 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
 use App\Services\Classification\ClassificationRequirementValidator;
+use App\Services\Diary\Review\OrderReviewChain;
 use App\Services\Timesheet\Stopwatch;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -27,9 +28,13 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class OrderService {
+    /** Aktionen der prüfenden Person (Feature 198): nie durch die Person, die vorgelegt hat. */
+    private const array REVIEW_DECISIONS = ['approveReview', 'queryReview', 'approveAndComplete'];
+
     public function __construct(
         private readonly ClassificationRequirementValidator $requirements,
         private readonly Stopwatch $stopwatch,
+        private readonly OrderReviewChain $reviewChain,
     ) {}
 
     public function accept(DiaryEntry $entry, User $actor): DiaryEntry {
@@ -92,6 +97,125 @@ class OrderService {
         \App\Events\Diary\OrderCompleted::dispatch((int) $completed->organization_id, (int) $completed->id);
 
         return $completed;
+    }
+
+    /**
+     * Zur Prüfung vorlegen (Feature 198, MVP-1635): nur Aufträge mit
+     * Prüfpflicht, aus „In Bearbeitung“. Die Vorlage erscheint im
+     * Genehmigungs-Eingang der prüfenden Personen.
+     */
+    public function submitForReview(DiaryEntry $entry, User $actor, ?string $note = null): DiaryEntry {
+        return DB::transaction(function () use ($entry, $actor, $note): DiaryEntry {
+            $submitted = $this->transition($entry, $actor, 'submitReview', Status::InReview, [
+                'review_submitted_at' => CarbonImmutable::now(),
+                'review_submitter_user_id' => $actor->id,
+            ], StringHelper::trimToNull($note));
+            $this->reviewChain->open($submitted);
+
+            return $submitted;
+        });
+    }
+
+    /**
+     * Arbeit fertig außerhalb des Auftragsdialogs (Fahrt, Rundgang, Tourstopp):
+     * ein prüfpflichtiger Auftrag wird vorgelegt statt erledigt (Feature 198).
+     * Ein geplanter, angenommener oder wartender Auftrag läuft dafür über
+     * Annehmen, Beginnen bzw. Fortsetzen; steht er schon in der Prüfung, ist er
+     * abgeschlossen oder storniert, bleibt er, wie er ist. Aufträge ohne
+     * Prüfpflicht schließt der Aufrufer weiter selbst ab.
+     */
+    public function submitFinishedWork(DiaryEntry $entry, User $actor, ?string $note = null): DiaryEntry {
+        return DB::transaction(function () use ($entry, $actor, $note): DiaryEntry {
+            $entry = $this->startFromTimeEntry($entry, $actor);
+
+            return $entry->status === Status::InProgress && (bool) $entry->requires_review
+                ? $this->submitForReview($entry, $actor, $note)
+                : $entry;
+        });
+    }
+
+    /** Vorlage zurückziehen: der Auftrag ist wieder in Bearbeitung. */
+    public function withdrawReview(DiaryEntry $entry, User $actor): DiaryEntry {
+        return $this->transition($entry, $actor, 'withdrawReview', Status::InProgress, []);
+    }
+
+    /** Freigeben: die Bearbeitung schließt danach ab (Übermittlung, Versand). */
+    public function approveReview(DiaryEntry $entry, User $actor, ?string $note = null): DiaryEntry {
+        $note = StringHelper::trimToNull($note);
+
+        return DB::transaction(function () use ($entry, $actor, $note): DiaryEntry {
+            $approved = $this->transition($entry, $actor, 'approveReview', Status::ReviewApproved, [], $note);
+            $this->reviewChain->decide($approved, $actor, 'approved', $note);
+
+            return $approved;
+        });
+    }
+
+    /** Rückfrage mit Pflichttext: der Ball liegt wieder bei der Bearbeitung. */
+    public function queryReview(DiaryEntry $entry, User $actor, string $question): DiaryEntry {
+        $question = StringHelper::trimToNull($question);
+        if ($question === null) {
+            throw new InvalidArgumentException((string) __('diary.review.error.question_required'));
+        }
+
+        return DB::transaction(function () use ($entry, $actor, $question): DiaryEntry {
+            $queried = $this->transition($entry, $actor, 'queryReview', Status::ReviewQueried, [], $question);
+            $this->reviewChain->decide($queried, $actor, 'question', $question);
+
+            return $queried;
+        });
+    }
+
+    /** Nach einer Rückfrage erneut vorlegen. */
+    public function resubmitForReview(DiaryEntry $entry, User $actor, ?string $note = null): DiaryEntry {
+        return DB::transaction(function () use ($entry, $actor, $note): DiaryEntry {
+            $submitted = $this->transition($entry, $actor, 'resubmitReview', Status::InReview, [
+                'review_submitted_at' => CarbonImmutable::now(),
+                'review_submitter_user_id' => $actor->id,
+            ], StringHelper::trimToNull($note));
+            $this->reviewChain->open($submitted);
+
+            return $submitted;
+        });
+    }
+
+    /** Wo die Freigabe selbst der Abschluss ist: freigeben und abschließen in einem Schritt. */
+    public function approveAndComplete(DiaryEntry $entry, User $actor, string $summary): DiaryEntry {
+        return DB::transaction(function () use ($entry, $actor, $summary): DiaryEntry {
+            $approved = $this->transition($entry, $actor, 'approveAndComplete', Status::ReviewApproved, [], null);
+            $this->reviewChain->decide($approved, $actor, 'approved', null);
+
+            return $this->complete($approved, $actor, $summary);
+        });
+    }
+
+    /**
+     * Prüfpflicht am einzelnen Auftrag ab- oder wieder einschalten (eigenes
+     * Recht, auditiert). Nur vor der Vorlage: während der Prüfung und nach dem
+     * Abschluss bleibt sie, wie sie ist.
+     */
+    public function setReviewRequirement(DiaryEntry $entry, User $actor, bool $required, ?string $reason = null): DiaryEntry {
+        return DB::transaction(function () use ($entry, $actor, $required, $reason): DiaryEntry {
+            /** @var DiaryEntry $locked */
+            $locked = DiaryEntry::query()->lockForUpdate()->findOrFail($entry->id);
+            $status = $locked->status;
+            if (! in_array($status, [Status::Planned, Status::Accepted, Status::InProgress, Status::WaitingCustomer, Status::WaitingMaterial], true)) {
+                throw InvalidOrderTransitionException::reviewRequirementLocked($status);
+            }
+            if ((bool) $locked->requires_review === $required) {
+                return $locked;
+            }
+
+            $locked->forceFill(['requires_review' => $required])->save();
+            $locked->record($required ? 'order.reviewRequired' : 'order.reviewWaived', [], $actor, extra: [
+                'from_status' => $status->slug(),
+                'to_status' => $status->slug(),
+                'actor_kind' => 'user',
+                'note' => StringHelper::trimToNull($reason),
+            ]);
+
+            return $locked->refresh();
+        });
     }
 
     /**
@@ -188,8 +312,14 @@ class OrderService {
             $locked = DiaryEntry::query()->lockForUpdate()->findOrFail($entry->id);
             $from = $locked->status;
 
-            if (! in_array($action, $from->allowedActions(), true)) {
+            if (! in_array($action, $from->allowedActions((bool) $locked->requires_review), true)) {
                 throw InvalidOrderTransitionException::forAction($from, $this->actionLabel($action));
+            }
+            // Vier Augen (Feature 198): wer vorgelegt hat, gibt nicht frei und fragt nicht zurück.
+            if (in_array($action, self::REVIEW_DECISIONS, true)
+                && $actor !== null
+                && (int) $locked->review_submitter_user_id === (int) $actor->id) {
+                throw InvalidOrderTransitionException::ownReview();
             }
 
             // Pflichtklassifikationen vor dem Abschluss (MVP-795): ein
@@ -241,6 +371,12 @@ class OrderService {
             'handover' => (string) __('Abnahme starten'),
             'markInvoiced' => (string) __('Als berechnet markieren'),
             'cancel' => (string) __('Stornieren'),
+            'submitReview' => (string) __('diary.lifecycle.action.submit_review'),
+            'withdrawReview' => (string) __('diary.lifecycle.action.withdraw_review'),
+            'approveReview' => (string) __('diary.lifecycle.action.approve_review'),
+            'queryReview' => (string) __('diary.lifecycle.action.query_review'),
+            'resubmitReview' => (string) __('diary.lifecycle.action.resubmit_review'),
+            'approveAndComplete' => (string) __('diary.lifecycle.action.approve_and_complete'),
             default => $action,
         };
     }

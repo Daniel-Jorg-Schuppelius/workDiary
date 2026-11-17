@@ -39,6 +39,7 @@
             "/articles",
             "/assets",
             "/attendance",
+            "/aufnahmen",
             "/auslieferungen",
             "/ausschreibungen",
             "/ausschreibungs-radar",
@@ -118,10 +119,12 @@
             "/kanban",
             "/krisen",
             "/krisen/uebungen",
+            "/kundenfristen",
             "/leads",
             "/leasing",
             "/leasing/bericht",
             "/leasing/fristen",
+            "/leistungsplan",
             "/lernen/bewertungen",
             "/lernen/buchungen",
             "/lernen/fragen",
@@ -283,6 +286,7 @@
             "/admin/abrechnungsdaten",
             "/admin/access",
             "/admin/aenderungsverlauf",
+            "/admin/anmelderichtlinie",
             "/admin/automations",
             "/admin/branch-profiles",
             "/admin/branding",
@@ -360,7 +364,9 @@
             "/qualifications",
             "/shift-types",
             "/tags",
-            "/teams"
+            "/teams",
+            "/wuensche",
+            "/wuensche/neu"
         ],
         "sections_focus_finance": [
             "travel-expenses",
@@ -393,6 +399,7 @@
             "/articles",
             "/assets",
             "/attendance",
+            "/aufnahmen",
             "/auslieferungen",
             "/ausschreibungs-radar",
             "/auswertungen/ansichten",
@@ -513,7 +520,9 @@
             "/notifications",
             "/offline/changes",
             "/profile/api-tokens",
-            "/teams"
+            "/teams",
+            "/wuensche",
+            "/wuensche/neu"
         ],
         "sections_focus_finance": [
             "travel-expenses",
@@ -545,6 +554,8 @@
             "/diary/create",
             "/duties",
             "/genehmigungen",
+            "/kundenfristen",
+            "/leistungsplan",
             "/me/navigation/customize",
             "/qualifications/create",
             "/reports",
@@ -611,6 +622,7 @@
             "/admin/abrechnungsdaten",
             "/admin/access",
             "/admin/aenderungsverlauf",
+            "/admin/anmelderichtlinie",
             "/admin/automations",
             "/admin/branch-profiles",
             "/admin/branding",
@@ -673,7 +685,9 @@
             "/protocol-templates",
             "/qualifications",
             "/tags",
-            "/teams"
+            "/teams",
+            "/wuensche",
+            "/wuensche/neu"
         ],
         "sections_focus_finance": [
             "reports",
@@ -709,6 +723,7 @@
             "/admin/abrechnungsdaten",
             "/admin/access",
             "/admin/aenderungsverlauf",
+            "/admin/anmelderichtlinie",
             "/admin/automations",
             "/admin/branch-profiles",
             "/admin/branding",
@@ -769,7 +784,9 @@
             "/procedures",
             "/profile/api-tokens",
             "/protocol-templates",
-            "/tags"
+            "/tags",
+            "/wuensche",
+            "/wuensche/neu"
         ],
         "sections_focus_finance": [
             "work",
@@ -851,7 +868,9 @@
             "/me/einstieg",
             "/notifications",
             "/offline/changes",
-            "/profile/api-tokens"
+            "/profile/api-tokens",
+            "/wuensche",
+            "/wuensche/neu"
         ],
         "sections_focus_finance": [
             "work",
@@ -931,6 +950,7 @@
             "/admin/abrechnungsdaten",
             "/admin/access",
             "/admin/aenderungsverlauf",
+            "/admin/anmelderichtlinie",
             "/admin/automations",
             "/admin/branch-profiles",
             "/admin/branding",
@@ -991,7 +1011,9 @@
             "/procedures",
             "/profile/api-tokens",
             "/protocol-templates",
-            "/tags"
+            "/tags",
+            "/wuensche",
+            "/wuensche/neu"
         ],
         "sections_focus_finance": [
             "work",

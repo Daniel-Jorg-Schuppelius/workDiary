@@ -1,7 +1,7 @@
 ---
 title: "Analyse par type d'intervention"
 topic: reports.entry-type-analysis
-version: 4
+version: 5
 keywords:
     - prévu vs réalisé
     - écart prévu réalisé
@@ -34,3 +34,13 @@ La durée prévue d'un ordre est sa **Durée prévue (HH:MM)** ; si elle est vid
 la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du rendez-vous compte.
 
 La colonne **Principales causes** indique, par type de commande, les trois classifications les plus fréquentes issues du motif de reprise des temps saisis et de la cause racine des réclamations liées à la commande. Chaque commande compte une fois ; un clic affiche les temps et réclamations concernés. L’export CSV contient aussi cette colonne.
+
+## Délai de traitement par type de commande
+
+La section **Délai de traitement par type de commande** affiche, pour les
+commandes clôturées sur la période, la médiane des jours entre la création et
+la clôture, ainsi que le nombre de clôtures. Les commandes annulées ne
+comptent pas. Le filtre de personne ne s’applique volontairement pas ici : la
+mesure porte sur la commande, jamais sur la personne. La vue de direction
+affiche le même chiffre pour les types de commande les plus fréquents des
+douze derniers mois et renvoie ici.

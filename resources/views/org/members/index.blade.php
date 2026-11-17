@@ -116,6 +116,11 @@
                                     <x-icon-btn icon="logout" tone="warning" data-entry-modal-trigger
                                                 :href="route('org.members.offboard.dialog', $member)" :label="__('Austritt')" />
                                 @endif
+                                {{-- Feature 202 (MVP-1648): endgültige Übergabe der Arbeit ohne Austritt. --}}
+                                @if (! $member->isDeactivated() && $member->id !== auth()->id() && (! $member->isGlobalAdmin() || (auth()->user()?->isGlobalAdmin() ?? false)) && Gate::allows('handOver', [\App\Models\Delegation\WorkDelegation::class, $member]))
+                                    <x-icon-btn icon="move_up" data-entry-modal-trigger
+                                                :href="route('delegations.handover.dialog', $member)" :label="__('delegation.handover.action')" />
+                                @endif
                                 @if (($canDeleteMembers ?? false) && $mayManageMember && ! $actsOnAdmin)
                                     <x-action-form :action="route('org.members.destroy', $member)" method="DELETE"
                                           :confirm="__('Mitarbeiter wirklich entfernen? Nur ohne aufbewahrungspflichtige Nachweise möglich — sonst den Austritt nutzen.')"

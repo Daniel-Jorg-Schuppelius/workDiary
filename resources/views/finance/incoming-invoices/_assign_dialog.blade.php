@@ -46,6 +46,15 @@
         </div>
     @endif
 
+    {{-- GiroCode (MVP-1663): abweichende IBAN warnt schon hier; Sammel-PDF (MVP-1662): erst aufteilen. --}}
+    @include('finance.incoming-invoices._girocode_warning', ['incoming' => $incoming])
+    @if (\App\Services\Invoicing\Split\IncomingInvoiceSplitter::isHolding($incoming))
+        <div class="alert alert-warning alert-soft text-sm" role="status">
+            <x-icon name="call_split" />
+            <span>{{ __('incoming_pdf.split.gate') }}</span>
+        </div>
+    @endif
+
     <x-form-group :legend="__('Richtung')" icon="swap_horiz" cols="1">
         <x-select-field name="direction" :label="__('Richtung')">
             @foreach ([\App\Enums\Billing\DocumentDirection::Incoming, \App\Enums\Billing\DocumentDirection::Outgoing] as $d)

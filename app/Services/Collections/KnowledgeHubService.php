@@ -124,7 +124,7 @@ class KnowledgeHubService {
     }
 
     /**
-     * @param  Builder<\App\Models\Communication\CommunicationNote>|Builder<\App\Models\Ideas\IdeaMap>|Builder<\App\Models\Document\Document>|Builder<\App\Models\Learning\LearningCourse>|Builder<\App\Models\Learning\LearningPath>|Builder<\App\Models\Knowledge\KnowledgeArticle>  $builder
+     * @param  Builder<\App\Models\Communication\CommunicationNote>|Builder<\App\Models\Ideas\IdeaMap>|Builder<\App\Models\Document\Document>|Builder<\App\Models\Learning\LearningCourse>|Builder<\App\Models\Learning\LearningPath>|Builder<\App\Models\Knowledge\KnowledgeArticle>|Builder<\App\Models\Knowledge\KnowledgePage>  $builder
      * @param  list<int>|null  $collectionIds
      */
     private function filter(Builder $builder, string $key, string $query, ?int $tagId, ?array $collectionIds): void {

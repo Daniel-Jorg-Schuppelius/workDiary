@@ -198,10 +198,14 @@ class LeadController extends Controller {
             return back()->with('error', ErrorText::for($e));
         }
 
-        return redirect()->route('customers.show', $customer)
+        $redirect = redirect()->route('customers.show', $customer)
             ->with('success', $existing !== null
                 ? __('Lead mit Bestandskunde :name verbunden.', ['name' => $customer->name])
                 : __('Lead konvertiert — Kunde :name angelegt.', ['name' => $customer->name]));
+        // Hinweise der Übernahme aus der Aufnahmeakte (Feature 200), etwa unvollständige Fristmerkmale.
+        $notices = $this->service->conversionNotices();
+
+        return $notices === [] ? $redirect : $redirect->with('warning', implode(' ', $notices));
     }
 
     /**

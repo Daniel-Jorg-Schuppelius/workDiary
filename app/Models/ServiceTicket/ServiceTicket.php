@@ -170,9 +170,11 @@ class ServiceTicket extends Model {
         if ($user->isAdmin()) {
             return;
         }
-        $query->where(function (Builder $visible) use ($user): void {
+        // Bearbeiter auch in Vertretung (Feature 202, MVP-1648) — wie die Policy.
+        $assignees = app(\App\Services\Delegation\ActsForResolver::class)->assigneeIds($user);
+        $query->where(function (Builder $visible) use ($user, $assignees): void {
             $visible->where('confidentiality', '!=', self::CONFIDENTIALITY_RESTRICTED)
-                ->orWhere('assigned_to_user_id', $user->id)
+                ->orWhereIn('assigned_to_user_id', $assignees)
                 ->orWhereHas('watchers', fn (Builder $watchers) => $watchers->where('user_id', $user->id))
                 ->orWhereHas('queue', fn (Builder $queue) => $queue->whereIn('team_id', $user->teams()->select('teams.id')));
         });

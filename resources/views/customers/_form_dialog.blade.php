@@ -272,6 +272,11 @@
     </x-form-group-collapsible>
 
     <x-custom-fields-group :model="\App\Models\Customer\Customer::class" :subject="$customer" />
+
+    {{-- Leistungsumfang aus den Leistungsvorlagen (Feature 199, MVP-1674) — nur beim Anlegen. --}}
+    @if ($customer === null && ($serviceTemplates ?? collect())->isNotEmpty())
+        @include('service-plan._customer_templates', ['templates' => $serviceTemplates])
+    @endif
 </x-modal>
 
 {{-- Zeileneditor-JS zentral in resources/js/contact-persons.js (Vollaudit 2026-07, N43). --}}

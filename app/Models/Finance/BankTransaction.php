@@ -40,10 +40,12 @@ use Illuminate\Support\Carbon;
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $end_to_end_id
  * @property string|null $mandate_ref
+ * @property string|null $creditor_identifier Gläubiger-ID der SEPA-Lastschrift (Feature 207)
  * @property string|null $counterparty_name
  * @property string|null $counterparty_iban
  * @property string|null $counterparty_iban_hash
  * @property string|null $purpose
+ * @property string|null $purpose_keyword_hash Abdruck der Zweck-Stichwörter (Feature 207, nie Klartext)
  * @property array<int, string>|null $extracted_refs
  * @property bool $is_reversal
  * @property string|null $return_reason
@@ -77,10 +79,12 @@ class BankTransaction extends Model {
         'currency',
         'end_to_end_id',
         'mandate_ref',
+        'creditor_identifier',
         'counterparty_name',
         'counterparty_iban',
         'counterparty_iban_hash',
         'purpose',
+        'purpose_keyword_hash',
         'extracted_refs',
         'is_reversal',
         'return_reason',

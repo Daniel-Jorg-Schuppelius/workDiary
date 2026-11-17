@@ -8,8 +8,10 @@
 
   Zeilen-Editor für ein Feldschema (MVP-866/868): Bezeichnung, Typ, Pflicht,
   Optionen, Einheit, Wertebereich, Hilfe, Sichtbarkeitsbedingung. Sendet
-  <prefix>[i][label|type|required|listed|options|help|unit|min|max|visible_if] —
+  <prefix>[i][label|type|required|listed|allows_note|options|help|unit|min|max|visible_if] —
   serverseitig normalisiert FieldSchema::fromRows(). Alpine "repeater".
+  `notes` bietet bei Auswahlfragen „Ergänzung erlauben“ an (Feature 203) —
+  nur, wo der Träger Ergänzungen speichert (Formularvorlagen).
 --}}
 @props([
     'prefix' => 'fields',
@@ -17,12 +19,13 @@
     'types' => null,                 // erlaubte FieldType-Fälle, null = alle
     'conditions' => true,            // Sichtbarkeitsbedingungen anbieten
     'listable' => false,             // Option „In der Liste zeigen" (eigene Felder, Welle 4.6)
+    'notes' => false,                // Option „Ergänzung erlauben" bei Auswahlfragen (Feature 203)
 ])
 
 @php
     $types ??= \App\Enums\Fields\FieldType::cases();
     $conditionTemplate = ['field' => '', 'op' => 'eq', 'value' => ''];
-    $template = ['label' => '', 'type' => \App\Enums\Fields\FieldType::Text->value, 'required' => false, 'options' => '', 'help' => '', 'unit' => '', 'min' => '', 'max' => '', 'listed' => false, 'visible_if' => $conditionTemplate];
+    $template = ['label' => '', 'type' => \App\Enums\Fields\FieldType::Text->value, 'required' => false, 'options' => '', 'help' => '', 'unit' => '', 'min' => '', 'max' => '', 'listed' => false, 'allows_note' => false, 'visible_if' => $conditionTemplate];
     $rows = $items ?? [$template];
 @endphp
 
@@ -74,6 +77,13 @@
                            placeholder="{{ __('form.hint.options') }}"
                            :id="fieldName(i, 'options')" :name="fieldName(i, 'options')" x-model="it.options"
                            class="input input-sm input-bordered w-full">
+                    @if ($notes)
+                        <label class="label mt-1 cursor-pointer justify-start gap-2">
+                            <input type="checkbox" class="checkbox checkbox-sm"
+                                   :name="fieldName(i, 'allows_note')" x-model="it.allows_note">
+                            <span class="label-text text-xs">{{ __('fields.note.allow') }}</span>
+                        </label>
+                    @endif
                 </div>
                 <div class="fieldset" x-show="['number', 'measurement'].includes(it.type)">
                     <label :for="fieldName(i, 'unit')" class="fieldset-label">{{ __('form.field.field_unit') }}</label>

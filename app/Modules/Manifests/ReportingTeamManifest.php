@@ -78,6 +78,8 @@ final class ReportingTeamManifest extends Manifest {
             // Personalbereich der Leitungssicht aus Krankheits- und Qualifikationsauswertung (MVP-1617).
             \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
                 \App\Services\Reporting\Management\PersonnelKpiSource::class,
+                // Durchlaufzeit je Auftragsart aus der Auftragstypanalyse (Feature 179, MVP-1670).
+                \App\Services\Reporting\Management\LeadTimeKpiSource::class,
             ],
         ];
     }

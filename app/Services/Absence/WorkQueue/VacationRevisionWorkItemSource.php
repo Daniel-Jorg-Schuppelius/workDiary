@@ -61,6 +61,8 @@ final class VacationRevisionWorkItemSource implements WorkItemSource {
                 url: route('duties.index', ['tab' => 'urlaub', 'vstatus' => VacationStatus::Revision->value]),
                 detail: CarbonFmt::fdate($vacation->start_date) . ' – ' . CarbonFmt::fdate($vacation->end_date),
                 dueAt: CarbonImmutable::instance($vacation->start_date),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($vacation->updated_at),
             );
         }
     }

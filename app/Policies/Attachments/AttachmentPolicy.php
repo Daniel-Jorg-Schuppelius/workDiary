@@ -48,6 +48,12 @@ class AttachmentPolicy {
         // eines Vorgangs herunter, den er selbst nicht oeffnen darf. Nur wo es
         // gar keine Regel gibt, bleibt es bei der Mandantengrenze.
         if ($parent !== null && Gate::getPolicyFor($parent) !== null) {
+            // Träger mit eigener Anhangregel (Feature 200: Ausweiskopie und
+            // Gesundheitsunterlagen der Aufnahmeakte brauchen ihr eigenes Recht).
+            if (method_exists(Gate::getPolicyFor($parent), 'viewAttachment')) {
+                return Gate::forUser($user)->allows('viewAttachment', [$parent, $attachment]);
+            }
+
             return Gate::forUser($user)->allows('view', $parent);
         }
 

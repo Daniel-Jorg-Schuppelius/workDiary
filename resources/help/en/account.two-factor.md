@@ -1,7 +1,7 @@
 ---
 title: "Set up two-factor authentication"
 topic: account.two-factor
-version: 1
+version: 2
 keywords:
     - 2FA
     - MFA
@@ -47,3 +47,11 @@ recovery codes with anyone.
 If you do not recognise a sign-in or a device, use “This was not me – secure
 account”: all sessions end, password and passkeys become invalid, and you
 receive an email with a link to set a new password.
+
+**Sign-in with passkey**: With a passkey you sign in without a password
+(“Sign in with passkey”); it counts as two factors. Give each passkey a
+name when setting it up – the list shows name and last use and lets you
+rename it. Removing one requires your password or a fresh sign-in. If
+your organisation requires a passkey for your role, every page leads to
+the setup until one is registered; afterwards signing in only works with
+the passkey, a recovery code remains the emergency route.

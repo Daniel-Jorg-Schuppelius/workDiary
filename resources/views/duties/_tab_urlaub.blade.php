@@ -11,6 +11,9 @@
     use App\Enums\Vacation\VacationStatus;
 
     $p = array_merge($filters ?? [], ['tab' => 'urlaub']);
+    // Vertretung aus genehmigtem Urlaub (Feature 202): eigener Urlaub immer, fremder mit Leitungsrecht.
+    $wdToday = now()->startOfDay();
+    $wdForOthers = auth()->user()?->can('manage', \App\Models\Delegation\WorkDelegation::class) ?? false;
 @endphp
 <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm"
          table-sort="server"
@@ -86,6 +89,13 @@
                                                 :label="__('Ablehnen')" />
                                 @endif
                             @endcan
+
+                            @if ($v->status === VacationStatus::Approved && $v->end_date->greaterThanOrEqualTo($wdToday) && ((int) $v->user_id === (int) auth()->id() || $wdForOthers))
+                                <x-icon-btn icon="supervisor_account" tone="info"
+                                            data-entry-modal-trigger
+                                            :href="route('delegations.create', ['vacation' => $v->sqid, 'dialog' => 1])"
+                                            :label="__('delegation.from_absence')" />
+                            @endif
 
                             @can('requestRevision', $v)
                                 <x-icon-btn icon="undo" tone="info"

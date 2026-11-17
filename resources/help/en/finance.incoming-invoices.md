@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 11
+version: 12
 keywords:
     - several tax rates
     - supplier invoice
@@ -370,3 +370,47 @@ identifier when the invoice carries them. For invoices received before this
 feature, the command
 `php artisan incoming-invoices:extract-documents --dry-run` extracts the
 documents afterwards (first as a dry run, then without the option).
+
+## Combined PDF and GiroCode
+
+**Combined PDF:** If an uploaded or emailed PDF without e-invoice data has
+several pages, WorkDiary checks in the background whether it contains several
+invoices. Signs of a new invoice are a different invoice number, a new sender
+(VAT ID or IBAN), “Page 1 of …”, a totals block on the previous page and a
+different letterhead. Until you decide, transfer to accounting and payment
+wait. **Check boundaries** shows every page as a preview image and lets you
+mark where a new invoice starts; **Split** creates one incoming invoice with
+its own partial PDF per invoice. **Is one invoice** keeps the incoming invoice
+as it is.
+
+The original stays unchanged in the document management and shows its parts;
+each part refers to the original with its page range. Every part goes through
+the duplicate check: the same file again or the same invoice number from the
+same sender is detected, as is a new upload of the whole combined PDF. As long
+as parts exist, the original cannot be
+deleted. PDFs of up to 60 pages are checked; only open incoming invoices that
+have not been transferred can be split.
+
+**GiroCode:** If an invoice carries a GiroCode (EPC QR code), WorkDiary reads it
+in the background — on the first three and the last page. If the document
+itself states no IBAN, the IBAN from the code is taken over when its check
+digits are correct. The **GiroCode** card shows beneficiary, IBAN, amount and
+payment reference and compares them with the invoice: amount and beneficiary
+name only raise a hint. If the IBAN in the code differs from the invoice or
+from the supplier’s bank accounts, the assignment dialog warns and the payment
+proposal blocks the invoice until someone with release permission confirms the
+difference — changed bank details are a known fraud pattern. The confirmation
+is logged and only applies as long as IBAN and supplier stay the same. If the
+reading tool (zbarimg) is missing on the server, the card shows “GiroCode not
+readable”.
+
+**Evidence and new bank details:** After splitting, the combined incoming
+invoice stays as evidence with the status “Split”; it appears in no work list
+and is neither transferred nor paid. The original cannot be deleted as long as
+parts exist. At most 30 invoices are separated per combined PDF, and the parts
+together must not become much larger than the original. An IBAN from the
+GiroCode is only taken over while the incoming invoice has not been approved.
+If no bank account is stored for the supplier, it counts as new bank details
+and must be confirmed before payment; it only enters the supplier master data
+if someone enters it there explicitly. Every confirmation applies only to the
+confirmed IBAN — if it changes, the payment proposal blocks again.

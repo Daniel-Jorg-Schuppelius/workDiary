@@ -182,9 +182,12 @@ class AiAdminHttpTest extends TestCase {
         $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'ChatGPT']);
         $setting = AiCapabilitySetting::query()->create(['organization_id' => $this->organization->id, 'capability' => self::CAPABILITY, 'enabled' => true, 'default_connection_id' => $connection->id]);
 
+        // Ein neuer Schlüssel setzt die Datenschutzfreigabe zurück (MVP-1672); die
+        // Organisation verlangt sie, deshalb steht die Erfolgsmeldung im Hinweis.
         $this->actingAs($this->admin)->patch(route('admin.ai.update', $connection), ['name' => 'ChatGPT', 'api_key' => ' neuer-schluessel '])
             ->assertRedirect(route('admin.ai.index'))
-            ->assertSessionHas('success', 'Schlüssel rotiert und Preflight bestanden.');
+            ->assertSessionHas('warning', static fn (string $message): bool => str_contains($message, 'Schlüssel rotiert und Preflight bestanden.')
+                && str_contains($message, (string) __('ai.privacy.flash.approval_reset', ['name' => 'ChatGPT'])));
 
         $connection->refresh();
         $this->assertSame('neuer-schluessel', $connection->api_key);

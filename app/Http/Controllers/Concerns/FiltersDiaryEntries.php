@@ -37,12 +37,15 @@ trait FiltersDiaryEntries {
         if ($request->filled('status') && $request->status !== 'all') {
             // Benannte Status-Gruppen (z. B. die /duties-KPI-Kacheln, die mehrere
             // Status zusammenfassen) — sonst Einzelstatus wie bisher (numerisch).
+            // 9–11 sind die Prüfzustände (Feature 198): zur Prüfung und freigegeben
+            // laufen wie „in Bearbeitung“, die Rückfrage ist ein Alarm.
             $statusGroups = [
-                'progress' => [1, 4],       // In Bearbeitung (InProgress, Accepted)
-                'active' => [1, 3, 4, 5],   // Kachel „In Bearbeitung“ des Auftragsbuchs (progress + alert)
-                'open' => [2, 3],           // Dashboard-Kachel „offene Einträge“ (Open, Problem)
-                'alert' => [3, 5],          // Probleme (WaitingCustomer, WaitingMaterial)
-                'done' => [-1, 6, 7],       // Erledigt (Done, AcceptedFinal, Invoiced)
+                'progress' => [1, 4, 9, 11],             // In Bearbeitung (InProgress, Accepted, InReview, ReviewApproved)
+                'active' => [1, 3, 4, 5, 9, 10, 11],     // Kachel „In Bearbeitung“ des Auftragsbuchs (progress + alert)
+                'open' => [2, 3],                        // Dashboard-Kachel „offene Einträge“ (Open, Problem)
+                'alert' => [3, 5, 10],                   // Probleme (WaitingCustomer, WaitingMaterial, ReviewQueried)
+                'done' => [-1, 6, 7],                    // Erledigt (Done, AcceptedFinal, Invoiced)
+                'review' => [9, 10, 11],                 // Interne Prüfung (Feature 198)
             ];
             $raw = (string) $request->status;
             if (isset($statusGroups[$raw])) {
@@ -56,7 +59,12 @@ trait FiltersDiaryEntries {
         $query->overlappingDateRange($from, $to);
 
         if ($request->boolean('mine')) {
-            $query->where('user_id', Auth::id());
+            // Eigene Einträge; während einer Vertretung zusätzlich die den
+            // Vertretenen zugewiesenen (Feature 202, MVP-1648).
+            $viewer = Auth::user();
+            $principals = $viewer instanceof \App\Models\Platform\User ? app(\App\Services\Delegation\ActsForResolver::class)->principalIds($viewer) : [];
+            $query->where(static fn (Builder $mine) => $mine->where('user_id', Auth::id())
+                ->when($principals !== [], static fn (Builder $q) => $q->orWhereIn('assigned_user_id', $principals)));
         }
 
         $customerId = Sqid::decodeOrNumeric(Customer::class, (string) $request->query('customer', ''), 0);
@@ -98,7 +106,14 @@ trait FiltersDiaryEntries {
             $query->search($q);
         }
 
+        // Periode (Feature 198): genau der kanonische Schlüssel; ein ungültiger Wert filtert nicht.
+        $period = \App\Support\Period\PeriodKey::tryParse((string) $request->query('period', ''));
+        if ($period !== null) {
+            $query->where('period_key', $period->key());
+        }
+
         $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type', 'mode', 'location', 'customer');
+        $filters['period'] = $period?->key();
         $filters['from'] = $from;
         $filters['to'] = $to;
 
@@ -114,7 +129,8 @@ trait FiltersDiaryEntries {
      */
     protected function diaryListColumns(): array {
         // user_id und assigned_user_id braucht die Karte für can('view').
+        // period_key: Spalte „Periode“ (Feature 198).
         return ['id', 'user_id', 'assigned_user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at',
-            'mode', 'due_date', 'window_start_date', 'window_end_date', 'location_mode'];
+            'mode', 'due_date', 'window_start_date', 'window_end_date', 'location_mode', 'period_key'];
     }
 }

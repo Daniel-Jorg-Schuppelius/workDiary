@@ -36,6 +36,12 @@ ist, sonst der Fälligkeitstag. Der Zahlbetrag ist dann bereits um das Skonto
 gemindert. Jede Position ist abwählbar; eine Rechnung ohne IBAN wird als
 gesperrt angezeigt und nicht in den Lauf genommen.
 
+**GiroCode und Sammel-PDF:** Weicht die IBAN im GiroCode einer Rechnung von
+der Rechnung oder vom Lieferantenstamm ab, ist die Position gesperrt, bis
+jemand mit Freigaberecht die Abweichung über **IBAN bestätigen** bestätigt;
+auch die Freigabe eines Laufs prüft das noch einmal. Eine Sammel-PDF, deren
+Rechnungsgrenzen noch nicht entschieden sind, wird nicht gezahlt.
+
 **Drei Schritte:** zusammenstellen (Entwurf) → freigeben → exportieren. Die
 Freigabe ist ein eigenes Recht: Wer den Lauf zusammenstellt, muss ihn nicht
 freigeben dürfen. Nach dem Export ist der Lauf unveränderlich; ein Storno ist

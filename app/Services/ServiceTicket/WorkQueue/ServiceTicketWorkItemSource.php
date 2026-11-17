@@ -16,14 +16,19 @@ use App\Enums\User\Permission;
 use App\Enums\WorkQueue\WorkItemCategory;
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\ServiceTicket;
+use App\Services\Delegation\Contracts\DelegableWork;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\WorkQueue\Contracts\WorkItemSource;
 use App\Services\WorkQueue\Dto\WorkItem;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 
-/** Ungelöste Service-Tickets, die dem Nutzer zugewiesen sind; Frist = Lösungs-, sonst Reaktionsfrist. */
-final class ServiceTicketWorkItemSource implements WorkItemSource {
+/**
+ * Ungelöste Service-Tickets, die dem Nutzer zugewiesen sind; Frist = Lösungs-,
+ * sonst Reaktionsfrist. Zugleich delegierbare Arbeit (Feature 202).
+ */
+final class ServiceTicketWorkItemSource implements DelegableWork, WorkItemSource {
     public function __construct(private readonly FeatureFlagResolver $features) {}
 
     public function key(): string {
@@ -44,10 +49,9 @@ final class ServiceTicketWorkItemSource implements WorkItemSource {
 
     public function items(User $viewer, Organization $organization): iterable {
         $gate = Gate::forUser($viewer);
-        $tickets = ServiceTicket::query()
-            ->where('organization_id', $organization->id)
-            ->where('assigned_to_user_id', $viewer->id)
-            ->open()
+        $tickets = $this->assigned($viewer, (int) $organization->id)
+            // Liegezeit (MVP-1670): letzte Zeitbuchung neben der eigenen Änderung (Status, Antwort).
+            ->withMax('timeEntries', 'created_at')
             ->orderBy('resolution_due_at')
             ->get();
 
@@ -65,7 +69,20 @@ final class ServiceTicketWorkItemSource implements WorkItemSource {
                 detail: $ticket->status->label(),
                 dueAt: $due !== null ? CarbonImmutable::instance($due) : null,
                 personal: true,
+                movedAt: WorkItem::lastMoved($ticket->updated_at, $ticket->getAttribute('time_entries_max_created_at')),
             );
         }
+    }
+
+    public function count(User $user): int {
+        return $this->assigned($user, (int) $user->organization_id)->count();
+    }
+
+    /** @return Builder<ServiceTicket> */
+    private function assigned(User $user, int $organizationId): Builder {
+        return ServiceTicket::query()
+            ->where('organization_id', $organizationId)
+            ->where('assigned_to_user_id', $user->id)
+            ->open();
     }
 }

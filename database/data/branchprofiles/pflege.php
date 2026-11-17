@@ -26,9 +26,14 @@ $beforeComplete = ClassificationRequirementPhase::BeforeComplete->value;
 return [
     'code' => 'pflege',
     'label' => 'Ambulante Pflege',
-    'description' => 'Ambulanter Pflegedienst (SGB V / SGB XI): Tour-Einsätze, Grund- und Behandlungspflege, Beratungsbesuche im Quartalsraster, Pflegevisiten, 5-R-Regel und Vier-Augen-Prinzip bei BtM.',
+    'description' => 'Ambulanter Pflegedienst (SGB V / SGB XI): Tour-Einsätze, Grund- und Behandlungspflege, Beratungsbesuche nach § 37 Abs. 3 SGB XI als Kundenfrist, Pflegevisiten, 5-R-Regel und Vier-Augen-Prinzip bei BtM.',
     // v2: Default-Eintragstypen; v6: Inhalte nach der Profilseite (MVP-1509).
-    'version' => 6,
+    // v7: Eintragsart Beratungsbesuch mit Pflicht-Periode Halbjahr (Feature 198, MVP-1634).
+    // v8: Beratungsbesuch als Kundenfrist aus dem Regelsatz ambulante Pflege statt Vertragspflicht
+    //     „alle drei Monate“, „Quartalsraster“ berichtigt (§ 37 Abs. 3 SGB XI, Stand 2026; Feature 197, MVP-1673).
+    // v9: Eintragsart Pflegevisite und Leistungsvorlagen Beratungsbesuch und Pflegevisite je Halbjahr (Feature 199, MVP-1674).
+    // v10: Prüfpaket Pflege-Erstaufnahme der Aufnahmeakte eingeschaltet (Feature 200, MVP-1675).
+    'version' => 10,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
@@ -46,7 +51,7 @@ return [
         'module.auswertungen_team',
         'module.standorterfassung',
         'module.datenschutz',
-        // Quartalsraster der Beratungsbesuche über den Pflegevertrag (contract_templates).
+        // Pflegevertrag (contract_templates) mit Pflegevisite; Beratungsbesuche laufen als Kundenfrist (Feature 197).
         'module.contracts',
     ],
     'classifications' => [
@@ -158,6 +163,25 @@ return [
     ],
     // §4 der Profilseite, soweit über Klassifikationen abbildbar; Klientenbezug,
     // Vier-Augen-Prinzip, Unterschriften und Fotopflicht tragen die Prozedurvorlagen.
+    // Feature 198 (MVP-1634): Beratungsbesuch nach § 37 Abs. 3 SGB XI je Halbjahr; nur fehlende Eintragsarten entstehen.
+    // Feature 197 (MVP-1673): Quartal zusätzlich — Pflegegrad 4–5 auf Wunsch vierteljährlich.
+    'entry_type_rules' => [
+        ['slug' => 'beratungsbesuch', 'label' => 'Beratungsbesuch (§ 37 Abs. 3 SGB XI)', 'icon' => 'support_agent', 'requires_period' => ['half_year', 'quarter']],
+        // Feature 199 (MVP-1674): Pflegevisite als Eintragsart für den Leistungsplan (ohne Periodenpflicht).
+        ['slug' => 'pflegevisite', 'label' => 'Pflegevisite', 'icon' => 'medical_services'],
+    ],
+    // Feature 197 (MVP-1673): Kundenfristen aus dem Regelsatz ambulante Pflege; ergänzt nur.
+    'deadline_rule_sets' => ['home_care'],
+    // Feature 200 (MVP-1675): Aufnahmeakte mit Prüfpaket Pflege-Erstaufnahme (Katalog database/data/intake_packages.php);
+    // Pflegegrad und Leistungsbezug werden bei der Umwandlung Merkmale des Regelsatzes `home_care`. Ergänzt nur.
+    'intake_packages' => [['code' => 'care_admission', 'enabled' => true]],
+    // Feature 199 (MVP-1674): Leistungsvorlagen des Leistungsplans; die gesetzliche Frist rechnet der Regelsatz.
+    'service_catalog' => [
+        ['entry_type' => 'beratungsbesuch', 'period_kind' => 'half_year', 'mandatory' => true, 'label' => 'Beratungsbesuch (§ 37 Abs. 3 SGB XI)',
+            'label_i18n' => ['en' => 'Counselling visit (§ 37(3) SGB XI)', 'es' => 'Visita de asesoramiento (§ 37.3 SGB XI)', 'fr' => 'Visite de conseil (§ 37 al. 3 SGB XI)', 'it' => 'Visita di consulenza (§ 37 c. 3 SGB XI)']],
+        ['entry_type' => 'pflegevisite', 'period_kind' => 'half_year', 'mandatory' => true, 'label' => 'Pflegevisite',
+            'label_i18n' => ['en' => 'Care review visit', 'es' => 'Visita de control de cuidados', 'fr' => 'Visite de contrôle des soins', 'it' => 'Visita di controllo dell’assistenza']],
+    ],
     'classification_requirements' => [
         ['entry_type_code' => 'tourEinsatz', 'required_domain' => 'leistungsart', 'enforce_phase' => $onCreate, 'severity' => $hard, 'min_count' => 1],
         ['entry_type_code' => 'tourEinsatz', 'required_domain' => 'result', 'enforce_phase' => $beforeComplete, 'severity' => $hard, 'min_count' => 1],
@@ -315,9 +339,9 @@ return [
             'domain' => 'pflege',
             'risk_level' => 'normal',
             'supersedes' => ['PF_BERATUNGSBESUCH_37_3'],
-            'description' => 'Nachweispflichtiger Beratungsbesuch im Quartalsraster mit Ergebnisbewertung 1–3, Empfehlungen und Bestätigung.',
+            'description' => 'Nachweispflichtiger Beratungsbesuch je Halbjahr (Pflegegrad 4–5 auf Wunsch je Quartal) bei Pflegegeld, mit Ergebnisbewertung 1–3, Empfehlungen und Bestätigung.',
             'steps' => [
-                ['code' => 'termin', 'step_type' => 'confirm', 'label' => 'Termin im Quartalsraster bestätigen'],
+                ['code' => 'termin', 'step_type' => 'confirm', 'label' => 'Termin in der fälligen Periode (Halbjahr bzw. Quartal) bestätigen'],
                 ['code' => 'situation', 'step_type' => 'confirm', 'label' => 'Pflegesituation erheben'],
                 ['code' => 'bewertung', 'step_type' => 'choice', 'label' => 'Ergebnis bewerten (1 sichergestellt, 2 Verbesserung empfohlen, 3 nicht sichergestellt)'],
                 ['code' => 'empfehlungen', 'step_type' => 'text', 'label' => 'Empfehlungen festhalten', 'required' => false, 'blocking' => false],
@@ -436,9 +460,12 @@ return [
         'notfallrucksack',
         'hygieneSet',
     ],
-    // Beratungsbesuch-Quartalsraster je Klient (§12 AK5): Vertrag je Klient aus
-    // dieser Vorlage; die wiederkehrende Pflicht legt beim Erledigen die nächste
-    // Fälligkeit an, der Fristen-Scan erinnert vorher.
+    // Pflegevertrag je Klient (§12 AK5) mit der wiederkehrenden Pflegevisite. Der
+    // Beratungsbesuch nach § 37 Abs. 3 SGB XI ist seit v8 keine Vertragspflicht
+    // mehr (sie galt pauschal alle drei Monate für jeden Kunden): Pflicht ist er
+    // nur bei Pflegegeld, je Halbjahr — die Frist rechnet der Regelsatz
+    // `home_care` (deadline_rule_sets). Der Name bleibt, damit vorhandene
+    // Vorlagen nicht verdoppelt werden; deren Pflichten ändert die Installation nie.
     'contract_templates' => [
         [
             'name' => 'Pflegevertrag mit Beratungsbesuch (§ 37 Abs. 3 SGB XI)',
@@ -448,7 +475,6 @@ return [
             'notice_period_days' => 14,
             'value_period' => 'monthly',
             'obligations' => [
-                ['kind' => 'documentation', 'title' => 'Beratungsbesuch nach § 37 Abs. 3 SGB XI', 'offset_months' => 3, 'warn_days_before' => 21, 'recurring' => true, 'recurrence_months' => 3],
                 ['kind' => 'review', 'title' => 'Pflegevisite', 'offset_months' => 6, 'warn_days_before' => 14, 'recurring' => true, 'recurrence_months' => 6],
             ],
         ],

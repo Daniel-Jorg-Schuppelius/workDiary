@@ -91,6 +91,8 @@ return [
         'missing_iban' => 'IBAN mancante',
         'zero_amount' => 'Importo 0',
         'iban_differs' => 'IBAN diverso dall’anagrafica',
+        'girocode_differs' => 'IBAN del GiroCode non verificato — conferma necessaria',
+        'bundle_unresolved' => 'PDF cumulativo non ancora diviso',
         'disputed' => 'Partita aperta contestata',
     ],
 
@@ -100,6 +102,9 @@ return [
         'not_draft' => 'La distinta non è più una bozza.',
         'not_released' => 'La distinta non è approvata.',
         'four_eyes' => 'Principio dei quattro occhi: chi ha preparato la distinta non può approvarla da solo.',
+        'girocode_unconfirmed' => 'La fattura :number riporta un GiroCode con IBAN diverso. La distinta si può approvare solo dopo aver confermato la differenza nella proposta di pagamento.',
+        'position_held' => 'La fattura :number è bloccata per il pagamento (:reason). La distinta si può approvare solo dopo averlo chiarito nella proposta di pagamento.',
+        'confirmation_stale' => 'La situazione è cambiata da quando la pagina è stata caricata — verifichi e confermi di nuovo.',
         'exported_final' => 'Una distinta esportata non viene più annullata.',
         'invalid_amount' => 'L’importo da pagare deve essere superiore a 0 e non può superare l’importo fatturato.',
         'reason_required' => 'Un importo ridotto richiede un motivo.',

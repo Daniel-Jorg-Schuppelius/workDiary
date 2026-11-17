@@ -80,6 +80,8 @@ final class OvertimeRequestWorkItemSource implements WorkItemSource {
                 title: (string) __('work-queue.item.overtime_request', ['name' => $request->user->name ?? '—']),
                 url: route(self::ROUTE, ['status' => OvertimeRequestStatus::Submitted->value]),
                 detail: CarbonFmt::fdate($request->scope_date) . ' · ' . __('work-queue.detail.minutes', ['minutes' => $request->minutes]),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($request->updated_at),
             );
         }
     }

@@ -274,11 +274,13 @@ class DutyController extends Controller {
                 // 4 Accepted = In Bearbeitung; 3 WaitingCustomer + 5 WaitingMaterial
                 // = Probleme (pausiert/wartend); -1 Done + 6 AcceptedFinal +
                 // 7 Invoiced = Erledigt (konsistent zum Auftragsbuch); 8 = Storniert.
+                // Prüfzustände (Feature 198): 9 InReview + 11 ReviewApproved laufen,
+                // 10 ReviewQueried ist ein Problem — wie die Statusgruppen der Liste.
                 // Die fünf Gruppen decken alle Status ab ⇒ Summe = Gesamt.
                 'COUNT(*) as cnt_all,' .
                     'COUNT(CASE WHEN status = 2 THEN 1 END) as cnt_open,' .
-                    'COUNT(CASE WHEN status IN (1, 4) THEN 1 END) as cnt_progress,' .
-                    'COUNT(CASE WHEN status IN (3, 5) THEN 1 END) as cnt_alert,' .
+                    'COUNT(CASE WHEN status IN (1, 4, 9, 11) THEN 1 END) as cnt_progress,' .
+                    'COUNT(CASE WHEN status IN (3, 5, 10) THEN 1 END) as cnt_alert,' .
                     'COUNT(CASE WHEN status IN (-1, 6, 7) THEN 1 END) as cnt_done,' .
                     'COUNT(CASE WHEN status = 8 THEN 1 END) as cnt_cancelled'
             )

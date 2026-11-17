@@ -78,7 +78,8 @@ class InspectionOrderController extends Controller {
         Gate::authorize('viewAny', AssetComplianceProfile::class);
 
         return view('asset-compliance.orders.show', [
-            'order' => $order->load(['supplier', 'items.asset', 'items.attachments']),
+            // Prüfpflicht und Termin je Position: Merker für die nächste Periode (Feature 201, MVP-1646).
+            'order' => $order->load(['supplier', 'items.asset', 'items.attachments', 'items.assignment.profile', 'items.schedule']),
             'canManage' => Gate::allows('create', AssetComplianceProfile::class),
             'canInspect' => Gate::allows('inspect', AssetComplianceProfile::class),
         ]);

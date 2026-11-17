@@ -29,6 +29,15 @@ use Tests\TestCase;
 class SchedulerRegistrationTest extends TestCase {
     use RefreshDatabase;
 
+    protected function setUp(): void {
+        parent::setUp();
+        // Der eingefrorene Stand umfasst die Plugin-Jobs: Vorprüfung aus, damit
+        // das Ergebnis nicht am Memo von PluginBinding aus einem früheren
+        // App-Start ohne Tabelle hängt (Befund 2026-11-12).
+        config(['scheduler.skip_inactive_plugins' => false]);
+        \App\Scheduling\PluginBinding::reset();
+    }
+
     /** @var array<string, array{0: string, 1: bool, 2: bool}> */
     private const array EXPECTED = [
         // Neu mit MVP-177 (kein Alt-Eintrag): Selbstüberwachung.
@@ -91,6 +100,8 @@ class SchedulerRegistrationTest extends TestCase {
         'learning:lti-rotate-keys' => ['50 3 * * *', true, true],
         'learning:lti-prune-nonces' => ['5 4 * * *', true, true],
         // Teil-Uploads (MVP-1265).
+        // Papierkorb der Wissensseiten (Feature 191, MVP-1664).
+        'knowledge-pages:empty-trash' => ['10 4 * * *', true, true],
         'uploads:prune-chunks' => ['15 4 * * *', true, true],
         // MVP-803: Abend-Erinnerung bei offener Stempelung.
         'attendance:remind-open' => ['0 19 * * *', true, true],
@@ -262,6 +273,8 @@ class SchedulerRegistrationTest extends TestCase {
         // MVP-1021: monatliche Aktualisierung der IP-Geodatenbank.
         'security:geoip-update' => ['30 4 3 * *', true, true],
         'contracts:price-index-sync' => ['20 6 20 * *', true, true],
+        // Jahreslauf der Kundenfristen (Feature 197, MVP-1632), monatlich am 1. um 05:50.
+        'customer-deadlines:sync' => ['50 5 1 * *', true, true],
         'platform:usage-snapshot' => ['40 3 1 * *', true, true],
         'privacy:retention-scan' => ['30 4 * * 1', true, true],
         // Neu mit Feature 006 (Welle D): ArbZG-Verstoß-Persistenz.
@@ -286,6 +299,8 @@ class SchedulerRegistrationTest extends TestCase {
         'integrity:verify --trigger=schedule' => ['20 3 * * *', true, true],
         // Neu mit Feature 096 (MVP-445): Angriffserkennungs-Auswertung.
         'security:evaluate' => ['1,6,11,16,21,26,31,36,41,46,51,56 * * * *', true, true],
+        // Neu mit Feature 205 (MVP-1655): DNS-Namen der Büronetze auflösen.
+        'security:resolve-login-networks' => ['4,9,14,19,24,29,34,39,44,49,54,59 * * * *', true, true],
         // Neu mit Feature 098: Kunden-Sonderkonditionen — Monatsrechnungen +
         // Retainer-Pauschalen an Lexoffice (jeweils am Monatsersten).
         'customer-billing:generate-invoices' => ['25 5 1 * *', true, true],

@@ -1,7 +1,7 @@
 ---
 title: "Gérer les modèles de formulaires"
 topic: forms.templates
-version: 3
+version: 4
 keywords:
     - créer un formulaire
     - éditeur de formulaires
@@ -14,6 +14,8 @@ keywords:
     - activer un formulaire
     - archiver un formulaire
     - formulaires personnalisés
+    - sections
+    - autoriser un complément
 audience:
     - admin
     - geschaeftsfuehrung
@@ -65,6 +67,17 @@ pas les formulaires remplis illisibles.
 Autorisations : peut créer, modifier, activer, archiver et supprimer des
 modèles de formulaire toute personne disposant du droit **Gérer les
 modèles de formulaire** (par défaut les chefs d’équipe).
+
+Formulaires longs : structurez les modèles longs avec des champs de type
+« Section » – lors de la saisie, chaque section devient une carte avec
+sa progression et, à partir de quatre sections, une table des matières ;
+jusqu’à six questions, le formulaire reste une seule carte. Pour
+« Choix » et « Choix multiple », **Autoriser un complément** ajoute un
+champ supplémentaire pour une remarque sur la réponse. Les choix
+comportant jusqu’à six options apparaissent sous forme de boutons, les
+plus longs sous forme de liste déroulante. Si vous modifiez le type de
+réponse d’une question pendant que quelqu’un remplit un brouillon, sa
+réponse antérieure y est conservée comme complément.
 
 Conseil : le système déduit l’affectation interne d’un champ de son
 libellé. Conservez donc les libellés de champ si vous souhaitez comparer

@@ -33,7 +33,23 @@ class AiProviderConnectionFactory extends Factory {
             'api_key' => 'test-key',
             'is_local' => false,
             'status' => AiConnectionStatus::Active,
+            // Datenschutzfreigabe (MVP-1672): neue Organisationen verlangen sie —
+            // die Vorgabe ist deshalb eine freigegebene Verbindung, {@see unapproved()} das Gegenteil.
+            'has_dpa' => true,
+            'is_eu_processing' => true,
+            'is_training_excluded' => true,
+            'privacy_reviewed_at' => now(),
         ];
+    }
+
+    /** Ohne Datenschutzfreigabe (nie geprüft). */
+    public function unapproved(): static {
+        return $this->state(fn (): array => [
+            'has_dpa' => false,
+            'is_eu_processing' => false,
+            'is_training_excluded' => false,
+            'privacy_reviewed_at' => null,
+        ]);
     }
 
     public function local(): static {

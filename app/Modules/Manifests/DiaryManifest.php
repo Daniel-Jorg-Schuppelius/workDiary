@@ -36,6 +36,8 @@ final class DiaryManifest extends Manifest {
             'Diary',
             'OpenIssue',
             'Recurrence',
+            // Leistungsplan je Kunde und Periode (Feature 199).
+            'ServicePlan',
             'Takeoff',
         ];
     }
@@ -54,6 +56,10 @@ final class DiaryManifest extends Manifest {
             'open_issue_follow_ups',
             'open_issues',
             'recurrence_rules',
+            // Leistungsplan (Feature 199): „entfällt“, Unterlagen/Bemerkung je Zelle, Leistungsvorlagen.
+            'customer_service_period_notes',
+            'customer_service_waivers',
+            'service_templates',
             'takeoff_lines',
             'takeoff_transfers',
             'takeoffs',
@@ -78,6 +84,18 @@ final class DiaryManifest extends Manifest {
             \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
                 \App\Services\Diary\WorkQueue\OpenIssueWorkItemSource::class,
                 \App\Services\Diary\WorkQueue\AssignedEntryWorkItemSource::class,
+                // Leistungsplan (Feature 199, MVP-1639): überfällige Perioden ohne Auftrag.
+                \App\Services\ServicePlan\WorkQueue\OverduePeriodWorkItemSource::class,
+            ],
+            // Vertretung (Feature 202): zugewiesene Aufträge übernimmt die Vertretung.
+            \App\Services\Delegation\Contracts\DelegableWork::class => [
+                \App\Services\Diary\WorkQueue\AssignedEntryWorkItemSource::class,
+                // Leistungsplan (Feature 199, Anschluss MVP-1648): Perioden der zuständigen Person.
+                \App\Services\ServicePlan\WorkQueue\OverduePeriodWorkItemSource::class,
+            ],
+            // Endgültige Übergabe und Austritt (Feature 202/126): zugewiesene Aufträge an eine Nachfolge.
+            \App\Services\Org\Contracts\OffboardingHandover::class => [
+                \App\Services\Diary\Offboarding\AssignedOrderOffboardingHandover::class,
             ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Diary\Mcp\OrdersTool::class,
@@ -106,6 +124,26 @@ final class DiaryManifest extends Manifest {
             // MVP-1597: offene Punkte an Kunde, Projekt und Asset.
             \App\Services\Cockpit\Contracts\CockpitPanel::class => [
                 \App\Services\Diary\Cockpit\OpenIssueCockpitPanel::class,
+                // Feature 199: Leistungsplan des Kunden.
+                \App\Services\ServicePlan\Cockpit\ServicePlanCockpitPanel::class,
+                // Feature 201 (MVP-1646): offene Merker an Aufträgen mit Periode.
+                \App\Services\Diary\Cockpit\PeriodOrderCarryForwardCockpitPanel::class,
+            ],
+            // Feature 198 (MVP-1636): Aufträge zur internen Prüfung im Genehmigungs-Eingang.
+            \App\Services\Approval\Contracts\ApprovalInboxSubject::class => [
+                \App\Services\Diary\Approvals\OrderReviewInboxSubject::class,
+            ],
+            // Feature 198 (MVP-1634): Eintragsarten mit Perioden- und Prüfpflicht aus dem Branchenprofil.
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Diary\Install\EntryTypeRuleInstallStep::class,
+                // Feature 199 (MVP-1674): Leistungsvorlagen — nach den Eintragsarten.
+                \App\Services\ServicePlan\Install\ServiceCatalogInstallStep::class,
+            ],
+            // Feature 198/201: Periodenauftrag mit Prüfung und Merker zur Vorführung.
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Diary\Demo\PeriodOrderDemoBlock::class,
+                // Feature 199: Leistungsplan mit erfundenen Kunden.
+                \App\Services\ServicePlan\Demo\ServicePlanDemoBlock::class,
             ],
         ];
     }

@@ -1,7 +1,7 @@
 ---
 title: "Lote de asientos DATEV"
 topic: finance.datev-bookings
-version: 6
+version: 7
 keywords:
     - exportación DATEV
     - asesor fiscal
@@ -15,6 +15,8 @@ keywords:
     - clave de contabilización
     - cuenta de ingresos
     - exportación contable
+    - revisión fiscal
+    - falta NIF-IVA
 audience: []
 modules:
     - module.finance
@@ -140,3 +142,19 @@ pasivo nacional (8337/4337), exportación (8120/4120), venta no sujeta en un ter
 país (8338/4338). Son cuentas automáticas de DATEV; el lote no indica allí clave
 fiscal. Las ventas exentas nacionales permanecen en la cuenta configurada para
 ingresos exentos.
+
+## Revisión fiscal antes de finalizar
+
+La vista previa de un borrador muestra la **revisión fiscal** del lote con
+enlace al justificante. Los **errores** bloquean **Finalizar**: un apunte con
+tipo impositivo pero sin clave BU en una cuenta que no es automática; una
+entrega intracomunitaria exenta o inversión del sujeto pasivo en otro país de
+la UE sin NIF-IVA del cliente; una cuenta desactivada del plan contable local.
+Los **avisos** señalan apuntes cuyo tipo difiere del código de la cuenta
+automática y la inversión del sujeto pasivo nacional sin NIF-IVA. Son cuentas
+automáticas las que tienen código de impuesto por defecto en el plan contable
+local; sin plan local, las de la plantilla del plan configurado. Si un error
+es correcto en un caso concreto, una persona con **Liberar la revisión fiscal
+antes de la exportación DATEV** lo libera con motivo; la liberación queda en
+el registro del lote y vale también si el mismo justificante está en un nuevo
+borrador. La revisión no modifica el lote.

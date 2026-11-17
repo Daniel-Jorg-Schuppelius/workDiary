@@ -89,6 +89,8 @@ return [
         'invalid_move' => 'Dieser Statuswechsel ist im Auftragsworkflow nicht vorgesehen.',
         'not_allowed' => 'Keine Berechtigung für diese Auftragsaktion.',
         'handover_via_order' => 'Die Abnahme erfordert ein signiertes Protokoll und wird direkt im Auftrag ausgeführt.',
+        // Prüfspalten und Prüfpflicht (Feature 198): Vorlage und Freigabe laufen im Auftrag.
+        'review_via_order' => 'Die interne Prüfung läuft über den Auftrag: Öffnen Sie ihn, um ihn zur Prüfung vorzulegen, freizugeben oder zurückzufragen.',
         'no_targets' => 'Für diese Karte gibt es aktuell keinen zulässigen Zug.',
     ],
     'entry_bar' => [

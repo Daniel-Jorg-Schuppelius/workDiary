@@ -339,7 +339,8 @@ class IncomingInvoiceTemplateController extends Controller {
         abort_unless($document->document_type === DocumentType::Invoice, 404);
         $user = $this->authorizeBilling();
         $incoming = IncomingEInvoice::query()->where('document_id', $document->id)->first();
-        abort_if($incoming === null || $incoming->recognition === IncomingInvoiceRecognition::Structured, 404);
+        // Aufgeteilte Sammel-PDF (Feature 208): Vorlagen entstehen an den Teilen.
+        abort_if($incoming === null || $incoming->recognition === IncomingInvoiceRecognition::Structured || $incoming->isSplitBundle(), 404);
 
         return [$incoming, $user];
     }
@@ -431,7 +432,7 @@ class IncomingInvoiceTemplateController extends Controller {
         return IncomingEInvoice::query()->withoutGlobalScopes()->with('document')
             ->where('organization_id', $organizationId)
             ->where('recognition', '!=', IncomingInvoiceRecognition::Structured->value)
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES)
             ->whereNull('transferred_at')
             ->when($supplierId !== null, static fn ($q) => $q->where(static fn ($w) => $w->where('supplier_id', $supplierId)->orWhereNull('supplier_id')))
             ->orderBy('id')

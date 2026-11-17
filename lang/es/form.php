@@ -16,6 +16,7 @@ return [
         'submission' => 'Formulario cumplimentado',
         'values' => 'Entradas',
         'panel' => 'Formularios',
+        'drafts' => 'Mis borradores',
     ],
 
     'subtitle' => [
@@ -65,6 +66,8 @@ return [
         'download_pdf' => 'Descargar PDF',
         'clear_signature' => 'Borrar firma',
         'back' => 'Volver',
+        'continue' => 'Seguir rellenando',
+        'discard' => 'Descartar borrador',
     ],
 
     'filter' => [
@@ -112,6 +115,17 @@ return [
 
         'no_upload_field' => 'No hay ningún campo de archivo/foto con esta clave en el formulario.',
         'template_not_active' => 'Esta plantilla no está activa y no se puede rellenar.',
+        'not_draft' => 'Este formulario ya no es un borrador.',
+    ],
+
+    // Entwürfe langer Formulare (Feature 203, MVP-1650).
+    'draft' => [
+        'resumed' => 'Se continúa su borrador (guardado por última vez :date). Solo se envía con «Enviar».',
+        'rebased' => 'La plantilla ha cambiado desde su borrador. Las respuestas cuyo tipo de respuesta ya no encaja se conservan como complemento en la pregunta.',
+        'saved_at' => 'Guardado por última vez :date',
+        'confirm_discard' => '¿Descartar realmente el borrador? Las respuestas guardadas se perderán.',
+        'discarded' => 'Borrador descartado.',
+        'show_hint' => 'Borrador: aún no enviado.',
     ],
 
     'flash' => [

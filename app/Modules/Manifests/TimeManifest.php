@@ -59,6 +59,8 @@ final class TimeManifest extends Manifest {
             'month_closure_events',
             'month_closures',
             'overtime_requests',
+            // Selbstauskunft am Anwesenheits-Board (Feature 103, MVP-1669).
+            'presence_statuses',
             'time_account_balances',
             'time_account_entries',
             'time_account_rules',
@@ -128,6 +130,14 @@ final class TimeManifest extends Manifest {
             ],
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\TimeExport\Retention\TimeRetentionPolicies::class,
+            ],
+            // Selbstauskunft am Anwesenheits-Board (Feature 103, MVP-1669).
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Attendance\Demo\PresenceStatusDemoBlock::class,
+            ],
+            // Der Anwesenheitsstand endet mit dem Austritt.
+            \App\Services\Org\Contracts\OffboardingStep::class => [
+                \App\Services\Attendance\Offboarding\PresenceStatusOffboardingStep::class,
             ],
         ];
     }

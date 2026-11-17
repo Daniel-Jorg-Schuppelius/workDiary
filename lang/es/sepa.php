@@ -91,6 +91,8 @@ return [
         'missing_iban' => 'Falta el IBAN',
         'zero_amount' => 'Importe 0',
         'iban_differs' => 'El IBAN difiere de los datos maestros',
+        'girocode_differs' => 'IBAN del GiroCode sin verificar — se requiere confirmación',
+        'bundle_unresolved' => 'PDF agrupado aún no dividido',
         'disputed' => 'Partida abierta en disputa',
     ],
 
@@ -100,6 +102,9 @@ return [
         'not_draft' => 'La remesa ya no es un borrador.',
         'not_released' => 'La remesa no está aprobada.',
         'four_eyes' => 'Principio de los cuatro ojos: quien preparó la remesa no puede aprobarla por sí mismo.',
+        'girocode_unconfirmed' => 'La factura :number lleva un GiroCode con un IBAN distinto. La remesa solo se puede aprobar después de confirmar la diferencia en la propuesta de pago.',
+        'position_held' => 'La factura :number está bloqueada para el pago (:reason). La remesa solo se puede aprobar después de aclararlo en la propuesta de pago.',
+        'confirmation_stale' => 'La situación ha cambiado desde que se cargó la página — compruébela y confírmela de nuevo.',
         'exported_final' => 'Una remesa exportada ya no se anula.',
         'invalid_amount' => 'El importe a pagar debe ser mayor que 0 y no puede superar el importe facturado.',
         'reason_required' => 'Un importe reducido requiere un motivo.',

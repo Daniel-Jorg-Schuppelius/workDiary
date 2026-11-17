@@ -115,6 +115,41 @@ final class PatrolFollowUpTest extends TestCase {
         $this->assertSame($this->admin->id, $entry->user_id);
     }
 
+    /**
+     * Prüfpflicht der Eintragsart (Feature 198): der Wachbucheintrag wird über
+     * den Lebenszyklus zur Prüfung vorgelegt statt als erledigt angelegt; ohne
+     * Prüfpflicht entsteht er wie bisher erledigt.
+     */
+    public function test_completion_submits_the_logbook_entry_for_review_when_the_entry_type_requires_it(): void {
+        $type = EntryType::factory()->create([
+            'organization_id' => $this->organization->id,
+            'slug' => 'revierfahrt',
+            'label' => 'Revierfahrt',
+            'requires_review' => true,
+        ]);
+
+        ['route' => $route, 'tokens' => $tokens] = $this->route();
+        $service = app(PatrolService::class);
+        $run = $service->start($route, $this->admin);
+        $service->scan($run, $tokens[0]);
+        $service->complete($run, $this->admin);
+
+        $entry = DiaryEntry::query()->firstOrFail();
+        $this->assertTrue($entry->requires_review);
+        $this->assertSame(\App\Enums\Diary\Status::InReview, $entry->status);
+        $this->assertSame($this->admin->id, (int) $entry->review_submitter_user_id);
+        $this->assertContains('order.submitReview', $entry->journal()->pluck('event')->all());
+
+        $type->forceFill(['requires_review' => false])->save();
+        $second = $service->start($route, $this->admin);
+        $service->scan($second, $tokens[0]);
+        $service->complete($second, $this->admin);
+
+        $plain = DiaryEntry::query()->whereKeyNot($entry->id)->firstOrFail();
+        $this->assertSame(\App\Enums\Diary\Status::Done, $plain->status);
+        $this->assertFalse($plain->requires_review);
+    }
+
     /** Ohne den Eintragstyp bleibt das Wachbuch bewusst leer — kein Zwang. */
     public function test_completion_without_entry_type_writes_no_logbook_entry(): void {
         ['route' => $route, 'tokens' => $tokens] = $this->route();

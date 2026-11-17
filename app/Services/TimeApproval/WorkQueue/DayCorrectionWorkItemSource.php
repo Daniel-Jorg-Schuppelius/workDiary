@@ -80,6 +80,8 @@ final class DayCorrectionWorkItemSource implements WorkItemSource {
                 title: (string) __('work-queue.item.day_correction', ['name' => $closure->user->name ?? '—']),
                 url: route(self::ROUTE, ['date' => $closure->day->toDateString(), 'user' => Sqid::encode(User::class, $closure->user_id)]),
                 detail: CarbonFmt::fdate($closure->day),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($correction->updated_at),
             );
         }
     }

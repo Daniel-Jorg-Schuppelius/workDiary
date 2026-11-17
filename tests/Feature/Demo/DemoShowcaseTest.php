@@ -48,11 +48,13 @@ final class DemoShowcaseTest extends TestCase {
             ->where('organization_id', $organization->id)
             ->where('attachable_type', MorphMap::alias(DiaryEntry::class))
             ->get();
-        $this->assertCount(2, $attachments);
+        // Zwei aus dem Schaufenster, dazu die Beispiel-Mail des Mail-Demo-Blocks (Feature 204).
+        $this->assertCount(3, $attachments);
         foreach ($attachments as $attachment) {
             Storage::disk('local')->assertExists($attachment->path);
         }
         $this->assertSame(1, $attachments->where('mime', 'application/pdf')->count());
+        $this->assertSame(1, $attachments->where('mime', 'message/rfc822')->count());
 
         // Prozedurlauf abgeschlossen, Backup verifiziert, Vier-Augen signiert.
         $run = ProcedureRun::query()->where('organization_id', $organization->id)->firstOrFail();
@@ -78,7 +80,8 @@ final class DemoShowcaseTest extends TestCase {
         // Verzeichnis (die Pfade sind deterministisch — alte wurden gelöscht,
         // bevor die neuen mit gleichem Namen entstanden).
         $this->assertCount(2, Storage::disk('local')->allFiles('attachments/demo/' . $organization->id));
-        $this->assertSame(2, Attachment::query()->where('organization_id', $organization->id)->where('attachable_type', '!=', \App\Support\MorphMap::alias(\App\Models\Travel\Expense::class))->count());
+        // Zwei Schaufenster-Anhänge plus die Beispiel-Mail (Feature 204), keine Doppel aus dem ersten Lauf.
+        $this->assertSame(3, Attachment::query()->where('organization_id', $organization->id)->where('attachable_type', '!=', \App\Support\MorphMap::alias(\App\Models\Travel\Expense::class))->count());
         // Demo-Belege der Auslagen (Belegpflicht, MVP-1619): je Auslage einer, die vom ersten Lauf sind weg.
         $expenseReceipts = Attachment::query()->where('organization_id', $organization->id)->where('attachable_type', \App\Support\MorphMap::alias(\App\Models\Travel\Expense::class))->count();
         $this->assertSame(\App\Models\Travel\Expense::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->count(), $expenseReceipts);

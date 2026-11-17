@@ -37,6 +37,9 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
     /** Zulässige Operatoren der Sichtbarkeits-Bedingung. */
     public const array CONDITION_OPS = ['eq', 'ne', 'in', 'filled'];
 
+    /** Schlüssel des Abschnitts vor dem ersten Abschnittsfeld (Feldschlüssel beginnen mit einem Buchstaben). */
+    public const string START_SECTION = '_start';
+
     /** @var list<FieldDefinition> */
     private array $fields;
 
@@ -120,6 +123,8 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
                 step: $step,
                 extension: self::extensionKey($row['extension'] ?? null),
                 listed: StringHelper::parseBool($row['listed'] ?? false) ?? false,
+                // Ergänzung zur Antwort nur bei Auswahlfragen (Feature 203, MVP-1651).
+                allowsNote: $type->needsOptions() && (StringHelper::parseBool($row['allows_note'] ?? false) ?? false),
             );
         }
         if ($fields === []) {
@@ -138,7 +143,7 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
      * Gegenstück zu {@see fromRows()}: Zeilen für `x-field-schema-editor`
      * (Optionen als Komma-Liste, Bedingungen über das Label des Bezugsfelds).
      *
-     * @return list<array{label: string, type: string, required: bool, listed: bool, options: string, help: string, unit: string, min: string, max: string, visible_if: array{field: string, op: string, value: string}}>
+     * @return list<array{label: string, type: string, required: bool, listed: bool, allows_note: bool, options: string, help: string, unit: string, min: string, max: string, visible_if: array{field: string, op: string, value: string}}>
      */
     public function toRows(): array {
         return array_map(fn (FieldDefinition $f): array => [
@@ -146,6 +151,7 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
             'type' => $f->type->value,
             'required' => $f->required,
             'listed' => $f->listed,
+            'allows_note' => $f->allowsNote,
             'options' => implode(', ', $f->options),
             'help' => (string) $f->help,
             'unit' => (string) $f->unit,
@@ -157,6 +163,47 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
                 'value' => (string) ($f->visibleIf['value'] ?? ''),
             ],
         ], $this->fields);
+    }
+
+    /**
+     * Gliederung an Abschnittsfeldern (Feature 203, MVP-1649): je Abschnitt
+     * sein Abschnittsfeld und die Felder bis zum nächsten. Felder vor dem
+     * ersten Abschnitt bilden einen Abschnitt ohne Kopf ({@see START_SECTION}).
+     *
+     * @return list<array{key: string, field: FieldDefinition|null, fields: list<FieldDefinition>}>
+     */
+    public function sections(): array {
+        $sections = [];
+        $current = null;
+        foreach ($this->fields as $field) {
+            if (! $field->type->hasValue()) {
+                if ($current !== null) {
+                    $sections[] = $current;
+                }
+                $current = ['key' => $field->key, 'field' => $field, 'fields' => []];
+
+                continue;
+            }
+            $current ??= ['key' => self::START_SECTION, 'field' => null, 'fields' => []];
+            $current['fields'][] = $field;
+        }
+        if ($current !== null) {
+            $sections[] = $current;
+        }
+
+        return $sections;
+    }
+
+    /** @return list<string> Schlüssel der Checkbox-Felder (nicht angehakt zählt als offen). */
+    public function booleanKeys(): array {
+        $keys = [];
+        foreach ($this->fields as $field) {
+            if ($field->type === FieldType::Boolean) {
+                $keys[] = $field->key;
+            }
+        }
+
+        return $keys;
     }
 
     /** @return list<DefinitionArray> */
@@ -293,7 +340,7 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
                 continue;
             }
             $condition = ['field' => $labelToKey[$ref], 'op' => $field->visibleIf['op'], 'value' => $field->visibleIf['value']];
-            $fields[$i] = new FieldDefinition($field->key, $field->type, $field->label, $field->required, $field->options, $field->help, $field->unit, $condition, $field->min, $field->max, $field->step, $field->extension);
+            $fields[$i] = $field->with(visibleIf: $condition, replaceVisibleIf: true);
         }
 
         return $fields;

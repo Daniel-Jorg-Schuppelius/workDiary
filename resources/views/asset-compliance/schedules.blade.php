@@ -71,6 +71,8 @@
                             @if ($schedule->status->isOpen() && $schedule->assignment !== null)
                                 <details class="inline-block text-left">
                                     <summary class="btn btn-xs btn-primary">{{ __('Prüfung erfassen') }}</summary>
+                                    {{-- Merker aus früheren Prüfungen dieser Pflicht und für die nächste (Feature 201, MVP-1646). --}}
+                                    <x-carry-forward-notes :subject="$schedule" :anchor="'carry-forward-' . $schedule->sqid" />
                                     @include('asset-compliance._inspection_form', ['assignment' => $schedule->assignment, 'schedule' => $schedule])
                                 </details>
                             @endif

@@ -1,8 +1,11 @@
 ---
 title: "Servicios de IA"
 topic: ai.services
-version: 5
+version: 6
 keywords:
+    - enmascaramiento
+    - contrato de encargo
+    - aprobación de protección de datos
     - IA
     - inteligencia artificial
     - asistente IA
@@ -80,3 +83,37 @@ lenguaje y en caracteres para las traducciones. Una vez alcanzado, workDiary
 rechaza con un aviso más llamadas de esta familia hasta final de mes; los
 mosaicos muestran el uso. Si queda vacío, se aplica el valor predeterminado del
 operador; sin él, el consumo es ilimitado.
+
+**Enmascaramiento:** Antes de cada conexión en la nube, workDiary sustituye
+IBAN, números de IVA, números fiscales, números de identificación fiscal,
+direcciones de correo y números de teléfono por marcadores como `[IBAN-1]` o
+`[EMAIL-2]`. Dentro de una misma solicitud, el mismo valor recibe siempre el
+mismo marcador. En borradores, resúmenes, traducciones y valores de campo
+reconocidos, workDiary restituye los valores antes de mostrarlos; el proveedor
+nunca los ve. Solo se reconoce lo que supera la comprobación (dígitos de
+control en IBAN, número de IVA e identificador fiscal); los importes y las
+fechas no se tocan. Los nombres de clientes de su propia base se siguen
+enmascarando siempre. Las conexiones locales ven los valores en texto claro
+mientras «Enmascarar también ante conexiones locales» esté desactivado en
+**Protección de datos**. El registro de auditoría cuenta los valores
+enmascarados por tipo, sin nombrarlos.
+
+**Aprobación de protección de datos:** Para cada conexión, «Aprobación de
+protección de datos» deja constancia de que existe un contrato de encargo del
+tratamiento (en servicios en la nube, con el documento), de que el tratamiento
+se realiza en la UE y de que el proveedor no entrena con sus datos, junto con
+la fecha y la persona que lo revisó. En una conexión local, el contrato solo es
+necesario si un proveedor de servicios opera el modelo. La aprobación vale
+tantos meses como se indique en **Protección de datos** (por defecto 12);
+30 días antes de caducar, la cola de trabajo lo recuerda. La aprobación y la
+revocación constan en el registro de auditoría. Las aprobaciones las concede
+quien tiene el derecho «Conceder y revocar la aprobación de protección de
+datos de conexiones de IA».
+
+**Solo conexiones aprobadas:** Si este interruptor de **Protección de datos**
+está activado, ninguna función de IA usa una conexión sin aprobación válida;
+la prueba previa y el mensaje de error indican el motivo. Las organizaciones
+nuevas empiezan con el interruptor activado. En las organizaciones que ya
+existían antes de esta versión permanece desactivado hasta que un
+administrador lo active; hasta entonces, las aprobaciones pendientes aparecen
+como tareas en la cola de trabajo.

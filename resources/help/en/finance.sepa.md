@@ -35,6 +35,12 @@ payment amount is then already reduced by the discount. Every position can be
 deselected; an invoice without an IBAN is shown as blocked and is not taken
 into the run.
 
+**GiroCode and combined PDF:** If the IBAN in an invoice’s GiroCode differs
+from the invoice or from the supplier master data, the position is blocked
+until someone with release permission confirms the difference via **Confirm
+IBAN**; releasing a run checks this again. A combined PDF whose invoice
+boundaries have not been decided yet is not paid.
+
 **Three steps:** compile (draft) → release → export. Releasing is a separate
 right: whoever compiles the run need not be allowed to release it. After the
 export the run is immutable; cancelling is possible only before that and

@@ -25,6 +25,8 @@ enum IncomingEInvoiceStatus: string implements HasStatusTransitions {
     case Rejected = 'rejected';
     case Question = 'question';
     case PaymentReleased = 'payment_released';
+    // Sammel-PDF (Feature 208, MVP-1662): in Teile aufgeteilt — bleibt als Nachweis, ist weder zahl- noch übergabefähig.
+    case Split = 'split';
 
     public function label(): string {
         return match ($this) {
@@ -33,6 +35,7 @@ enum IncomingEInvoiceStatus: string implements HasStatusTransitions {
             self::Rejected => (string) __('enums.invoicing.incoming_e_invoice_status.rejected'),
             self::Question => (string) __('enums.invoicing.incoming_e_invoice_status.question'),
             self::PaymentReleased => (string) __('enums.invoicing.incoming_e_invoice_status.payment_released'),
+            self::Split => (string) __('enums.invoicing.incoming_e_invoice_status.split'),
         };
     }
 
@@ -43,10 +46,10 @@ enum IncomingEInvoiceStatus: string implements HasStatusTransitions {
      */
     public function allowedTransitions(): array {
         return match ($this) {
-            self::Received => [self::Approved, self::Rejected, self::Question],
-            self::Question => [self::Approved, self::Rejected],
+            self::Received => [self::Approved, self::Rejected, self::Question, self::Split],
+            self::Question => [self::Approved, self::Rejected, self::Split],
             self::Approved => [self::PaymentReleased, self::Rejected],
-            self::Rejected, self::PaymentReleased => [],
+            self::Rejected, self::PaymentReleased, self::Split => [],
         };
     }
 }

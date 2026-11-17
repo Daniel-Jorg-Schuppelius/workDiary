@@ -20,7 +20,7 @@ use App\Notifications\GenericEventNotification;
 use App\Services\Security\{KnownDeviceService, SecurityEventLogger};
 use App\Support\MorphMap;
 use Illuminate\Auth\Events\{Failed, Lockout, Login, Logout, PasswordReset, PasswordResetLinkSent};
-use Illuminate\Support\Facades\{Log, Request};
+use Illuminate\Support\Facades\{Auth, Log, Request};
 
 /**
  * Persistiert Auth-Events ins Audit-Log (sofern ein User-Bezug existiert),
@@ -42,7 +42,17 @@ class AuthEventSubscriber {
         // `reauth`-Schranke vor Passkey, API-Token und E-Mail-Wechsel soll
         // nur ältere, womöglich übernommene Sitzungen aufhalten
         // (Sicherheitsaudit 2026-09-17, authflow-1).
-        \App\Support\Auth\RecentAuthentication::confirm(request());
+        // Nicht bei der Wiederherstellung über das „Angemeldet bleiben“-Cookie
+        // (SessionGuard::user() feuert dann ebenfalls Login, viaRemember ist
+        // vorher gesetzt): das Cookie allein ist keine frische Anmeldung
+        // (Sicherheitsprüfung Feature 205, M1).
+        $guard = Auth::guard($event->guard);
+        if (! ($guard instanceof \Illuminate\Auth\SessionGuard && $guard->viaRemember())) {
+            \App\Support\Auth\RecentAuthentication::confirm(request());
+        }
+        // Anmeldezeitpunkt der Sitzung: ein späterer Notaus beendet sie auch
+        // ohne Datenbank-Sitzungsspeicher (Feature 205, MVP-1657).
+        \App\Services\Auth\LoginPolicy\LoginPolicyGate::stampSession(request());
 
         if ($event->user instanceof User) {
             try {

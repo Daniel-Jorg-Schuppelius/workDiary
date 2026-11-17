@@ -62,6 +62,9 @@
                             <x-status-badge :tone="$candidate->is_local ? 'success' : 'warning'" size="xs">
                                 {{ $candidate->is_local ? __('ai.field.local') : __('ai.field.cloud') }}
                             </x-status-badge>
+                            @if (in_array((int) $candidate->id, $maskedIds ?? [], true))
+                                <x-status-badge tone="info" size="xs" :title="__('ai.privacy.masked_help')">{{ __('ai.privacy.masked') }}</x-status-badge>
+                            @endif
                             @if ($loop->first)
                                 <x-status-badge tone="info" size="xs">{{ __('ai.preview.primary') }}</x-status-badge>
                             @else

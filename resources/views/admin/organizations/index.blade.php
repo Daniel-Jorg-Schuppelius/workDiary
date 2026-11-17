@@ -72,6 +72,10 @@
                                 {{ __('Deaktiviert am :date', ['date' => $deactivatedAt->fdatetime()]) }}
                             </div>
                         @endif
+                        {{-- Notaus der Organisation (Feature 205, MVP-1657) --}}
+                        @if (isset($lockdowns[$org->id]))
+                            <x-status-badge tone="error" size="sm">{{ __('login_policy.badge.locked') }}</x-status-badge>
+                        @endif
                     </td>
                     <td class="font-mono text-sm text-muted">{{ $org->slug }}</td>
                     <td>
@@ -94,6 +98,15 @@
                                         data-entry-modal-trigger
                                         :href="route('admin.organizations.edit', $org)"
                                         :label="__('Bearbeiten')" />
+
+                            @if (isset($lockdowns[$org->id]) && auth()->user()?->isGlobalAdmin())
+                                <x-action-form :action="route('admin.organizations.lockdown.destroy', $org)" method="DELETE"
+                                               :confirm="__('login_policy.lockdown.confirm_platform_lift', ['name' => $org->name])"
+                                               confirm-icon="lock_open" confirm-tone="warning"
+                                               :confirm-label="__('login_policy.action.lift')">
+                                    <x-icon-btn icon="lock_open" tone="warning" type="submit" :label="__('login_policy.action.lift')" />
+                                </x-action-form>
+                            @endif
 
                             {{-- Daten-Export (DSGVO Art. 20): liefert ZIP --}}
                             <x-action-form :action="route('admin.organizations.export', $org)">

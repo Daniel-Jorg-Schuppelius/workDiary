@@ -14,7 +14,7 @@
 @php
     $isEdit = $template !== null;
     $conditionTemplate = ['field' => '', 'op' => 'eq', 'value' => ''];
-    $fieldTemplate = ['label' => '', 'type' => \App\Enums\Fields\FieldType::Text->value, 'required' => false, 'options' => '', 'help' => '', 'unit' => '', 'min' => '', 'max' => '', 'visible_if' => $conditionTemplate];
+    $fieldTemplate = ['label' => '', 'type' => \App\Enums\Fields\FieldType::Text->value, 'required' => false, 'allows_note' => false, 'options' => '', 'help' => '', 'unit' => '', 'min' => '', 'max' => '', 'visible_if' => $conditionTemplate];
     $fieldItems = old('fields', $isEdit ? \App\Services\Fields\FieldSchema::fromArray($template->fields ?? [])->toRows() : [$fieldTemplate]);
 @endphp
 
@@ -57,6 +57,6 @@
     </x-form-group>
 
     <x-form-group :legend="__('form.field.fields')" icon="list_alt" tone="info">
-        <x-field-schema-editor prefix="fields" :items="$fieldItems" />
+        <x-field-schema-editor prefix="fields" :items="$fieldItems" notes />
     </x-form-group>
 </x-modal>

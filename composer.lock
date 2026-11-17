@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f2b7d4ff2e5d3905ad8081dab9fff48",
+    "content-hash": "52fbb58a1d1ee61f2b1703d60d29aba9",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -628,16 +628,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/datev-php-sdk",
-            "version": "v1.3.0",
+            "version": "v1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk.git",
-                "reference": "d09404b43fb3e3bb6012d93ce9cf06a0f5f3d57c"
+                "reference": "c5914d81dfbb553d93d00632a8f55329f8e3f4ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/datev-php-sdk/zipball/d09404b43fb3e3bb6012d93ce9cf06a0f5f3d57c",
-                "reference": "d09404b43fb3e3bb6012d93ce9cf06a0f5f3d57c",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/datev-php-sdk/zipball/c5914d81dfbb553d93d00632a8f55329f8e3f4ff",
+                "reference": "c5914d81dfbb553d93d00632a8f55329f8e3f4ff",
                 "shasum": ""
             },
             "require": {
@@ -669,9 +669,9 @@
             "description": "DATEV SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/tree/v1.3.0"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/tree/v1.3.1"
             },
-            "time": "2026-11-11T20:43:21+00:00"
+            "time": "2026-11-12T08:04:47+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/lexoffice-php-sdk",
@@ -954,16 +954,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
-            "version": "v0.31.1",
+            "version": "v0.32.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit.git",
-                "reference": "98951097b8bbd047db5e5b7147273d6e911ad25f"
+                "reference": "abf6fcf4bd448613ef147ec3323e6c342337b631"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/98951097b8bbd047db5e5b7147273d6e911ad25f",
-                "reference": "98951097b8bbd047db5e5b7147273d6e911ad25f",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/abf6fcf4bd448613ef147ec3323e6c342337b631",
+                "reference": "abf6fcf4bd448613ef147ec3323e6c342337b631",
                 "shasum": ""
             },
             "require": {
@@ -1008,7 +1008,7 @@
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/issues",
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit"
             },
-            "time": "2026-11-08T10:02:33+00:00"
+            "time": "2026-11-12T22:34:16+00:00"
         },
         {
             "name": "darkaonline/l5-swagger",
@@ -6915,16 +6915,16 @@
         },
         {
             "name": "radebatz/type-info-extras",
-            "version": "1.0.13",
+            "version": "1.0.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DerManoMann/type-info-extras.git",
-                "reference": "925cc0472c1e4611df2a52c00852788ba6c1d7d4"
+                "reference": "08ac334a97e92c890eec6f644a6555fdf225fa8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DerManoMann/type-info-extras/zipball/925cc0472c1e4611df2a52c00852788ba6c1d7d4",
-                "reference": "925cc0472c1e4611df2a52c00852788ba6c1d7d4",
+                "url": "https://api.github.com/repos/DerManoMann/type-info-extras/zipball/08ac334a97e92c890eec6f644a6555fdf225fa8d",
+                "reference": "08ac334a97e92c890eec6f644a6555fdf225fa8d",
                 "shasum": ""
             },
             "require": {
@@ -6972,9 +6972,9 @@
             ],
             "support": {
                 "issues": "https://github.com/DerManoMann/type-info-extras/issues",
-                "source": "https://github.com/DerManoMann/type-info-extras/tree/1.0.13"
+                "source": "https://github.com/DerManoMann/type-info-extras/tree/1.0.14"
             },
-            "time": "2026-11-08T23:54:24+00:00"
+            "time": "2026-11-12T03:41:43+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
@@ -13864,16 +13864,16 @@
         },
         {
             "name": "zircote/swagger-php",
-            "version": "7.5.0",
+            "version": "7.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zircote/swagger-php.git",
-                "reference": "a97bfe5f47dfecebece09d87124e7770889ee97a"
+                "reference": "9e782a7b3132a11549ef32dd44bd04a344b01b33"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/a97bfe5f47dfecebece09d87124e7770889ee97a",
-                "reference": "a97bfe5f47dfecebece09d87124e7770889ee97a",
+                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/9e782a7b3132a11549ef32dd44bd04a344b01b33",
+                "reference": "9e782a7b3132a11549ef32dd44bd04a344b01b33",
                 "shasum": ""
             },
             "require": {
@@ -13889,14 +13889,13 @@
             },
             "conflict": {
                 "symfony/console": "<5.4.35",
-                "symfony/process": ">=6, <6.4.14",
                 "symfony/string": "<5.4.41"
             },
             "require-dev": {
                 "doctrine/annotations": "^2.0",
-                "friendsofphp/php-cs-fixer": "3.95.27",
+                "friendsofphp/php-cs-fixer": "3.95.29",
                 "phpbench/phpbench": "^1.7",
-                "phpstan/phpstan": "2.3.4",
+                "phpstan/phpstan": "2.3.5",
                 "phpunit/phpunit": "^11.5 || >=12.5.22",
                 "rector/rector": "2.8.3"
             },
@@ -13945,7 +13944,7 @@
             ],
             "support": {
                 "issues": "https://github.com/zircote/swagger-php/issues",
-                "source": "https://github.com/zircote/swagger-php/tree/7.5.0"
+                "source": "https://github.com/zircote/swagger-php/tree/7.6.0"
             },
             "funding": [
                 {
@@ -13953,7 +13952,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-08T21:58:41+00:00"
+            "time": "2026-11-12T02:54:11+00:00"
         }
     ],
     "packages-dev": [
@@ -16924,5 +16923,5 @@
         "php": "^8.5"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

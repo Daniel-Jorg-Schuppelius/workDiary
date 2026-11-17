@@ -1,7 +1,7 @@
 ---
 title: "DATEV posting batch"
 topic: finance.datev-bookings
-version: 6
+version: 7
 keywords:
     - DATEV export
     - tax advisor
@@ -15,6 +15,8 @@ keywords:
     - revenue account
     - accounting export
     - journal entries
+    - tax check
+    - missing VAT ID
 audience: []
 modules:
     - module.finance
@@ -136,3 +138,19 @@ country (8336/4336), domestic reverse charge (8337/4337), export (8120/4120),
 non-taxable sale in a third country (8338/4338). These are DATEV automatic
 accounts; the batch sets no tax key there. Tax-exempt domestic sales stay on the
 configured account for tax-exempt revenue.
+
+## Tax check before finalising
+
+The preview of a draft shows the **tax check** of the batch with a link to the
+document. **Errors** block **Finalize**: a record with a tax rate but without a
+BU key on an account that is not an automatic account; a tax-exempt
+intra-Community supply or reverse charge in another EU country without the
+customer's VAT ID; a deactivated account of the local chart of accounts.
+**Notes** list records whose tax rate differs from the code of the automatic
+account, and domestic reverse charge without a VAT ID. Automatic accounts are
+the accounts with a default tax code in the local chart of accounts, without a
+local chart those of the template for the configured chart. If an error is
+correct in a particular case, a person with **Release the tax check before the
+DATEV export** releases it with a reason; the release is recorded in the
+batch log and also applies when the same document is in a new draft. The check
+does not change the batch.

@@ -179,6 +179,11 @@ return [
         ],
     ],
     'warning' => [
+        'customer_deadline_overdue' => [
+            'title' => 'Échéances dépassées chez :name',
+            'detail' => 'Échéance(s) dépassée(s) : :count, la plus ancienne du :date.',
+            'recommendation' => 'Recommandation : traiter l’échéance, demander une prolongation ou clarifier la responsabilité — la personne responsable a déjà été relancée.',
+        ],
         'capacity' => [
             'title' => 'Manque de capacité dans l\'équipe :name',
             'detail' => 'Semaine du :week : :percent % de la capacité planifiés.',
@@ -219,6 +224,17 @@ return [
         ],
     ],
     // Management-Auswertung (MVP-926).
+    // Durchlaufzeit je Auftragstyp in der Auftragstypanalyse (Feature 179, MVP-1670)
+    'lead_time' => [
+        'title' => 'Délai de traitement par type de commande',
+        'subtitle' => 'Commandes clôturées sur la période : médiane des jours de la création à la clôture. Mesuré par commande, jamais par personne.',
+        'empty' => 'Aucune commande n’a été clôturée sur la période.',
+        'column' => [
+            'type' => 'Type de commande',
+            'completed' => 'Clôturées',
+            'median' => 'Médiane (jours)',
+        ],
+    ],
     'management' => [
         'title' => 'Analyse de direction',
         'nav' => 'Problèmes et formation',
@@ -264,6 +280,10 @@ return [
             'qualifications_expiring' => 'À ce jour · expirent sous :days jours : :count',
             'vacation_pending' => 'Demandes de congé ouvertes',
             'vacation_pending_hint' => 'À ce jour · début dans les 14 prochains jours : :count',
+            // Durchlaufzeit je Auftragsart (Feature 179, MVP-1670)
+            'lead_time' => 'Délai de traitement : :type',
+            'lead_time_days' => '{1} :days jour|[0,*] :days jours',
+            'lead_time_hint' => 'Médiane de la création à la clôture · :count clôtures sur 12 mois',
         ],
         'digest' => [
             'subject' => 'Rapport de direction :organization · :range',
@@ -278,6 +298,7 @@ return [
             'capacity' => 'Manques de personnel',
             'project_target' => 'Temps cibles non atteints',
             'resale_unbilled' => 'Abonnements sans facture',
+            'customer_deadline_overdue' => 'Échéances clients dépassées',
         ],
     ],
     'product_revenue' => [

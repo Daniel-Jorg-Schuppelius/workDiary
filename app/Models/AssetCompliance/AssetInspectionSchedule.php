@@ -16,8 +16,10 @@ use App\Enums\AssetCompliance\AssetInspectionScheduleStatus;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Contacts\ExternalContact;
+use App\Models\Contracts\PeriodicOccurrence;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
+use App\Support\Period\PeriodKey;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,6 +27,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Prüftermin (MVP-285): geplante Durchführung mit internem Prüfer oder
  * externer Prüfstelle; externe Prüfer liefern Nachweise über einen
  * begrenzten Zugang (Feature 033). Attachments = angeforderte Unterlagen.
+ *
+ * Vorkommen der Merker für die nächste Periode (Feature 201, MVP-1646): Reihe
+ * ist die Prüfpflicht ({@see AssetComplianceAssignment::carryForwardSeries()}),
+ * Periode die Fälligkeit in der Art des Prüfintervalls. Ein Prüftermin ist ein
+ * Einzeltermin (nach der Prüfung erledigt); die Pflicht verbindet die Termine.
  *
  * @property int $id
  * @property int $organization_id
@@ -36,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property AssetInspectionScheduleStatus $status
  * @property string|null $cancel_reason
  */
-class AssetInspectionSchedule extends Model {
+class AssetInspectionSchedule extends Model implements PeriodicOccurrence {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -67,6 +74,14 @@ class AssetInspectionSchedule extends Model {
     /** @return BelongsTo<AssetComplianceAssignment, $this> */
     public function assignment(): BelongsTo {
         return $this->belongsTo(AssetComplianceAssignment::class, 'asset_compliance_assignment_id');
+    }
+
+    public function carryForwardSeries(): ?string {
+        return $this->assignment?->carryForwardSeries();
+    }
+
+    public function carryForwardPeriod(): ?PeriodKey {
+        return $this->assignment?->carryForwardPeriodAt($this->due_on);
     }
 
     /** @return BelongsTo<Asset, $this> */

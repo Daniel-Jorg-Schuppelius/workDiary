@@ -528,12 +528,70 @@ class IncomingEInvoiceService {
 
     private function duplicateOf(int $organizationId, string $sha256): ?\App\Models\Invoicing\IncomingEInvoice {
         // Inhaltsbasierter Dedup (MVP-165): identische Datei je Org genau einmal —
-        // auch kanalübergreifend (Upload nach Mail bleibt Dublette).
+        // auch kanalübergreifend (Upload nach Mail bleibt Dublette). Eine schon
+        // aufgeteilte Sammel-PDF (MVP-1662) erkennt ihr Hash an den Teilen.
         return \App\Models\Invoicing\IncomingEInvoice::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
-            ->where('sha256', $sha256)
+            ->where(static fn ($hash) => $hash->where('sha256', $sha256)->orWhere('source_sha256', $sha256))
+            ->orderBy('id')
             ->first();
+    }
+
+    /**
+     * Erkennung eines Teils einer Sammel-PDF (MVP-1662) — Text, OCR und
+     * KI-Rückfall, ohne Datenbankschreibzugriff. Der Aufteiler ruft sie vor
+     * der Transaktion auf, damit keine Sperre über die Erkennung gehalten wird.
+     *
+     * @return array<string, mixed>
+     */
+    public function analyzePart(\App\Models\Platform\User $actor, string $contents, string $fileName): array {
+        return $this->analyze($actor, $contents, 'application/pdf', null, $fileName);
+    }
+
+    /** Liegt diese Datei (Hash) in der Organisation schon als Eingang vor? */
+    public function isKnownFile(int $organizationId, string $sha256): bool {
+        return $this->duplicateOf($organizationId, $sha256) !== null;
+    }
+
+    /**
+     * Teil einer bestätigten Sammel-PDF als eigenen Eingang ablegen (MVP-1662):
+     * Dublettenprüfung über den Hash des Teils, die Erkennung kommt fertig
+     * mit ({@see analyzePart()}), die Teil-PDF wird abgeleitetes Dokument mit
+     * Verweis auf Original und Seiten; Eingangszeit wie das Original.
+     * Rechnungsnummer und Absender prüft der Eingang beim Speichern selbst
+     * ({@see \App\Models\Invoicing\IncomingEInvoice::refreshDuplicate()}).
+     *
+     * @param  array<string, mixed>  $summary
+     * @return array{status: 'created'|'duplicate'|'discarded', incoming: ?\App\Models\Invoicing\IncomingEInvoice}
+     */
+    public function storePart(\App\Models\Platform\User $actor, \App\Models\Invoicing\IncomingEInvoice $container, string $contents, array $summary, string $fileName, int $from, int $to): array {
+        $document = $container->document;
+        if ($document === null || (int) $actor->organization_id !== (int) $container->organization_id) {
+            throw new \RuntimeException((string) __('incoming_pdf.split.error.original_missing'));
+        }
+        $sha256 = CryptoHelper::hash($contents);
+        $duplicate = $this->duplicateOf((int) $container->organization_id, $sha256);
+        if ($duplicate !== null) {
+            return ['status' => 'duplicate', 'incoming' => $duplicate];
+        }
+
+        $containerSummary = (array) $container->summary;
+        $origin = new IncomingOrigin(
+            $container->sender_email,
+            $container->source_reference,
+            is_string($containerSummary['mail_subject'] ?? null) ? $containerSummary['mail_subject'] : null,
+            array_values(array_filter((array) ($containerSummary['mail_attachments'] ?? []), 'is_string')),
+        );
+        $stored = $this->persist($actor, $sha256, $contents, 'application/pdf', $container->source, null, $fileName, $summary, $origin, [
+            'document' => $document,
+            'from' => $from,
+            'to' => $to,
+            'sha256' => $container->sha256,
+            'received_at' => $container->received_at,
+        ]);
+
+        return ['status' => $stored['incoming']->exists ? 'created' : 'discarded', 'incoming' => $stored['incoming']->exists ? $stored['incoming'] : null];
     }
 
     /**
@@ -590,6 +648,7 @@ class IncomingEInvoiceService {
      * Klärfall mit dem Original und leeren Werten.
      *
      * @param  array<string, mixed>|null  $summary
+     * @param  array{document: \App\Models\Document\Document, from: int, to: int, sha256: string, received_at: \Illuminate\Support\Carbon}|null  $partOf  Teil einer Sammel-PDF (MVP-1662)
      * @return array{incoming: \App\Models\Invoicing\IncomingEInvoice, document: \App\Models\Document\Document}
      */
     private function persist(
@@ -602,6 +661,7 @@ class IncomingEInvoiceService {
         ?string $originalName,
         ?array $summary,
         ?IncomingOrigin $origin,
+        ?array $partOf = null,
     ): array {
         $organizationId = (int) $actor->organization_id;
         $summary ??= $this->unrecognizedSummary();
@@ -621,6 +681,16 @@ class IncomingEInvoiceService {
             ...$this->documentAttributes($recognition, $summary, $originalName ?? $sha256),
             'document_type' => \App\Enums\Document\DocumentType::Invoice->value,
         ];
+        if ($partOf !== null) {
+            // Abgeleitetes Dokument (MVP-1662): Verweis auf Original und Seiten, Vertraulichkeit wie das Original.
+            $attributes['description'] = mb_substr($attributes['description'] . ' · ' . __('incoming_pdf.split.part_description', [
+                'title' => $partOf['document']->title,
+                'from' => $partOf['from'],
+                'to' => $partOf['to'],
+            ]), 0, 1000);
+        }
+        // Sammel-PDF (MVP-1662): mehrseitige PDF ohne E-Rechnungsdaten wartet auf die Grenzerkennung im Job.
+        $split = $partOf === null ? \App\Services\Invoicing\Split\IncomingInvoiceSplitter::initialState($contents, $recognition) : null;
 
         $documents = app(\App\Services\Document\DocumentService::class);
         if ($file !== null) {
@@ -635,6 +705,7 @@ class IncomingEInvoiceService {
                 'status' => \App\Enums\Document\DocumentStatus::Active->value,
                 'description' => $attributes['description'],
                 'created_by_user_id' => $actor->id,
+                'confidential' => $partOf !== null && $partOf['document']->confidential,
             ]);
             $documents->addVersionFromContents($document, $actor, $contents, $originalName ?? ('e-rechnung-' . $sha256 . ($mime !== null && str_contains($mime, 'pdf') ? '.pdf' : '.xml')), $mime);
         }
@@ -646,7 +717,7 @@ class IncomingEInvoiceService {
             'source' => $source,
             'sender_email' => $origin?->senderEmail !== null ? mb_substr(mb_strtolower(trim($origin->senderEmail)), 0, 191) : null,
             'source_reference' => $origin?->reference !== null ? mb_substr($origin->reference, 0, 191) : null,
-            'received_at' => now(),
+            'received_at' => $partOf['received_at'] ?? now(),
             'status' => \App\Enums\Invoicing\IncomingEInvoiceStatus::Received,
             'direction' => $classification['direction'],
             'kind' => $classification['kind'],
@@ -654,7 +725,21 @@ class IncomingEInvoiceService {
             'template_id' => is_array($summary['extraction']['template'] ?? null) ? (int) ($summary['extraction']['template']['id'] ?? 0) ?: null : null,
             'summary' => $summary,
             ...\App\Models\Invoicing\IncomingEInvoice::columnsFromSummary($summary),
+            ...($partOf === null ? [] : [
+                'source_document_id' => $partOf['document']->id,
+                'source_page_from' => $partOf['from'],
+                'source_page_to' => $partOf['to'],
+                'source_sha256' => $partOf['sha256'],
+            ]),
         ]);
+        // Sammel-PDF und GiroCode (MVP-1662/1663): Stand für die Seitenarbeit im Job vormerken.
+        $pages = self::previewMime($contents) !== null;
+        if ($split !== null || $pages) {
+            $incoming->forceFill([
+                ...($split !== null ? ['split_proposal' => $split] : []),
+                ...($pages ? ['girocode' => ['status' => \App\Services\Invoicing\GiroCode\GiroCodeReader::PENDING]] : []),
+            ])->saveQuietly();
+        }
 
         // Eingebettete Unterlagen (BG-24, Feature 196) als Begleitdateien des Eingangs.
         if ($recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured) {
@@ -670,11 +755,14 @@ class IncomingEInvoiceService {
         ]);
 
         // Posteingangsregeln (MVP-1209): erste passende Regel gewinnt — danach kein Abgleich mehr.
-        if ($this->applyRules($incoming)) {
-            return ['incoming' => $incoming, 'document' => $document];
+        if (! $this->applyRules($incoming)) {
+            // Gegenpartei nur bei eindeutigem, exaktem Treffer (MVP-1108).
+            app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
         }
-        // Gegenpartei nur bei eindeutigem, exaktem Treffer (MVP-1108).
-        app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
+        // Sammel-PDF und GiroCode (MVP-1662/1663): Rastern und Lesen in der Medien-Warteschlange, nie im Request.
+        if ($incoming->exists && $pages) {
+            \App\Jobs\Invoicing\AnalyzeIncomingInvoicePagesJob::dispatch((int) $incoming->id, (int) $incoming->organization_id)->afterCommit();
+        }
 
         return ['incoming' => $incoming, 'document' => $document];
     }
@@ -749,6 +837,9 @@ class IncomingEInvoiceService {
                 'actor_user_id' => $actor?->id,
             ]);
             $incoming->delete();
+            // Abgeleitete Seitenbilder (Feature 208, M5): Vorschau der Sammel-PDF und Zonen-Editor.
+            app(\App\Services\Invoicing\Split\IncomingInvoiceSplitter::class)->forgetImages($incoming);
+            \Illuminate\Support\Facades\Storage::disk('local')->deleteDirectory(\App\Services\Invoicing\Recognition\PageImages::directoryFor($incoming));
             if ($document !== null) {
                 app(\App\Services\Document\DocumentService::class)->purge($document, $actor, $reason);
             }
@@ -766,7 +857,7 @@ class IncomingEInvoiceService {
     public static function isReanalyzable(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
         return in_array($incoming->recognition, [\App\Enums\Invoicing\IncomingInvoiceRecognition::None, \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted], true)
             && $incoming->transferred_at === null
-            && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected
+            && ! $incoming->isClosed()
             && ! isset(((array) $incoming->summary)['manual']);
     }
 

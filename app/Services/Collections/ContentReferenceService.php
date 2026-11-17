@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Collections;
 
 use App\Models\Ideas\{IdeaMap, IdeaNode};
-use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
+use App\Models\Knowledge\{ContentReference, KnowledgeArticle, KnowledgePage};
 use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
@@ -136,6 +136,10 @@ class ContentReferenceService {
             ->when($withoutKnowledgeLinks, static fn ($q) => $q->whereNot(static fn ($w) => $w
                 ->where('source_type', (new KnowledgeArticle())->getMorphClass())
                 ->where('kind', ContentReference::KIND_LINKED)))
+            // Verknüpfungen der Wissensseiten (Feature 191) zeigen Cockpit und Karte „Wissensseiten“.
+            ->whereNot(static fn ($w) => $w
+                ->where('source_type', (new KnowledgePage())->getMorphClass())
+                ->where('kind', ContentReference::KIND_LINKED))
             ->orderByDesc('id')
             ->get();
 

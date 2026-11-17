@@ -80,6 +80,8 @@ final class ShiftExchangeWorkItemSource implements WorkItemSource {
                 detail: $shift !== null ? trim(CarbonFmt::fdate($shift->date) . ' ' . ($shift->shiftType->abbreviation ?? $shift->shiftType->name ?? '')) : null,
                 dueAt: $shift !== null ? CarbonImmutable::instance($shift->date) : null,
                 personal: $toAccept,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($exchange->updated_at),
             );
         }
     }

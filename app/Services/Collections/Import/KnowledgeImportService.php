@@ -15,11 +15,12 @@ namespace App\Services\Collections\Import;
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType};
 use App\Models\Communication\CommunicationNote;
 use App\Models\Integration\ExternalReference;
-use App\Models\Knowledge\{ContentCollection, KnowledgeArticle};
+use App\Models\Knowledge\{ContentCollection, KnowledgeArticle, KnowledgeSpace};
 use App\Models\Platform\{Organization, User};
 use App\Services\Collections\{ContentCollectionService, ContentReferenceService};
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Knowledge\KnowledgeArticleService;
+use App\Services\Knowledge\Pages\KnowledgePageImporter;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -38,6 +39,9 @@ class KnowledgeImportService {
 
     public const string TARGET_ARTICLE = 'knowledge_article';
 
+    /** Wissensseiten (Feature 191, MVP-1664): Notizbuch wird Bereich, Abschnitt wird Rubrik. */
+    public const string TARGET_PAGE = 'knowledge_page';
+
     /** Obergrenze neuer Inhalte je Lauf; ein weiterer Lauf setzt fort. */
     public const int MAX_DOCUMENTS = 300;
 
@@ -50,6 +54,7 @@ class KnowledgeImportService {
         private readonly ContentReferenceService $references,
         private readonly CommunicationNoteService $notes,
         private readonly KnowledgeArticleService $articles,
+        private readonly KnowledgePageImporter $pages,
     ) {}
 
     /**
@@ -59,7 +64,10 @@ class KnowledgeImportService {
     public function import(Organization $organization, User $actor, string $pluginId, string $externalType, string $rootTitle, string $target, iterable $documents, bool $limited = false): KnowledgeImportReport {
         $report = new KnowledgeImportReport;
         $report->limited = $limited;
-        $root = $this->collection($organization, $actor, null, $rootTitle, $report);
+        // Wissensseiten ordnen sich in Bereich und Rubriken statt in Sammlungen.
+        $space = $target === self::TARGET_PAGE ? $this->pages->space($organization->id, $actor, $rootTitle) : null;
+        $report->space = $space;
+        $root = $space === null ? $this->collection($organization, $actor, null, $rootTitle, $report) : null;
         $report->root = $root;
 
         $byName = [];
@@ -83,19 +91,23 @@ class KnowledgeImportService {
                 continue;
             }
 
-            $model = $target === self::TARGET_ARTICLE
-                ? $this->article($actor, $document, $report)
-                : $this->note($organization, $actor, $document, $report);
+            $model = match (true) {
+                $space instanceof KnowledgeSpace => $this->pages->importDocument($space, null, $actor, $document),
+                $target === self::TARGET_ARTICLE => $this->article($actor, $document, $report),
+                default => $this->note($organization, $actor, $document, $report),
+            };
             ExternalReference::link($organization, $pluginId, $externalType, $model, $document->externalId, [
                 'source' => Str::limit($document->sourceLabel, 500, '…'),
                 'imported_by' => $actor->id,
             ]);
 
-            $collection = $root;
-            foreach (array_slice($document->folders, 0, ContentCollection::MAX_DEPTH - 1) as $folder) {
-                $collection = $this->collection($organization, $actor, $collection, $folder, $report);
+            if ($root instanceof ContentCollection) {
+                $collection = $root;
+                foreach (array_slice($document->folders, 0, ContentCollection::MAX_DEPTH - 1) as $folder) {
+                    $collection = $this->collection($organization, $actor, $collection, $folder, $report);
+                }
+                $this->collections->addItem($collection, $actor, $model);
             }
-            $this->collections->addItem($collection, $actor, $model);
 
             $report->created++;
             $this->remember($byName, $document, $model);
@@ -115,7 +127,7 @@ class KnowledgeImportService {
             }
         }
 
-        $root->audit('collection.imported', ['plugin' => $pluginId, 'type' => $externalType, ...$report->counts()]);
+        ($root ?? $space)->audit('collection.imported', ['plugin' => $pluginId, 'type' => $externalType, ...$report->counts()]);
 
         return $report;
     }

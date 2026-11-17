@@ -69,6 +69,13 @@
             "description": "deploy.sh: Stand von origin/main und Submodul installscript",
             "package": "git",
             "arguments": []
+        },
+        "zbarimg": {
+            "path": "zbarimg",
+            "required": true,
+            "description": "GiroCode im Rechnungseingang lesen (Feature 208, MVP-1663; BarcodeHelper des pdf-toolkit) — im pdf-toolkit optional, hier erforderlich, damit der Installer zbar-tools im Deploy einrichtet; fehlt es, meldet der Eingang „GiroCode nicht lesbar“",
+            "package": "zbar-tools",
+            "arguments": []
         }
     }
 }

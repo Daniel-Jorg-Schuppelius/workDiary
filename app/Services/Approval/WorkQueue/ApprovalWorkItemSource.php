@@ -58,6 +58,8 @@ final class ApprovalWorkItemSource implements WorkItemSource {
                 url: route('approvals.index'),
                 detail: implode(' · ', array_filter([$entry->type, $entry->reference])) ?: null,
                 personal: (((array) $approval->approver_rule)['type'] ?? null) === 'user',
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($approval->updated_at),
             );
         }
     }

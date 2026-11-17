@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\VatFilingInterval;
+use App\Enums\Period\PeriodKind;
 use App\Models\Accounting\{AccountingVatExtension, AccountingVatFilingPeriod};
 use App\Models\Platform\{Organization, User};
+use App\Services\Calendar\Filing\FilingProfile;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -54,6 +56,25 @@ class VatFilingProfileResolver {
         $period = $this->periodAt($organization, $date);
 
         return $period instanceof AccountingVatFilingPeriod ? $period->interval : VatFilingInterval::Quarterly;
+    }
+
+    /**
+     * Meldeprofil der eigenen Organisation für den Fristenrechner im Kalender
+     * (Feature 197, MVP-1631): Turnus und Dauerfristverlängerung am Stichtag,
+     * Beratung als Angabe der Organisation. Ohne Feiertagsregion — die eigenen
+     * Fristen rechnen wie bisher mit dem Kalender der Organisation (Rechtsraum
+     * samt eigener Feiertage).
+     */
+    public function filingProfile(Organization $organization, ?CarbonInterface $date = null, bool $advised = false): FilingProfile {
+        return new FilingProfile(
+            vatInterval: match ($this->at($organization, $date)) {
+                VatFilingInterval::Monthly => PeriodKind::Month,
+                VatFilingInterval::Quarterly => PeriodKind::Quarter,
+                default => null,
+            },
+            vatExtension: $this->hasExtension($organization, $date),
+            taxAdvised: $advised,
+        );
     }
 
     public function periodAt(Organization $organization, ?CarbonInterface $date = null): ?AccountingVatFilingPeriod {

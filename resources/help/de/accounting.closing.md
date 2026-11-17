@@ -1,7 +1,7 @@
 ---
 title: "Abschluss und Auswertungen"
 topic: accounting.closing
-version: 3
+version: 4
 keywords:
     - Monatsabschluss
     - Jahresabschluss
@@ -15,6 +15,10 @@ keywords:
     - Plan-Ist-Vergleich
     - Z3-Export
     - Betriebsprüfung
+    - DATEV-Steuerprüfung
+    - Automatikkonto
+    - BU 40
+    - USt-IdNr. fehlt
 audience:
     - admin
     - geschaeftsfuehrung
@@ -70,3 +74,19 @@ die Buchung darauf hin, gebucht wird trotzdem. In der Liquiditätsvorschau
 ergänzen Sie **Planpositionen** (etwa Steuervorauszahlungen oder Kreditraten);
 jeden Montag hält die App den Wochenstand fest, und „Plan/Ist“ vergleicht ihn
 später mit den tatsächlichen Kontobewegungen.
+
+**Steuerprüfung vor dem DATEV-Export:** **Prüfen und exportieren** bei der
+DATEV-Übergabe zeigt zuerst die Befunde des Zeitraums, jeweils mit Sprung zur
+Buchung. **Fehler** sperren den Export: eine Erlös- oder Aufwandszeile ohne
+Steuerkennzeichen, obwohl die Buchung Umsatz- oder Vorsteuer ausweist; eine
+innergemeinschaftliche Lieferung oder Steuerschuld des Empfängers im übrigen
+Gemeinschaftsgebiet ohne USt-IdNr. des Partners; eine Buchung auf einem
+stillgelegten Konto. **Hinweise** sind zur Durchsicht: Buchungssätze, auf denen
+der Export die Automatik des Kontos mit BU 40 aufhebt (mit Anzahl und Konto),
+ein Steuersatz, der vom Kennzeichen des Automatikkontos abweicht, und die
+inländische Steuerschuld des Empfängers ohne USt-IdNr. Die Prüfung liest die
+Automatikkonten des Kontenplans und ändert nichts an der Datei. Ein Fehler
+verschwindet, sobald die Buchung oder die Stammdaten berichtigt sind. Ist er in
+Ihrem Fall richtig, gibt ihn eine Person mit dem Recht **Steuerprüfung vor dem
+DATEV-Export freigeben** mit Begründung frei; die Freigabe steht in der
+Nachweiskette der Buchhaltung und gilt nur für die angezeigten Fehler.

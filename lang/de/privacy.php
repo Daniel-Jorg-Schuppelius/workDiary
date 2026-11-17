@@ -28,6 +28,7 @@ return [
         'appointment_requests' => 'Terminanfragen (entschieden)',
         'marketplace_buyers' => 'Käuferdaten von Marktplatz-Bestellungen',
         'leads' => 'Leads (nicht konvertiert)',
+        'lead_intakes' => 'Aufnahmeakten (nach Ablauf der Aufbewahrung)',
         'applications' => 'Bewerbungen (abgelehnt/zurückgezogen)',
         'privacy_requests' => 'Betroffenenanfragen (abgeschlossen)',
         'cti_calls' => 'CTI-Anrufmetadaten',

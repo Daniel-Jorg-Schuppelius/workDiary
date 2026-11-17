@@ -15,9 +15,11 @@ namespace Tests\Feature\Org;
 use App\Models\Asset\{Asset, AssetAssignment};
 use App\Models\Communication\Comment;
 use App\Models\Diary\DiaryEntry;
+use App\Models\Knowledge\KnowledgeSpace;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
+use App\Services\Knowledge\Pages\{KnowledgePageService, KnowledgeReadingService};
 use App\Services\Org\UserOffboardingService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -130,6 +132,25 @@ final class MemberOffboardingTest extends TestCase {
         $this->assertTrue($service->hasEvidence($member));
         $this->actingAs($this->admin)->delete(route('org.members.destroy', $member))->assertRedirect();
         $this->assertNotNull(User::query()->find($member->id));
+    }
+
+    /** Lesebestätigungen der Wissensseiten sind Nachweise wie die Kenntnisnahme in der Personalakte. */
+    public function test_knowledge_read_confirmations_count_as_evidence(): void {
+        $service = app(UserOffboardingService::class);
+        $this->assertSame('user_id', (new \ReflectionClass($service))->getConstant('EVIDENCE_TABLES')['knowledge_page_reads'] ?? null);
+
+        $member = $this->member();
+        $this->assertFalse($service->hasEvidence($member));
+
+        $pages = app(KnowledgePageService::class);
+        $space = KnowledgeSpace::factory()->create(['organization_id' => $this->org->id]);
+        $page = $pages->approve($pages->create($space, null, null, $this->admin, ['title' => 'Arbeitsschutz', 'body' => 'Fassung eins']), $this->admin);
+        app(KnowledgeReadingService::class)->confirm($page, $member);
+
+        $this->assertTrue($service->hasEvidence($member));
+        $this->actingAs($this->admin)->delete(route('org.members.destroy', $member))->assertRedirect();
+        $this->assertNotNull(User::query()->find($member->id));
+        $this->assertDatabaseHas('knowledge_page_reads', ['knowledge_page_id' => $page->id, 'user_id' => $member->id]);
     }
 
     public function test_destroy_without_evidence_still_works(): void {

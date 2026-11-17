@@ -57,6 +57,8 @@ final class InvoiceInquiryWorkItemSource implements WorkItemSource {
                 title: (string) __('work-queue.item.invoice_inquiry', ['number' => $inquiry->invoice_number]),
                 url: route(self::ROUTE),
                 detail: $inquiry->from_name ?: $inquiry->from_email,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($inquiry->updated_at),
             );
         }
     }

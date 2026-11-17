@@ -84,6 +84,8 @@ return [
         'invalid_move' => 'Ce changement de statut n\'est pas prévu dans le flux de travail de la commande.',
         'not_allowed' => 'Vous n\'êtes pas autorisé à effectuer cette action sur la commande.',
         'handover_via_order' => 'La réception nécessite un protocole signé et s\'effectue directement dans la commande.',
+        // Prüfspalten und Prüfpflicht (Feature 198): Vorlage und Freigabe laufen im Auftrag.
+        'review_via_order' => 'La vérification interne passe par la commande : ouvrez-la pour la soumettre à vérification, la valider ou poser une question.',
         'no_targets' => 'Aucun déplacement autorisé n\'est actuellement possible pour cette carte.',
     ],
     'entry_bar' => [

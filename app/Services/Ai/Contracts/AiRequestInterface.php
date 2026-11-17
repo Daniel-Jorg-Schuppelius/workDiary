@@ -30,4 +30,13 @@ interface AiRequestInterface {
 
     /** Grobe Einheiten-Schätzung (LLM: Token, Übersetzung: Zeichen). */
     public function estimatedUnits(): int;
+
+    /**
+     * Kopie, in der jeder Freitext, den der Anbieter zu sehen bekommt, durch
+     * `$map` läuft (Maskierung, MVP-1671). Steuerwerte wie Sprache, Katalog,
+     * Schema, Stilregeln und Glossar bleiben unverändert.
+     *
+     * @param  \Closure(string): string  $map
+     */
+    public function mapTexts(\Closure $map): static;
 }

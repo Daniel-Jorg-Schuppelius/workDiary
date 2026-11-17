@@ -210,7 +210,7 @@ class PaymentRunTest extends TestCase {
 
         // Auditierte Bestätigung durch einen Freigabe-Berechtigten hebt den Blocker.
         $this->actingAs($this->admin)
-            ->post(route('finance.payment-runs.proposals.confirm-iban', ['invoice' => $invoice]))
+            ->post(route('finance.payment-runs.proposals.confirm-iban', ['invoice' => $invoice]), ['token' => app(PaymentProposalService::class)->confirmationToken($invoice)])
             ->assertRedirect();
 
         $invoice->refresh();

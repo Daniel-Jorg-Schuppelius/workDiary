@@ -90,6 +90,7 @@ return [
         'failed' => 'Fallido',
         'voided' => 'Anulado',
         'cancelled' => 'Cancelado',
+        'tax_check_released' => 'Revisión fiscal liberada con motivo',
     ],
 
     'hint' => [

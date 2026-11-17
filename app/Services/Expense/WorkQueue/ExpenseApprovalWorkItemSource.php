@@ -67,6 +67,8 @@ final class ExpenseApprovalWorkItemSource implements WorkItemSource {
                 title: (string) __('work-queue.item.expense', ['name' => $expense->user->name ?? '—']),
                 url: route(self::ROUTE),
                 detail: CarbonFmt::fdate($expense->date) . ' · ' . $expense->description,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($expense->updated_at),
             );
         }
     }

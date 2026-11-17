@@ -36,7 +36,7 @@ class GenericEventNotification extends Notification implements ShouldQueue {
     public array $backoff = [30, 120, 600];
 
     /**
-     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null, message?: string|null, message_key?: string|null, message_params?: array<string, mixed>|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
+     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null, message?: string|null, message_key?: string|null, message_params?: array<string, mixed>|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null, on_behalf_of?: string|null}  $payload
      * @param  list<string>  $channels  Laravel-Kanäle, z. B. ['database', 'mail']
      */
     public function __construct(
@@ -111,6 +111,8 @@ class GenericEventNotification extends Notification implements ShouldQueue {
             'message_params' => $this->payload['message_params'] ?? null,
             'url' => $this->payload['url'] ?? null,
             'icon' => $this->payload['icon'] ?? $this->event->icon(),
+            // Vertretung (Feature 202): Name der vertretenen Person, sonst nicht gesetzt.
+            'on_behalf_of' => $this->payload['on_behalf_of'] ?? null,
         ];
     }
 }

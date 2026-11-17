@@ -1,7 +1,7 @@
 ---
 title: "Posting and inbox"
 topic: accounting.posting
-version: 10
+version: 11
 keywords:
     - post entry
     - journal entry
@@ -19,6 +19,10 @@ keywords:
     - general journal
     - open items
     - recurring entry
+    - posting suggestion
+    - bank transaction without document
+    - creditor identifier
+    - mandate reference
 audience:
     - admin
     - geschaeftsfuehrung
@@ -307,3 +311,32 @@ the receipt. If there is no input tax code for this rate — usually foreign VAT
 which is not deductible input tax —, the proposal stops: record the expense gross
 without a tax rate. Invoices with reverse charge belong in incoming invoices, which
 know the tax case.
+
+## Posting suggestions for bank transactions without a document
+
+Rent, leasing, insurance, account fees: a bank transaction your organisation
+has already booked via **Post to ledger account** gets a **suggestion** the
+next time — ledger account, tax code, cost centre and posting text of the last
+similar booking. Similar means: same direction and, in this order, the same
+**mandate reference**, the same **creditor identifier** of the direct debit,
+the same **counterparty IBAN** or the same **keywords in the payment
+reference** (month, date and numbers do not count). The reason is shown, for
+example “Booked this way 3 times, last in 03/2026, same mandate reference”,
+together with the strength of the suggestion. The most recent booking
+determines the suggestion: if you book to a different account once, that one
+applies next time — there is no separate rule to maintain.
+
+The **Post to ledger account** dialog is pre-filled with the suggestion. Under
+**Posting suggestions** in the posting inbox, similar open transactions are
+grouped with a preview of their bookings; **Book all … transactions** books
+them with one confirmation. A transaction whose amount differs by more than
+10% from last time, and suggestions with a note (account deactivated, tax code
+no longer valid), are listed separately under **Check individually**. Only
+what you confirm is booked; with the four-eyes principle active, drafts are
+created for approval.
+
+Only what the organisation has already booked this way is suggested — no AI.
+The import takes the creditor identifier from CAMT and MT940 files if the bank
+supplies it. The payment reference stays encrypted; for the comparison
+workDiary only stores a keyed fingerprint of the keywords. **Permission:**
+**Post entries**.

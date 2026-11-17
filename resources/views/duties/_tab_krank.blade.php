@@ -8,6 +8,13 @@
 --}}
 {{-- Krank: Tabelle --}}
 <?php $p = array_merge($filters ?? [], ['tab' => 'krank']); ?>
+@php
+    // Vertretung aus der Krankmeldung legt die Leitung an (Feature 202): Vertretungs- und Krankmelderecht.
+    $wdToday = now()->startOfDay();
+    $wdViewer = auth()->user();
+    $wdFromSick = $wdViewer !== null && $wdViewer->can('manage', \App\Models\Delegation\WorkDelegation::class)
+        && ($wdViewer->isAdmin() || $wdViewer->can(\App\Enums\User\Permission::SickLeaveViewAny->value));
+@endphp
 @if (! empty($sicknessStatus) && ! empty($sicknessStatusUser))
     @php
         /** @var \App\Support\Sickness\ContinuedPaymentStatus $sicknessStatus */
@@ -125,6 +132,13 @@
                 <td class="max-w-xs truncate text-muted text-xs">{{ $s->note }}</td>
                 <td class="text-right">
                     <div class="flex items-center justify-end gap-1">
+                        @if ($wdFromSick && ! $s->isCancelled() && $s->end_date->greaterThanOrEqualTo($wdToday))
+                            <x-icon-btn icon="supervisor_account" tone="info"
+                                        data-entry-modal-trigger
+                                        :href="route('delegations.create', ['sick_leave' => $s->sqid, 'dialog' => 1])"
+                                        :label="__('delegation.from_absence')" />
+                        @endif
+
                         @can('update', $s)
                             <x-icon-btn icon="edit"
                                         data-entry-modal-trigger

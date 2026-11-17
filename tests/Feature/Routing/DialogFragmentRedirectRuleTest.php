@@ -38,6 +38,7 @@ class DialogFragmentRedirectRuleTest extends TestCase {
         'Investments/InvestmentProposalController.php => investments.proposals.link' => 'Token-Aktionen im eigenen Dialog, neuer Link nur dort sichtbar',
         'Inventory/SerialPassportSettingsController.php => serials.passport.edit' => 'Token-Aktionen im eigenen Dialog, neuer Link nur dort sichtbar',
         'Sustainability/SustainabilityExcerptController.php => sustainability.excerpt.edit' => 'Veröffentlichen und Token-Aktionen im eigenen Dialog',
+        'ServicePlan/ServicePlanCellController.php => diary.create' => 'GET-Auflöser des Zellendialogs (Feature 199): lädt per data-entry-modal-trigger mit dialog=1 im Dialog-Host, der Fetch folgt der Weiterleitung auf den vorbelegten Auftragsdialog (Vorbelegung per withInput); kein Speichern',
     ];
 
     public function test_actions_do_not_redirect_to_dialog_fragment_routes(): void {

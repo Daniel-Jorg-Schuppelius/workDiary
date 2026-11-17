@@ -221,6 +221,8 @@ class BillingReportController extends Controller {
 
         /** @var Collection<int, \App\Models\Invoicing\IncomingEInvoice> $records */
         $records = \App\Models\Invoicing\IncomingEInvoice::query()
+            // Aufgeteilte Sammel-PDF (Feature 208): gezählt werden ihre Teile.
+            ->where('status', '!=', \App\Enums\Invoicing\IncomingEInvoiceStatus::Split->value)
             ->whereBetween('received_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->get(['status', 'summary', 'transferred_at']);
 

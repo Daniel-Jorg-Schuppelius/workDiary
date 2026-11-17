@@ -1,8 +1,11 @@
 ---
 title: "AI services"
 topic: ai.services
-version: 5
+version: 6
 keywords:
+    - masking
+    - DPA
+    - data protection approval
     - AI assistant
     - artificial intelligence
     - LLM
@@ -76,3 +79,33 @@ characters for translations. Once it is reached, workDiary rejects further
 calls of this family until the end of the month with a message; the tiles show
 the utilisation. If empty, the operator default applies; without a default,
 usage is unlimited.
+
+**Masking:** Before every cloud connection, workDiary replaces IBANs, VAT IDs,
+tax numbers, tax identification numbers, email addresses and phone numbers with
+placeholders such as `[IBAN-1]` or `[EMAIL-2]`. Within one request the same
+value always gets the same placeholder. In drafts, summaries, translations and
+extracted field values workDiary puts the values back before they are shown;
+the provider never sees them. Only values that pass validation are detected
+(check digits for IBANs, VAT IDs and tax IDs) – amounts and dates stay
+untouched. Customer names from your own records are masked as before. Local
+connections see the values in plain text as long as “Also mask before local
+connections” is off under **Data protection**. The audit log counts the
+masked values per kind without naming them.
+
+**Data protection approval:** For each connection, “Data protection approval”
+records that a data processing agreement is in place (for cloud services with
+the document), that processing takes place in the EU and that the provider
+does not train on your data – together with the date and the reviewer. For a
+local connection the agreement is only needed if a service provider runs the
+model. The approval is valid for as many months as set under **Data
+protection** (default 12); 30 days before it expires, the work queue reminds
+you. Approval and revocation appear in the audit log. Approvals are granted by
+anyone with the right “Grant and revoke data protection approval of AI
+connections”.
+
+**Approved connections only:** If this switch under **Data protection** is on,
+no AI function uses a connection without a valid approval; the preflight and
+the error message state the reason. New organizations start with the switch
+on. In organizations that existed before this version it stays off until an
+admin switches it on – until then the open approvals appear as tasks in the
+work queue.

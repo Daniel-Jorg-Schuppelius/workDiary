@@ -202,6 +202,8 @@ return [
     'ai' => [
         'invoked' => 'IA invoquée',
         'suggestion_decided' => 'Suggestion IA tranchée',
+        'connection_approved' => 'Connexion IA validée pour la protection des données',
+        'connection_approval_revoked' => 'Validation de protection des données de la connexion IA révoquée',
     ],
     'archived' => 'Archivé',
     'asset' => [
@@ -320,6 +322,9 @@ return [
         'connection_saved' => 'Connexion CardDAV enregistrée',
         'disconnected' => 'CardDAV déconnecté',
         'sync_manual' => 'CardDAV synchronisé manuellement',
+    ],
+    'carry_forward_note' => [
+        'resolved' => 'Mémo coché comme fait',
     ],
     'change' => [
         'asset_attached' => 'Changement : ressource liée',
@@ -524,6 +529,7 @@ return [
         'confidentialAccessed' => 'Document confidentiel consulté',
         'deleted' => 'Document supprimé',
         'einvoice_received' => 'Facture électronique reçue',
+        'invoice_split' => 'PDF groupé scindé en factures',
         'einvoice_xml_exported' => 'XML de facture électronique exporté',
         'released_to_customer' => 'Document mis à disposition du client',
         'revoked_from_customer' => 'Mise à disposition du client retirée',
@@ -612,6 +618,11 @@ return [
     ],
     'incoming_einvoice' => [
         'duplicate_cleared' => 'Confirmé comme n’étant pas un doublon',
+        'split' => 'PDF groupé scindé',
+        'split_dismissed' => 'PDF groupé conservé comme une seule facture',
+        'split_reset' => 'Scission du PDF groupé réinitialisée',
+        'girocode_read' => 'GiroCode lu',
+        'girocode_confirmed' => 'IBAN différent du GiroCode confirmé',
         'candidate_linked' => 'Transmission liée à une pièce existante',
         'candidate_dismissed' => 'Transmission créée malgré une correspondance',
         'direction_corrected' => 'Direction du document corrigée',
@@ -795,6 +806,35 @@ return [
         'linked' => 'Article de connaissances lié',
         'published' => 'Article de connaissances publié',
         'unlinked' => 'Lien de l\'article de connaissances retiré',
+    ],
+    'knowledge_page' => [
+        'approved' => 'Version validée',
+        'outdated' => 'Marquée comme obsolète',
+        'reviewed' => 'Confirmée comme à jour',
+        'expired' => 'Validité expirée (obsolète)',
+        'restored' => 'Restaurée depuis la corbeille',
+        'purged' => 'Supprimée définitivement',
+        'version_restored' => 'Ancienne version rétablie',
+        'assigned' => 'Lecture obligatoire attribuée',
+        'unassigned' => 'Lecture obligatoire retirée',
+        'linked' => 'Liée',
+        'unlinked' => 'Lien supprimé',
+        'exported' => 'Exportée en PDF',
+        'step_redacted' => 'Image d\'une étape caviardée',
+        'owner_transferred' => 'Responsabilité transférée',
+    ],
+    'lead_intake' => [
+        'stage_changed' => 'Étape de l\'admission modifiée',
+        'decided' => 'Admission décidée',
+        'second_review' => 'Acceptation confirmée au second contrôle',
+        'second_review_returned' => 'Acceptation renvoyée au second contrôle',
+        'refreshed' => 'Dossier d\'admission mis à jour (nouvelle version)',
+        'completed' => 'Admission mise en place (lead converti)',
+        'document_added' => 'Pièce de l\'admission classée',
+        'document_removed' => 'Pièce de l\'admission supprimée',
+        'pdf_downloaded' => 'PDF du dossier d\'admission téléchargé',
+        'pdf_archived' => 'PDF du dossier d\'admission classé comme document',
+        'relationship_ended' => 'Fin de la relation d\'affaires enregistrée',
     ],
     'lead' => [
         'quote_created' => 'Devis créé à partir du lead',
@@ -1328,6 +1368,7 @@ return [
         'anonymized' => 'Collaborateur anonymisé (données personnelles supprimées, justificatifs conservés)',
         'offboardingScheduled' => 'Départ programmé',
         'offboarded' => 'Collaborateur sorti (compte désactivé)',
+        'workHandedOver' => 'Responsabilités transférées définitivement (sans départ)',
         'permission' => [
             'granted' => 'Permission accordée',
             'revoked' => 'Permission retirée',
@@ -1374,6 +1415,13 @@ return [
         'disconnected' => 'WooCommerce déconnecté',
         'import_confirmed' => 'Import WooCommerce confirmé',
     ],
+    'app_wish' => [
+        'forwarded' => 'Transmis à l’exploitation de la plateforme',
+        'vendor_sent' => 'Envoyé à l’éditeur',
+    ],
+    'work_delegation' => [
+        'ended' => 'Remplacement terminé',
+    ],
     'zammad' => [
         'connection_saved' => 'Connexion Zammad enregistrée',
         'disconnected' => 'Zammad déconnecté',
@@ -1408,6 +1456,7 @@ return [
         'vat_extension_recorded' => 'Prorogation enregistrée',
         'fixed_asset_disposed' => 'Sortie d\'immobilisation enregistrée',
         'depreciation_proposed' => 'Amortissement annuel proposé',
+        'datev_check_released' => 'Contrôle fiscal avant l\'export DATEV levé avec motif',
     ],
     'accounting_migration' => [
         'planned' => 'Changement comptable planifié',
@@ -1671,5 +1720,14 @@ return [
     'domain' => [
         'commandReconciled' => 'Commande de domaine rapprochée',
         'commandResolved' => 'Commande de domaine clôturée manuellement',
+    ],
+    // Anmelderichtlinie der Organisation (Feature 205).
+    'login_policy' => [
+        'lockdown_engaged' => 'Arrêt d’urgence déclenché',
+        'lockdown_lifted' => 'Arrêt d’urgence levé',
+        'device_approved' => 'Appareil approuvé pour la connexion depuis l’extérieur',
+        'device_rejected' => 'Demande d’approbation d’appareil refusée',
+        'device_revoked' => 'Approbation de l’appareil retirée',
+        'device_forgotten' => 'Refus d’un appareil oublié (peut redemander)',
     ],
 ];

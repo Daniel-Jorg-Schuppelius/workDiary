@@ -84,7 +84,11 @@ final class PdfGeneratorInventory {
         'app/Services/Club/ClubFeeNoticePdfRenderer.php' => ['fee_notice'],
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],
         'app/Services/Form/FormSubmissionPdfRenderer.php' => ['form'],
+        // Aufnahmeakte am Lead im Papierlayout der Formulare (Feature 200, MVP-1644).
+        'app/Services/Sales/Intake/LeadIntakePdfRenderer.php' => ['form'],
         'app/Http/Controllers/Reporting/Concerns/RendersReportPdf.php' => ['report'],
+        // Wissensseite und Notfallhandbuch mit Fassung und Freigabe (Feature 191, MVP-1668).
+        'app/Services/Knowledge/Pages/KnowledgePagePdfRenderer.php' => ['report'],
         // Leitungsbericht für den geplanten Versand (Feature 184); der Download nutzt RendersReportPdf.
         'app/Services/Reporting/ManagementReportPdf.php' => ['report'],
         'app/Http/Controllers/Diary/DiaryCaseFileController.php' => ['case_file'],

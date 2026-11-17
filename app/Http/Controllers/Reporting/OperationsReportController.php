@@ -52,8 +52,9 @@ class OperationsReportController extends Controller {
      */
     private const array STATUS_GROUPS = [
         'open' => [DiaryStatus::Planned, DiaryStatus::Accepted],
-        'in_progress' => [DiaryStatus::InProgress],
-        'problem' => [DiaryStatus::WaitingCustomer, DiaryStatus::WaitingMaterial],
+        // Prüfzustände (Feature 198) nach ihrer Stufe: zur Prüfung/freigegeben laufen, die Rückfrage ist ein Problem.
+        'in_progress' => [DiaryStatus::InProgress, DiaryStatus::InReview, DiaryStatus::ReviewApproved],
+        'problem' => [DiaryStatus::WaitingCustomer, DiaryStatus::WaitingMaterial, DiaryStatus::ReviewQueried],
         'done' => [DiaryStatus::Completed, DiaryStatus::AcceptedFinal, DiaryStatus::Invoiced],
     ];
 
@@ -141,8 +142,11 @@ class OperationsReportController extends Controller {
             DiaryStatus::Planned->value => 'open',
             DiaryStatus::Accepted->value => 'open',
             DiaryStatus::InProgress->value => 'in_progress',
+            DiaryStatus::InReview->value => 'in_progress',
+            DiaryStatus::ReviewApproved->value => 'in_progress',
             DiaryStatus::WaitingCustomer->value => 'problem',
             DiaryStatus::WaitingMaterial->value => 'problem',
+            DiaryStatus::ReviewQueried->value => 'problem',
             DiaryStatus::Completed->value => 'done',
             DiaryStatus::AcceptedFinal->value => 'done',
             DiaryStatus::Invoiced->value => 'done',

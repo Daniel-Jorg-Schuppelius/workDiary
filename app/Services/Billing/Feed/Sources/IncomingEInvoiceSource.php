@@ -71,6 +71,8 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
                 'NULL AS foreign_currency',
             ]))
             ->where('incoming_einvoices.organization_id', $f->organizationId)
+            // Aufgeteilte Sammel-PDF (Feature 208): ihre Teile sind die Belege, nicht der Sammel-Eingang.
+            ->where('incoming_einvoices.status', '!=', IncomingEInvoiceStatus::Split->value)
             ->whereNull('incoming_einvoices.transferred_at')
             ->where(static fn (Builder $q) => $q->where('incoming_einvoices.recognition', '!=', IncomingInvoiceRecognition::None->value)
                 ->orWhereNotNull('incoming_einvoices.amount_gross'))

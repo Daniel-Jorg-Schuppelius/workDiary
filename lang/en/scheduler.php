@@ -116,6 +116,7 @@ return [
         'calendly' => ['backfill' => 'Calendly appointment backfill'],
         'ai' => ['maintenance' => 'AI maintenance run (provider health, suggestion cleanup)'],
         'archive' => ['run' => 'Archiving run'],
+        'knowledge_pages' => ['empty_trash' => 'Empty the knowledge page trash after the retention period'],
         'learning' => [
             'close_stale_sessions' => 'Close stale learning sessions',
             'lti_rotate_keys' => 'Rotate LTI signing keys',
@@ -172,6 +173,7 @@ return [
         'accounting' => ['issue_contact_numbers' => 'Fetch customer and supplier numbers from the accounting program', 'recurring' => 'Recurring document expectations and posting drafts', 'filings' => 'Sync tax deadlines and send reminders', 'liquidity_snapshot' => 'Record the weekly liquidity forecast'],
         'platform' => ['usage_snapshot' => 'Record usage per tenant'],
         'contracts' => ['price_index_sync' => 'Sync consumer price index from the Bundesbank'],
+        'customer_deadlines' => ['sync' => 'Generate and update customer deadlines from the rule sets'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts', 'base_rate_sync' => 'Sync base interest rate from the Bundesbank', 'online_payments_refresh' => 'Reconcile online payments with the payment provider', 'incoming_digest' => 'Notify about incoming invoices awaiting assignment', 'incoming_transfer' => 'Retry incoming invoice transfers'],
         'jtl' => ['sync' => 'JTL Wawi sync', 'pull-vouchers' => 'Fetch JTL Wawi invoices'],
         'resale' => [
@@ -228,7 +230,7 @@ return [
         'recurrence' => ['generate' => 'Generate recurring orders'],
         'remote' => ['sync_sessions' => 'Import remote support sessions'],
         'scheduler' => ['watchdog' => 'Scheduler watchdog'],
-        'security' => ['advisories_pull' => 'Pull security advisories', 'integrity' => 'Source code integrity check', 'evaluate' => 'Evaluate threat detection', 'geoip_update' => 'Update IP geolocation database'],
+        'security' => ['advisories_pull' => 'Pull security advisories', 'integrity' => 'Source code integrity check', 'evaluate' => 'Evaluate threat detection', 'geoip_update' => 'Update IP geolocation database', 'resolve_login_networks' => 'Resolve office networks of sign-in policies'],
         'tickets' => ['scan_sla_breaches' => 'Scan SLA breaches'],
         'retention' => ['prune_models' => 'Apply retention periods (delivery logs, outbox, plugin errors)'],
         'whistleblowing' => ['deadlines' => 'Check whistleblowing deadlines', 'retention_review' => 'Whistleblowing retention review', 'scan' => 'Scan whistleblowing attachments (quarantine)'],

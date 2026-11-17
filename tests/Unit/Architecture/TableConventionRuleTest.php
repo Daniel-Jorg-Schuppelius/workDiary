@@ -65,7 +65,7 @@ class TableConventionRuleTest extends TestCase {
         'reports/absence-card.blade.php',        // Jahres-/Monatskarte (Matrix)
         'admin/shift-rotations/index.blade.php', // editierbares Rotationsraster
         'work-schedules/_form_body.blade.php',   // Formularraster im Dialog
-        'forms/submissions/show.blade.php',      // Key/Value-Snapshot
+        'forms/submissions/_paper.blade.php',    // Papierlayout (Druck und PDF, Feature 203)
         'b2b/catalog/browse.blade.php',          // Punchout-Eigenlayout
     ];
 

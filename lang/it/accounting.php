@@ -636,6 +636,63 @@ return [
             'already_assigned' => 'Il movimento è già assegnato a un documento.',
         ],
     ],
+    // Kontierungsvorschläge für Bankumsätze ohne Beleg (Feature 207, MVP-1660).
+    'suggestions' => [
+        'title' => 'Proposte di imputazione',
+        'subtitle' => 'Movimenti bancari senza documento che la vostra organizzazione ha già registrato così.',
+        'hint' => 'Viene proposto solo ciò che la vostra organizzazione ha già registrato così — riconosciuto da riferimento del mandato, identificativo del creditore, IBAN della controparte o parole chiave della causale, in quest\'ordine. La registrazione più recente determina la proposta; una correzione vale dalla volta successiva. Viene registrato solo ciò che confermate.',
+        'empty' => 'Nessun movimento bancario aperto con proposta da confermare.',
+        'reason' => 'Registrato così :count volte, l\'ultima a :month, :basis',
+        'reason_mixed' => ':count di :total registrazioni simili così, l\'ultima a :month, :basis',
+        'deviates' => 'L\'importo differisce di oltre il 10 % dall\'ultima volta (ultimo: :last).',
+        'basis' => [
+            'mandate' => 'stesso riferimento del mandato',
+            'creditor' => 'stesso identificativo del creditore',
+            'iban' => 'stesso IBAN della controparte',
+            'keywords' => 'stesse parole chiave nella causale',
+        ],
+        'strength' => [
+            'strong' => 'Proposta forte',
+            'medium' => 'Proposta media',
+            'weak' => 'Proposta debole',
+        ],
+        'warning' => [
+            'account_inactive' => 'Il conto dell\'ultima registrazione è disattivato: sceglierne un altro.',
+            'tax_code_invalid' => 'Il codice IVA dell\'ultima registrazione non è valido alla data contabile: verificare.',
+        ],
+        'dialog' => [
+            'title' => 'Proposta dalle vostre registrazioni precedenti',
+        ],
+        'kpi' => [
+            'groups' => 'Gruppi da confermare',
+            'singles' => 'Da verificare singolarmente',
+            'without' => 'Aperti senza proposta',
+        ],
+        'column' => [
+            'date' => 'Data contabile',
+            'counterparty' => 'Controparte e causale',
+            'booking' => 'Anteprima della registrazione',
+            'suggestion' => 'Proposta',
+        ],
+        'preview' => [
+            'credit' => 'Banca a :account',
+            'debit' => ':account a banca',
+        ],
+        'singles' => [
+            'title' => 'Verificare singolarmente',
+            'subtitle' => 'Importo diverso o avviso sulla proposta: registrate questi movimenti uno alla volta nella finestra precompilata.',
+        ],
+        'action' => [
+            'open' => 'Proposte di imputazione',
+            'confirm_group' => 'Registrare il movimento|Registrare tutti i :count movimenti',
+        ],
+        'confirm' => [
+            'group' => 'Registrare questo movimento come mostrato?|Registrare tutti i :count movimenti come mostrato?',
+        ],
+        'flash' => [
+            'confirmed' => 'Registrati: :posted, sottoposti ad approvazione: :submitted, saltati: :skipped.',
+        ],
+    ],
     // Offener Posten strittig (MVP-1559).
     'dispute' => [
         'title' => 'Contrassegna la partita come contestata',
@@ -1191,6 +1248,61 @@ return [
         'hint' => 'Generato dalle registrazioni definitive — non ricavato di nuovo dai documenti.',
         'action' => [
             'export' => 'Esportare',
+            'check' => 'Controllare ed esportare',
+        ],
+    ],
+
+    // Steuerprüfung vor dem DATEV-Export (Feature 207, MVP-1661).
+    'datev_check' => [
+        'title' => 'Controllo fiscale prima dell\'esportazione DATEV',
+        'subtitle' => 'Periodo :from – :to',
+        'hint' => 'Verifica conti e codici IVA rispetto ai conti automatici del piano dei conti prima di scrivere il lotto. Il controllo non modifica il file di esportazione. Gli errori bloccano l\'esportazione finché non vengono corretti o sbloccati con motivazione; gli avvisi sono da rivedere.',
+        'counts' => ':errors errori · :hints avvisi',
+        'clean' => 'Nessun rilievo: il lotto può essere esportato.',
+        'blocked' => 'L\'esportazione è bloccata: :count errori non sono né corretti né sbloccati.',
+        'released_badge' => 'Sbloccato',
+        'column' => [
+            'severity' => 'Tipo',
+            'finding' => 'Rilievo',
+            'reference' => 'Registrazione',
+        ],
+        'severity' => [
+            'error' => 'Errore',
+            'hint' => 'Avviso',
+        ],
+        'message' => [
+            'missing_tax_code' => 'Riga su :account senza codice IVA, benché la registrazione riporti imposta sul conto :tax_account.',
+            'missing_tax_code_batch' => 'Documento :ref: aliquota :rate % senza chiave IVA sul conto :account, che non è un conto automatico.',
+            'missing_vat_id' => 'Codice :code (:name) senza partita IVA del partner.',
+            'missing_vat_id_domestic' => 'Codice :code (:name) senza partita IVA del partner: nell\'inversione contabile nazionale basta il codice fiscale; verificare.',
+            'missing_vat_id_batch' => 'Documento :ref: cessione intracomunitaria esente o inversione contabile senza partita IVA del cliente.',
+            'missing_vat_id_batch_domestic' => 'Documento :ref: inversione contabile nazionale, cliente senza partita IVA: basta il codice fiscale; verificare.',
+            'inactive_account' => 'Il conto :account è disattivato.',
+            'automatic_suspended' => ':count scritture annullano l\'automatismo sul conto :account con BU 40.',
+            'rate_mismatch' => 'Il conto :account porta :automatic (:automatic_rate %), la riga :code (:rate %).',
+            'rate_mismatch_batch' => 'Documento :ref: aliquota :rate % sul conto automatico :account con :automatic_rate %.',
+        ],
+        'reference' => [
+            'journal' => 'Giornale :no',
+            'document' => 'Documento :ref',
+        ],
+        'action' => [
+            'export' => 'Esportare',
+            'release' => 'Sbloccare con motivazione',
+            'back' => 'Torna alla chiusura',
+        ],
+        'release' => [
+            'title' => 'Sbloccare gli errori con motivazione',
+            'hint' => 'Alcuni casi sono corretti anche se il controllo li segnala, ad esempio un caso particolare dello studio. Lo sblocco vale per gli errori mostrati e viene registrato con la vostra motivazione; un nuovo errore blocca di nuovo.',
+            'reason' => 'Motivazione',
+            'no_permission' => 'Per sbloccare serve il permesso «Sbloccare il controllo fiscale prima dell\'esportazione DATEV».',
+        ],
+        'flash' => [
+            'released' => ':count errori sbloccati con motivazione.',
+            'nothing_to_release' => 'Non ci sono errori aperti da sbloccare.',
+        ],
+        'error' => [
+            'blocked' => 'L\'esportazione DATEV è bloccata: il controllo fiscale segnala errori né corretti né sbloccati.',
         ],
     ],
 

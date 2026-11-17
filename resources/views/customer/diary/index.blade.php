@@ -23,7 +23,7 @@
             <tr>
                 <td class="whitespace-nowrap">{{ optional($entry->start_at)->fdate() }}</td>
                 <td><a class="link link-hover" href="{{ route('customer.diary.show', $entry) }}">{{ $entry->title }}</a></td>
-                <td>@if ($entry->status)<x-status-badge size="sm" outline>{{ $entry->status->label() }}</x-status-badge>@endif</td>
+                <td>@if ($entry->status)<x-status-badge size="sm" outline>{{ $entry->status->customerLabel() }}</x-status-badge>@endif</td>
             </tr>
         @empty
             <x-table.empty :colspan="3" icon="menu_book" :title="__('Keine Einträge vorhanden.')" compact />

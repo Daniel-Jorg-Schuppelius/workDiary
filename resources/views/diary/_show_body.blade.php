@@ -48,6 +48,11 @@
 
     @include('diary._lifecycle_panel', ['isDialog' => $isDialog])
 
+    {{-- Merker für die nächste Periode (Feature 201) am Auftrag mit Periode; ohne Reihe kein Markup. --}}
+    @if (! $isDialog && $diary->carryForwardPeriod() !== null)
+        <div class="mb-6"><x-carry-forward-notes :subject="$diary" /></div>
+    @endif
+
     @php($dataQualityGaps = $dataQualityGaps ?? [])
     @if (! empty($dataQualityGaps))
         @php($hasBlockingGap = collect($dataQualityGaps)->contains('blocking', true))
@@ -190,6 +195,9 @@
 
 {{-- Wissensbasis (Feature 011): verknüpfte Artikel + Vorschläge zum Auftrag --}}
 @include('knowledge._context_card', ['subject' => $diary, 'subjectKind' => 'diary', 'texts' => [(string) $diary->title, (string) $diary->content]])
+
+{{-- Interne Wissensdatenbank (Feature 191): verknüpfte Wissensseiten --}}
+@include('knowledge-pages._linked_card', ['subject' => $diary])
 
 {{-- Rückverweise (MVP-811); Wissensverknüpfungen zeigt schon die Wissenskarte. --}}
 <x-content-references :subject="$diary" :without-knowledge-links="true" />

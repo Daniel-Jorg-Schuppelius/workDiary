@@ -93,6 +93,8 @@ final class TimeCorrectionWorkItemSource implements WorkItemSource {
                 title: (string) __($toApply ? 'work-queue.item.time_correction_apply' : 'work-queue.item.time_correction', ['name' => $correction->user->name ?? '—']),
                 url: route('admin.corrections.show', $correction),
                 detail: CarbonFmt::fdate($correction->scope_date),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($correction->updated_at),
             );
         }
     }

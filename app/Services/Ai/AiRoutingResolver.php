@@ -25,14 +25,16 @@ use App\Services\Licensing\ModuleStatusResolver;
  * Jobs) → Capability-Opt-in der Organisation → erlaubte Verbindungen
  * (aktiv, gesund, Familie passt zum Verb) → Sensibilitäts-/Profil-Gate
  * (High bzw. Pflege-Profil: nur lokale Verbindungen — Cloud-Kandidaten
- * werden entfernt, nie stillschweigend ersetzt) → Nutzerwahl (nur wenn
- * erlaubt und Kandidat) → Reihenfolge = Fallback-Kette (Default zuerst,
- * dann konfigurierte Reihenfolge der erlaubten Verbindungen).
+ * werden entfernt, nie stillschweigend ersetzt) → Datenschutzfreigabe, wenn
+ * die Organisation nur freigegebene Verbindungen zulässt (MVP-1672) →
+ * Nutzerwahl (nur wenn erlaubt und Kandidat) → Reihenfolge = Fallback-Kette
+ * (Default zuerst, dann konfigurierte Reihenfolge der erlaubten Verbindungen).
  */
 class AiRoutingResolver {
     public function __construct(
         private readonly AiCapabilityRegistry $registry,
         private readonly ModuleStatusResolver $modules,
+        private readonly AiConnectionPrivacy $privacy,
     ) {}
 
     public const string MODULE = 'module.ai';
@@ -76,15 +78,12 @@ class AiRoutingResolver {
 
         if ($candidates === []) {
             // Fällt genau eine zugelassene Verbindung wegen eines
-            // hinterlegten Fehlers aus, ist DAS die Ursache — sie gehört in
-            // die Meldung, statt auf die Capability zu zeigen.
-            $blocked = $this->onlyBlockedConnection($organization, $setting);
+            // hinterlegten Fehlers oder einer fehlenden Datenschutzfreigabe
+            // aus, ist DAS die Ursache — sie gehört in die Meldung, statt auf
+            // die Capability zu zeigen.
+            [$blockedName, $blockedReason] = $this->onlyBlockedConnection($organization, $setting, $capability) ?? [null, null];
 
-            throw AiUnavailableException::noConnection(
-                $capabilityKey,
-                $blocked?->name,
-                $blocked?->last_error,
-            );
+            throw AiUnavailableException::noConnection($capabilityKey, $blockedName, $blockedReason);
         }
 
         return $candidates;
@@ -145,10 +144,13 @@ class AiRoutingResolver {
 
     /**
      * Genau eine zugelassene Verbindung, die wegen eines Verbindungsfehlers
-     * ausfällt — sonst null (bei mehreren Kandidaten oder anderen Gründen wie
-     * Cloud-Sperre bleibt die allgemeine Meldung richtig).
+     * oder der fehlenden Datenschutzfreigabe ausfällt: Name und Grund — sonst
+     * null (bei mehreren Kandidaten oder anderen Gründen wie Cloud-Sperre
+     * bleibt die allgemeine Meldung richtig).
+     *
+     * @return array{0: string, 1: string|null}|null
      */
-    private function onlyBlockedConnection(Organization $organization, AiCapabilitySetting $setting): ?AiProviderConnection {
+    private function onlyBlockedConnection(Organization $organization, AiCapabilitySetting $setting, AiCapability $capability): ?array {
         $allowedIds = array_map('intval', (array) ($setting->allowed_connection_ids ?? []));
         if (count($allowedIds) !== 1) {
             return null;
@@ -160,11 +162,19 @@ class AiRoutingResolver {
             ->whereKey($allowedIds[0])
             ->first();
 
-        if (! $connection instanceof AiProviderConnection || $connection->isRunnable()) {
+        if (! $connection instanceof AiProviderConnection) {
             return null;
         }
+        if (! $connection->isRunnable()) {
+            return [$connection->name, $connection->last_error];
+        }
+        // Die Freigabe ist nur die Ursache, wenn die Verbindung sonst in Frage käme.
+        if (! $connection->supportsVerb($capability->verb) || ($connection->isCloud() && ! $this->cloudAllowed($organization, $capability))) {
+            return null;
+        }
+        $reason = $this->privacy->blockingReason($connection, $organization);
 
-        return $connection;
+        return $reason === null ? null : [$connection->name, $reason];
     }
 
     /** @return list<AiProviderConnection> */
@@ -187,6 +197,7 @@ class AiRoutingResolver {
             ->keyBy('id');
 
         $cloudAllowed = $this->cloudAllowed($organization, $capability);
+        $requiresApproval = $this->privacy->requiresApproval($organization);
 
         // Konfigurierte Reihenfolge der erlaubten IDs beibehalten,
         // Default-Verbindung an den Anfang.
@@ -206,6 +217,10 @@ class AiRoutingResolver {
                 continue;
             }
             if (! $cloudAllowed && $connection->isCloud()) {
+                continue;
+            }
+            // Nur freigegebene Verbindungen (MVP-1672): ohne gültige Freigabe kein Aufruf.
+            if ($requiresApproval && ! $this->privacy->state($connection, $organization)->isApproved()) {
                 continue;
             }
             $result[] = $connection;

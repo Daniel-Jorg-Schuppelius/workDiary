@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Filing;
 
 use App\Enums\Finance\VatFilingInterval;
+use App\Enums\Period\PeriodKind;
+use App\Support\Period\PeriodKey;
 use Carbon\CarbonImmutable;
 
 /**
@@ -67,6 +69,19 @@ final class VatReturnPeriod {
             VatFilingInterval::Monthly => $this->from->translatedFormat('F Y'),
             VatFilingInterval::Quarterly => sprintf('Q%d %d', $this->ordinal, $this->year),
             default => (string) $this->year,
+        };
+    }
+
+    /**
+     * Derselbe Zeitraum als Periodenschlüssel des Fristenrechners
+     * (Feature 197, MVP-1631): `2026-M03` → `2026-03`, `2026-Q1` → `2026-Q1`,
+     * `2026-J` → `2026`. Der Schlüssel der Buchhaltung bleibt unverändert.
+     */
+    public function periodKey(): PeriodKey {
+        return match ($this->interval) {
+            VatFilingInterval::Monthly => PeriodKey::of(PeriodKind::Month, $this->year, $this->ordinal),
+            VatFilingInterval::Quarterly => PeriodKey::of(PeriodKind::Quarter, $this->year, $this->ordinal),
+            default => PeriodKey::of(PeriodKind::Year, $this->year),
         };
     }
 

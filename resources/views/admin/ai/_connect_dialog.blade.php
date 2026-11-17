@@ -20,6 +20,10 @@
     :submit-label="$connection !== null ? __('Speichern') : __('ai.connect.submit')"
 >
     <x-form-group :legend="__('ai.connect.legend')" icon="smart_toy" tone="primary" cols="1">
+        @if ($connection?->privacy_reviewed_at !== null)
+            {{-- MVP-1672: Adresse, Modell oder Schlüssel ändern setzt die Datenschutzfreigabe zurück. --}}
+            <p role="note" class="alert alert-info text-sm">{{ __('ai.privacy.approval.change_hint') }}</p>
+        @endif
         <div class="fieldset">
             <label class="fieldset-label" for="ai-name">{{ __('ai.field.name') }}</label>
             <input id="ai-name" type="text" name="name" required maxlength="120"

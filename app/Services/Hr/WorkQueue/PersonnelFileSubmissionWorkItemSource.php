@@ -73,6 +73,8 @@ final class PersonnelFileSubmissionWorkItemSource implements WorkItemSource {
                 title: (string) __('work-queue.item.personnel_file_submission', ['name' => $member->name, 'title' => $submission->title]),
                 url: route(self::ROUTE),
                 detail: $submission->created_at !== null ? CarbonFmt::fdate($submission->created_at) : null,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($submission->updated_at),
             );
         }
     }

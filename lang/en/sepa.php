@@ -91,6 +91,8 @@ return [
         'missing_iban' => 'IBAN missing',
         'zero_amount' => 'Amount is 0',
         'iban_differs' => 'IBAN differs from master data',
+        'girocode_differs' => 'IBAN from the GiroCode unverified — confirmation required',
+        'bundle_unresolved' => 'Combined PDF not split yet',
         'disputed' => 'Open item disputed',
     ],
 
@@ -100,6 +102,9 @@ return [
         'not_draft' => 'The payment run is no longer a draft.',
         'not_released' => 'The payment run has not been released.',
         'four_eyes' => 'Four-eyes principle: whoever prepared the payment run cannot release it themselves.',
+        'girocode_unconfirmed' => 'Invoice :number carries a GiroCode with a different IBAN. The run can only be released after the difference is confirmed in the payment proposal.',
+        'position_held' => 'Invoice :number is blocked for payment (:reason). The run can only be released after this is resolved in the payment proposal.',
+        'confirmation_stale' => 'The situation has changed since the page was loaded — please check and confirm again.',
         'exported_final' => 'An exported payment run is no longer cancelled.',
         'invalid_amount' => 'The payment amount must be above 0 and must not exceed the invoice amount.',
         'reason_required' => 'A reduced payment amount requires a reason.',

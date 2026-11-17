@@ -636,6 +636,63 @@ return [
             'already_assigned' => 'El movimiento ya está asignado a un justificante.',
         ],
     ],
+    // Kontierungsvorschläge für Bankumsätze ohne Beleg (Feature 207, MVP-1660).
+    'suggestions' => [
+        'title' => 'Propuestas de contabilización',
+        'subtitle' => 'Movimientos bancarios sin justificante que su organización ya contabilizó así.',
+        'hint' => 'Solo se propone lo que su organización ya contabilizó así — reconocido por referencia del mandato, identificador del acreedor, IBAN de la contraparte o palabras clave del concepto, en este orden. El asiento más reciente determina la propuesta; una corrección surte efecto la próxima vez. Solo se contabiliza lo que usted confirma.',
+        'empty' => 'No hay movimientos bancarios abiertos con propuesta para confirmar.',
+        'reason' => 'Contabilizado así :count veces, la última en :month, :basis',
+        'reason_mixed' => ':count de :total asientos similares así, la última en :month, :basis',
+        'deviates' => 'El importe difiere en más de un 10 % de la última vez (último: :last).',
+        'basis' => [
+            'mandate' => 'misma referencia del mandato',
+            'creditor' => 'mismo identificador del acreedor',
+            'iban' => 'mismo IBAN de la contraparte',
+            'keywords' => 'mismas palabras clave en el concepto',
+        ],
+        'strength' => [
+            'strong' => 'Propuesta sólida',
+            'medium' => 'Propuesta media',
+            'weak' => 'Propuesta débil',
+        ],
+        'warning' => [
+            'account_inactive' => 'La cuenta del último asiento está desactivada; elija otra.',
+            'tax_code_invalid' => 'El código de impuesto del último asiento no es válido en la fecha contable; revíselo.',
+        ],
+        'dialog' => [
+            'title' => 'Propuesta a partir de sus asientos anteriores',
+        ],
+        'kpi' => [
+            'groups' => 'Grupos para confirmar',
+            'singles' => 'Para revisar uno a uno',
+            'without' => 'Abiertos sin propuesta',
+        ],
+        'column' => [
+            'date' => 'Fecha contable',
+            'counterparty' => 'Contraparte y concepto',
+            'booking' => 'Vista previa del asiento',
+            'suggestion' => 'Propuesta',
+        ],
+        'preview' => [
+            'credit' => 'Banco a :account',
+            'debit' => ':account a banco',
+        ],
+        'singles' => [
+            'title' => 'Revisar uno a uno',
+            'subtitle' => 'Importe distinto o aviso sobre la propuesta: contabilice estos movimientos uno a uno en el diálogo rellenado.',
+        ],
+        'action' => [
+            'open' => 'Propuestas de contabilización',
+            'confirm_group' => 'Contabilizar movimiento|Contabilizar los :count movimientos',
+        ],
+        'confirm' => [
+            'group' => '¿Contabilizar este movimiento como se muestra?|¿Contabilizar los :count movimientos como se muestran?',
+        ],
+        'flash' => [
+            'confirmed' => 'Contabilizados: :posted, enviados a aprobación: :submitted, omitidos: :skipped.',
+        ],
+    ],
     // Offener Posten strittig (MVP-1559).
     'dispute' => [
         'title' => 'Marcar la partida como en disputa',
@@ -1191,6 +1248,61 @@ return [
         'hint' => 'Generado a partir de los asientos contabilizados — no derivado de nuevo de los documentos.',
         'action' => [
             'export' => 'Exportar',
+            'check' => 'Revisar y exportar',
+        ],
+    ],
+
+    // Steuerprüfung vor dem DATEV-Export (Feature 207, MVP-1661).
+    'datev_check' => [
+        'title' => 'Revisión fiscal antes de la exportación DATEV',
+        'subtitle' => 'Periodo :from – :to',
+        'hint' => 'Comprueba cuentas y códigos de impuesto frente a las cuentas automáticas del plan contable antes de escribir el lote. La revisión no cambia el fichero de exportación. Los errores bloquean la exportación hasta que se corrijan o se liberen con motivo; los avisos son para revisar.',
+        'counts' => ':errors errores · :hints avisos',
+        'clean' => 'Sin hallazgos: el lote se puede exportar.',
+        'blocked' => 'La exportación está bloqueada: :count errores no están corregidos ni liberados.',
+        'released_badge' => 'Liberado',
+        'column' => [
+            'severity' => 'Tipo',
+            'finding' => 'Hallazgo',
+            'reference' => 'Asiento',
+        ],
+        'severity' => [
+            'error' => 'Error',
+            'hint' => 'Aviso',
+        ],
+        'message' => [
+            'missing_tax_code' => 'Línea en :account sin código de impuesto aunque el asiento muestra impuesto en la cuenta :tax_account.',
+            'missing_tax_code_batch' => 'Justificante :ref: tipo :rate % sin clave de impuesto en la cuenta :account, que no es una cuenta automática.',
+            'missing_vat_id' => 'Código :code (:name) sin NIF-IVA del socio.',
+            'missing_vat_id_domestic' => 'Código :code (:name) sin NIF-IVA del socio: en la inversión del sujeto pasivo nacional basta el número fiscal; revíselo.',
+            'missing_vat_id_batch' => 'Justificante :ref: entrega intracomunitaria exenta o inversión del sujeto pasivo sin NIF-IVA del cliente.',
+            'missing_vat_id_batch_domestic' => 'Justificante :ref: inversión del sujeto pasivo nacional, cliente sin NIF-IVA: basta el número fiscal; revíselo.',
+            'inactive_account' => 'La cuenta :account está desactivada.',
+            'automatic_suspended' => ':count apuntes anulan el automatismo en la cuenta :account con BU 40.',
+            'rate_mismatch' => 'La cuenta :account lleva :automatic (:automatic_rate %), la línea :code (:rate %).',
+            'rate_mismatch_batch' => 'Justificante :ref: tipo :rate % en la cuenta automática :account con :automatic_rate %.',
+        ],
+        'reference' => [
+            'journal' => 'Diario :no',
+            'document' => 'Justificante :ref',
+        ],
+        'action' => [
+            'export' => 'Exportar',
+            'release' => 'Liberar con motivo',
+            'back' => 'Volver al cierre',
+        ],
+        'release' => [
+            'title' => 'Liberar errores con motivo',
+            'hint' => 'Algunos casos son correctos aunque la revisión los marque, por ejemplo un caso especial de la asesoría. La liberación se aplica a los errores mostrados y se registra con su motivo; un error nuevo vuelve a bloquear.',
+            'reason' => 'Motivo',
+            'no_permission' => 'Para liberar se necesita el permiso «Liberar la revisión fiscal antes de la exportación DATEV».',
+        ],
+        'flash' => [
+            'released' => ':count errores liberados con motivo.',
+            'nothing_to_release' => 'No hay errores abiertos que liberar.',
+        ],
+        'error' => [
+            'blocked' => 'La exportación DATEV está bloqueada: la revisión fiscal informa de errores que no están corregidos ni liberados.',
         ],
     ],
 

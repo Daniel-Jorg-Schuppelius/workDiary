@@ -10,87 +10,6 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
-- Lieferanschrift am Kunden (`MVP-1689`): Der Kundendialog führt den
-  aufklappbaren Abschnitt „Lieferanschrift“ (Straße, Adresszusatz, PLZ, Ort,
-  Land); leer bleibt die Rechnungsanschrift die Lieferanschrift, alle Felder
-  geleert entfernt sie. Sie liegt als eigene Anschrift neben der
-  Rechnungsanschrift; Listen, Belegkopf und Buchhaltungsprogramm behalten die
-  Rechnungsanschrift, der Stammdatenabgleich überträgt eine geänderte
-  Lieferanschrift an Lexoffice. Detailseite, Zusammenführen (eigenes Feld, das
-  Ziel behält seine Lieferanschrift oder übernimmt die gewählte), Datenauskunft
-  (Art. 15) sowie CSV-Export und -Import (Spalten `shipping_street`,
-  `shipping_supplement`, `shipping_zip`, `shipping_city`, `shipping_country`,
-  Kopfzeilen wie „Lieferstraße“, „Liefer-PLZ“, „Lieferort“, „Lieferland“)
-  führen sie mit.
-  Ausstellen friert sie im Empfänger ein; Storno und Korrekturrechnung nehmen
-  die des Originals. Bei innergemeinschaftlicher Lieferung (Kategorie K) nennt
-  die E-Rechnung sie als Lieferpartei mit Lieferland (BT-70, BT-75–BT-80) in
-  UBL und CII, ohne sie wie bisher die Rechnungsanschrift; die Prüfung vor dem
-  Versand prüft PLZ, Ort und Land der tatsächlich genutzten Anschrift.
-- Kunden-API und MCP (`MVP-1694`): `CustomerResource` liefert
-  `register_number` und die Lieferanschrift (`shipping_*`); Anlegen und Ändern
-  über die API nehmen beide an, ein Update ändert nur die gesendeten Felder der
-  Lieferanschrift. Das MCP-Werkzeug `create_customer` nimmt Registernummer und
-  Lieferanschrift an, `customers` zeigt sie. Die OpenAPI-Beschreibung nennt die
-  Felder für Anlegen und Ändern.
-- Registerangabe der Organisation in der E-Rechnung (`MVP-1695`): Der
-  Handelsregister-Eintrag aus dem Branding steht als Registerkennung des
-  Verkäufers (BT-30) in XRechnung und ZUGFeRD, unverändert als Freitext samt
-  Registergericht (eine HRB-Nummer ist nur mit dem Gericht eindeutig, KoSIT
-  nimmt den Text in UBL und CII an). Sie gilt wie beim Ausstellen
-  eingefroren; Rechnungen vor `MVP-1680` nehmen die gedruckte Angabe der
-  Ausstellerdaten, ältere den heutigen Stand. Das Feld im Branding nennt das
-  erwartete Format.
-- Variante am Materialverbrauch (`MVP-1690`): Hat der lagergeführte Artikel
-  eines Materials mehrere aktive Varianten, wählt der Dialog am Stundenzettel
-  und auf „Heute“ die verbrauchte Variante; das Feld erscheint nur bei solchen
-  Materialien, leer bucht wie bisher die Standardvariante. Die Bestandsbuchung
-  bucht die gewählte Variante, ein Wechsel bucht die alte zurück und die neue
-  ab. Ohne Einzelpreis gilt der eigene Verkaufspreis der Variante (gleiche
-  Währung), sonst der Materialpreis. Die Variante muss zum Artikel des
-  Materials und zur Organisation gehören; eine stillgelegte lässt sich nicht
-  neu wählen. API (`article_variant_id`, Anzeige `variant`) und Offline-Befehl
-  `material.usage` führen sie mit, ein anderes Material ohne neue Wahl setzt
-  sie zurück. Zeile und PDF des Stundenzettels, Materialrechnung (samt
-  Variantenbezug der Position), Übergabepositionen und Übergabedatei nennen sie
-  hinter der Bezeichnung wie eine Auslieferung („Bezeichnung – Variante
-  (SKU)“), sofern die Bezeichnung sie nicht schon nennt.
-- Offline-Konflikt bei zu wenig Bestand (`MVP-1691`): Fehlt einem offline
-  erfassten Materialverbrauch nur Bestand, kennzeichnet der Konflikt das
-  (`shortage`). „Bearbeiten“ unter „Offline-Änderungen“ bietet dann mit dem
-  Recht „Negative Bestände freigeben“ den Haken „Negativen Bestand
-  zulassen“; das erneute Senden bucht wie online, mit Vier-Augen-Pflicht als
-  Antrag. Ohne Recht bleibt der Konflikt. Der Serverstand des Konflikts zeigt
-  den Grund als „Lager“ statt der technischen Schlüssel. Auch der Haken im
-  Material-Dialog auf „Heute“ geht offline jetzt mit.
-- Leistungsort nach § 3a UStG (`MVP-1688`): Merkmal „Verbraucher (kein
-  Unternehmen)“ am Kunden und Leistungsort-Art der Leistung („Allgemein“,
-  „Katalogleistung“ nach § 3a Abs. 4, „Grundstücksleistung“ nach § 3a Abs. 3
-  Nr. 1). Die Art steht an der Abrechnungsregel des Projekts, sonst an deren
-  Artikel bzw. am Leistungsartikel der Position, sonst in der neuen Vorgabe der
-  Organisation (Einstellungen, Reiter „Rechnungen“, ab Werk „Allgemein“); die
-  Branchenprofile IT und Steuerberatung setzen „Katalogleistung“, Bau und
-  Ausbau, Gebäudereinigung, Dachdecker, Maler, Fliesen- und Bodenleger,
-  Garten- und Landschaftsbau, Hausmeister, Facility Management und Vermieter
-  „Grundstücksleistung“, ohne eine eigene Einstellung zu überschreiben.
-  Steuerfall: Grundstück im Inland (Einsatzort des Auftrags, ohne Angabe
-  Inland) trägt deutsche Steuer für alle Kunden, auch im EU-Ausland und
-  Drittland; der Inlands-§ 13b bleibt. Grundstück im Ausland ist nicht
-  steuerbar (O). An Verbraucher im Drittland ist eine Katalogleistung nicht
-  steuerbar (O, eigener Hinweis), eine allgemeine Leistung trägt deutsche
-  Steuer. Unternehmen und Waren wie bisher. Ein Verbraucher schuldet nie
-  selbst die Steuer (Haken „Leistungsempfänger schuldet die Umsatzsteuer“
-  dann gesperrt, im EU-Ausland kein Reverse Charge). Ergeben die Positionen
-  einer Rechnung verschiedene Steuerfälle, meldet der Entwurf das, das
-  Ausstellen hält an, und die Prüfung vor dem Versand weist ab (mit O nach
-  BR-O-11) — die Rechnung ist zu teilen. Rechnungslauf aus Zeiten und Angebot
-  → Rechnung übernehmen den Leistungsort ihrer Leistungen. Das Merkmal führen
-  Kundendialog, Detailseite, Zusammenführen, Datenauskunft (Art. 15),
-  CSV-Import und -Export (Spalte `is_consumer`), Kunden-API und MCP
-  (`create_customer`, `customers`); der Partei-Snapshot friert es ein, Storno
-  und Korrekturrechnung nehmen das des Originals. Artikeldialog, Detailseite
-  und Artikelimport (Spalte `place_of_supply_kind`) sowie Regeldialog und
-  Regeltabelle des Projekts führen die Art.
 - Einstandspreis beim manuellen Eingang (`MVP-1709`): Buchungsformular im
   Lager und Scan-Eingang führen das optionale Feld „Einstandspreis je
   Einheit“ (Komma oder Punkt, je erfasster Einheit, gebucht je
@@ -103,7 +22,6 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   in der Standardwährung der Organisation; ein Einkaufspreis in anderer
   Währung bleibt außen vor. Fremdbestand bleibt unbewertet, der Lagerplatz
   steht an der Bewegung.
-
 - Kundenliste als CSV (`MVP-1703`): Die CSV-Liste der Kundenübersicht führt
   Registernummer und Lieferanschrift; die Kopfzeilen („Registernummer“,
   „Lieferstraße“, „Lieferadresszusatz“, „Liefer-PLZ“, „Lieferort“,
@@ -136,37 +54,6 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   inaktiv ist, stand die Auswahl auf „frei“ — das Speichern entfernte das
   Material samt Lagerbuchung still. Das Material der Zeile bleibt jetzt wählbar
   (`MVP-1714`).
-- Rechnungseingang (`MVP-1696`): Eingänge, deren Zusammenfassung vor
-  `MVP-1686` die Registernummer des Verkäufers als Steuernummer führte, lassen
-  sich einmalig aus dem abgelegten Original neu auswerten. Nur Steuer- und
-  Registernummer ändern sich, mit Eintrag im Änderungsprotokoll des Eingangs;
-  Zuordnungen, Entscheidungen und Übergaben bleiben, offene Eingänge bekommen
-  den Abgleich erneut.
-- Eine Lieferanschrift aus dem Buchhaltungsprogramm konnte bei Kunden und
-  Lieferanten ohne Rechnungsanschrift als primäre Anschrift gelten und die
-  Anschriftsspalten überschreiben (`MVP-1689`); die primäre Anschrift ist jetzt
-  nie eine Lieferanschrift.
-- Die Entnahme im Lager bucht Eigenbestand bewertet (`MVP-1692`): Formular,
-  Scan und die nach einer Vier-Augen-Freigabe gebuchte Entnahme bewerten nach
-  dem Verfahren des Artikels wie Auslieferung und Materialverbrauch (FIFO und
-  FEFO verbrauchen Schichten, der gleitende Durchschnitt mindert sein Buch);
-  vorher standen die Bewegungen ohne Kostenwert, und FIFO-Schichten blieben
-  trotz Abgang stehen. Fremdbestand bleibt unbewertet, Lagerplatz,
-  Negativbestand und Vier-Augen-Weg bleiben.
-- Lagerentnahme in der Kundenakte (`MVP-1693`): Entnahme und Rückbuchung beim
-  Löschen der Zuordnung folgen dem Bewertungsverfahren des Artikels. Bei FIFO
-  und FEFO verbrauchte die Entnahme bisher das Durchschnittsbuch (Kosten
-  meist 0) und die Rückbuchung landete dort; jetzt verbraucht sie Schichten,
-  die Rückbuchung legt eine Schicht zum Stückkostenwert der Entnahme an. Beim
-  gleitenden Durchschnitt ändert sich nichts.
-- Summengrenze am Stundenzettel (`MVP-1690`): Bei leerem Einzelpreis prüfte
-  der Dialog die Summe ohne den Materialpreis, weil die Materialauswahl nicht
-  aufgelöst wurde; jetzt mit dem Preis, der gespeichert wird.
-- Storno und Korrekturrechnung frieren den Steuerfall ihres Originals ein
-  (`MVP-1688`), nicht den nach heutigen Kundendaten: Hatte sich der Kunde
-  seit dem Original geändert, wich die Kategorie des Kopfes von den
-  übernommenen Positionskategorien ab, und Buchhaltung und E-Rechnung lasen
-  verschiedene Fälle.
 - Fertigungsverbrauch und Reservierungs-Erfüllung buchen Eigenbestand
   bewertet (`MVP-1710`): Der Materialverbrauch eines Fertigungsauftrags — über
   die Reservierung oder ohne sie — geht nach dem Verfahren des Artikels ab
@@ -183,7 +70,6 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Speichern behält sie, solange das Material bleibt; vorher sendete das
   verborgene Feld eine leere Wahl, und die Zeile fiel still auf die
   Standardvariante zurück und buchte um.
-
 - Anschrift und Bankverbindung über den Satelliten (`MVP-1700`): Kunden-API
   und CSV-Import von Kunden und Lieferanten schrieben Rechnungsanschrift und
   Bankverbindung direkt in die Listenspalten, an der gespeicherten Anschrift
@@ -300,37 +186,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinweise zum Update
 
-- Nach dem Deploy einmalig
-  `scripts/artisan.sh incoming-invoices:repair-seller-ids --dry-run`, danach
-  ohne Option (`MVP-1696`): liest Steuer- und Registernummer des Verkäufers
-  strukturierter Bestandseingänge neu, je Lauf höchstens 500 je Organisation
-  (`--limit`, bei größerem Bestand wiederholen). Jeder Eingang wird nur einmal
-  bearbeitet; Eingänge, die über die falsch gelesene Steuernummer zugeordnet
-  wurden, nennt der Lauf zur Prüfung, er ändert ihre Zuordnung nicht.
-- Rechnungen, die vor diesem Update ausgestellt wurden, führen keine
-  Lieferanschrift im Snapshot: Ihre E-Rechnung nennt weiter die
-  Rechnungsanschrift als Lieferanschrift, auch wenn der Kunde inzwischen eine
-  Lieferanschrift hat (`MVP-1689`). Keine Migration.
-- Migration `2027_04_19_110000_add_article_variant_to_material_usages`
-  (`MVP-1690`): Bestandszeilen bleiben ohne Variante und buchen wie bisher die
-  Standardvariante. Ab dem Update mindern manuelle Entnahmen und Scan-Entnahmen
-  das Bewertungsbuch (`MVP-1692`); auch der manuelle Eingang ist jetzt
-  bewertet (`MVP-1709`).
-- Migrationen `2027_04_19_120000_add_is_consumer_to_customers` und
-  `2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules`
-  (`MVP-1688`): Bestandskunden gelten als Unternehmen, Artikel und
-  Abrechnungsregeln erben die Vorgabe der Organisation („Allgemein“) — ohne
-  Pflege ändert sich kein Steuerfall. Zu pflegen: das Merkmal „Verbraucher“
-  bei Privatkunden im Drittland und die Leistungsort-Art der Leistungen
-  (Vorgabe der Organisation, Artikel, Abrechnungsregeln). Bereits installierte
-  Branchenprofile setzen die neue Vorgabe erst, wenn das Profil erneut
-  angewandt wird. Ausgestellte Rechnungen bleiben unverändert; ihr Snapshot
-  führt den Empfänger als Unternehmen.
-- Neue Toolkit-Versionen: php-common-toolkit 2.18.0 (`MVP-1698`, gemeinsame
-  Prüfziffer-Rechnung nach ISO/IEC 7064; IBAN-Prüfziffern nur noch Ziffern) und
-  php-erechnung-toolkit 0.23.0 (`MVP-1697`). Die App nimmt Fehlerart und
-  Formprüfung der Leitweg-ID und die Pauschal-Einheit in allen fünf Sprachen
-  jetzt aus dem Toolkit (`MVP-1699`); Meldungen und Steuerfälle bleiben gleich.
+- Der manuelle Lagereingang (Formular und Scan) ist jetzt bewertet
+  (`MVP-1709`); der Hinweis in 1.4.0, er bleibe unbewertet, ist überholt.
 - Bewertung von Eingang und Fertigungsverbrauch (`MVP-1709`, `MVP-1710`):
   Keine Migration. Bestand, der vor dem Update manuell oder per Scan
   zugebucht wurde, fehlt weiter im Bewertungsbuch; er wird nicht nachträglich
@@ -344,14 +201,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Zusammenführen nennt statt Straße, PLZ, Ort, Land und IBAN die Felder
   „Rechnungsanschrift“ und „Bankverbindung“.
 - Phase 180, Steuerfall (`MVP-1704`–`MVP-1708`): Migration
-  `2027_04_20_120000_add_property_country_to_invoices` (Spalte
+  `2027_04_25_100000_add_property_country_to_invoices` (Spalte
   `invoices.property_country`, im Bestand leer). Soll-Befunde von
   Pauschal-Projekten, deren Pauschale vor diesem Stand abgerechnet wurde,
   bleiben offen; bestätigen Sie sie am Zeitreiter des Projekts. Kunden mit dem
   Merkmal „Verbraucher“ und Firma oder USt-IdNr. weisen auf neuen Rechnungen
   bei der Regel „Bei Privatkunden ausweisen“ die Arbeitskosten aus.
 - Phase 180, Pauschale und Positionssätze (`MVP-1716`–`MVP-1718`): Migration
-  `2027_04_20_140000_add_external_reference_to_project_time_shortfalls` (Spalte
+  `2027_04_25_100100_add_external_reference_to_project_time_shortfalls` (Spalte
   `project_time_shortfalls.external_reference_id`, im Bestand leer). Befunde
   von Pauschal-Projekten, die eine Übergabe vor diesem Stand als berechnet
   markiert hat, bleiben berechnet; eine Nachbuchung auf diese Tage bleibt nicht
@@ -371,6 +228,343 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Fertigerzeugnisse, die vor diesem Update eingelagert wurden, bleiben
   unbewertet; erst Rückmeldungen ab dem Update buchen Herstellkosten
   (`MVP-1719`).
+
+## [1.4.0] - 2026-11-13
+
+Phasen 179 und 177 seit 1.3.0.
+
+Phase 179 (MVP-1688–1699): offene Punkte aus Phase 178 — Leistungsort nach
+§ 3a UStG mit Merkmal „Verbraucher“, Lieferanschrift am Kunden (auch in API,
+MCP und E-Rechnung), Registerangabe der Organisation in der E-Rechnung,
+Variante am Materialverbrauch, Offline-Konflikt bei zu wenig Bestand,
+bewertete Lagerentnahme sowie php-common-toolkit 2.18.0 und
+php-erechnung-toolkit 0.23.0.
+
+Phase 177 (MVP-1630–1677): Bausteine aus dem Abgleich mit den internen Apps
+eines Steuerbüros, verallgemeinert für alle Branchen — Kundenfristen aus
+Regelsätzen, Periodenaufträge mit interner Prüfung, Leistungsplan,
+Aufnahmeakte mit GwG-Prüfpaket, Merker, Vertretung, lange Formulare,
+Mail-Dateien, Anmelderichtlinien mit Notaus, Wünsche an die App,
+Kontierungshilfen, Sammel-PDF und GiroCode, Wissensseiten, Selbstauskunft am
+Anwesenheits-Board, Liegezeit im Arbeitsvorrat und KI-Datenschutz. Ein
+Kanzleimodul gibt es nicht; die Branchenprofile liefern Regeln, Vorlagen und
+Prüfpakete.
+
+Umsetzungsberichte im Doku-Repository unter `chronik/umsetzungen/`
+(`phase179-offene-punkte-aus-phase178-umsetzung-2026-11-12.md`,
+`phase177-kanzlei-und-querschnitt-umsetzung-2026-11-13.md`).
+
+### Hinzugefügt
+
+- Lieferanschrift am Kunden (`MVP-1689`): Der Kundendialog führt den
+  aufklappbaren Abschnitt „Lieferanschrift“ (Straße, Adresszusatz, PLZ, Ort,
+  Land); leer bleibt die Rechnungsanschrift die Lieferanschrift, alle Felder
+  geleert entfernt sie. Sie liegt als eigene Anschrift neben der
+  Rechnungsanschrift; Listen, Belegkopf und Buchhaltungsprogramm behalten die
+  Rechnungsanschrift, der Stammdatenabgleich überträgt eine geänderte
+  Lieferanschrift an Lexoffice. Detailseite, Zusammenführen (eigenes Feld, das
+  Ziel behält seine Lieferanschrift oder übernimmt die gewählte), Datenauskunft
+  (Art. 15) sowie CSV-Export und -Import (Spalten `shipping_street`,
+  `shipping_supplement`, `shipping_zip`, `shipping_city`, `shipping_country`,
+  Kopfzeilen wie „Lieferstraße“, „Liefer-PLZ“, „Lieferort“, „Lieferland“)
+  führen sie mit.
+  Ausstellen friert sie im Empfänger ein; Storno und Korrekturrechnung nehmen
+  die des Originals. Bei innergemeinschaftlicher Lieferung (Kategorie K) nennt
+  die E-Rechnung sie als Lieferpartei mit Lieferland (BT-70, BT-75–BT-80) in
+  UBL und CII, ohne sie wie bisher die Rechnungsanschrift; die Prüfung vor dem
+  Versand prüft PLZ, Ort und Land der tatsächlich genutzten Anschrift.
+- Kunden-API und MCP (`MVP-1694`): `CustomerResource` liefert
+  `register_number` und die Lieferanschrift (`shipping_*`); Anlegen und Ändern
+  über die API nehmen beide an, ein Update ändert nur die gesendeten Felder der
+  Lieferanschrift. Das MCP-Werkzeug `create_customer` nimmt Registernummer und
+  Lieferanschrift an, `customers` zeigt sie. Die OpenAPI-Beschreibung nennt die
+  Felder für Anlegen und Ändern.
+- Registerangabe der Organisation in der E-Rechnung (`MVP-1695`): Der
+  Handelsregister-Eintrag aus dem Branding steht als Registerkennung des
+  Verkäufers (BT-30) in XRechnung und ZUGFeRD, unverändert als Freitext samt
+  Registergericht (eine HRB-Nummer ist nur mit dem Gericht eindeutig, KoSIT
+  nimmt den Text in UBL und CII an). Sie gilt wie beim Ausstellen
+  eingefroren; Rechnungen vor `MVP-1680` nehmen die gedruckte Angabe der
+  Ausstellerdaten, ältere den heutigen Stand. Das Feld im Branding nennt das
+  erwartete Format.
+- Variante am Materialverbrauch (`MVP-1690`): Hat der lagergeführte Artikel
+  eines Materials mehrere aktive Varianten, wählt der Dialog am Stundenzettel
+  und auf „Heute“ die verbrauchte Variante; das Feld erscheint nur bei solchen
+  Materialien, leer bucht wie bisher die Standardvariante. Die Bestandsbuchung
+  bucht die gewählte Variante, ein Wechsel bucht die alte zurück und die neue
+  ab. Ohne Einzelpreis gilt der eigene Verkaufspreis der Variante (gleiche
+  Währung), sonst der Materialpreis. Die Variante muss zum Artikel des
+  Materials und zur Organisation gehören; eine stillgelegte lässt sich nicht
+  neu wählen. API (`article_variant_id`, Anzeige `variant`) und Offline-Befehl
+  `material.usage` führen sie mit, ein anderes Material ohne neue Wahl setzt
+  sie zurück. Zeile und PDF des Stundenzettels, Materialrechnung (samt
+  Variantenbezug der Position), Übergabepositionen und Übergabedatei nennen sie
+  hinter der Bezeichnung wie eine Auslieferung („Bezeichnung – Variante
+  (SKU)“), sofern die Bezeichnung sie nicht schon nennt.
+- Offline-Konflikt bei zu wenig Bestand (`MVP-1691`): Fehlt einem offline
+  erfassten Materialverbrauch nur Bestand, kennzeichnet der Konflikt das
+  (`shortage`). „Bearbeiten“ unter „Offline-Änderungen“ bietet dann mit dem
+  Recht „Negative Bestände freigeben“ den Haken „Negativen Bestand
+  zulassen“; das erneute Senden bucht wie online, mit Vier-Augen-Pflicht als
+  Antrag. Ohne Recht bleibt der Konflikt. Der Serverstand des Konflikts zeigt
+  den Grund als „Lager“ statt der technischen Schlüssel. Auch der Haken im
+  Material-Dialog auf „Heute“ geht offline jetzt mit.
+- Leistungsort nach § 3a UStG (`MVP-1688`): Merkmal „Verbraucher (kein
+  Unternehmen)“ am Kunden und Leistungsort-Art der Leistung („Allgemein“,
+  „Katalogleistung“ nach § 3a Abs. 4, „Grundstücksleistung“ nach § 3a Abs. 3
+  Nr. 1). Die Art steht an der Abrechnungsregel des Projekts, sonst an deren
+  Artikel bzw. am Leistungsartikel der Position, sonst in der neuen Vorgabe der
+  Organisation (Einstellungen, Reiter „Rechnungen“, ab Werk „Allgemein“); die
+  Branchenprofile IT und Steuerberatung setzen „Katalogleistung“, Bau und
+  Ausbau, Gebäudereinigung, Dachdecker, Maler, Fliesen- und Bodenleger,
+  Garten- und Landschaftsbau, Hausmeister, Facility Management und Vermieter
+  „Grundstücksleistung“, ohne eine eigene Einstellung zu überschreiben.
+  Steuerfall: Grundstück im Inland (Einsatzort des Auftrags, ohne Angabe
+  Inland) trägt deutsche Steuer für alle Kunden, auch im EU-Ausland und
+  Drittland; der Inlands-§ 13b bleibt. Grundstück im Ausland ist nicht
+  steuerbar (O). An Verbraucher im Drittland ist eine Katalogleistung nicht
+  steuerbar (O, eigener Hinweis), eine allgemeine Leistung trägt deutsche
+  Steuer. Unternehmen und Waren wie bisher. Ein Verbraucher schuldet nie
+  selbst die Steuer (Haken „Leistungsempfänger schuldet die Umsatzsteuer“
+  dann gesperrt, im EU-Ausland kein Reverse Charge). Ergeben die Positionen
+  einer Rechnung verschiedene Steuerfälle, meldet der Entwurf das, das
+  Ausstellen hält an, und die Prüfung vor dem Versand weist ab (mit O nach
+  BR-O-11) — die Rechnung ist zu teilen. Rechnungslauf aus Zeiten und Angebot
+  → Rechnung übernehmen den Leistungsort ihrer Leistungen. Das Merkmal führen
+  Kundendialog, Detailseite, Zusammenführen, Datenauskunft (Art. 15),
+  CSV-Import und -Export (Spalte `is_consumer`), Kunden-API und MCP
+  (`create_customer`, `customers`); der Partei-Snapshot friert es ein, Storno
+  und Korrekturrechnung nehmen das des Originals. Artikeldialog, Detailseite
+  und Artikelimport (Spalte `place_of_supply_kind`) sowie Regeldialog und
+  Regeltabelle des Projekts führen die Art.
+- Kundenfristen (Feature 197, `MVP-1630–1633`, `MVP-1673`, `MVP-1676`):
+  Fristmerkmale und Leistungsumfang je Kunde, Fristen je Kunde und Periode
+  aus Regelsätzen, Übersicht `/kundenfristen` mit Export, Kalender, Cockpit,
+  Arbeitsvorrat, Vorwarnung und Frühwarnung. Regelsatz Steuerberatung:
+  USt-Voranmeldung (mit Dauerfristverlängerung und Sondervorauszahlung),
+  Zusammenfassende Meldung, Lohnsteuer-Anmeldung, Jahreserklärungen nach
+  § 149 AO samt Übergangsfristen, Beitragsnachweis und Beitragsfälligkeit der
+  Sozialversicherung nach Bankarbeitstagen (frühester Termin über alle
+  Einzugsstellen); Feiertag am Ort des Finanzamts. Regelsatz ambulante Pflege:
+  Beratungsbesuch nach § 37 Abs. 3 SGB XI in der Fassung ab 2026. Ein
+  abgeschlossener Auftrag der passenden Art und Periode erledigt die Frist.
+  Der Fristenrechner liegt jetzt im Kalender und gilt für eigene Organisation
+  und Kunden. Rechte `customer.deadline.view`, `customer.deadline.manage`.
+- Periodenaufträge mit interner Prüfung (Feature 198, `MVP-1634–1637`):
+  Periode am Auftrag (Jahr, Halbjahr, Quartal, Monat), Pflicht je
+  Eintragsart; Prüfpflicht je Eintragsart mit den Zuständen „Zur Prüfung“,
+  „Rückfrage“ und „Freigegeben“ — nie durch die vorlegende Person;
+  Prüf-Warteschlange, Genehmigungs-Eingang, Kachel „Zur Prüfung“;
+  Folgeperiode einzeln oder gesammelt mit Fälligkeit aus den Kundenfristen.
+  Rechte `order.review`, `order.waiveReview`. Ohne Prüfpflicht bleibt der
+  Ablauf unverändert.
+- Leistungsplan (Feature 199, `MVP-1638–1640`, `MVP-1674`): Jahres- und
+  Periodensicht Kunde × Leistung aus den Aufträgen mit Periode, „entfällt“,
+  Unterlagen und Bemerkung je Periode, Import vorhandener Listen,
+  Kundenabgleich gegen eine Liste aus dem Fremdsystem, Leistungsvorlagen der
+  Branchenprofile. Rechte `diary.servicePlan.view`, `diary.servicePlan.manage`.
+- Aufnahmeakte am Lead (Feature 200, `MVP-1641–1644`, `MVP-1675`):
+  Stufen von der Anfrage bis zur Einrichtung, Prüfpakete GwG
+  (Identifizierung, wirtschaftlich Berechtigte, PEP, Risikostufe, Vermerk),
+  Pflege-Erstaufnahme und B2B-Neukunde; Umwandlung erst nach der
+  Entscheidung; Aufbewahrung nach § 8 Abs. 4 GwG, Aktualisierung je
+  Risikostufe, PDF der Akte, Auskunftsabschnitt. Rechte `lead.intake.decide`,
+  `lead.intake.identity`, `lead.intake.health`.
+- Merker für die nächste Periode (Feature 201, `MVP-1645`, `MVP-1646`) an
+  Aufträgen mit Periode, Aufträgen aus Monats- und Jahresregeln,
+  wiederkehrenden Vertragspflichten und Prüfterminen.
+- Vertretung bei Abwesenheit (Feature 202, `MVP-1647`, `MVP-1648`): leitet
+  zugewiesene Arbeit um, ohne Rechte zu verleihen; endet zum Datum oder mit
+  dem Storno der Abwesenheit; Benachrichtigungen an die Vertretung;
+  endgültige Übergabe von Aufträgen, Aufgaben, Tickets, Prozedurläufen,
+  Kundenfristen und Wissensseiten. Recht `user.delegation.manage`.
+- Lange Formulare (Feature 203, `MVP-1649–1651`): Abschnittskarten mit
+  Fortschritt, Inhaltsleiste, Speichern je Feld mit Entwurf, Knöpfe statt
+  Auswahlliste, PDF im Papierlayout.
+- Mail-Dateien (Feature 204, `MVP-1652`, `MVP-1653`): `.eml` und `.msg` an
+  Vorgänge ziehen, mit Kopf, Text und Anhängen ansehen, Anhänge übernehmen,
+  Inhalt in der Suche; gelesen wird im Hintergrund.
+- Anmelderichtlinien je Organisation (Feature 205, `MVP-1654–1657`):
+  Anmeldezeiten, Büronetze, freigegebene Geräte für außerhalb, Modus „nur
+  protokollieren“, Passkey-Pflicht je Rolle, Notaus. Rechte `auth.remote`,
+  `auth.remote.token`, `auth.policy.manage`, `auth.lockdown`.
+- Wünsche an die App (Feature 206, `MVP-1658`, `MVP-1659`, `MVP-1677`): Wünsche,
+  Fehler und Fragen mit Stimmen und Antwort, Weitergabe an den
+  Plattformbetrieb ohne Personenbezug, Bündeln, Herstellerkanal per Mail für
+  selbst betriebene Installationen (Opt-in, Vorgabe aus). Recht `wishes.manage`.
+- Kontierungshilfen (Feature 207, `MVP-1660`, `MVP-1661`): Vorschläge für
+  Bankumsätze aus früheren Direktbuchungen (Mandat, Gläubiger-ID, IBAN,
+  Stichwörter), gebündelt bestätigt; Steuerprüfung vor dem DATEV-Export, die
+  Export und Festschreiben sperrt, Freigabe mit Begründung. Recht
+  `finance.accounting.releaseTaxCheck` (nur Admin).
+- Sammel-PDF und GiroCode im Rechnungseingang (Feature 208, `MVP-1662`,
+  `MVP-1663`): mehrere Rechnungen in einem PDF erkennen und aufteilen, das
+  Original bleibt; GiroCode lesen und gegen Erkennung und Lieferantenstamm
+  prüfen, eine abweichende IBAN sperrt den Zahlungsvorschlag bis zur
+  Bestätigung.
+- Wissensseiten (Feature 191, `MVP-1664–1668`): Bereiche, Rubriken,
+  Seiten mit Fassungen, Freigabe, Prüfintervall, Pflichtlektüre mit
+  Lesebestätigung, Glossar, Suchlücken, Bildanleitungen mit Schwärzen,
+  Notfallhandbuch als PDF, Papierkorb. Rechte `knowledge.page.viewAny`,
+  `.edit`, `.manage`, `.forceDelete`.
+- Selbstauskunft am Anwesenheits-Board (`MVP-1669`): „Nicht stören“, „Kurz
+  weg“, „Außer Haus“ mit Ende, ohne Verlauf.
+- Arbeitsvorrat (`MVP-1670`): Liegezeit am Vorgang, Filter „Nur ruhende“,
+  Kennzahl „Ruhende Vorgänge“, Durchlaufzeit je Auftragsart — nie je Person.
+- KI (`MVP-1671`, `MVP-1672`): Maskierung von IBAN, USt-IdNr., Steuernummer,
+  Steuer-ID, E-Mail und Telefon mit Rückersetzung; Datenschutzfreigabe je
+  Verbindung (AVV, EU, kein Training) mit Frist. Recht `ai.approve`.
+- Datenschutz: Die Betroffenenauskunft zeigt Lesebestätigungen und
+  Seitenbesuche der Wissensseiten sowie eigene Wünsche und abgegebene Stimmen
+  (ohne Urheber der Wünsche); beim Austritt wird der Anwesenheitsstand
+  gelöscht. Lesebestätigungen gelten als Nachweis und verhindern das harte
+  Löschen eines Mitglieds.
+- Kunden-Cockpit: offene Merker an Periodenaufträgen.
+- Branchenprofile: Steuerberatung v7, ambulante Pflege v10, IT v7,
+  Gebäudereinigung v6, Handwerk v4 (Periodenpflicht, Regelsätze,
+  Leistungsvorlagen, Prüfpakete).
+
+### Geändert
+
+- Jahreserklärung der eigenen Organisation: für die Veranlagungszeiträume
+  2020–2024 gelten jetzt die Übergangsfristen nach Art. 97 § 36 EGAO statt
+  der Regelfrist. Fristen ab 2025 bleiben gleich.
+- Pflegeprofil: Die Pflegevertrags-Vorlage legt keine Pflicht „Beratungsbesuch
+  alle 3 Monate“ mehr an; Beratungsbesuche folgen der Kundenfrist.
+  Bestehende Verträge bleiben, ein Hinweis im Arbeitsvorrat bittet, die alten
+  Pflichten zu schließen.
+- Taxi-Fahrten, Rundgänge und Tour-Stopps schließen Aufträge mit Prüfpflicht
+  nicht mehr direkt ab, sondern legen sie zur Prüfung vor.
+- Anhänge hochladen ist auf 60 Anfragen je Minute gedrosselt, Speichern je
+  Feld auf 120 Anfragen je Minute und Person.
+- KI-Datenschutzfreigabe (`MVP-1672`): Eine Änderung von Adresse, Modell,
+  API-Schlüssel, Familie, Anbieter oder „lokal“ einer Verbindung setzt die
+  Freigabe zurück (auditiert, Hinweis im Bearbeiten-Dialog); auch ein
+  Schlüsseltausch verlangt also eine neue Freigabe. Eine Namensänderung lässt
+  sie stehen.
+- php-common-toolkit 2.17.1 (EPC-Parser, Outlook-.msg-Leser,
+  Compound-File-Leser, Härtung; enthalten in 2.18.0, siehe Phase 179) und
+  php-pdf-toolkit 0.32.1 (Pixelgrenze beim Rastern, Seitenboxen, zbarimg-XML;
+  `^0.32`). Der GiroCode-Erzeuger des Toolkits
+  weist Zeilenumbrüche in Name, Referenz, Zweck und Hinweis jetzt ab.
+
+### Sicherheit
+
+- Anmelderichtlinien (Feature 205), unabhängige Prüfung: Die Passkey-Pflicht
+  ließ sich mit App-Code und Wiederherstellungscode umgehen; eine Anmeldung
+  über „Angemeldet bleiben“ zählte als frische Anmeldung (Notaus ohne
+  Passwort); persönliche Tokens hatten keine Geräteprüfung (neues Recht
+  `auth.remote.token`); DNS-Namen wurden in der Anmeldung synchron
+  aufgelöst. Alle Befunde behoben.
+- Mail-Dateien (Feature 204), unabhängige Prüfung: Rechenlast durch gefaltete
+  Kopfzeilen, Speicherlast durch leere Boundary und Compound-File-Tabellen,
+  Annahme auf externen Flächen. Behoben: lineare Vorprüfung, Lesen im
+  Hintergrund mit Grenzen, Mail-Dateien nur auf internen Flächen, Original-HTML
+  nur abgeschottet.
+- Sammel-PDF und GiroCode (Feature 208), unabhängige Prüfung: Seiten mit
+  riesiger CropBox ließen das Rastern Gigabytes belegen; QR-IBANs wurden ohne
+  Bestätigung zahlungswirksam; die Bestätigung der Lieferanten-IBAN war nicht
+  an die IBAN gebunden; Vorschaubilder überlebten die Löschung der
+  Organisation. Alle Befunde behoben (Pixelgrenze `PDF_RASTER_MAX_PIXELS`,
+  Seitengrenze, Bestätigung an IBAN und Lieferant gebunden).
+
+### Behoben
+
+- Rechnungseingang (`MVP-1696`): Eingänge, deren Zusammenfassung vor
+  `MVP-1686` die Registernummer des Verkäufers als Steuernummer führte, lassen
+  sich einmalig aus dem abgelegten Original neu auswerten. Nur Steuer- und
+  Registernummer ändern sich, mit Eintrag im Änderungsprotokoll des Eingangs;
+  Zuordnungen, Entscheidungen und Übergaben bleiben, offene Eingänge bekommen
+  den Abgleich erneut.
+- Eine Lieferanschrift aus dem Buchhaltungsprogramm konnte bei Kunden und
+  Lieferanten ohne Rechnungsanschrift als primäre Anschrift gelten und die
+  Anschriftsspalten überschreiben (`MVP-1689`); die primäre Anschrift ist jetzt
+  nie eine Lieferanschrift.
+- Die Entnahme im Lager bucht Eigenbestand bewertet (`MVP-1692`): Formular,
+  Scan und die nach einer Vier-Augen-Freigabe gebuchte Entnahme bewerten nach
+  dem Verfahren des Artikels wie Auslieferung und Materialverbrauch (FIFO und
+  FEFO verbrauchen Schichten, der gleitende Durchschnitt mindert sein Buch);
+  vorher standen die Bewegungen ohne Kostenwert, und FIFO-Schichten blieben
+  trotz Abgang stehen. Fremdbestand bleibt unbewertet, Lagerplatz,
+  Negativbestand und Vier-Augen-Weg bleiben.
+- Lagerentnahme in der Kundenakte (`MVP-1693`): Entnahme und Rückbuchung beim
+  Löschen der Zuordnung folgen dem Bewertungsverfahren des Artikels. Bei FIFO
+  und FEFO verbrauchte die Entnahme bisher das Durchschnittsbuch (Kosten
+  meist 0) und die Rückbuchung landete dort; jetzt verbraucht sie Schichten,
+  die Rückbuchung legt eine Schicht zum Stückkostenwert der Entnahme an. Beim
+  gleitenden Durchschnitt ändert sich nichts.
+- Summengrenze am Stundenzettel (`MVP-1690`): Bei leerem Einzelpreis prüfte
+  der Dialog die Summe ohne den Materialpreis, weil die Materialauswahl nicht
+  aufgelöst wurde; jetzt mit dem Preis, der gespeichert wird.
+- Storno und Korrekturrechnung frieren den Steuerfall ihres Originals ein
+  (`MVP-1688`), nicht den nach heutigen Kundendaten: Hatte sich der Kunde
+  seit dem Original geändert, wich die Kategorie des Kopfes von den
+  übernommenen Positionskategorien ab, und Buchhaltung und E-Rechnung lasen
+  verschiedene Fälle.
+- Passkeys entfernen: die frische Anmeldung genügt als Nachweis; bei
+  Passkey-Pflicht bleibt der letzte Passkey.
+- Scheduler-Tests hingen davon ab, ob die Test-Datenbank beim ersten Start
+  schon bestand; ein Test der Qualifikationsprüfung hing von zufälligen
+  Schichten ab.
+- Hilfe „Folgeperiode“: die Fälligkeit kommt aus den Kundenfristen.
+
+### Hinweise zum Update
+
+- Nach dem Deploy einmalig
+  `scripts/artisan.sh incoming-invoices:repair-seller-ids --dry-run`, danach
+  ohne Option (`MVP-1696`): liest Steuer- und Registernummer des Verkäufers
+  strukturierter Bestandseingänge neu, je Lauf höchstens 500 je Organisation
+  (`--limit`, bei größerem Bestand wiederholen). Jeder Eingang wird nur einmal
+  bearbeitet; Eingänge, die über die falsch gelesene Steuernummer zugeordnet
+  wurden, nennt der Lauf zur Prüfung, er ändert ihre Zuordnung nicht.
+- Rechnungen, die vor diesem Update ausgestellt wurden, führen keine
+  Lieferanschrift im Snapshot: Ihre E-Rechnung nennt weiter die
+  Rechnungsanschrift als Lieferanschrift, auch wenn der Kunde inzwischen eine
+  Lieferanschrift hat (`MVP-1689`). Keine Migration.
+- Migration `2027_04_19_110000_add_article_variant_to_material_usages`
+  (`MVP-1690`): Bestandszeilen bleiben ohne Variante und buchen wie bisher die
+  Standardvariante. Ab dem Update mindern manuelle Entnahmen und Scan-Entnahmen
+  das Bewertungsbuch (`MVP-1692`); der manuelle Eingang trägt keinen
+  Einzelpreis und bleibt unbewertet — wer Bestand über ihn zubucht, sieht das
+  Durchschnittsbuch unter dem physischen Bestand.
+- Migrationen `2027_04_19_120000_add_is_consumer_to_customers` und
+  `2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules`
+  (`MVP-1688`): Bestandskunden gelten als Unternehmen, Artikel und
+  Abrechnungsregeln erben die Vorgabe der Organisation („Allgemein“) — ohne
+  Pflege ändert sich kein Steuerfall. Zu pflegen: das Merkmal „Verbraucher“
+  bei Privatkunden im Drittland und die Leistungsort-Art der Leistungen
+  (Vorgabe der Organisation, Artikel, Abrechnungsregeln). Bereits installierte
+  Branchenprofile setzen die neue Vorgabe erst, wenn das Profil erneut
+  angewandt wird. Ausgestellte Rechnungen bleiben unverändert; ihr Snapshot
+  führt den Empfänger als Unternehmen.
+- Neue Toolkit-Versionen: php-common-toolkit 2.18.0 (`MVP-1698`, gemeinsame
+  Prüfziffer-Rechnung nach ISO/IEC 7064; IBAN-Prüfziffern nur noch Ziffern) und
+  php-erechnung-toolkit 0.23.0 (`MVP-1697`). Die App nimmt Fehlerart und
+  Formprüfung der Leitweg-ID und die Pauschal-Einheit in allen fünf Sprachen
+  jetzt aus dem Toolkit (`MVP-1699`); Meldungen und Steuerfälle bleiben gleich.
+- `migrate` spielt 18 Migrationen ein (`2027_04_18_100000` bis
+  `2027_04_24_300000`). In bestehenden Organisationen bleibt die
+  KI-Freigabepflicht aus (`2027_04_18_500100`); Org-Admins schalten sie unter
+  KI › Datenschutz ein. Bestätigte Lieferanten-IBANs werden auf ihren Abdruck
+  umgerechnet, unlesbare verfallen.
+- Die Warteschlange `media` muss laufen: Mail-Dateien und Sammel-PDFs werden
+  dort gelesen und aufgeteilt.
+- `zbar-tools` installiert der Deploy als root (`config/executables.json`);
+  ohne `zbarimg` meldet der Rechnungseingang „GiroCode nicht lesbar“.
+- Neue ENV (optional): `PDF_RASTER_MAX_PIXELS` (Vorgabe 70 000 000),
+  `LOGIN_POLICY_DNS_ALLOW_PRIVATE` (Vorgabe `false`).
+- Neue Scheduler-Jobs: `security.resolve_login_networks`,
+  `customer_deadlines.sync`, `knowledge_pages.empty_trash`.
+- Nach dem Deploy einmal `scripts/artisan.sh
+  incoming-invoices:prune-legacy-page-images --dry-run`, dann ohne
+  `--dry-run`: entfernt alte Erkennungsbilder des Rechnungseingangs
+  (`recognition/{sha}` aus der Zeit vor der Ablage je Organisation).
+- KI-Verbindungen, deren Adresse, Modell oder Schlüssel nach der Freigabe
+  geändert wird, müssen neu freigegeben werden.
+- Branchenprofile über die Profilübersicht aktualisieren (ergänzt nur
+  Fehlendes), danach `scripts/artisan.sh customer-deadlines:sync`.
+- Anmelderichtlinien zuerst im Modus „nur protokollieren“ erproben;
+  Org-Admins sind von Zeitfenstern und Büronetzen ausgenommen.
 
 ## [1.3.0] - 2026-11-12
 

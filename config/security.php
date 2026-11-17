@@ -86,6 +86,17 @@ return [
     'platform_admin_ip_allowlist' => env('PLATFORM_ADMIN_IP_ALLOWLIST', ''),
 
     /*
+    | Anmelderichtlinie der Organisationen (Feature 205): Dürfen DNS-Namen der
+    | Büronetze auf private/interne Adressen zeigen? Nur für Vor-Ort-
+    | Installationen mit internem DNS sinnvoll. Vorgabe aus — sonst ließe ein
+    | Name auf 127.0.0.1 oder ein internes Netz bei einem Proxy-Fehler jeden
+    | herein. Ausdrücklich eingetragene Netze (CIDR) gelten unabhängig davon.
+    */
+    'login_policy' => [
+        'dns_allow_private' => (bool) env('LOGIN_POLICY_DNS_ALLOW_PRIVATE', false),
+    ],
+
+    /*
     | Temporäre IP-Sperre („fail2ban light“, Feature 096/097, MVP-450) für
     | Installationen ohne OS-Sperre. Standard aus — fail2ban bleibt erste Wahl
     | (Entscheidung E2). Achtung CGNAT/Firmen-NAT: eine Adresse kann viele

@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Models\Contract;
 
 use App\Enums\Contract\{ContractObligationKind, ContractObligationStatus};
+use App\Enums\Period\PeriodKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Contracts\PeriodicOccurrence;
 use App\Models\Platform\User;
+use App\Support\Period\PeriodKey;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +26,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Verlängerungswarnung, Zahlungs-/Prüf-/Indexierungstermin — mit Vorwarnzeit.
  * Speist die Fristen-/Eskalationsmechanik (contract.deadlineDue). Optional
  * wiederkehrend: beim Erledigen wird die nächste Fälligkeit erzeugt.
+ *
+ * Träger der Merker für die nächste Periode (Feature 201, MVP-1646): eine
+ * wiederkehrende Pflicht ist ein Vorkommen der Reihe Vertrag × Pflichtart
+ * (`contract_obligation:<vertrag>:<art>`), ihre Periode ist die Fälligkeit in
+ * der Art des Wiederholungsabstands (12 Monate → Jahr, 3 Monate → Quartal …).
+ * Die beim Erledigen neu angelegte Pflicht zeigt so die Merker der vorigen.
  *
  * @property int $id
  * @property int $organization_id
@@ -34,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $recurrence_months
  * @property ContractObligationStatus $status
  */
-class ContractObligation extends Model {
+class ContractObligation extends Model implements PeriodicOccurrence {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
@@ -64,6 +73,24 @@ class ContractObligation extends Model {
     public function isDueForWarning(): bool {
         return $this->status === ContractObligationStatus::Open
             && $this->due_on->copy()->subDays($this->warn_days_before)->startOfDay()->isPast();
+    }
+
+    /** Reihe Vertrag × Pflichtart — nur wiederkehrende Pflichten (MVP-1646). */
+    public function carryForwardSeries(): ?string {
+        if (! $this->recurring || (int) $this->recurrence_months <= 0 || (int) $this->contract_id <= 0) {
+            return null;
+        }
+
+        return 'contract_obligation:' . (int) $this->contract_id . ':' . $this->kind->value;
+    }
+
+    /** Fälligkeit als Periode in der Art des Wiederholungsabstands. */
+    public function carryForwardPeriod(): ?PeriodKey {
+        if ($this->carryForwardSeries() === null) {
+            return null;
+        }
+
+        return PeriodKey::containing(PeriodKind::forMonths((int) $this->recurrence_months), $this->due_on);
     }
 
     /** @return BelongsTo<Contract, $this> */

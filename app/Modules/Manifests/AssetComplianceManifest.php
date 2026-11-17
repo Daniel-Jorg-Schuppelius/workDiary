@@ -105,6 +105,10 @@ final class AssetComplianceManifest extends Manifest {
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\AssetCompliance\DeadlineScans\AssetInspectionScan::class,
             ],
+            // Offene Merker an den Prüfpflichten im Asset-Cockpit (Feature 201, MVP-1646).
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\AssetCompliance\Cockpit\InspectionCarryForwardCockpitPanel::class,
+            ],
         ];
     }
 

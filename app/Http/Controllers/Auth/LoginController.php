@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\LegacyBridge;
 use App\Models\Auth\SsoConnection;
 use App\Models\Platform\User;
+use App\Services\Auth\LoginPolicy\LoginPolicyGate;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, RateLimiter};
@@ -80,6 +81,17 @@ class LoginController extends Controller {
                 RateLimiter::hit($throttleKey, 60);
 
                 return $ssoRedirect;
+            }
+
+            // Anmelderichtlinie der Organisation (Feature 205): Notaus,
+            // Zeitfenster und Netz schon hier, damit niemand vergeblich den
+            // zweiten Faktor eingibt. Die Gerätefreigabe entscheidet sich erst
+            // nach dem zweiten Faktor (dort entsteht auch die Anfrage).
+            if ($user instanceof User) {
+                $policy = app(LoginPolicyGate::class)->checkLogin($user, $request, 'password', final: ! $user->hasTwoFactorEnabled());
+                if (! $policy->allowed()) {
+                    return back()->withErrors(['username' => $policy->message()])->onlyInput('username');
+                }
             }
 
             RateLimiter::clear($throttleKey);

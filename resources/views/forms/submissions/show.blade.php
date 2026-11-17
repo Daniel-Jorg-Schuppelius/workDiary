@@ -9,10 +9,11 @@
   Read-Only-/Druck-Sicht eines ausgefüllten Formulars (Feature 032).
   Standalone-HTML mit Print-CSS (Muster: diary/case-file.blade.php).
   Anzeige läuft IMMER gegen fields_snapshot — nie gegen die Vorlage.
+  Papierlayout wie das PDF (Feature 203, MVP-1651): forms.submissions._paper.
 --}}
 @php
     /** @var \App\Models\Form\FormSubmission $submission */
-    $values = (array) $submission->values;
+    $asOf = $submission->submitted_at ?? $submission->updated_at;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -29,6 +30,13 @@
         th { background: #f5f5f5; font-weight: 600; white-space: nowrap; }
         tr:nth-child(even) td { background: #fafafa; }
         .kv th { width: 220px; background: #f5f5f5; }
+        .paper-head { margin-bottom: 12px; }
+        .paper-head th { width: 18%; white-space: normal; }
+        .paper-section-title { font-size: 13px; margin: 18px 0 6px; padding: 4px 8px; background: #eef1f5; border-left: 3px solid #333; text-transform: none; letter-spacing: 0; border-bottom: 0; }
+        .paper-section td.paper-topic { width: 38%; font-weight: 600; }
+        .wd-ballot__mark { margin-right: 12px; white-space: nowrap; }
+        .wd-field-note-display { font-style: italic; color: #333; }
+        .paper-foot { margin-top: 18px; padding-top: 4px; border-top: 1px solid #bbb; font-size: 10px; color: #555; }
         .muted { color: #666; }
         .pre { white-space: pre-wrap; }
         .actions { margin: 8px 0 16px; }
@@ -49,39 +57,17 @@
 
     {{-- Kopf --}}
     <h1>{{ optional($submission->template)->name ?? __('form.title.submission') }}</h1>
-    <div class="meta">
-        {{ __('form.field.submitted_at') }}: {{ $submission->submitted_at->fdatetime() }}
-        — {{ __('form.field.submitted_by') }}: {{ optional($submission->submitter)->name ?? '—' }}
-        @if ($subjectLabel !== null)
-            — {{ $subjectLabel }}
-        @endif
-    </div>
+    @if ($submission->isDraft())
+        <p class="meta">{{ __('form.draft.show_hint') }}</p>
+    @endif
 
-    {{-- Werte (gegen den Snapshot gerendert) --}}
-    <h2>{{ __('form.title.values') }}</h2>
-    @php
-        $schema = \App\Services\Fields\FieldSchema::fromArray($submission->fields_snapshot);
-        $fieldValues = \App\Services\Fields\FieldValues::fromArray($submission->values);
-    @endphp
-    <table class="kv">
-        @foreach ($schema->visibleFor($values) as $field)
-            @if (! $field->type->hasValue())
-                <tr><th colspan="2">{{ $field->label }}</th></tr>
-                @continue
-            @endif
-            <tr>
-                <th>
-                    {{ $field->label }}
-                    @if ($field->unit !== null)
-                        <span class="muted">({{ $field->unit }})</span>
-                    @endif
-                </th>
-                <td class="pre">
-                    <x-field-display :field="$field" :values="$fieldValues" :attachment="$submission->attachmentByMeta('field:' . $field->key)" />
-                </td>
-            </tr>
-        @endforeach
-    </table>
+    {{-- Werte (gegen den Snapshot gerendert) im Papierlayout --}}
+    @include('forms.submissions._paper')
+
+    <p class="paper-foot">
+        {{ __('fields.paper.as_of') }}: {{ $asOf?->fdatetime() ?? '—' }}
+        · {{ __('fields.paper.reference') }}: {{ $subjectLabel ?? ((optional($submission->template)->name ?? __('form.title.submission')) . ' #' . $submission->id) }}
+    </p>
 @include('partials.print-script')
 </body>
 </html>

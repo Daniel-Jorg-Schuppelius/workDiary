@@ -14,8 +14,9 @@ use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, ProfitDeter
 use App\Models\Accounting\AccountingFilingObligation;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, FiscalYearService, VatFilingProfileResolver};
-use App\Services\Accounting\Filing\{FilingDeadlineCalculator, FilingObligationService, VatFilingPeriodService};
+use App\Services\Accounting\Filing\{FilingObligationService, VatFilingPeriodService};
 use App\Services\Accounting\Reports\DataQualityBuilder;
+use App\Services\Calendar\Filing\{FilingDeadlineCalculator, FilingProfile};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -69,7 +70,7 @@ class AccountingFilingDeadlineTest extends TestCase {
 
         $this->assertNotNull($period);
         // 10.04.2026 ist ein Freitag und damit ein regulärer Werktag.
-        $this->assertSame('2026-04-10', $this->calculator()->vatAdvance($this->org, $period)->toDateString());
+        $this->assertSame('2026-04-10', $this->calculator()->vatAdvance(app(VatFilingProfileResolver::class)->filingProfile($this->org, $period->to), $period->periodKey())->toDateString());
     }
 
     /** § 108 Abs. 3 AO: Ein Fristende am Wochenende rutscht auf Montag. */
@@ -86,12 +87,12 @@ class AccountingFilingDeadlineTest extends TestCase {
         $this->assertNotNull($period);
 
         // Ohne Verlängerung: 10.05. (Sonntag) → 11.05.
-        $this->assertSame('2026-05-11', $this->calculator()->vatAdvance($this->org, $period)->toDateString());
+        $this->assertSame('2026-05-11', $this->calculator()->vatAdvance(app(VatFilingProfileResolver::class)->filingProfile($this->org, $period->to), $period->periodKey())->toDateString());
 
         app(VatFilingProfileResolver::class)->recordExtension($this->org, 2026, CarbonImmutable::create(2026, 2, 8), null, $this->admin, null);
 
         // Mit Verlängerung: 10.06.
-        $this->assertSame('2026-06-10', $this->calculator()->vatAdvance($this->org, $period)->toDateString());
+        $this->assertSame('2026-06-10', $this->calculator()->vatAdvance(app(VatFilingProfileResolver::class)->filingProfile($this->org, $period->to), $period->periodKey())->toDateString());
     }
 
     /**
@@ -106,14 +107,14 @@ class AccountingFilingDeadlineTest extends TestCase {
 
         // 25.05.2026 ist Pfingstmontag → 26.05. Die Verlängerung würde auf den
         // 25.06. schieben; sie greift hier ausdrücklich nicht.
-        $this->assertSame('2026-05-26', $this->calculator()->recapitulative($period)->toDateString());
+        $this->assertSame('2026-05-26', $this->calculator()->recapitulative(app(VatFilingProfileResolver::class)->filingProfile($this->org, $period->to), $period->periodKey())->toDateString());
         $this->assertFalse(FilingObligationKind::Recapitulative->extendable());
     }
 
     /** Die Jahreserklärung endet später, wenn eine Kanzlei mandatiert ist. */
     public function test_the_annual_return_deadline_depends_on_tax_advice(): void {
-        $this->assertSame('2027-08-02', $this->calculator()->annualReturn(2026, false)->toDateString());
-        $this->assertSame('2028-02-29', $this->calculator()->annualReturn(2026, true)->toDateString());
+        $this->assertSame('2027-08-02', $this->calculator()->annualReturn(new FilingProfile(taxAdvised: false), 2026)->toDateString());
+        $this->assertSame('2028-02-29', $this->calculator()->annualReturn(new FilingProfile(taxAdvised: true), 2026)->toDateString());
     }
 
     /** Der Abgleich legt die Pflichten des Jahres an — und keine doppelt. */

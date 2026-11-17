@@ -179,6 +179,11 @@ return [
         ],
     ],
     'warning' => [
+        'customer_deadline_overdue' => [
+            'title' => 'Overdue deadlines for :name',
+            'detail' => 'Overdue deadline(s): :count, oldest from :date.',
+            'recommendation' => 'Recommendation: complete the deadline, apply for an extension or clarify responsibility — the responsible person has already been reminded.',
+        ],
         'capacity' => [
             'title' => 'Capacity shortage in team :name',
             'detail' => 'Week from :week: :percent % of capacity planned.',
@@ -219,6 +224,17 @@ return [
         ],
     ],
     // Management-Auswertung (MVP-926).
+    // Durchlaufzeit je Auftragstyp in der Auftragstypanalyse (Feature 179, MVP-1670)
+    'lead_time' => [
+        'title' => 'Lead time by order type',
+        'subtitle' => 'Orders completed in the period: median days from creation to completion. Measured per order, never per person.',
+        'empty' => 'No order was completed in the period.',
+        'column' => [
+            'type' => 'Order type',
+            'completed' => 'Completed',
+            'median' => 'Median (days)',
+        ],
+    ],
     'management' => [
         'title' => 'Management insights',
         'nav' => 'Problems & training',
@@ -264,6 +280,10 @@ return [
             'qualifications_expiring' => 'As of today · expiring within :days days: :count',
             'vacation_pending' => 'Open leave requests',
             'vacation_pending_hint' => 'As of today · starting within the next 14 days: :count',
+            // Durchlaufzeit je Auftragsart (Feature 179, MVP-1670)
+            'lead_time' => 'Lead time: :type',
+            'lead_time_days' => '{1} :days day|[0,*] :days days',
+            'lead_time_hint' => 'Median from creation to completion · :count completions in 12 months',
         ],
         'digest' => [
             'subject' => 'Management report :organization · :range',
@@ -278,6 +298,7 @@ return [
             'capacity' => 'Staff shortages',
             'project_target' => 'Target times missed',
             'resale_unbilled' => 'Subscriptions without invoice',
+            'customer_deadline_overdue' => 'Overdue customer deadlines',
         ],
     ],
     'product_revenue' => [

@@ -1,7 +1,7 @@
 ---
 title: "Closing and reports"
 topic: accounting.closing
-version: 3
+version: 4
 keywords:
     - month-end close
     - year-end closing
@@ -15,6 +15,10 @@ keywords:
     - tax audit export
     - cost allocation
     - DATEV export
+    - DATEV tax check
+    - automatic account
+    - BU 40
+    - missing VAT ID
 audience:
     - admin
     - geschaeftsfuehrung
@@ -67,3 +71,18 @@ notice but is still posted. In the liquidity forecast you add **plan items**
 (such as tax prepayments or loan instalments); every Monday the app records the
 weekly forecast, and "plan vs. actual" later compares it with the actual account
 movements.
+
+**Tax check before the DATEV export:** **Check and export** in the DATEV
+handover first shows the findings of the period, each with a link to the
+booking. **Errors** block the export: a revenue or expense line without a tax
+code although the booking shows output or input tax; an intra-Community supply
+or reverse charge in another EU country without the partner's VAT ID; a
+booking on a deactivated account. **Notes** are for review: booking records on
+which the export suspends the account's automatic tax with BU 40 (with count
+and account), a tax rate that differs from the code of the automatic account,
+and domestic reverse charge without a VAT ID. The check reads the automatic
+accounts of the chart of accounts and does not change the file. An error
+disappears as soon as the booking or the master data are corrected. If it is
+correct in your case, a person with the permission **Release the tax check
+before the DATEV export** releases it with a reason; the release is recorded
+in the accounting audit chain and applies only to the errors shown.

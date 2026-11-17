@@ -82,6 +82,7 @@ return [
         'note' => 'Note',
         'idea_map' => 'Idea map',
         'knowledge_article' => 'Knowledge article',
+        'knowledge_page' => 'Knowledge page',
         'document' => 'Document',
         'learning_course' => 'Course',
         'learning_path' => 'Learning path',

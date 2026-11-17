@@ -1,7 +1,7 @@
 ---
 title: "Lotto di scritture DATEV"
 topic: finance.datev-bookings
-version: 6
+version: 7
 keywords:
     - export DATEV
     - commercialista
@@ -15,6 +15,8 @@ keywords:
     - conto ricavi
     - export contabile
     - scritture contabili
+    - controllo fiscale
+    - partita IVA mancante
 audience: []
 modules:
     - module.finance
@@ -136,3 +138,19 @@ prestazione verso un altro Paese UE (8336/4336), inversione contabile nazionale
 (8338/4338). Sono conti automatici DATEV; il lotto non vi indica alcuna chiave
 fiscale. Le vendite esenti nazionali restano sul conto impostato per i ricavi
 esenti.
+
+## Controllo fiscale prima della finalizzazione
+
+L'anteprima di una bozza mostra il **controllo fiscale** del lotto con
+collegamento al documento. Gli **errori** bloccano **Finalizza**: una scrittura
+con aliquota ma senza chiave BU su un conto che non è automatico; una
+cessione intracomunitaria esente o un'inversione contabile in un altro paese
+UE senza partita IVA del cliente; un conto disattivato del piano dei conti
+locale. Gli **avvisi** segnalano scritture la cui aliquota differisce dal
+codice del conto automatico e l'inversione contabile nazionale senza partita
+IVA. Sono conti automatici quelli con codice IVA predefinito nel piano dei
+conti locale; senza piano locale, quelli del modello del piano impostato. Se
+un errore è corretto in un caso particolare, una persona con **Sbloccare il
+controllo fiscale prima dell'esportazione DATEV** lo sblocca con motivazione;
+lo sblocco resta nel registro del lotto e vale anche se lo stesso documento si
+trova in una nuova bozza. Il controllo non modifica il lotto.

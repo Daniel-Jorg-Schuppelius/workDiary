@@ -1,7 +1,7 @@
 ---
 title: "Formularvorlagen pflegen"
 topic: forms.templates
-version: 3
+version: 4
 keywords:
     - Formular erstellen
     - Formulardesigner
@@ -14,6 +14,8 @@ keywords:
     - Pflichtfeld
     - Formular aktivieren
     - Formular archivieren
+    - Abschnitte
+    - Ergänzung erlauben
 audience:
     - admin
     - geschaeftsfuehrung
@@ -63,6 +65,16 @@ das **Löschen** einer Vorlage macht ausgefüllte Formulare nicht unlesbar.
 Berechtigungen: Formularvorlagen anlegen, bearbeiten, aktivieren,
 archivieren und löschen darf, wer das Recht **Formularvorlagen pflegen**
 hat (standardmäßig die Teamleitung).
+
+Lange Formulare: Gliedern Sie lange Vorlagen mit Feldern vom Typ
+„Abschnitt“ – beim Ausfüllen wird daraus je Abschnitt eine Karte mit
+Fortschritt, ab vier Abschnitten mit Inhaltsleiste; bis sechs Fragen
+bleibt das Formular eine Karte. Bei „Auswahl“ und „Mehrfachauswahl“ legt
+**Ergänzung erlauben** ein zusätzliches Feld für eine Anmerkung zur
+Antwort an. Auswahlen mit bis zu sechs Optionen erscheinen als Knöpfe,
+längere als Auswahlliste. Ändern Sie die Antwortart einer Frage, während
+jemand einen Entwurf ausfüllt, bleibt die frühere Antwort dort als
+Ergänzung erhalten.
 
 Tipp: Das System leitet die interne Zuordnung eines Felds aus seiner
 Feldbezeichnung ab. Behalten Sie Feldbezeichnungen daher bei, wenn Sie

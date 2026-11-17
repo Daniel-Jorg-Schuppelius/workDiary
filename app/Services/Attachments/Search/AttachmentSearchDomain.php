@@ -19,11 +19,14 @@ use App\Models\Platform\User;
 use App\Services\Search\Contracts\SearchDomain;
 use App\Services\Search\Dto\SearchDomainFilters;
 use App\Support\{CarbonFmt, MorphMap};
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\{Gate, URL};
 
 /**
- * Anhang-Metadaten (Vollaudit M8) nach Dateiname: Anhänge sichtbarer Aufträge
- * und eigene Uploads. Der Download prüft die Signatur und die AttachmentPolicy.
+ * Anhang-Metadaten (Vollaudit M8) nach Dateiname, bei Mail-Dateien auch nach
+ * Betreff, Absender und Text (Feature 204, `attachment_texts`): Anhänge
+ * sichtbarer Aufträge und eigene Uploads als Vorauswahl, jeder Treffer
+ * zusätzlich durch die AttachmentPolicy (Policy des Trägers). Der Download
+ * prüft die Signatur und die Policy, die Ansicht „Mail“ die Policy.
  */
 final class AttachmentSearchDomain implements SearchDomain {
     public function key(): string {
@@ -52,7 +55,16 @@ final class AttachmentSearchDomain implements SearchDomain {
         }
         $query = Attachment::query()
             ->where('organization_id', $organizationId)
-            ->whereLikeEscaped('original_name', $term)
+            // Dateiname, bei Mail-Dateien auch Betreff, Absender und Text (Feature 204).
+            ->where(function ($q) use ($term): void {
+                $q->whereLikeEscaped('original_name', $term)
+                    ->orWhereExists(function ($sub) use ($term): void {
+                        $sub->selectRaw('1')
+                            ->from('attachment_texts')
+                            ->whereColumn('attachment_texts.attachment_id', 'attachments.id')
+                            ->whereLikeEscaped('attachment_texts.text', $term);
+                    });
+            })
             ->whereNull('meta_type')
             ->when($filters->person !== null, fn ($q) => $q->where('user_id', $filters->person))
             ->where(function ($q) use ($user): void {
@@ -72,14 +84,19 @@ final class AttachmentSearchDomain implements SearchDomain {
             });
         $filters->range($query, 'created_at');
 
-        return array_values($query->orderByDesc('created_at')->limit($limit)->get()
+        // Die Abfrage grenzt grob ein; ob ein Treffer erscheint, entscheidet die AttachmentPolicy
+        // (Organisation + Policy des Trägers, Feature 204/N3) — wie beim Öffnen.
+        return array_values($query->with('attachable')->orderByDesc('created_at')->limit(min(3 * $limit, 150))->get()
+            ->filter(fn (Attachment $a): bool => Gate::forUser($user)->allows('view', $a))
+            ->take($limit)
             ->map(fn (Attachment $a) => [
                 'id' => $a->id,
                 'title' => (string) $a->original_name,
                 'subtitle' => ($a->created_at !== null ? CarbonFmt::fdate(CarbonFmt::orgTz($a->created_at)) : '')
                     . ($a->mime ? ' · ' . $a->mime : ''),
-                // Der Download prüft die Signatur — ein nackter Link endet im 403.
-                'url' => URL::signedRoute('attachments.download', $a),
+                // Mail-Datei → Ansicht „Mail“ (prüft die Policy); sonst der Download, der die Signatur prüft —
+                // ein nackter Link endet dort im 403.
+                'url' => $a->mailFormat() !== null ? route('attachments.mail.show', $a) : URL::signedRoute('attachments.download', $a),
             ])
             ->all());
     }

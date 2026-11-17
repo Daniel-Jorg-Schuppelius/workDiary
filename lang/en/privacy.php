@@ -27,6 +27,7 @@ return [
         'appointment_requests' => 'Appointment requests (decided)',
         'marketplace_buyers' => 'Buyer data of marketplace orders',
         'leads' => 'Leads (not converted)',
+        'lead_intakes' => 'Intake files (after the retention period)',
         'applications' => 'Applications (rejected/withdrawn)',
         'privacy_requests' => 'Data subject requests (closed)',
         'cti_calls' => 'CTI call metadata',

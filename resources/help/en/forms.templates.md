@@ -1,7 +1,7 @@
 ---
 title: "Maintaining form templates"
 topic: forms.templates
-version: 3
+version: 4
 keywords:
     - create form
     - form builder
@@ -14,6 +14,8 @@ keywords:
     - activate form
     - archive form
     - custom forms
+    - sections
+    - allow additional note
 audience:
     - admin
     - geschaeftsfuehrung
@@ -61,6 +63,15 @@ on a template does not make completed forms unreadable.
 Permissions: anyone with the **Manage form templates** permission
 (team leads by default) may create, edit, activate, archive and delete
 form templates.
+
+Long forms: structure long templates with fields of type “Section” –
+when filling in, each section becomes a card with progress, from four
+sections on with a table of contents; up to six questions the form stays
+a single card. For “Choice” and “Multiple choice”, **Allow additional
+note** adds an extra field for a remark on the answer. Choices with up to
+six options appear as buttons, longer ones as a drop-down list. If you
+change the answer type of a question while someone is filling in a draft,
+their earlier answer is kept there as an additional note.
 
 Tip: the system derives a field's internal assignment from its field
 label. Keep field labels unchanged if you want to compare completed

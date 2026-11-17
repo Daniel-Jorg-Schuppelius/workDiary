@@ -17,8 +17,12 @@ use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\Lead;
+use App\Services\Licensing\ModuleExtensions;
+use App\Services\Sales\Contracts\LeadConversionCheck;
+use App\Services\Sales\Intake\LeadIntakeRetention;
 use App\Services\Stammdaten\ContactDetailsWriter;
 use Illuminate\Support\{Carbon, Collection};
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -38,6 +42,9 @@ use RuntimeException;
  */
 class LeadService {
     use \App\Services\Concerns\AssertsStatusTransition;
+
+    /** @var list<string> */
+    private array $conversionNotices = [];
 
     public function transition(Lead $lead, LeadStatus $to, ?string $reason = null): Lead {
         $this->assertStatusTransition($lead->status, $to);
@@ -145,6 +152,11 @@ class LeadService {
     /**
      * Konvertiert den Lead: verbindet ihn mit einem Bestandskunden ODER legt
      * einen neuen an. Beides setzt den Endzustand `converted`.
+     *
+     * Prüfungen der Module (Erweiterungspunkt {@see LeadConversionCheck},
+     * Feature 200) können die Umwandlung sperren — etwa ohne angenommene
+     * Aufnahmeakte bei aktivem GwG-Paket — und übergeben danach Daten an den
+     * Kunden. Ihre Hinweise liefert {@see conversionNotices()}.
      */
     public function convert(Lead $lead, User $actor, ?Customer $existing = null): Customer {
         if ($lead->status === LeadStatus::Converted) {
@@ -154,6 +166,31 @@ class LeadService {
             throw new RuntimeException((string) __('Ein verworfener Lead wird erst requalifiziert, dann konvertiert.'));
         }
 
+        $checks = $this->conversionChecks($lead);
+        foreach ($checks as $check) {
+            $reason = $check->blockingReason($lead);
+            if ($reason !== null) {
+                throw new RuntimeException($reason);
+            }
+        }
+        $this->conversionNotices = [];
+
+        return DB::transaction(fn (): Customer => $this->convertInTransaction($lead, $actor, $existing, $checks));
+    }
+
+    /**
+     * Hinweise der letzten Umwandlung (etwa unvollständige Fristmerkmale aus der Aufnahmeakte).
+     *
+     * @return list<string>
+     */
+    public function conversionNotices(): array {
+        return $this->conversionNotices;
+    }
+
+    /**
+     * @param  list<LeadConversionCheck>  $checks
+     */
+    private function convertInTransaction(Lead $lead, User $actor, ?Customer $existing, array $checks): Customer {
         $customer = $existing ?? Customer::query()->create([
             'organization_id' => $lead->organization_id,
             'name' => $lead->displayName(),
@@ -180,7 +217,28 @@ class LeadService {
             'existing' => $existing !== null,
         ]);
 
+        foreach ($checks as $check) {
+            array_push($this->conversionNotices, ...$check->converted($lead, $customer, $existing === null, $actor));
+        }
+
         return $customer;
+    }
+
+    /**
+     * Prüfungen der für die Organisation aktiven Module.
+     *
+     * @return list<LeadConversionCheck>
+     */
+    private function conversionChecks(Lead $lead): array {
+        $checks = [];
+        foreach (app(ModuleExtensions::class)->activeFor(LeadConversionCheck::class, $lead->organization_id !== null ? (int) $lead->organization_id : null) as $class) {
+            $check = app($class);
+            if ($check instanceof LeadConversionCheck) {
+                $checks[] = $check;
+            }
+        }
+
+        return $checks;
     }
 
     /**
@@ -189,6 +247,8 @@ class LeadService {
      * Auch die Notizen, Anhänge und eigenen Felder der Akte — sie sind Teil der PII.
      */
     public function anonymize(Lead $lead): void {
+        // Aufnahmeakten (Feature 200): mit laufender Aufbewahrung (GwG) bleiben sie, sonst gehen sie mit.
+        app(LeadIntakeRetention::class)->onLeadAnonymized($lead);
         $lead->addresses()->delete();
         // Anhänge, eigene Felder und Schlagworte (Feature 182) können personenbezogen sein.
         $lead->attachments()->get()->each->delete();

@@ -22,7 +22,7 @@ use CommonToolkit\Helper\Data\StringHelper;
  * {@see Contracts\FieldExtension} registriert.
  *
  * @phpstan-type Condition array{field: string, op: string, value: string}
- * @phpstan-type DefinitionArray array{key: string, label: string, type: string, required: bool, options: list<string>, help: string|null, unit: string|null, visible_if: Condition|null, min?: int|float, max?: int|float, step?: int|float, extension?: string, option_labels?: array<string, string>, listed?: true}
+ * @phpstan-type DefinitionArray array{key: string, label: string, type: string, required: bool, options: list<string>, help: string|null, unit: string|null, visible_if: Condition|null, min?: int|float, max?: int|float, step?: int|float, extension?: string, option_labels?: array<string, string>, listed?: true, allows_note?: true}
  */
 final readonly class FieldDefinition {
     /**
@@ -30,6 +30,7 @@ final readonly class FieldDefinition {
      * @param  Condition|null  $visibleIf
      * @param  array<string, string>|null  $optionLabels  Anzeigetext je Option, wenn er vom Wert abweicht (Protokoll: key → label)
      * @param  bool  $listed  eigenes Feld als Spalte der Übersicht zeigen (Welle 4.6)
+     * @param  bool  $allowsNote  optionales Ergänzungsfeld zur Antwort (Feature 203, MVP-1651)
      */
     public function __construct(
         public string $key,
@@ -46,6 +47,7 @@ final readonly class FieldDefinition {
         public ?string $extension = null,
         public ?array $optionLabels = null,
         public bool $listed = false,
+        public bool $allowsNote = false,
     ) {}
 
     /**
@@ -81,6 +83,38 @@ final readonly class FieldDefinition {
             extension: StringHelper::trimToNull($row['extension'] ?? null),
             optionLabels: self::labels($row['option_labels'] ?? null),
             listed: StringHelper::parseBool($row['listed'] ?? false) ?? false,
+            allowsNote: StringHelper::parseBool($row['allows_note'] ?? false) ?? false,
+        );
+    }
+
+    /** Dieselbe Definition ohne Pflicht — Speichern je Feld prüft Pflicht erst beim Abschluss (MVP-1650). */
+    public function optional(): self {
+        return $this->with(required: false);
+    }
+
+    /**
+     * Kopie mit geänderter Pflicht bzw. Sichtbarkeitsbedingung; alle übrigen
+     * Angaben bleiben (auch Listen-Spalte und Ergänzung).
+     *
+     * @param  Condition|null  $visibleIf
+     */
+    public function with(?bool $required = null, ?array $visibleIf = null, bool $replaceVisibleIf = false): self {
+        return new self(
+            key: $this->key,
+            type: $this->type,
+            label: $this->label,
+            required: $required ?? $this->required,
+            options: $this->options,
+            help: $this->help,
+            unit: $this->unit,
+            visibleIf: $replaceVisibleIf ? $visibleIf : $this->visibleIf,
+            min: $this->min,
+            max: $this->max,
+            step: $this->step,
+            extension: $this->extension,
+            optionLabels: $this->optionLabels,
+            listed: $this->listed,
+            allowsNote: $this->allowsNote,
         );
     }
 
@@ -115,6 +149,9 @@ final readonly class FieldDefinition {
         // Nur gesetzt schreiben, damit bestehende Schemata byte-gleich bleiben.
         if ($this->listed) {
             $row['listed'] = true;
+        }
+        if ($this->allowsNote) {
+            $row['allows_note'] = true;
         }
 
         return $row;

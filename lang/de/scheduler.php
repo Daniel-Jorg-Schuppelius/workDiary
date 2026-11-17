@@ -116,6 +116,7 @@ return [
         'calendly' => ['backfill' => 'Calendly-Terminabgleich'],
         'ai' => ['maintenance' => 'KI-Wartungslauf (Provider-Health, Vorschlags-Bereinigung)'],
         'archive' => ['run' => 'Archivierungslauf'],
+        'knowledge_pages' => ['empty_trash' => 'Papierkorb der Wissensseiten nach Frist leeren'],
         'learning' => [
             'close_stale_sessions' => 'Liegengebliebene Lernsitzungen schließen',
             'lti_rotate_keys' => 'LTI-Signaturschlüssel tauschen',
@@ -172,6 +173,7 @@ return [
         'accounting' => ['issue_contact_numbers' => 'Kunden- und Lieferantennummern vom Buchhaltungsprogramm holen', 'recurring' => 'Wiederkehrende Belegerwartungen und Buchungsentwürfe', 'filings' => 'Steuertermine abgleichen und an Fristen erinnern', 'liquidity_snapshot' => 'Wochenstand der Liquiditätsvorschau festhalten'],
         'platform' => ['usage_snapshot' => 'Nutzungsstand je Mandant festhalten'],
         'contracts' => ['price_index_sync' => 'Verbraucherpreisindex von der Bundesbank abgleichen'],
+        'customer_deadlines' => ['sync' => 'Kundenfristen aus den Regelsätzen erzeugen und aktualisieren'],
         'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen', 'base_rate_sync' => 'Basiszinssatz von der Bundesbank abgleichen', 'online_payments_refresh' => 'Online-Zahlungen mit dem Zahlungsanbieter abgleichen', 'incoming_digest' => 'Hinweis auf zuzuordnende Rechnungseingänge', 'incoming_transfer' => 'Übergaben des Rechnungseingangs wiederholen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich', 'pull-vouchers' => 'JTL-Wawi-Rechnungen abrufen'],
         'resale' => [
@@ -228,7 +230,7 @@ return [
         'recurrence' => ['generate' => 'Wiederkehrende Aufträge erzeugen'],
         'remote' => ['sync_sessions' => 'Fernwartungs-Sitzungen importieren'],
         'scheduler' => ['watchdog' => 'Scheduler-Überwachung'],
-        'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen', 'integrity' => 'Quelltext-Integritätsprüfung', 'evaluate' => 'Angriffserkennung auswerten', 'geoip_update' => 'IP-Geodatenbank aktualisieren'],
+        'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen', 'integrity' => 'Quelltext-Integritätsprüfung', 'evaluate' => 'Angriffserkennung auswerten', 'geoip_update' => 'IP-Geodatenbank aktualisieren', 'resolve_login_networks' => 'Büronetze der Anmelderichtlinien auflösen'],
         'tickets' => ['scan_sla_breaches' => 'SLA-Verletzungen prüfen'],
         'retention' => ['prune_models' => 'Aufbewahrungsfristen anwenden (Zustellprotokolle, Outbox, Plugin-Fehler)'],
         'whistleblowing' => ['deadlines' => 'Hinweisgeber-Fristen prüfen', 'retention_review' => 'Hinweisgeber-Aufbewahrungsprüfung', 'scan' => 'Hinweisgeber-Anhänge scannen (Quarantäne)'],

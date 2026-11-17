@@ -30,6 +30,9 @@ class DiaryEntryResource extends JsonResource {
             'status' => $this->status,
             'status_key' => $this->status->slug(),
             'status_label' => $this->statusLabel(),
+            // Periode und interne Prüfung (Feature 198).
+            'period_key' => $this->period_key?->key(),
+            'requires_review' => (bool) $this->requires_review,
             'lifecycle' => [
                 'accepted_at' => optional($this->accepted_at)->toIso8601String(),
                 'started_at' => optional($this->started_at)->toIso8601String(),
@@ -40,6 +43,7 @@ class DiaryEntryResource extends JsonResource {
                 'accepted_final_at' => optional($this->accepted_final_at)->toIso8601String(),
                 'invoiced_at' => optional($this->invoiced_at)->toIso8601String(),
                 'cancelled_at' => optional($this->cancelled_at)->toIso8601String(),
+                'review_submitted_at' => optional($this->review_submitted_at)->toIso8601String(),
             ],
             'is_archived' => (bool) $this->is_archived,
             'start_at' => optional($this->start_at)->toIso8601String(),

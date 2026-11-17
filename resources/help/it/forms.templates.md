@@ -1,7 +1,7 @@
 ---
 title: "Gestire i modelli di modulo"
 topic: forms.templates
-version: 3
+version: 4
 keywords:
     - creare modulo
     - editor di moduli
@@ -14,6 +14,8 @@ keywords:
     - attivare modulo
     - archiviare modulo
     - moduli personalizzati
+    - sezioni
+    - consenti integrazione
 audience:
     - admin
     - geschaeftsfuehrung
@@ -65,6 +67,16 @@ illeggibili i moduli compilati.
 Autorizzazioni: può creare, modificare, attivare, archiviare ed eliminare
 i modelli di modulo chi dispone del permesso **Gestire i modelli di
 modulo** (per impostazione predefinita i capi team).
+
+Moduli lunghi: strutturi i modelli lunghi con campi di tipo «Sezione» –
+durante la compilazione ogni sezione diventa una scheda con il proprio
+avanzamento e, da quattro sezioni in su, con un indice; fino a sei
+domande il modulo resta un’unica scheda. Per «Scelta» e «Scelta
+multipla», **Consenti integrazione** aggiunge un campo per
+un’annotazione sulla risposta. Le scelte con al massimo sei opzioni
+compaiono come pulsanti, quelle più lunghe come elenco a discesa. Se
+cambia il tipo di risposta di una domanda mentre qualcuno compila una
+bozza, la risposta precedente vi resta come integrazione.
 
 Suggerimento: il sistema ricava l’assegnazione interna di un campo dalla
 sua etichetta. Mantenga quindi invariate le etichette dei campi se

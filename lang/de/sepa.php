@@ -91,6 +91,8 @@ return [
         'missing_iban' => 'IBAN fehlt',
         'zero_amount' => 'Betrag 0',
         'iban_differs' => 'IBAN weicht vom Stammsatz ab',
+        'girocode_differs' => 'IBAN aus dem GiroCode ungeprüft — Bestätigung nötig',
+        'bundle_unresolved' => 'Sammel-PDF noch nicht aufgeteilt',
         'disputed' => 'Offener Posten strittig',
     ],
 
@@ -100,6 +102,9 @@ return [
         'not_draft' => 'Der Zahllauf ist kein Entwurf mehr.',
         'not_released' => 'Der Zahllauf ist nicht freigegeben.',
         'four_eyes' => 'Vier-Augen-Prinzip: Wer den Zahllauf zusammengestellt hat, gibt ihn nicht selbst frei.',
+        'girocode_unconfirmed' => 'Die Rechnung :number trägt einen GiroCode mit abweichender IBAN. Erst nach der Bestätigung im Zahlungsvorschlag lässt sich der Lauf freigeben.',
+        'position_held' => 'Die Rechnung :number ist zur Zahlung gesperrt (:reason). Erst nach der Klärung im Zahlungsvorschlag lässt sich der Lauf freigeben.',
+        'confirmation_stale' => 'Die Lage hat sich seit dem Laden der Seite geändert — bitte prüfen und erneut bestätigen.',
         'exported_final' => 'Ein exportierter Zahllauf wird nicht mehr storniert.',
         'invalid_amount' => 'Der Zahlbetrag muss über 0 und darf nicht über dem Rechnungsbetrag liegen.',
         'reason_required' => 'Ein gekürzter Zahlbetrag braucht einen Grund.',

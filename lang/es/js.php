@@ -84,6 +84,8 @@ return [
         'invalid_move' => 'Este cambio de estado no está previsto en el flujo de trabajo del pedido.',
         'not_allowed' => 'No tiene permiso para esta acción del pedido.',
         'handover_via_order' => 'La recepción requiere un protocolo firmado y se realiza directamente en el pedido.',
+        // Prüfspalten und Prüfpflicht (Feature 198): Vorlage und Freigabe laufen im Auftrag.
+        'review_via_order' => 'La revisión interna se realiza en el pedido: ábralo para presentarlo a revisión, aprobarlo o devolver una consulta.',
         'no_targets' => 'Actualmente no hay ningún movimiento permitido para esta tarjeta.',
     ],
     'entry_bar' => [

@@ -138,8 +138,9 @@ class KnowledgeImportController extends Controller {
     }
 
     private function finished(KnowledgeImportReport $report): RedirectResponse {
-        $redirect = redirect()
-            ->route('knowledge-hub.index', array_filter(['collection' => $report->root?->sqid]))
+        $redirect = ($report->space !== null
+            ? redirect()->route('knowledge.pages.index', ['space' => $report->space->sqid])
+            : redirect()->route('knowledge-hub.index', array_filter(['collection' => $report->root?->sqid])))
             ->with('success', __('collections.import.flash.done', $report->counts()));
 
         return $report->limited ? $redirect->with('warning', __('collections.import.flash.limited', ['max' => KnowledgeImportService::MAX_DOCUMENTS])) : $redirect;
@@ -161,6 +162,10 @@ class KnowledgeImportController extends Controller {
         }
         if (app(FeatureFlagResolver::class)->isEnabled('module.knowledge') && Gate::forUser($user)->allows('create', KnowledgeArticle::class)) {
             $targets[] = KnowledgeImportService::TARGET_ARTICLE;
+        }
+        // Wissensseiten als Ziel (Feature 191, MVP-1664).
+        if (app(FeatureFlagResolver::class)->isEnabled('module.knowledge') && Gate::forUser($user)->allows('create', \App\Models\Knowledge\KnowledgePage::class)) {
+            $targets[] = KnowledgeImportService::TARGET_PAGE;
         }
         abort_if($targets === [], 403);
 

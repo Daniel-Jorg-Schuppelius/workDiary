@@ -133,6 +133,8 @@ class ModuleWiringTest extends TestCase {
         sort($steps);
         $this->assertSame([
             \App\Services\Access\Offboarding\AccessMediaOffboardingStep::class,
+            // Phase 177 (MVP-1669): Selbstauskunft am Anwesenheits-Board endet mit dem Austritt.
+            \App\Services\Attendance\Offboarding\PresenceStatusOffboardingStep::class,
             \App\Services\Crisis\Offboarding\CrisisDeputyOffboardingStep::class,
             \App\Services\Hr\Offboarding\PersonnelFileOffboardingStep::class,
         ], $steps);

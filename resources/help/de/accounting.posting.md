@@ -1,7 +1,7 @@
 ---
 title: "Buchen und Inbox"
 topic: accounting.posting
-version: 10
+version: 11
 keywords:
     - Buchung erfassen
     - Belege buchen
@@ -19,6 +19,10 @@ keywords:
     - Buchungsjournal
     - Offene Posten
     - wiederkehrende Buchung
+    - Kontierungsvorschlag
+    - Bankumsatz ohne Beleg
+    - Gläubiger-ID
+    - Mandatsreferenz
 audience:
     - admin
     - geschaeftsfuehrung
@@ -326,3 +330,32 @@ Steuersatz des Belegs. Gibt es zu diesem Satz kein Vorsteuerkennzeichen — meis
 ausländische Umsatzsteuer, die keine Vorsteuer ist —, hält der Vorschlag an:
 Erfassen Sie die Auslage dann brutto ohne Steuersatz. Rechnungen mit Steuerschuld
 des Empfängers gehören in den Rechnungseingang, der den Steuerfall kennt.
+
+## Kontierungsvorschläge für Bankumsätze ohne Beleg
+
+Miete, Leasing, Versicherung, Kontoführung: Ein Bankumsatz, den Ihre
+Organisation schon einmal über **Auf Sachkonto buchen** gebucht hat, bekommt
+beim nächsten Mal einen **Vorschlag** — Sachkonto, Steuerkennzeichen,
+Kostenstelle und Buchungstext der letzten gleichartigen Buchung. Gleichartig
+heißt: gleiche Richtung und, in dieser Rangfolge, gleiche **Mandatsreferenz**,
+gleiche **Gläubiger-ID** der Lastschrift, gleiche **IBAN der Gegenpartei** oder
+gleiche **Stichwörter im Verwendungszweck** (Monat, Datum und Nummern zählen
+nicht). Die Begründung steht dabei, etwa „3-mal so gebucht, zuletzt 03/2026,
+gleiche Mandatsreferenz“, dazu die Stärke des Vorschlags. Die jüngste Buchung
+bestimmt den Vorschlag: Buchen Sie einmal auf ein anderes Konto, gilt beim
+nächsten Mal dieses — eine eigene Regel müssen Sie nicht pflegen.
+
+Der Dialog **Auf Sachkonto buchen** ist mit dem Vorschlag vorbelegt. Unter
+**Kontierungsvorschläge** in der Buchungs-Inbox stehen gleichartige offene
+Umsätze gebündelt, mit der Vorschau ihrer Buchungen; **Alle … Umsätze buchen**
+bucht sie mit einer Bestätigung. Ein Umsatz, dessen Betrag um mehr als 10 %
+vom letzten Mal abweicht, und Vorschläge mit Hinweis (Konto stillgelegt,
+Steuerkennzeichen nicht mehr gültig) stehen einzeln unter **Einzeln prüfen**.
+Gebucht wird nur, was Sie bestätigen; ist das Vier-Augen-Prinzip aktiv,
+entstehen Entwürfe zur Freigabe.
+
+Vorgeschlagen wird nur, was die Organisation selbst schon so gebucht hat —
+keine KI. Die Gläubiger-ID übernimmt der Import aus CAMT- und MT940-Dateien,
+sofern die Bank sie mitliefert. Der Verwendungszweck bleibt verschlüsselt; für
+den Vergleich speichert workDiary nur einen geschlüsselten Abdruck der
+Stichwörter. **Berechtigung:** **Buchungen festschreiben**.

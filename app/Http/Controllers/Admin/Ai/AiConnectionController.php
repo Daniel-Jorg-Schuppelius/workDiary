@@ -16,7 +16,7 @@ use App\Enums\Ai\{AiConnectionStatus, AiFamily, AiProviderType};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiUsagePeriod};
-use App\Services\Ai\{AiCapabilityRegistry, AiConnectionTester};
+use App\Services\Ai\{AiCapabilityRegistry, AiConnectionPrivacy, AiConnectionTester};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -32,9 +32,10 @@ use Illuminate\View\View;
  */
 class AiConnectionController extends Controller {
     use ResolvesCurrentOrganization;
-    public function index(AiCapabilityRegistry $registry): View {
+    public function index(AiCapabilityRegistry $registry, AiConnectionPrivacy $privacy): View {
         Gate::authorize('viewAny', AiProviderConnection::class);
 
+        $organization = $this->currentOrganization();
         $connections = AiProviderConnection::query()->orderBy('name')->get();
         $settings = AiCapabilitySetting::query()->get()->keyBy('capability');
         $usage = AiUsagePeriod::query()
@@ -48,6 +49,13 @@ class AiConnectionController extends Controller {
             'settings' => $settings,
             'usage' => $usage,
             'canManage' => Gate::allows('create', AiProviderConnection::class),
+            // Datenschutz (MVP-1671/1672): Stand der Freigabe je Verbindung und Einstellungen der Organisation.
+            'approvals' => $connections->mapWithKeys(static fn (AiProviderConnection $c): array => [
+                $c->id => ['state' => $privacy->state($c, $organization), 'expires_at' => $privacy->expiresAt($c, $organization)],
+            ])->all(),
+            'requireApproval' => $privacy->requiresApproval($organization),
+            'maskLocal' => $privacy->masksLocal($organization),
+            'canApprove' => Gate::allows('approve', AiProviderConnection::class),
         ]);
     }
 
@@ -110,10 +118,7 @@ class AiConnectionController extends Controller {
 
         $ok = $tester->test($connection);
 
-        return redirect()->route('admin.ai.index')->with(
-            $ok ? 'success' : 'error',
-            $ok ? __('ai.flash.connected') : __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
-        );
+        return $this->preflightFlash(redirect()->route('admin.ai.index'), $ok, $connection, (string) __('ai.flash.connected'));
     }
 
     /** Bearbeiten-Dialog: Name, Modell, Basis-URL und optional ein neuer API-Schlüssel (MVP-1492). */
@@ -128,8 +133,11 @@ class AiConnectionController extends Controller {
      * Auto-Abschaltung werden zurückgesetzt: sie beschreiben den alten Stand,
      * sonst bliebe eine reparierte Verbindung abgeschaltet
      * ({@see \App\Models\Concerns\HasConnectionHealth::isConnectionFailing()}).
+     * Ändern sich Adresse, Modell oder Schlüssel, ist die Datenschutzfreigabe
+     * hinfällig (MVP-1672): sie wird zurückgesetzt und die Meldung sagt es;
+     * eine reine Namensänderung lässt sie stehen.
      */
-    public function update(Request $request, AiProviderConnection $connection, AiConnectionTester $tester): RedirectResponse {
+    public function update(Request $request, AiProviderConnection $connection, AiConnectionTester $tester, AiConnectionPrivacy $privacy): RedirectResponse {
         Gate::authorize('update', $connection);
 
         $data = $request->validate([
@@ -154,16 +162,17 @@ class AiConnectionController extends Controller {
             'consecutive_failures' => 0,
             'disabled_at' => null,
         ] + ($newKey !== null ? ['api_key' => $newKey] : []))->save();
+        // Vor dem Vortest: der speichert selbst und ersetzte die Änderungsliste.
+        $approvalReset = $privacy->resetAfterChange($connection);
 
         $ok = $tester->test($connection);
 
-        return redirect()->route('admin.ai.index')->with(
-            $ok ? 'success' : 'error',
-            match (true) {
-                ! $ok => __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
-                $newKey !== null => __('ai.flash.rotated'),
-                default => __('ai.flash.connection_updated'),
-            },
+        return $this->preflightFlash(
+            redirect()->route('admin.ai.index'),
+            $ok,
+            $connection,
+            (string) ($newKey !== null ? __('ai.flash.rotated') : __('ai.flash.connection_updated')),
+            $approvalReset ? (string) __('ai.privacy.flash.approval_reset', ['name' => $connection->name]) : null,
         );
     }
 
@@ -172,10 +181,7 @@ class AiConnectionController extends Controller {
 
         $ok = $tester->test($connection);
 
-        return back()->with(
-            $ok ? 'success' : 'error',
-            $ok ? __('ai.flash.preflight_ok') : __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
-        );
+        return $this->preflightFlash(back(), $ok, $connection, (string) __('ai.flash.preflight_ok'));
     }
 
     /** Bewusste Datenschutz-/Betriebssperre — wird nie automatisch aufgehoben. */
@@ -194,6 +200,29 @@ class AiConnectionController extends Controller {
         $connection->forceFill(['status' => AiConnectionStatus::Draft])->save();
 
         return back()->with('success', __('ai.flash.unblocked'));
+    }
+
+    /**
+     * Meldung nach dem Vortest. Besteht die Verbindung technisch, sperrt sie aber
+     * die Freigabepflicht der Organisation (MVP-1672), nennt die Meldung den
+     * Grund — sonst wundert sich der Admin über eine „aktive“ Verbindung, über
+     * die keine Fähigkeit läuft. `$notice` (z. B. die zurückgesetzte Freigabe)
+     * steht als Hinweis davor, unabhängig vom Ausgang des Vortests.
+     */
+    private function preflightFlash(RedirectResponse $redirect, bool $ok, AiProviderConnection $connection, string $okMessage, ?string $notice = null): RedirectResponse {
+        $warnings = $notice !== null ? [$notice] : [];
+        if (! $ok) {
+            $redirect->with('error', __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]));
+        } else {
+            $reason = app(AiConnectionPrivacy::class)->blockingReason($connection, $this->currentOrganization());
+            if ($reason === null) {
+                $redirect->with('success', $okMessage);
+            } else {
+                $warnings[] = (string) __('ai.privacy.flash.preflight_unapproved', ['message' => $okMessage, 'reason' => $reason]);
+            }
+        }
+
+        return $warnings === [] ? $redirect : $redirect->with('warning', implode(' ', $warnings));
     }
 
     public function destroy(AiProviderConnection $connection): RedirectResponse {

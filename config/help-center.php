@@ -28,8 +28,12 @@ return [
             'patterns' => [
                 'dashboard.*', 'onboarding.*', 'auth.*', 'account.*',
                 'navigation.*', 'search.*', 'workspaces.*', 'install.*',
-                'offline.*', 'week.*', 'work.*', 'work-queue.*', 'approvals.*', 'glossary*', 'help.*',
+                'offline.*', 'week.*', 'work.*', 'work-queue.*', 'carry-forward.*', 'approvals.*', 'glossary*', 'help.*',
+                // Wünsche an die App (Feature 206); die Plattformsicht steht als admin.wishes bei der Verwaltung.
+                'wishes.*',
                 'knowledge.*',
+                // Anhänge und abgelegte Mails (Feature 204) gelten für jeden Vorgang.
+                'attachments.*',
             ],
         ],
         'kunden-vertrieb' => [
@@ -45,7 +49,7 @@ return [
             'icon' => 'schedule',
             'patterns' => [
                 'time-entries.*', 'time-accounts.*', 'attendance.*',
-                'absences.*', 'overtime.*', 'corrections.*', 'timesheets.*',
+                'absences.*', 'delegations.*', 'overtime.*', 'corrections.*', 'timesheets.*',
                 'presence.*', 'duties.*', 'planning.*', 'dispatch.*',
                 'payroll.*', 'training.*', 'learning.*', 'location.*',
                 'tours.*', 'travel-expenses.*',
@@ -63,6 +67,8 @@ return [
                 'permits.*', 'recipes.*', 'manufacturing.*', 'print.*',
                 'patrols.*', 'helpdesk.*', 'sla.*', 'support.*', 'ideas.*',
                 'claims.*', 'passenger.*', 'damage-cases.*',
+                // Leistungsplan je Kunde und Periode (Feature 199).
+                'service-plan.*',
             ],
         ],
         'material-lager' => [

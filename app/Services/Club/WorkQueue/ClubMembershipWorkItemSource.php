@@ -72,6 +72,8 @@ final class ClubMembershipWorkItemSource implements WorkItemSource {
                 url: route(self::ROUTE, $group),
                 dueAt: CarbonImmutable::instance($membership->valid_from),
                 personal: $group->isLedBy($viewer),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($membership->updated_at),
             );
         }
     }

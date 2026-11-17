@@ -219,8 +219,18 @@ class SsoController extends Controller {
      * @param array{id_token?: string, discovery?: bool} $logoutHint
      */
     private function completeLogin(Request $request, SsoConnection $connection, User $user, array $logoutHint = []): RedirectResponse {
+        // Anmelderichtlinie der Organisation (Feature 205): Notaus, Zeitfenster,
+        // Netz und Gerät gelten auch für SSO. Eine Passkey-Pflicht nicht — den
+        // Faktor bestimmt der Identitätsanbieter der Organisation.
+        $policy = app(\App\Services\Auth\LoginPolicy\LoginPolicyGate::class)->checkLogin($user, $request, 'sso');
+        if (! $policy->allowed()) {
+            return redirect()->route('login')->withErrors(['username' => $policy->message()]);
+        }
+
         Auth::login($user);
         $request->session()->regenerate();
+        // SSO-Sitzung: keine Passkey-Pflicht der Richtlinie; der Hebel dort ist die SSO-Erzwingung (Feature 205, N11).
+        \App\Services\Auth\LoginPolicy\LoginPolicyGate::markSso($request);
         $this->login->recordLogin($connection, $user);
 
         if ($connection->isOidc() && ($logoutHint['discovery'] ?? false)) {

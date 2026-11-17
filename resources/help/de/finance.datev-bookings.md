@@ -1,7 +1,7 @@
 ---
 title: "DATEV-Buchungsstapel"
 topic: finance.datev-bookings
-version: 6
+version: 7
 keywords:
     - DATEV-Export
     - Steuerberater
@@ -15,6 +15,8 @@ keywords:
     - Erlöskonto
     - Übergabe an Kanzlei
     - Buchhaltungsexport
+    - Steuerprüfung
+    - USt-IdNr. fehlt
 audience: []
 modules:
     - module.finance
@@ -139,3 +141,20 @@ Leistungsempfängers im Inland (8337/4337), Ausfuhr (8120/4120), nicht steuerbar
 Umsatz im Drittland (8338/4338). Das sind DATEV-Automatikkonten; der Stapel setzt
 dort keinen BU-Schlüssel. Steuerfreie Umsätze im Inland bleiben auf dem
 eingestellten Konto für steuerfreie Erlöse.
+
+## Steuerprüfung vor dem Finalisieren
+
+Die Vorschau eines Entwurfs zeigt die **Steuerprüfung** des Stapels mit Sprung
+zum Beleg. **Fehler** sperren **Finalisieren**: ein Satz mit Steuersatz, aber
+ohne BU-Schlüssel auf einem Konto, das kein Automatikkonto ist; eine
+steuerfreie innergemeinschaftliche Lieferung oder Steuerschuld des Empfängers
+im übrigen Gemeinschaftsgebiet ohne USt-IdNr. des Kunden; ein stillgelegtes
+Konto des lokalen Kontenplans. **Hinweise** nennen Sätze, deren Steuersatz vom
+Kennzeichen des Automatikkontos abweicht, und die inländische Steuerschuld des
+Empfängers ohne USt-IdNr. Als Automatikkonten gelten die Konten mit
+Vorgabe-Kennzeichen im lokalen Kontenplan, ohne lokalen Kontenplan die der
+Vorlage zum eingestellten Kontenrahmen. Ist ein Fehler im Einzelfall richtig,
+gibt ihn eine Person mit **Steuerprüfung vor dem DATEV-Export freigeben** mit
+Begründung frei; die Freigabe steht im Protokoll des Stapels und gilt auch,
+wenn derselbe Beleg in einem neuen Entwurf steht. Die Prüfung ändert den
+Stapel nicht.

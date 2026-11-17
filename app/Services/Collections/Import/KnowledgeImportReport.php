@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Collections\Import;
 
-use App\Models\Knowledge\ContentCollection;
+use App\Models\Knowledge\{ContentCollection, KnowledgeSpace};
 
 /** Ergebnis einer Übernahme aus Obsidian oder OneNote (MVP-815). */
 final class KnowledgeImportReport {
@@ -33,6 +33,9 @@ final class KnowledgeImportReport {
     public bool $limited = false;
 
     public ?ContentCollection $root = null;
+
+    /** Ziel Wissensseiten (Feature 191): der Bereich, in dem die Seiten liegen. */
+    public ?KnowledgeSpace $space = null;
 
     /** @return array{created: int, skipped: int, truncated: int, collections: int, links: int, unresolved: int} */
     public function counts(): array {

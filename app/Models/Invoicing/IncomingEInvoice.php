@@ -72,10 +72,19 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $creditor_bic
  * @property \Illuminate\Support\Carbon|null $creditor_iban_confirmed_at
  * @property int|null $creditor_iban_confirmed_by
+ * @property string|null $creditor_iban_confirmed_hash Blind-Index der bestätigten IBAN (Feature 208, M4)
  * @property string|null $discount_percent
  * @property int|null $discount_days
  * @property int|null $paid_in_run_id
  * @property \App\Enums\Invoicing\IncomingInvoiceTaxCase|null $tax_case
+ * @property int|null $source_document_id
+ * @property int|null $source_page_from
+ * @property int|null $source_page_to
+ * @property string|null $source_sha256
+ * @property array<string, mixed>|null $split_proposal
+ * @property array<string, mixed>|null $girocode
+ * @property \Illuminate\Support\Carbon|null $girocode_confirmed_at
+ * @property int|null $girocode_confirmed_by
  */
 class IncomingEInvoice extends Model {
     use Auditable;
@@ -85,6 +94,15 @@ class IncomingEInvoice extends Model {
 
     /** Eloquent würde zu incoming_e_invoices pluralisieren. */
     protected $table = 'incoming_einvoices';
+
+    /**
+     * Abgeschlossen ohne weitere Bearbeitung: abgelehnt oder als Sammel-PDF in
+     * Teile aufgeteilt (Feature 208). Solche Eingänge stehen in keiner
+     * Arbeitsliste, keiner Zählung und keinem Abgleich.
+     *
+     * @var list<string>
+     */
+    public const array CLOSED_STATUSES = ['rejected', 'split'];
 
     /** Wie die Spaltenvorgaben — sonst fehlen die Werte bis zum nächsten Laden. */
     protected $attributes = [
@@ -113,6 +131,8 @@ class IncomingEInvoice extends Model {
         'template_id',
         // MVP-1621: Steuerfall von Hand; leer = aus Beleg und Lieferant.
         'tax_case',
+        // MVP-1662: Teil einer Sammel-PDF — Original und Seitenbereich.
+        'source_document_id', 'source_page_from', 'source_page_to', 'source_sha256',
     ];
 
     /** @var array<string, string> */
@@ -141,6 +161,12 @@ class IncomingEInvoice extends Model {
         'duplicate_cleared_at' => 'datetime',
         'discount_percent' => 'decimal:2',
         'tax_case' => \App\Enums\Invoicing\IncomingInvoiceTaxCase::class,
+        // Sammel-PDF und GiroCode (MVP-1662/1663); der GiroCode trägt eine IBAN und ist deshalb verschlüsselt.
+        'source_page_from' => 'integer',
+        'source_page_to' => 'integer',
+        'split_proposal' => 'array',
+        'girocode' => 'encrypted:array',
+        'girocode_confirmed_at' => 'datetime',
     ];
 
     protected static function booted(): void {
@@ -207,7 +233,7 @@ class IncomingEInvoice extends Model {
             ->withoutGlobalScopes()
             ->where('organization_id', $this->organization_id)
             ->where('invoice_number_key', $this->invoice_number_key)
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotIn('status', self::CLOSED_STATUSES)
             ->when($this->exists, fn (Builder $query) => $query->where('id', '<', $this->getKey()))
             ->where(function (Builder $query) use ($vat): void {
                 if ($vat !== '') {
@@ -315,7 +341,7 @@ class IncomingEInvoice extends Model {
      */
     public function scopeAwaitingAssignment(Builder $query): Builder {
         return $query->whereNull('supplier_id')->whereNull('customer_id')
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value);
+            ->whereNotIn('status', self::CLOSED_STATUSES);
     }
 
     /**
@@ -337,7 +363,8 @@ class IncomingEInvoice extends Model {
      * @return Builder<self>
      */
     public function scopeInTransfer(Builder $query, array $states): Builder {
-        return $query->whereHas('transfers', static fn ($journal) => $journal->whereIn('status', array_map(static fn (IncomingInvoiceTransferStatus $s): string => $s->value, $states)));
+        // Ein aufgeteilter Sammel-Eingang (Feature 208) wird nie übergeben; seine alten Übergabe-Einträge zählen nicht.
+        return $query->where($query->qualifyColumn('status'), '!=', IncomingEInvoiceStatus::Split->value)->whereHas('transfers', static fn ($journal) => $journal->whereIn('status', array_map(static fn (IncomingInvoiceTransferStatus $s): string => $s->value, $states)));
     }
 
     /**
@@ -348,8 +375,8 @@ class IncomingEInvoice extends Model {
      */
     public function scopeOpenDuplicates(Builder $query): Builder {
         return $query->whereNotNull('duplicate_of_id')->whereNull('duplicate_cleared_at')
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
-            ->whereHas('duplicateOf', static fn ($earlier) => $earlier->withoutGlobalScopes()->where('status', '!=', IncomingEInvoiceStatus::Rejected->value));
+            ->whereNotIn('status', self::CLOSED_STATUSES)
+            ->whereHas('duplicateOf', static fn ($earlier) => $earlier->withoutGlobalScopes()->whereNotIn('status', self::CLOSED_STATUSES));
     }
 
     /**
@@ -414,7 +441,7 @@ class IncomingEInvoice extends Model {
             ->where('direction', ($outgoing ? DocumentDirection::Outgoing : DocumentDirection::Incoming)->value)
             ->whereNull('supplier_id')->whereNull('customer_id')
             ->whereNull('transferred_at')
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotIn('status', self::CLOSED_STATUSES)
             ->whereNotNull($column)
             ->whereKeyNot($this->getKey())
             ->orderBy('id')
@@ -461,5 +488,74 @@ class IncomingEInvoice extends Model {
     /** @return HasMany<IncomingInvoiceRetention, $this> Einbehalte (MVP-953) */
     public function retentions(): HasMany {
         return $this->hasMany(IncomingInvoiceRetention::class, 'incoming_einvoice_id')->orderBy('id');
+    }
+
+    /** @return BelongsTo<Document, $this> Unverändertes Original einer Sammel-PDF, aus dem dieser Teil stammt (MVP-1662) */
+    public function sourceDocument(): BelongsTo {
+        return $this->belongsTo(Document::class, 'source_document_id');
+    }
+
+    /** Teil einer aufgeteilten Sammel-PDF (MVP-1662). */
+    public function isSplitPart(): bool {
+        return $this->source_document_id !== null;
+    }
+
+    /** Aufgeteilter Sammel-Eingang (MVP-1662): Nachweis, nicht mehr bearbeitbar. */
+    public function isSplitBundle(): bool {
+        return $this->status === IncomingEInvoiceStatus::Split;
+    }
+
+    /** Abgelehnt oder aufgeteilt: keine Zuordnung, keine Werte, keine Übergabe, keine Zahlung. */
+    public function isClosed(): bool {
+        return in_array($this->status->value, self::CLOSED_STATUSES, true);
+    }
+
+    /**
+     * Original nur, wenn es noch den Hash des Eingangs trägt (Feature 208, N3):
+     * eine später im DMS hochgeladene Version ist nicht die geprüfte Datei.
+     *
+     * @return array{contents: string, mime: ?string, path: string, name: string}|null
+     */
+    public function verifiedOriginal(): ?array {
+        $original = $this->storedOriginal();
+        if ($original === null || ! hash_equals($this->sha256, (string) \CommonToolkit\Helper\Data\CryptoHelper::hash($original['contents']))) {
+            return null;
+        }
+
+        return $original;
+    }
+
+    /**
+     * Ohne abgelehnte und aufgeteilte Eingänge.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOpenForWork(Builder $query): Builder {
+        return $query->whereNotIn($query->qualifyColumn('status'), self::CLOSED_STATUSES);
+    }
+
+    /** Stand der Grenzerkennung einer Sammel-PDF (MVP-1662); null = keine Sammel-PDF-Prüfung. */
+    public function splitState(): ?string {
+        $state = ((array) $this->split_proposal)['state'] ?? null;
+
+        return is_string($state) && $state !== '' ? $state : null;
+    }
+
+    /**
+     * Gebucht im Sinne des Löschschutzes einer Sammel-PDF (MVP-1662): fachlich
+     * oder zur Zahlung freigegeben, an die Buchhaltung übergeben oder in einem
+     * Zahllauf. Bewusst weit — das Original muss bleiben, sobald ein Teil
+     * Folgen in Buchhaltung oder Zahlung haben kann.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeBooked(Builder $query): Builder {
+        return $query->where(static fn (Builder $booked) => $booked
+            ->whereIn('status', [IncomingEInvoiceStatus::Approved->value, IncomingEInvoiceStatus::PaymentReleased->value])
+            ->orWhereNotNull('transferred_at')
+            ->orWhereNotNull('paid_in_run_id')
+            ->orWhereHas('transfers', static fn ($journal) => $journal->whereIn('status', [IncomingInvoiceTransferStatus::Transferred->value, IncomingInvoiceTransferStatus::Linked->value])));
     }
 }

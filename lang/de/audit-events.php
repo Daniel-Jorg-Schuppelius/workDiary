@@ -202,6 +202,8 @@ return [
     'ai' => [
         'invoked' => 'KI aufgerufen',
         'suggestion_decided' => 'KI-Vorschlag entschieden',
+        'connection_approved' => 'KI-Verbindung datenschutzrechtlich freigegeben',
+        'connection_approval_revoked' => 'Datenschutzfreigabe der KI-Verbindung widerrufen',
     ],
     'archived' => 'Archiviert',
     'asset' => [
@@ -320,6 +322,9 @@ return [
         'connection_saved' => 'CardDAV-Verbindung gespeichert',
         'disconnected' => 'CardDAV getrennt',
         'sync_manual' => 'CardDAV manuell synchronisiert',
+    ],
+    'carry_forward_note' => [
+        'resolved' => 'Merker abgehakt',
     ],
     'change' => [
         'asset_attached' => 'Change: Asset verknüpft',
@@ -524,6 +529,7 @@ return [
         'confidentialAccessed' => 'Vertrauliches Dokument abgerufen',
         'deleted' => 'Dokument gelöscht',
         'einvoice_received' => 'E-Rechnung empfangen',
+        'invoice_split' => 'Sammel-PDF in Rechnungen aufgeteilt',
         'einvoice_xml_exported' => 'E-Rechnungs-XML exportiert',
         'released_to_customer' => 'Dokument für Kunden freigegeben',
         'revoked_from_customer' => 'Kunden-Freigabe zurückgezogen',
@@ -612,6 +618,11 @@ return [
     ],
     'incoming_einvoice' => [
         'duplicate_cleared' => 'Als kein Doppel-Eingang bestätigt',
+        'split' => 'Sammel-PDF aufgeteilt',
+        'split_dismissed' => 'Sammel-PDF als eine Rechnung behalten',
+        'split_reset' => 'Aufteilung der Sammel-PDF zurückgesetzt',
+        'girocode_read' => 'GiroCode gelesen',
+        'girocode_confirmed' => 'Abweichende GiroCode-IBAN bestätigt',
         'candidate_linked' => 'Übergabe mit vorhandenem Beleg verknüpft',
         'candidate_dismissed' => 'Übergabe trotz Treffer neu angelegt',
         'direction_corrected' => 'Richtung des Eingangs korrigiert',
@@ -795,6 +806,35 @@ return [
         'linked' => 'Wissensartikel verknüpft',
         'published' => 'Wissensartikel veröffentlicht',
         'unlinked' => 'Wissensartikel-Verknüpfung gelöst',
+    ],
+    'knowledge_page' => [
+        'approved' => 'Fassung freigegeben',
+        'outdated' => 'Als veraltet markiert',
+        'reviewed' => 'Als aktuell bestätigt',
+        'expired' => 'Gültigkeit abgelaufen (veraltet)',
+        'restored' => 'Aus dem Papierkorb wiederhergestellt',
+        'purged' => 'Endgültig gelöscht',
+        'version_restored' => 'Ältere Fassung zurückgeholt',
+        'assigned' => 'Pflichtlektüre zugeordnet',
+        'unassigned' => 'Pflichtlektüre entfernt',
+        'linked' => 'Verknüpft',
+        'unlinked' => 'Verknüpfung gelöst',
+        'exported' => 'Als PDF ausgegeben',
+        'step_redacted' => 'Bild eines Schritts geschwärzt',
+        'owner_transferred' => 'Verantwortung übertragen',
+    ],
+    'lead_intake' => [
+        'stage_changed' => 'Stufe der Aufnahme geändert',
+        'decided' => 'Aufnahme entschieden',
+        'second_review' => 'Annahme im zweiten Blick bestätigt',
+        'second_review_returned' => 'Annahme im zweiten Blick zurückgegeben',
+        'refreshed' => 'Aufnahmeakte aktualisiert (neue Fassung)',
+        'completed' => 'Aufnahme eingerichtet (Lead umgewandelt)',
+        'document_added' => 'Unterlage zur Aufnahme abgelegt',
+        'document_removed' => 'Unterlage der Aufnahme entfernt',
+        'pdf_downloaded' => 'PDF der Aufnahmeakte heruntergeladen',
+        'pdf_archived' => 'PDF der Aufnahmeakte als Dokument abgelegt',
+        'relationship_ended' => 'Ende der Geschäftsbeziehung gesetzt',
     ],
     'lead' => [
         'quote_created' => 'Angebot aus dem Lead erstellt',
@@ -1328,6 +1368,7 @@ return [
         'anonymized' => 'Mitarbeiter anonymisiert (PII entfernt, Nachweise bleiben)',
         'offboardingScheduled' => 'Austritt vorgemerkt',
         'offboarded' => 'Mitarbeiter ausgeschieden (Konto deaktiviert)',
+        'workHandedOver' => 'Zuständigkeiten endgültig übergeben (ohne Austritt)',
         'permission' => [
             'granted' => 'Permission vergeben',
             'revoked' => 'Permission entzogen',
@@ -1374,6 +1415,13 @@ return [
         'disconnected' => 'WooCommerce: getrennt',
         'import_confirmed' => 'WooCommerce: Import bestätigt',
     ],
+    'app_wish' => [
+        'forwarded' => 'An den Plattformbetrieb weitergegeben',
+        'vendor_sent' => 'An den Hersteller gesendet',
+    ],
+    'work_delegation' => [
+        'ended' => 'Vertretung beendet',
+    ],
     'zammad' => [
         'connection_saved' => 'Zammad-Verbindung gespeichert',
         'disconnected' => 'Zammad getrennt',
@@ -1408,6 +1456,7 @@ return [
         'vat_extension_recorded' => 'Dauerfristverlängerung erfasst',
         'fixed_asset_disposed' => 'Anlagenabgang erfasst',
         'depreciation_proposed' => 'Jahres-AfA vorgeschlagen',
+        'datev_check_released' => 'Steuerprüfung vor dem DATEV-Export begründet freigegeben',
     ],
     'accounting_migration' => [
         'planned' => 'Buchhaltungswechsel geplant',
@@ -1671,5 +1720,14 @@ return [
     'domain' => [
         'commandReconciled' => 'Domain-Befehl abgeglichen',
         'commandResolved' => 'Domain-Befehl von Hand abgeschlossen',
+    ],
+    // Anmelderichtlinie der Organisation (Feature 205).
+    'login_policy' => [
+        'lockdown_engaged' => 'Notaus ausgelöst',
+        'lockdown_lifted' => 'Notaus aufgehoben',
+        'device_approved' => 'Gerät für die Anmeldung von außerhalb freigegeben',
+        'device_rejected' => 'Freigabeanfrage eines Geräts abgelehnt',
+        'device_revoked' => 'Gerätefreigabe entzogen',
+        'device_forgotten' => 'Ablehnung eines Geräts vergessen (darf erneut anfragen)',
     ],
 ];

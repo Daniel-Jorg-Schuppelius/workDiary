@@ -20,6 +20,13 @@
                 <x-button tone="ghost" :href="route('diary.export.csv', $filters)">{{ __('CSV') }}</x-button>
                 <x-button tone="ghost" :href="route('diary.export.pdf', $filters)" target="_blank">{{ __('PDF (Druckansicht)') }}</x-button>
             </x-action-menu>
+            {{-- Periodenaufträge (Feature 198): Prüf-Warteschlange und Folgeperiode gesammelt. --}}
+            @if (auth()->user()?->can(\App\Enums\User\Permission::OrderReview->value))
+                <x-button tone="outline" size="sm" icon="fact_check" :href="route('diary.review-queue')">{{ __('diary.review.queue.title') }}</x-button>
+            @endif
+            @if (auth()->user()?->can(\App\Enums\User\Permission::DiaryCreateForOthers->value) && auth()->user()?->can(\App\Enums\User\Permission::DiaryViewAny->value))
+                <x-button tone="outline" size="sm" icon="event_repeat" :href="route('diary.follow-up.index')">{{ __('diary.follow_up.bulk.title') }}</x-button>
+            @endif
             <x-help-button topic="diary-entries.create" />
         </x-slot:extra>
     </x-filter-bar>
@@ -43,10 +50,25 @@
         @endforeach
     </div>
 
-    {{-- Eintrags-Liste --}}
+    {{-- Eintrags-Liste; Mehrfachauswahl „Zuständigkeit ändern“ (Feature 202, MVP-1648) für bearbeitbare Aufträge. --}}
+    <form method="POST" action="{{ route('diary.bulk-assign') }}" data-bulk-form class="min-h-0 flex-1 flex flex-col gap-3">
+    @csrf
+    <x-bulk-toolbar :label="__('delegation.reassign.selected')" icon="move_up">
+        <x-slot:actions>
+            <select name="assignee" class="select select-sm select-bordered w-48" aria-label="{{ __('delegation.reassign.choose') }}" required>
+                <option value="">{{ __('delegation.reassign.choose') }}</option>
+                @foreach ($assigneeOptions ?? [] as $assigneeOption)
+                    <option value="{{ $assigneeOption->sqid }}">{{ $assigneeOption->name }}</option>
+                @endforeach
+            </select>
+            <x-button type="submit" tone="primary" size="sm" icon="move_up">{{ __('delegation.reassign.submit') }}</x-button>
+        </x-slot:actions>
+    </x-bulk-toolbar>
+    @error('assignee')<p class="text-error text-xs">{{ $message }}</p>@enderror
+    @error('ids')<p class="text-error text-xs">{{ $message }}</p>@enderror
     <div class="min-h-0 flex-1 overflow-y-auto space-y-3">
         @forelse ($entries as $entry)
-            @include('diary._entry_card', ['entry' => $entry, 'filters' => $filters])
+            @include('diary._entry_card', ['entry' => $entry, 'filters' => $filters, 'bulkAssign' => true])
         @empty
             <x-empty-state framed
                 icon="menu_book"
@@ -60,6 +82,7 @@
             </x-empty-state>
         @endforelse
     </div>
+    </form>
 
     {{-- Pagination --}}
     <x-pagination :paginator="$entries" standing />

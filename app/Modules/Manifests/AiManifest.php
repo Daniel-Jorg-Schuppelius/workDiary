@@ -76,6 +76,16 @@ final class AiManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            // Datenschutzfreigaben der Verbindungen (MVP-1672): offen, ablaufend, abgelaufen.
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Ai\WorkQueue\AiConnectionApprovalWorkItemSource::class,
+            ],
+        ];
+    }
+
     /** @return array<class-string, class-string> */
     public function contracts(): array {
         return [
