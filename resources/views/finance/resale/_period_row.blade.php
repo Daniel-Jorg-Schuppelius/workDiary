@@ -16,6 +16,10 @@
 @php
     $bulk = $bulk ?? false;
     $plannedNext = $plannedNext ?? [];
+    // Die Statusanzeige fragt das Abo (eigener Bestand, MVP-1743) — die Zeile kennt es schon.
+    if (! $period->relationLoaded('subscription')) {
+        $period->setRelation('subscription', $subscription);
+    }
     $required = $period->requiredMonths();
     $covered = $period->coveredMonths();
     $term = $period->termMonths();

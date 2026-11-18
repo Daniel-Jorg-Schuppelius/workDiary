@@ -55,3 +55,18 @@ fehlgeschlagener Ausführung die Meldung des Programms als Tooltip; ob eine
 Rechnung per E-Mail ging, kennt die Lexoffice-API nicht. Eine Vorlagenposition
 nimmt höchstens so viele Lizenzen auf, wie sie berechnet; Domain-Abos werden
 nur bei exakter Nennung der Domain zugeordnet.
+
+**Vorlage als Anker der Zuordnung:** Ist eine Vorlagenposition einem Abo
+zugeordnet (bestätigt, von Hand oder aus einem Rechnungsbezug), gehen die
+Rechnungen dieser Position an das Lizenzjahr dieses Abos oder eines seiner
+Vorgänger, in das das Rechnungsdatum fällt — auch wenn ein anderes Abo
+desselben Produkts näher am Datum beginnt. Solche Bezüge gelten als sicher
+und tragen die Vorlage als Bemerkung. Einem Abo außerhalb dieser Kette wird
+die Position nicht vorgeschlagen; findet sie keinen Platz, erscheint sie
+unter „Positionen ohne Abo“. Stimmt die Zuordnung nicht, ändern Sie die
+Zuordnung der Vorlagenposition, nicht jedes Jahr den Bezug. Der Anker gilt
+nicht, wenn der Artikel der Rechnung von dem der Vorlagenposition abweicht
+oder die Rechnung aus der Zeit vor dem Abo stammt. Je Zuordnung zeigt der
+Vorlagenblock den **Abrechnungslauf**: das Lizenzjahr des letzten Laufs und ob
+es am Beleg dieses Laufs hängt. „Beleg nicht zugeordnet“ führt direkt zur
+Zuordnung.

@@ -15,6 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Mirror\MirrorLine;
+use App\Services\Reselling\Plan\PlanAnchors;
 
 /**
  * Zeitliche Passung einer Rechnungsposition zu einer Periode (Phase 166,
@@ -39,12 +40,18 @@ final class LineFit {
 
     public const string ELSEWHERE = 'elsewhere';
 
+    /** Laut Serienvorlage gehört die Position dieser Periode (Vorlagenanker, Phase 183). */
+    public const string PLAN = 'plan';
+
+    /** Laut Serienvorlage gehört die Position einem anderen Abo. */
+    public const string OTHER_PLAN = 'other_plan';
+
     public const string UNKNOWN = 'unknown';
 
     /** Eine andere Periode gilt erst als besser, wenn sie mindestens so viele Tage näher liegt. */
     private const int BETTER_MARGIN_DAYS = 7;
 
-    private const array RANK = [self::EXACT => 0, self::SHIFTED => 1, self::UNKNOWN => 2, self::FAR => 3, self::OVERLAP => 3, self::ELSEWHERE => 4, self::OUTSIDE => 5];
+    private const array RANK = [self::PLAN => 0, self::OTHER_PLAN => 4, self::EXACT => 0, self::SHIFTED => 1, self::UNKNOWN => 2, self::FAR => 3, self::OVERLAP => 3, self::ELSEWHERE => 4, self::OUTSIDE => 5];
 
     private function __construct(
         public readonly string $kind,
@@ -62,6 +69,11 @@ final class LineFit {
         }
         if (! LinkProposer::serviceOverlaps($period, $line)) {
             return new self(self::OUTSIDE, $days);
+        }
+        // Der Vorlagenanker geht jeder Datumsregel vor — wie im Vorschlagslauf.
+        $anchored = app(PlanAnchors::class)->verdict($period, $line);
+        if ($anchored !== null) {
+            return new self($anchored ? self::PLAN : self::OTHER_PLAN, $days);
         }
         // Mehrjahres- oder Sammelrechnung, deren Leistungszeitraum die Periode ganz umfasst: passt,
         // auch wenn ihr Zyklus nicht am Periodenbeginn liegt (Phase 168, MVP-1459 — 34 Domain-Fehlalarme auf Prod).
@@ -167,7 +179,7 @@ final class LineFit {
     }
 
     public function needsConfirmation(): bool {
-        return in_array($this->kind, [self::FAR, self::OVERLAP, self::OUTSIDE, self::ELSEWHERE], true);
+        return in_array($this->kind, [self::FAR, self::OVERLAP, self::OUTSIDE, self::ELSEWHERE, self::OTHER_PLAN], true);
     }
 
     /** Reihenfolge der Kandidaten: passend vor versetzt vor fraglich. */
@@ -186,7 +198,7 @@ final class LineFit {
 
     public function tone(): string {
         return match ($this->kind) {
-            self::EXACT => 'success',
+            self::EXACT, self::PLAN => 'success',
             self::SHIFTED, self::UNKNOWN => 'ghost',
             default => 'warning',
         };

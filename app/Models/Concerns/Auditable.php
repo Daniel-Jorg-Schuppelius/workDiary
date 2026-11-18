@@ -74,6 +74,18 @@ trait Auditable {
         return array_values(array_unique($fields));
     }
 
+    /**
+     * Stille Felder (Phase 183, MVP-1744): technische Lebenszeichen wie `last_seen_at`.
+     * Ein Update, das nur sie ändert, schreibt keine Audit-Zeile, und in keiner Zeile
+     * stehen sie — sonst füllt ein täglicher Abgleich die Hash-Kette mit Zeilen ohne
+     * Aussage und echte Änderungen gehen im Verlauf unter.
+     *
+     * @return array<int, string>
+     */
+    protected function auditSilent(): array {
+        return [];
+    }
+
     public static function bootAuditable(): void {
         static::created(function (Model $model): void {
             assert($model instanceof self);
@@ -84,6 +96,10 @@ trait Auditable {
             assert($model instanceof self);
             $changes = $model->getChanges();
             if (empty($changes)) {
+                return;
+            }
+            $silent = $model->auditSilent();
+            if ($silent !== [] && array_diff(array_keys($changes), $silent, ['updated_at']) === []) {
                 return;
             }
             $original = collect($changes)->mapWithKeys(fn($v, $k) => [$k => $model->getOriginal($k)])->all();
@@ -198,7 +214,7 @@ trait Auditable {
      * @return array<string, mixed>
      */
     public function getAuditAttributes(array $attributes): array {
-        $excluded = array_merge($this->auditExclude, $this->getHidden());
+        $excluded = array_merge($this->auditExclude, $this->getHidden(), $this->auditSilent());
 
         return collect($attributes)
             ->except($excluded)

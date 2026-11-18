@@ -54,3 +54,18 @@ failed execution the program's message as a tooltip; whether an invoice was
 sent by e-mail is unknown to the Lexoffice API. A template line takes at most
 as many licenses as it invoices; domain subscriptions are only assigned when
 the domain is named exactly.
+
+**Template as the anchor of the assignment:** Once a template line is
+assigned to a subscription (confirmed, set by hand or taken from an invoice
+link), the invoices of that line go to the license year of this subscription
+or one of its predecessors that contains the invoice date — even if another
+subscription of the same product starts closer to that date. Such links count
+as certain and carry the template as a note. The line is not proposed to a
+subscription outside this chain; if it finds no place, it appears under
+“lines without subscription”. If the assignment is wrong, change the
+assignment of the template line, not the link every year. The anchor does not
+apply when the article of the invoice differs from that of the template line
+or the invoice predates the subscription. For each assignment the template
+block shows the **billing run**: the license year of the last run and whether
+it is linked to the voucher of that run. “Voucher not linked” leads straight
+to the assignment.

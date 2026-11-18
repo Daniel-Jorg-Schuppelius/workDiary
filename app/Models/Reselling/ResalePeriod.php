@@ -325,15 +325,28 @@ class ResalePeriod extends Model {
         return (string) $this->draft_reference !== '' && in_array($this->status, [PeriodStatus::Open, PeriodStatus::Partial], true);
     }
 
+    /**
+     * Offene Periode an eigenem Bestand (Phase 183, MVP-1743): wird nie berechnet und zählt
+     * nirgends als fällig ({@see scopeStarted()}); sie trägt nur den Einkauf des Laufzeitjahrs.
+     */
+    public function isOwnHolding(): bool {
+        return $this->status === PeriodStatus::Open && $this->subscription->is_own_holding;
+    }
+
     public function statusLabel(): string {
         return match (true) {
             $this->isOrderChange() => (string) __('resale.link.order_change'),
             $this->isInDraft() => (string) __('resale.draft.in_draft'),
+            $this->isOwnHolding() => (string) __('resale.holder.own'),
             default => $this->status->label(),
         };
     }
 
     public function statusTone(): string {
-        return $this->isOrderChange() || $this->isInDraft() ? 'info' : $this->status->tone();
+        return match (true) {
+            $this->isOrderChange(), $this->isInDraft() => 'info',
+            $this->isOwnHolding() => 'neutral',
+            default => $this->status->tone(),
+        };
     }
 }

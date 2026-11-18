@@ -47,6 +47,14 @@
                                     <span class="text-xs {{ $executionTone }}" title="{{ $template->lastError }}">{{ $execution->label() }}</span>
                                 @endif
                             @endif
+                        @elseif (($execution = $entry['execution'] ?? null) !== null && $execution->voucherDate !== null)
+                            {{-- Abrechnungslauf (MVP-1742): der Beleg der letzten Ausführung steht am Kopf, die Perioden dazu an den Zuordnungen. --}}
+                            @php $executionUrl = $voucherUrl($execution->sourceKey, $execution->voucherKey); @endphp
+                            @if ($executionUrl !== null)
+                                <a href="{{ $executionUrl }}" data-entry-modal-trigger class="link link-hover text-xs text-muted">{{ __('resale.plan.run.voucher', ['number' => $execution->voucherNumber ?? '—', 'date' => $execution->voucherDate->fdate()]) }}</a>
+                            @else
+                                <span class="text-xs text-muted">{{ __('resale.plan.run.voucher', ['number' => $execution->voucherNumber ?? '—', 'date' => $execution->voucherDate->fdate()]) }}</span>
+                            @endif
                         @endif
                         <span class="text-xs text-muted">{{ $template->recipientName }}@if ($template->nextExecutionOn) · {{ __('resale.plan.next', ['date' => $template->nextExecutionOn->fdate()]) }}@endif · {{ $template->finalize ? __('resale.plan.finalize') : __('resale.plan.draft_only') }}</span>
                     </span>
@@ -105,6 +113,31 @@
                                             </form>
                                         @endif
                                         <span class="basis-full text-xs text-muted">{{ $link->subscription->holderLabel() }} · {{ $link->subscription->identityLabel() }}</span>
+                                        {{-- Abrechnungslauf (MVP-1742): Periode des letzten Laufs und ob sie an dessen Beleg hängt. --}}
+                                        @php $run = $entry['runs'][$link->id] ?? null; @endphp
+                                        @if ($run !== null && $run['state'] !== \App\Services\Reselling\Plan\PlanSection::RUN_PENDING)
+                                            <span class="basis-full flex flex-wrap items-center gap-1 text-xs">
+                                                @if ($run['period'] !== null)
+                                                    <span class="text-muted whitespace-nowrap">{{ $run['period']->label() }}</span>
+                                                @endif
+                                                @switch($run['state'])
+                                                    @case(\App\Services\Reselling\Plan\PlanSection::RUN_BILLED)
+                                                        <x-status-badge size="xs" tone="success" :label="__('resale.plan.run.billed')" />
+                                                        @break
+                                                    @case(\App\Services\Reselling\Plan\PlanSection::RUN_COVERED)
+                                                        <x-status-badge size="xs" outline :label="$run['period']->statusLabel()" :title="__('resale.plan.run.covered_hint', ['number' => $run['voucher'] ?? '—'])" />
+                                                        @break
+                                                    @case(\App\Services\Reselling\Plan\PlanSection::RUN_UNLINKED)
+                                                        <x-status-badge size="xs" tone="warning" :label="__('resale.plan.run.unlinked', ['number' => $run['voucher'] ?? '—'])" />
+                                                        @if ($canManage)
+                                                            <x-icon-btn icon="add_link" size="xs" tone="primary" data-entry-modal-trigger :href="route('finance.resale.periods.link.create', $run['period']->sqid)" :title="__('resale.plan.run.link')" />
+                                                        @endif
+                                                        @break
+                                                    @default
+                                                        <x-status-badge size="xs" tone="warning" :label="__('resale.plan.run.no_period')" :title="__('resale.plan.run.no_period_hint', ['number' => $run['voucher'] ?? '—'])" />
+                                                @endswitch
+                                            </span>
+                                        @endif
                                     </div>
                                 @empty
                                     <span class="text-warning text-xs">{{ __('resale.plan.finding.plan_without_subscription_short') }}</span>

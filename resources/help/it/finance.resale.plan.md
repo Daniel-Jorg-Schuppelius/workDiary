@@ -56,3 +56,19 @@ programma come tooltip; l'API Lexoffice non sa se una fattura è partita per
 e-mail. Una riga di modello accoglie al massimo tante licenze quante ne
 fattura; gli abbonamenti di dominio vengono assegnati solo se il dominio è
 citato esattamente.
+
+**Il modello come ancora dell'assegnazione:** quando una riga di modello è
+assegnata a un abbonamento (confermata, impostata a mano o ricavata da un
+collegamento di fattura), le fatture di quella riga vanno all'anno di licenza
+di questo abbonamento o di uno dei suoi predecessori che contiene la data
+della fattura, anche se un altro abbonamento dello stesso prodotto inizia più
+vicino a quella data. Questi collegamenti sono considerati sicuri e riportano
+il modello come nota. La riga non viene proposta a un abbonamento fuori da
+questa catena; se non trova posto, compare tra le «righe senza abbonamento».
+Se l'assegnazione non è corretta, modifichi l'assegnazione della riga di
+modello e non il collegamento ogni anno. L'ancora non vale quando l'articolo
+della fattura è diverso da quello della riga di modello o la fattura è
+precedente all'abbonamento. Per ogni assegnazione il blocco dei modelli mostra
+l'**esecuzione di fatturazione**: l'anno di licenza dell'ultima esecuzione e
+se è collegato al documento di quell'esecuzione. «Documento non assegnato»
+porta direttamente all'assegnazione.

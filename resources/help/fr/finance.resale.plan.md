@@ -58,3 +58,19 @@ logiciel en infobulle ; l'API Lexoffice ne sait pas si une facture est partie
 par e-mail. Une ligne de modèle accueille au plus autant de licences qu'elle
 facture ; les abonnements de domaine ne sont affectés que si le domaine est
 nommé exactement.
+
+**Le modèle comme ancre de l'affectation :** dès qu'une ligne de modèle est
+affectée à un abonnement (confirmée, saisie à la main ou issue d'un
+rattachement de facture), les factures de cette ligne vont à l'année de
+licence de cet abonnement ou de l'un de ses prédécesseurs qui contient la date
+de facture, même si un autre abonnement du même produit commence plus près de
+cette date. Ces rattachements sont considérés comme sûrs et portent le modèle
+en remarque. La ligne n'est pas proposée à un abonnement hors de cette chaîne ;
+si elle ne trouve pas de place, elle apparaît sous « lignes sans abonnement ».
+Si l'affectation est fausse, modifiez l'affectation de la ligne de modèle et
+non le rattachement chaque année. L'ancre ne s'applique pas lorsque l'article
+de la facture diffère de celui de la ligne de modèle ou que la facture est
+antérieure à l'abonnement. Pour chaque affectation, le bloc des modèles
+affiche l'**exécution de facturation** : l'année de licence de la dernière
+exécution et si elle est rattachée à la pièce de cette exécution. « Pièce non
+rattachée » mène directement à l'affectation.

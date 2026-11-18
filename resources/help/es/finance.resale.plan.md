@@ -55,3 +55,18 @@ el envío en el programa) o falta — y, si falló, el mensaje del programa como
 tooltip; la API de Lexoffice no sabe si una factura salió por correo. Una
 línea de plantilla admite como máximo tantas licencias como factura; las
 suscripciones de dominio solo se asignan si el dominio se nombra exactamente.
+
+**La plantilla como ancla de la asignación:** cuando una línea de plantilla
+está asignada a una suscripción (confirmada, puesta a mano o tomada de un
+vínculo de factura), las facturas de esa línea van al año de licencia de esa
+suscripción o de una de sus predecesoras que contiene la fecha de la factura,
+aunque otra suscripción del mismo producto empiece más cerca de esa fecha.
+Estos vínculos se consideran seguros y llevan la plantilla como nota. La línea
+no se propone a una suscripción fuera de esta cadena; si no encuentra sitio,
+aparece en «líneas sin suscripción». Si la asignación no es correcta, cambie
+la asignación de la línea de plantilla y no el vínculo cada año. El ancla no
+se aplica cuando el artículo de la factura difiere del de la línea de
+plantilla o la factura es anterior a la suscripción. Para cada asignación, el
+bloque de plantillas muestra la **ejecución de facturación**: el año de
+licencia de la última ejecución y si está vinculado al comprobante de esa
+ejecución. «Comprobante sin asignar» lleva directamente a la asignación.

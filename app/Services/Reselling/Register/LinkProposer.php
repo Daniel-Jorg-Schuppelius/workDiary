@@ -20,6 +20,7 @@ use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Marketplace\{NameTokenMatcher, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Services\Reselling\Plan\PlanAnchors;
 use App\Services\Reselling\Register\Concerns\LocksResalePeriods;
 use App\Settings\SettingScope;
 use App\Support\Query\DateRange;
@@ -77,6 +78,9 @@ final class LinkProposer {
 
     public const string AUDIT_AUTO_CONFIRMED = 'resale_period.auto_confirmed';
 
+    /** Erster Pass (Phase 183, MVP-1741): Positionen aus einer Serienvorlage gehen an das Abo ihrer Vorlagenposition. */
+    private const string PASS_ANCHOR = 'anchor';
+
     private const string PASS_NEAREST = 'nearest';
 
     private const string PASS_RESERVED = 'reserved';
@@ -113,10 +117,22 @@ final class LinkProposer {
     /** @var array<int, float> Periodenindex → noch offene Lizenzmonate (für die Reservierung im Fenster-Pass). */
     private array $needed = [];
 
+    /** @var array<string, array{label: string, article: string|null, subscriptions: array<int, true>, from: CarbonImmutable|null}> Position → Vorlagenanker ({@see PlanAnchors}) */
+    private array $anchors = [];
+
+    /** @var array<string, int> Verankerte Position → Index der Periode, der sie gehört */
+    private array $anchorPeriods = [];
+
+    /** @var array<int, array<string, true>> Periode → Positionen, die der Anker-Pass zugeordnet hat (sicherer Treffer) */
+    private array $anchored = [];
+
     private readonly InvoiceMirror $mirror;
 
-    public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), ?InvoiceMirror $mirror = null) {
+    private readonly PlanAnchors $planAnchors;
+
+    public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), ?InvoiceMirror $mirror = null, ?PlanAnchors $planAnchors = null) {
         $this->mirror = $mirror ?? app(InvoiceMirror::class);
+        $this->planAnchors = $planAnchors ?? app(PlanAnchors::class);
     }
 
     /**
@@ -503,8 +519,19 @@ final class LinkProposer {
                 $productOwners[$recipient][$product] = count($holders);
             }
         }
+        $this->anchors = [];
+        $anchorMap = $this->planAnchors->map($organization);
+        if ($anchorMap !== []) {
+            foreach ($lines as $line) {
+                $anchor = PlanAnchors::of($anchorMap, $line);
+                if ($anchor !== null) {
+                    $this->anchors[$line->identity()] = $anchor;
+                }
+            }
+        }
         $this->linkedSubscriptions = [];
         $this->proposed = [];
+        $this->anchored = [];
         foreach (ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('linkable_type', $this->mirror->morphClasses())->get(['linkable_type', 'linkable_id', 'subscription_id', 'months']) as $existing) {
             $identity = MirrorLine::identityOf((string) $existing->linkable_type, (int) $existing->linkable_id);
             if (isset($remaining[$identity])) {
@@ -529,13 +556,14 @@ final class LinkProposer {
         }
         $nearest = $this->nearestPeriods($states, $lines, $recipientBySubscription);
         $this->needed = array_map(static fn(array $state): float => $state['needed'], $states);
+        $this->anchorPeriods = $this->anchorPeriods($states, $linesByIdentity);
 
-        // Drei Pässe: nächste Periode je Position; dann chronologisch, aber eine Position,
+        // Zuerst der Vorlagenanker, dann drei Pässe: nächste Periode je Position; dann chronologisch, aber eine Position,
         // deren Bezugsdatum in der Laufzeit einer anderen noch offenen Periode liegt, bleibt
         // für diese reserviert (Rechnung vom Februar 2026 gehört dem Nachfolger, nicht
         // dem alten Vertrag von 2024); zuletzt frei — Nachberechnungen über mehrere Jahre
         // („48 Monat" im August 2025) füllen die ältesten offenen Perioden.
-        foreach ([self::PASS_NEAREST, self::PASS_RESERVED, self::PASS_FREE] as $pass) {
+        foreach ([self::PASS_ANCHOR, self::PASS_NEAREST, self::PASS_RESERVED, self::PASS_FREE] as $pass) {
             foreach ($states as $index => $state) {
                 if ($state['needed'] <= 0.001) {
                     continue;
@@ -584,6 +612,7 @@ final class LinkProposer {
      */
     private function allocate(int $index, array $state, Collection $lines, array &$remaining, array $recipientBySubscription, array $productOwners, array $nearest, string $pass, array &$result): array {
         $nearestOnly = $pass === self::PASS_NEAREST;
+        $anchorOnly = $pass === self::PASS_ANCHOR;
         $period = $state['period'];
         $subscription = $state['subscription'];
         $recipient = $recipientBySubscription[$subscription->id] ?? null;
@@ -600,8 +629,22 @@ final class LinkProposer {
             if ($line->recipientCustomerId !== $recipient || ($remaining[$identity] ?? 0.0) <= 0.001) {
                 continue;
             }
+            // Verankerte Position: im Anker-Pass nur an ihre Periode, sonst nie an ein Abo außerhalb der Kette —
+            // findet sie dort keinen Platz, bleibt sie als „Position ohne Abo“ sichtbar.
+            $anchor = $this->anchors[$identity] ?? null;
+            if ($anchorOnly ? ($this->anchorPeriods[$identity] ?? null) !== $index : ($anchor !== null && ! isset($anchor['subscriptions'][$subscription->id]))) {
+                continue;
+            }
             $date = LicenseMonths::referenceDate($line);
             if ($date === null || ! self::inWindow($period, $line) || ! self::serviceOverlaps($period, $line)) {
+                continue;
+            }
+            if ($anchorOnly) {
+                // Der Anker ersetzt Zyklusregel, Nennung und „nächste Periode“; Produkt und Leistungszeitraum bleiben.
+                if ($this->matchesProduct($subscription, $line)) {
+                    $candidates[] = ['line' => $line, 'draft' => 0, 'mentions' => 0, 'continuity' => 0, 'fit' => abs(LicenseMonths::split($line)['months'] - $termMonths), 'distance' => abs($date->diffInDays($period->starts_on))];
+                }
+
                 continue;
             }
             // Zyklusregel nur, wo sie etwas entscheidet: mehrere Abos desselben Produkts beim
@@ -674,6 +717,12 @@ final class LinkProposer {
                     $attributes['note'] = (string) __('resale.link.note_domain_typo', ['written' => $written, 'domain' => $subscription->label]);
                 }
             }
+            if ($anchorOnly) {
+                $this->anchored[$period->id][$identity] = true;
+                if ($existing === null) {
+                    $attributes['note'] = ResalePeriod::joinNote($attributes['note'] ?? null, (string) __('resale.link.note_plan_anchor', ['plan' => $this->anchors[$identity]['label'] ?? '']));
+                }
+            }
             if ($existing !== null) {
                 $existing->forceFill($attributes)->save();
             } else {
@@ -708,10 +757,15 @@ final class LinkProposer {
     /**
      * Sicherer Treffer (Feature 185, MVP-1406): gleicher Artikelschlüssel
      * (keine Namensheuristik), Bezugsdatum dicht am Periodenbeginn — oder der
-     * Beleg stammt aus dem Rechnungsvorschlag der Periode.
+     * Beleg stammt aus dem Rechnungsvorschlag der Periode oder aus der
+     * Serienvorlage, deren Position dem Abo zugeordnet ist.
      */
     public static function isSure(ResalePeriod $period, ResaleSubscription $subscription, MirrorLine $line): bool {
         if (self::matchesDraft($period, $line)) {
+            return true;
+        }
+        // Vorlagenanker (Phase 183): die Position gehört laut Serienvorlage dieser Periode.
+        if (app(PlanAnchors::class)->verdict($period, $line) === true) {
             return true;
         }
         // Domain-Abo: statt des Artikelschlüssels zählt, dass die Position die Domain nennt.
@@ -752,7 +806,8 @@ final class LinkProposer {
         $vouchers = [];
         foreach ($proposals as $identity => $link) {
             $line = $linesByIdentity[$identity] ?? null;
-            if ($line === null || ! self::isSure($period, $state['subscription'], $line)) {
+            // Bezug aus dem Vorlagenanker gilt ohne Datumsfenster als sicher (MVP-1741).
+            if ($line === null || (! isset($this->anchored[$period->id][$identity]) && ! self::isSure($period, $state['subscription'], $line))) {
                 return false;
             }
             $runMonths += (float) $link->months;
@@ -773,6 +828,46 @@ final class LinkProposer {
         $this->autoConfirmedAudits[] = [$period, ['vouchers' => array_values(array_filter($vouchers)), 'months' => round($runMonths, 2)]];
 
         return true;
+    }
+
+    /**
+     * Periode je verankerter Position: aus der Kette ihres Abos die Periode, in deren
+     * Laufzeit das Bezugsdatum liegt oder die höchstens {@see WINDOW_BEFORE} Tage danach
+     * beginnt — bei mehreren die mit dem nächsten Beginn. Ein älteres offenes Lizenzjahr
+     * zieht die Rechnung des laufenden Jahres so nicht an sich.
+     *
+     * @param  list<array{period: ResalePeriod, subscription: ResaleSubscription, needed: float, covered: float}>  $states
+     * @param  array<string, MirrorLine>  $linesByIdentity
+     * @return array<string, int>
+     */
+    private function anchorPeriods(array $states, array $linesByIdentity): array {
+        $periods = [];
+        foreach ($this->anchors as $identity => $anchor) {
+            $line = $linesByIdentity[$identity] ?? null;
+            $date = $line === null ? null : LicenseMonths::referenceDate($line);
+            if ($line === null || $date === null) {
+                continue;
+            }
+            $best = null;
+            $bestDistance = null;
+            foreach ($states as $index => $state) {
+                $period = $state['period'];
+                if (! isset($anchor['subscriptions'][(int) $period->subscription_id]) || $state['needed'] <= 0.001
+                    || $date->lessThan($period->starts_on->subDays(self::WINDOW_BEFORE)) || $date->greaterThan($period->ends_on)) {
+                    continue;
+                }
+                $distance = (int) abs($date->diffInDays($period->starts_on));
+                if ($bestDistance === null || $distance < $bestDistance) {
+                    $best = $index;
+                    $bestDistance = $distance;
+                }
+            }
+            if ($best !== null) {
+                $periods[$identity] = $best;
+            }
+        }
+
+        return $periods;
     }
 
     /**

@@ -10,6 +10,27 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Abos & Lizenzen, Serienvorlage als Anker der Zuordnung (`MVP-1741`): Ist
+  eine Vorlagenposition des Buchhaltungsprogramms einem Abo zugeordnet, ordnet
+  der Vorschlagslauf die Rechnungen dieser Position dem Lizenzjahr dieses Abos
+  oder eines seiner Vorgänger zu, in das das Rechnungsdatum fällt. Mehrere
+  Abos desselben Produkts beim selben Empfänger nehmen sich die Positionen
+  nicht mehr gegenseitig weg. Solche Bezüge gelten als sicher, werden
+  automatisch bestätigt und tragen die Vorlage als Bemerkung. Einem Abo
+  außerhalb der Kette wird die Position nicht vorgeschlagen; ohne Platz
+  erscheint sie unter „Positionen ohne Abo“. Der Anker gilt nicht bei nur
+  vorgeschlagener Zuordnung, bei abweichendem Artikel und für Rechnungen aus
+  der Zeit vor dem Abo.
+- Abos & Lizenzen, Abrechnungslauf im Vorlagenblock (`MVP-1742`): Lizenzkonto
+  und Arbeitsmappe zeigen je Serienvorlage den Beleg der letzten Ausführung
+  und je zugeordnetem Abo das Lizenzjahr dieses Laufs mit Stand. „Beleg nicht
+  zugeordnet“ öffnet die Zuordnung der Periode.
+- Abos & Lizenzen, Anker in Belegdialog und Abgleichstafel (`MVP-1745`): Ein
+  Bezug aus der Serienvorlage gilt im Belegdialog und in der Periodenzeile als
+  sicherer Treffer; die Passung zeigt „laut Serienvorlage“. Die Tafel bietet
+  eine solche Rechnung bei der Periode des zugeordneten Abos an. Wer sie von
+  Hand einem anderen Abo zuordnet, bestätigt die Abweichung („gehört laut
+  Serienvorlage zu einem anderen Abo“).
 - Einstandspreis beim manuellen Eingang (`MVP-1709`): Buchungsformular im
   Lager und Scan-Eingang führen das optionale Feld „Einstandspreis je
   Einheit“ (Komma oder Punkt, je erfasster Einheit, gebucht je
@@ -75,6 +96,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Steuerregelmatrix: Satzart „Innergemeinschaftliche Lieferung“
   (`intra_community`, `MVP-1731`); ihr Hinweistext ersetzt den Standardhinweis
   bei Waren an EU-Unternehmen.
+
+### Geändert
+
+- Abos & Lizenzen (`MVP-1743`): Offene Perioden an eigenem Bestand heißen
+  „Eigener Bestand“ statt „offen“. Sie werden nie berechnet und tragen nur den
+  Einkauf des Laufzeitjahrs.
+- Audit (`MVP-1744`): Der tägliche Anbieterabgleich schreibt für das
+  Lebenszeichen `last_seen_at` eines Abos keine Audit-Zeile mehr; Änderungen
+  an Halter, Preis oder Laufzeit bleiben protokolliert.
 
 ### Behoben
 

@@ -159,6 +159,8 @@ final class PlanLinkProposer {
                 }
             }
         });
+        // Vorschläge fallen per Massenlöschung ohne Modell-Events.
+        app(\App\Services\Reselling\Register\ResaleRequestMemo::class)->forget(PlanAnchors::MEMO_PREFIX);
 
         return $result;
     }

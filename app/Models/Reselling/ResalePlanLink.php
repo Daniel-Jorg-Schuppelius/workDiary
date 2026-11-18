@@ -43,6 +43,13 @@ class ResalePlanLink extends Model {
 
     protected $table = 'resale_plan_links';
 
+    /** Der Vorlagenanker liegt je Request im Memo ({@see \App\Services\Reselling\Plan\PlanAnchors::verdict()}) — Zuordnungen ändern ihn. */
+    protected static function booted(): void {
+        $forget = static fn() => app(\App\Services\Reselling\Register\ResaleRequestMemo::class)->forget(\App\Services\Reselling\Plan\PlanAnchors::MEMO_PREFIX);
+        static::saved($forget);
+        static::deleted($forget);
+    }
+
     protected $fillable = [
         'organization_id',
         'subscription_id',

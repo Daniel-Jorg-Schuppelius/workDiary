@@ -85,6 +85,22 @@ class ResaleSubscription extends Model {
 
     protected $table = 'resale_subscriptions';
 
+    /** Der Vorlagenanker liegt je Request im Memo ({@see \App\Services\Reselling\Plan\PlanAnchors::verdict()}) — Abos (Vorgängerkette, Beginn) ändern ihn. */
+    protected static function booted(): void {
+        $forget = static fn() => app(\App\Services\Reselling\Register\ResaleRequestMemo::class)->forget(\App\Services\Reselling\Plan\PlanAnchors::MEMO_PREFIX);
+        static::saved($forget);
+        static::deleted($forget);
+    }
+
+    /**
+     * Der Anbieterabgleich stempelt täglich jedes Abo — kein Ereignis fürs Audit (MVP-1744).
+     *
+     * @return array<int, string>
+     */
+    protected function auditSilent(): array {
+        return ['last_seen_at'];
+    }
+
     /** @var array<string, mixed> */
     protected $attributes = [
         'currency' => 'EUR',
