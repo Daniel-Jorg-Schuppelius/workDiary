@@ -54,3 +54,14 @@ du … » et « Créer l’abonnement depuis la ligne » ouvre le dialogue avec
 article, quantité, début et prix issus de la facture. Le rattachement peut
 viser une période d’un autre abonnement du même destinataire — jamais une
 période d’un autre client.
+
+**Début de facturation du compte portail :** lorsqu'un sous-utilisateur
+facture ses domaines via le portail du fournisseur, vous ne facturez que
+depuis l'existence de ce sous-compte. Le classeur signale les années de
+licence ouvertes qui ont commencé avant, avec le début du compte. « Reprendre
+le début de facturation » les clôture en une étape ; elles portent alors la
+mention « avant le début de facturation » et ne comptent plus comme ouvertes.
+Il ne s'agit pas d'un abandon de créance, car sans facture il n'y avait pas de
+créance. Les années de licence commencées après le début du compte et celles
+partiellement facturées restent inchangées ; chaque période peut être rouverte
+individuellement.

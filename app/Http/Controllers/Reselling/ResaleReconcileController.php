@@ -21,7 +21,7 @@ use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\{PlanLinkEditor, PlanSection};
-use App\Services\Reselling\Register\{LineFit, LinkProposer, PeriodLinker, RecipientReconciler, ReconcileBoard};
+use App\Services\Reselling\Register\{LineFit, LinkProposer, PeriodLinker, ProviderBillingStart, RecipientReconciler, ReconcileBoard};
 use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -84,7 +84,7 @@ class ResaleReconcileController extends Controller {
         return redirect()->route('finance.resale.reconcile.show', $first['customer']);
     }
 
-    public function show(Request $request, Customer $customer): View {
+    public function show(Request $request, Customer $customer, ProviderBillingStart $billingStart): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $focus = $request->string('focus')->toString();
         $focus = in_array($focus, ReconcileBoard::FOCUS, true) ? $focus : '';
@@ -122,7 +122,24 @@ class ResaleReconcileController extends Controller {
             'plan' => $this->planSection->build($organization, $result['subscriptions'], [(int) $customer->id]),
             'planCandidates' => PlanSection::candidates($result['subscriptions']),
             'workspace' => $workspace,
+            // Offene Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746).
+            'billingStart' => $billingStart->candidates($customer),
         ] + $result);
+    }
+
+    /** Dialog: Abrechnungsbeginn des Portalkontos übernehmen — die offenen Lizenzjahre davor gesammelt abschließen (MVP-1746). */
+    public function billingStartCreate(Customer $customer, ProviderBillingStart $billingStart): View {
+        $this->assertSameOrganization($customer);
+
+        return view('finance.resale._billing_start_dialog', ['customer' => $customer, 'groups' => $billingStart->candidates($customer)]);
+    }
+
+    public function billingStartStore(Customer $customer, ProviderBillingStart $billingStart): RedirectResponse {
+        $this->assertSameOrganization($customer);
+        $done = $billingStart->apply($customer, $this->authUser()->id);
+
+        return redirect()->route('finance.resale.reconcile.show', $customer)
+            ->with($done === 0 ? 'warning' : 'success', trans_choice('resale.billing_start.flash', $done, ['count' => $done]));
     }
 
     /**

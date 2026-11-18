@@ -53,3 +53,14 @@ registro (l’export del fornitore non lo conosce): la riga prodotto dice
 dialogo con articolo, quantità, inizio e prezzo presi dalla fattura.
 L’assegnazione può colpire un periodo di un altro abbonamento dello stesso
 destinatario — mai un periodo di un altro cliente.
+
+**Inizio della fatturazione dell'account del portale:** se un sottoutente
+fattura i propri domini tramite il portale del fornitore, Lei fattura solo da
+quando esiste quel sottoaccount. La cartella di lavoro segnala gli anni di
+licenza aperti iniziati prima, insieme all'inizio dell'account. «Applica
+inizio fatturazione» li chiude in un solo passaggio; da quel momento sono
+indicati come «prima dell'inizio della fatturazione» e non contano più come
+aperti. Non è una rinuncia al credito, perché senza fattura non c'era alcun
+credito. Gli anni di licenza iniziati dopo l'inizio dell'account e quelli
+fatturati in parte restano invariati; ogni periodo può essere riaperto
+singolarmente.

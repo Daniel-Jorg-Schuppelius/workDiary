@@ -52,3 +52,12 @@ ihn nicht): die Produktzeile sagt „Position ohne Abo ab …", und „Abo aus
 Position anlegen" öffnet den Abo-Dialog mit Artikel, Menge, Beginn und Preis
 aus der Rechnung. Die Zuordnung darf eine Periode eines anderen Abos
 desselben Empfängers treffen — nie eine Periode eines fremden Kunden.
+
+**Abrechnungsbeginn des Portalkontos:** Rechnet ein Subuser seine Domains
+über das Anbieterportal ab, berechnen Sie erst, seit es dieses Unterkonto
+gibt. Offene Lizenzjahre, die vorher begannen, meldet die Arbeitsmappe mit dem
+Kontobeginn. „Abrechnungsbeginn übernehmen“ schließt sie in einem Schritt ab;
+sie heißen dann „vor Abrechnungsbeginn“ und zählen nicht mehr als offen. Das
+ist kein Forderungsverzicht, denn ohne Rechnung gab es keine Forderung.
+Lizenzjahre, die nach dem Kontobeginn begannen, und teilweise berechnete
+bleiben unberührt; jede Periode lässt sich einzeln wieder öffnen.

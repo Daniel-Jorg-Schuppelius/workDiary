@@ -1496,6 +1496,18 @@ return [
         'overcovered_hint' => 'Mehr Rechnungsbezüge als Lizenzen — einen Bezug lösen oder eine Abtretung an den eigenen Halter zurücknehmen.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    'billing_start' => [
+        'title' => 'Portalkonto „:account“ besteht seit :date',
+        'hint' => '{1} :count offenes Lizenzjahr begann davor und wurde nie über das Portal berechnet.|[2,*] :count offene Lizenzjahre begannen davor und wurden nie über das Portal berechnet.',
+        'action' => 'Abrechnungsbeginn übernehmen',
+        'dialog_title' => 'Abrechnungsbeginn übernehmen: :customer',
+        'dialog_hint' => 'Diese Lizenzjahre begannen, bevor es das Portalkonto gab. Sie werden mit dem Kontobeginn als Grund abgeschlossen und zählen nicht mehr als offen. Das ist kein Forderungsverzicht: Ohne Rechnung gab es keine Forderung. Jede Periode lässt sich einzeln wieder öffnen.',
+        'submit' => 'Lizenzjahre abschließen',
+        'reason' => 'Vor Abrechnungsbeginn: Portalkonto :account besteht seit :date',
+        'label' => 'vor Abrechnungsbeginn',
+        'flash' => '{0} Keine offene Periode vor dem Kontobeginn.|{1} :count Periode vor dem Abrechnungsbeginn abgeschlossen.|[2,*] :count Perioden vor dem Abrechnungsbeginn abgeschlossen.',
+        'empty' => 'Keine offene Periode vor dem Kontobeginn.',
+    ],
     'takeover' => [
         'action' => 'Übernahme',
         'action_from' => 'Übernahme durch :customer ab hier',

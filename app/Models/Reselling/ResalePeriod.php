@@ -320,6 +320,16 @@ class ResalePeriod extends Model {
         return $this->status === PeriodStatus::Waived && $this->decided_by_user_id === null && $prefix !== '' && str_starts_with((string) $this->waived_reason, $prefix);
     }
 
+    /**
+     * Lizenzjahr vor dem Abrechnungsbeginn des Portalkontos ({@see \App\Services\Reselling\Register\ProviderBillingStart}):
+     * abgeschlossen mit dessen Grund — nie berechnet und nie geschuldet, kein Forderungsverzicht.
+     */
+    public function isBeforeBillingStart(): bool {
+        $prefix = rtrim(explode(':account', (string) __('resale.billing_start.reason'))[0]);
+
+        return $this->status === PeriodStatus::Waived && $prefix !== '' && str_starts_with((string) $this->waived_reason, $prefix);
+    }
+
     /** Steht in einem Rechnungsentwurf, der noch nicht als Rechnung zurückkam: nichts fehlt, es ist in Arbeit. */
     public function isInDraft(): bool {
         return (string) $this->draft_reference !== '' && in_array($this->status, [PeriodStatus::Open, PeriodStatus::Partial], true);
@@ -336,6 +346,7 @@ class ResalePeriod extends Model {
     public function statusLabel(): string {
         return match (true) {
             $this->isOrderChange() => (string) __('resale.link.order_change'),
+            $this->isBeforeBillingStart() => (string) __('resale.billing_start.label'),
             $this->isInDraft() => (string) __('resale.draft.in_draft'),
             $this->isOwnHolding() => (string) __('resale.holder.own'),
             default => $this->status->label(),
@@ -344,7 +355,7 @@ class ResalePeriod extends Model {
 
     public function statusTone(): string {
         return match (true) {
-            $this->isOrderChange(), $this->isInDraft() => 'info',
+            $this->isOrderChange(), $this->isInDraft(), $this->isBeforeBillingStart() => 'info',
             $this->isOwnHolding() => 'neutral',
             default => $this->status->tone(),
         };

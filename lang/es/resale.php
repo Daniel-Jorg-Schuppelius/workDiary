@@ -1496,6 +1496,18 @@ return [
         'overcovered_hint' => 'Más vínculos de factura que licencias: deshacer un vínculo o revertir una cesión al propio titular.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    'billing_start' => [
+        'title' => 'La cuenta del portal «:account» existe desde el :date',
+        'hint' => '{1} :count año de licencia abierto empezó antes y nunca se facturó a través del portal.|[2,*] :count años de licencia abiertos empezaron antes y nunca se facturaron a través del portal.',
+        'action' => 'Aplicar inicio de facturación',
+        'dialog_title' => 'Aplicar inicio de facturación: :customer',
+        'dialog_hint' => 'Estos años de licencia empezaron antes de que existiera la cuenta del portal. Se cierran con el inicio de la cuenta como motivo y dejan de contar como abiertos. No es una renuncia a un crédito: sin factura no había crédito. Cada periodo puede reabrirse individualmente.',
+        'submit' => 'Cerrar años de licencia',
+        'reason' => 'Antes del inicio de facturación: la cuenta del portal :account existe desde el :date',
+        'label' => 'antes del inicio de facturación',
+        'flash' => '{0} Ningún periodo abierto antes del inicio de la cuenta.|{1} :count periodo anterior al inicio de facturación cerrado.|[2,*] :count periodos anteriores al inicio de facturación cerrados.',
+        'empty' => 'Ningún periodo abierto antes del inicio de la cuenta.',
+    ],
     'takeover' => [
         'action' => 'Traspaso',
         'action_from' => 'Traspaso a :customer desde aquí',

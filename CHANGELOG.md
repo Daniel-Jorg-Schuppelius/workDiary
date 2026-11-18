@@ -31,6 +31,13 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   eine solche Rechnung bei der Periode des zugeordneten Abos an. Wer sie von
   Hand einem anderen Abo zuordnet, bestätigt die Abweichung („gehört laut
   Serienvorlage zu einem anderen Abo“).
+- Abos & Lizenzen, Abrechnungsbeginn des Portalkontos (`MVP-1746`): Rechnet
+  ein Subuser seine Domains über das Anbieterportal ab, meldet die
+  Arbeitsmappe die offenen Lizenzjahre, die vor dem Beginn dieses Unterkontos
+  begannen. „Abrechnungsbeginn übernehmen“ schließt sie in einem Schritt mit
+  dem Kontobeginn als Grund ab; sie heißen „vor Abrechnungsbeginn“ und zählen
+  nicht mehr als offen. Lizenzjahre nach dem Kontobeginn und teilweise
+  berechnete bleiben, jede Periode lässt sich wieder öffnen.
 - Einstandspreis beim manuellen Eingang (`MVP-1709`): Buchungsformular im
   Lager und Scan-Eingang führen das optionale Feld „Einstandspreis je
   Einheit“ (Komma oder Punkt, je erfasster Einheit, gebucht je

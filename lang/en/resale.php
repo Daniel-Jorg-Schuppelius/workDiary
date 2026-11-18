@@ -1496,6 +1496,18 @@ return [
         'overcovered_hint' => 'More invoice links than licences — remove a link or return an assignment to the own holder.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    'billing_start' => [
+        'title' => 'Portal account “:account” exists since :date',
+        'hint' => '{1} :count open license year started before that and was never invoiced through the portal.|[2,*] :count open license years started before that and were never invoiced through the portal.',
+        'action' => 'Apply billing start',
+        'dialog_title' => 'Apply billing start: :customer',
+        'dialog_hint' => 'These license years started before the portal account existed. They are closed with the account start as the reason and no longer count as open. This is not a waiver of a claim: without an invoice there was no claim. Each period can be reopened individually.',
+        'submit' => 'Close license years',
+        'reason' => 'Before billing start: portal account :account exists since :date',
+        'label' => 'before billing start',
+        'flash' => '{0} No open period before the account start.|{1} :count period before the billing start closed.|[2,*] :count periods before the billing start closed.',
+        'empty' => 'No open period before the account start.',
+    ],
     'takeover' => [
         'action' => 'Takeover',
         'action_from' => 'Takeover by :customer from here',

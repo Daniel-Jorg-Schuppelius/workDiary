@@ -1496,6 +1496,18 @@ return [
         'overcovered_hint' => 'Plus de liens de facture que de licences — supprimer un lien ou reprendre une cession au propre détenteur.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    'billing_start' => [
+        'title' => 'Le compte portail « :account » existe depuis le :date',
+        'hint' => '{1} :count année de licence ouverte a commencé avant et n’a jamais été facturée via le portail.|[2,*] :count années de licence ouvertes ont commencé avant et n’ont jamais été facturées via le portail.',
+        'action' => 'Reprendre le début de facturation',
+        'dialog_title' => 'Reprendre le début de facturation : :customer',
+        'dialog_hint' => 'Ces années de licence ont commencé avant l’existence du compte portail. Elles sont clôturées avec le début du compte comme motif et ne comptent plus comme ouvertes. Il ne s’agit pas d’un abandon de créance : sans facture, il n’y avait pas de créance. Chaque période peut être rouverte individuellement.',
+        'submit' => 'Clôturer les années de licence',
+        'reason' => 'Avant le début de facturation : le compte portail :account existe depuis le :date',
+        'label' => 'avant le début de facturation',
+        'flash' => '{0} Aucune période ouverte avant le début du compte.|{1} :count période antérieure au début de facturation clôturée.|[2,*] :count périodes antérieures au début de facturation clôturées.',
+        'empty' => 'Aucune période ouverte avant le début du compte.',
+    ],
     'takeover' => [
         'action' => 'Reprise',
         'action_from' => 'Reprise par :customer à partir d’ici',

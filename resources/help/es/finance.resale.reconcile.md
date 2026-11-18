@@ -54,3 +54,13 @@ desde …» y «Crear suscripción desde la línea» abre el diálogo con artíc
 cantidad, inicio y precio tomados de la factura. La asignación puede
 dirigirse a un periodo de otra suscripción del mismo destinatario — nunca a
 un periodo de otro cliente.
+
+**Inicio de facturación de la cuenta del portal:** si un subusuario factura
+sus dominios a través del portal del proveedor, usted solo factura desde que
+existe esa subcuenta. El cuaderno de trabajo indica los años de licencia
+abiertos que empezaron antes, junto con el inicio de la cuenta. «Aplicar
+inicio de facturación» los cierra en un solo paso; pasan a llamarse «antes
+del inicio de facturación» y dejan de contar como abiertos. No es una renuncia
+a un crédito, porque sin factura no había crédito. Los años de licencia que
+empezaron después del inicio de la cuenta y los facturados parcialmente no se
+tocan; cada periodo puede reabrirse individualmente.

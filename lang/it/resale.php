@@ -1496,6 +1496,18 @@ return [
         'overcovered_hint' => 'Più collegamenti di fattura che licenze: scollegare un riferimento o revocare una cessione al proprio titolare.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    'billing_start' => [
+        'title' => 'L’account del portale «:account» esiste dal :date',
+        'hint' => '{1} :count anno di licenza aperto è iniziato prima e non è mai stato fatturato tramite il portale.|[2,*] :count anni di licenza aperti sono iniziati prima e non sono mai stati fatturati tramite il portale.',
+        'action' => 'Applica inizio fatturazione',
+        'dialog_title' => 'Applica inizio fatturazione: :customer',
+        'dialog_hint' => 'Questi anni di licenza sono iniziati prima che esistesse l’account del portale. Vengono chiusi con l’inizio dell’account come motivo e non contano più come aperti. Non è una rinuncia al credito: senza fattura non c’era alcun credito. Ogni periodo può essere riaperto singolarmente.',
+        'submit' => 'Chiudi gli anni di licenza',
+        'reason' => 'Prima dell’inizio della fatturazione: l’account del portale :account esiste dal :date',
+        'label' => 'prima dell’inizio della fatturazione',
+        'flash' => '{0} Nessun periodo aperto prima dell’inizio dell’account.|{1} :count periodo precedente all’inizio della fatturazione chiuso.|[2,*] :count periodi precedenti all’inizio della fatturazione chiusi.',
+        'empty' => 'Nessun periodo aperto prima dell’inizio dell’account.',
+    ],
     'takeover' => [
         'action' => 'Subentro',
         'action_from' => 'Subentro di :customer da qui',

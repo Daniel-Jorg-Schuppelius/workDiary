@@ -53,3 +53,12 @@ product row says "Line without subscription from …" and "Create subscription
 from line" opens the subscription dialog with article, quantity, start and
 price taken from the invoice. Assignment may target a period of another
 subscription of the same recipient — never a period of a different customer.
+
+**Billing start of the portal account:** If a sub-user bills their domains
+through the provider portal, you only invoice since that sub-account exists.
+The workbook reports open license years that started earlier, together with
+the account start. “Apply billing start” closes them in one step; they are
+then labelled “before billing start” and no longer count as open. This is not
+a waiver of a claim, because without an invoice there was no claim. License
+years that started after the account start and partially invoiced ones remain
+untouched; each period can be reopened individually.
