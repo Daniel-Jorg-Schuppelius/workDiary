@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{ImportStatus, LinkOrigin, PeriodStatus, SubscriptionProvider};
+use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleImport, ResalePeriod, ResaleProviderSupplier, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
@@ -39,7 +40,7 @@ use Illuminate\Support\Facades\Cache;
  *
  * @phpstan-type Task array{group: string, key: string, tone: string, icon: string, title: string, detail: string|null, count: int, url: string, dialog: bool, manage: bool}
  * @phpstan-type ImportState array{provider: SubscriptionProvider, last: ResaleImport|null, age: int|null, stale: bool, retired: bool}
- * @phpstan-type Counters array{active: int, open: int, open_amounts: list<array{amount: string, currency: string}>, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, allocation_conflicts: int, link_findings: array<string, int>, plan_findings: array<string, int>, unbilled_licenses: int, provider_prices: int, renewals: int}
+ * @phpstan-type Counters array{active: int, open: int, open_amounts: list<array{amount: string, currency: string}>, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, allocation_conflicts: int, link_findings: array<string, int>, plan_findings: array<string, int>, unbilled_licenses: int, provider_prices: int, renewals: int, billing_start: array{count: int, customer_id: int|null}}
  */
 final class ResaleOverview {
     /** Ab diesem Alter gilt der Anbieterstand als veraltet (Übersicht und Digest). */
@@ -68,6 +69,7 @@ final class ResaleOverview {
         private readonly InvoiceMirror $mirror,
         private readonly ProviderSuppliers $suppliers,
         private readonly ResalePriceCheck $prices,
+        private readonly ProviderBillingStart $billingStart,
     ) {}
 
     /**
@@ -92,6 +94,11 @@ final class ResaleOverview {
         $this->task($tasks, 'berechnen', 'link_findings', 'warning', 'link_off', (int) array_sum($linkFindings), $this->kindDetail($linkFindings, 'resale.account.finding.'), route('finance.resale.accounts.index'));
         $this->task($tasks, 'berechnen', 'allocation_conflicts', 'warning', 'call_split', $counters['allocation_conflicts'], null, route('finance.resale.accounts.index'));
         $this->task($tasks, 'berechnen', 'unbilled_licenses', 'warning', 'key_off', $counters['unbilled_licenses'], (string) __('resale.overview.task.unbilled_licenses_detail', ['days' => LicenseInvoiceLinks::UNBILLED_DAYS]), route('finance.resale.licenses.index', ['status' => 'sold', 'unbilled' => 1]));
+        // Lizenzjahre vor dem Beginn eines Portalkontos (MVP-1746): gesammelt abschließen, in der Mappe des Kunden.
+        $billingCustomer = $counters['billing_start']['customer_id'] !== null ? Customer::query()->find($counters['billing_start']['customer_id']) : null;
+        if ($billingCustomer !== null) {
+            $this->task($tasks, 'berechnen', 'billing_start', 'neutral', 'event_available', $counters['billing_start']['count'], (string) __('resale.overview.task.billing_start_detail', ['customer' => $billingCustomer->name]), route('finance.resale.reconcile.show', $billingCustomer), manage: true);
+        }
         // Zuordnen — was das Register noch nicht erklären kann
         $this->task($tasks, 'zuordnen', 'unassigned', 'warning', 'inbox', $counters['unassigned'], null, route('finance.resale.inbox'), manage: true);
         $this->task($tasks, 'zuordnen', 'unlinked', 'warning', 'playlist_add', $counters['unlinked'], (string) __('resale.overview.task.unlinked_detail'), route('finance.resale.periods.index', ['unlinked' => 1]), manage: true);
@@ -131,9 +138,9 @@ final class ResaleOverview {
      * @return Counters
      */
     private function counters(Organization $organization, CarbonImmutable $reference): array {
-        $key = ResaleCacheStamp::key('overview-counters', 2, (int) $organization->id, $reference->toDateString());
+        $key = ResaleCacheStamp::key('overview-counters', 3, (int) $organization->id, $reference->toDateString());
         $cached = Cache::get($key);
-        if (is_array($cached) && isset($cached['open'], $cached['open_amounts'], $cached['link_findings'], $cached['plan_findings'], $cached['provider_prices']) && is_array($cached['open_amounts'])) {
+        if (is_array($cached) && isset($cached['open'], $cached['open_amounts'], $cached['link_findings'], $cached['plan_findings'], $cached['provider_prices'], $cached['billing_start']) && is_array($cached['open_amounts'])) {
             /** @var Counters $cached */
             return $cached;
         }
@@ -196,6 +203,7 @@ final class ResaleOverview {
             'plan_findings' => $this->plans->availableFor($organization) ? $this->planAudit->countByKind($organization) : [],
             'unbilled_licenses' => $this->licenseLinks->unbilledCount($organization, $reference),
             'provider_prices' => $this->prices->providerDeviations()->count(),
+            'billing_start' => $this->billingStart->overview(),
             'renewals' => (int) ($this->renewals->build($reference, $reference->addDays(self::RENEWAL_DAYS), $reference)['buckets'][self::RENEWAL_DAYS] ?? 0),
         ];
     }

@@ -16,6 +16,7 @@ use App\Enums\Reselling\{PeriodStatus, SubscriptionKind};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Abrechnungsbeginn eines Portalkontos (MVP-1746): Domains, die ein Subuser
@@ -37,7 +38,45 @@ final class ProviderBillingStart {
      * @return list<BillingStart>
      */
     public function candidates(Customer $customer): array {
-        $subscriptions = ResaleSubscription::query()->forCustomer($customer)
+        return $this->groups(ResaleSubscription::query()->forCustomer($customer));
+    }
+
+    /**
+     * Das Portalkonto dieses Abos mit seinen Perioden vor dem Kontobeginn — null, wenn es keine gibt (Hinweis im Abo-Detail).
+     *
+     * @return BillingStart|null
+     */
+    public function forSubscription(ResaleSubscription $subscription): ?array {
+        return $this->groups(ResaleSubscription::query()->whereKey($subscription->getKey()))[0] ?? null;
+    }
+
+    /**
+     * Über alle Kunden: Zahl der Perioden und der Kunde mit den meisten — Aufgabe im Überblick.
+     *
+     * @return array{count: int, customer_id: int|null}
+     */
+    public function overview(): array {
+        /** @var array<int, int> $byCustomer */
+        $byCustomer = [];
+        foreach ($this->groups(ResaleSubscription::query()->with(['customer', 'foreignCustomer.customer'])) as $group) {
+            foreach ($group['periods'] as $period) {
+                $customerId = $period->subscription->billedTo()?->id;
+                if ($customerId !== null) {
+                    $byCustomer[(int) $customerId] = ($byCustomer[(int) $customerId] ?? 0) + 1;
+                }
+            }
+        }
+        arsort($byCustomer);
+
+        return ['count' => (int) array_sum($byCustomer), 'customer_id' => array_key_first($byCustomer)];
+    }
+
+    /**
+     * @param  Builder<ResaleSubscription>  $query
+     * @return list<BillingStart>
+     */
+    private function groups(Builder $query): array {
+        $subscriptions = $query
             ->where('is_own_holding', false)
             ->where('kind', SubscriptionKind::Domain->value)
             ->whereNotNull('domain_projection_id')

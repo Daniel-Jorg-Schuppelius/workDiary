@@ -1393,6 +1393,8 @@ return [
             'task' => 'Tarea',
         ],
         'task' => [
+            'billing_start' => 'Años de licencia antes del inicio de facturación',
+            'billing_start_detail' => 'Cuenta del portal más reciente que los dominios: cerrarlos juntos en :customer',
             'open' => 'Periodos vencidos sin factura',
             'open_detail' => 'abierto :amount · vencido desde hace más de :days días',
             'open_detail_grace' => 'vencido desde hace más de :days días',
@@ -1497,6 +1499,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'billing_start' => [
+        'all_domains' => 'La acción se aplica a todos los dominios de :customer.',
         'title' => 'La cuenta del portal «:account» existe desde el :date',
         'hint' => '{1} :count año de licencia abierto empezó antes y nunca se facturó a través del portal.|[2,*] :count años de licencia abiertos empezaron antes y nunca se facturaron a través del portal.',
         'action' => 'Aplicar inicio de facturación',

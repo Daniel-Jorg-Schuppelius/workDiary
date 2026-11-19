@@ -1393,6 +1393,8 @@ return [
             'task' => 'Task',
         ],
         'task' => [
+            'billing_start' => 'License years before billing start',
+            'billing_start_detail' => 'Portal account younger than the domains — close them together at :customer',
             'open' => 'Due periods without invoice',
             'open_detail' => 'open :amount · due for more than :days days',
             'open_detail_grace' => 'due for more than :days days',
@@ -1497,6 +1499,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'billing_start' => [
+        'all_domains' => 'The action applies to all domains of :customer.',
         'title' => 'Portal account “:account” exists since :date',
         'hint' => '{1} :count open license year started before that and was never invoiced through the portal.|[2,*] :count open license years started before that and were never invoiced through the portal.',
         'action' => 'Apply billing start',

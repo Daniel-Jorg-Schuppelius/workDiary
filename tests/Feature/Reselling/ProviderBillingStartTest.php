@@ -90,6 +90,16 @@ class ProviderBillingStartTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.reconcile.billing-start.create', $this->partner))->assertOk()
             ->assertSee('fruehstart-beispiel.de')->assertDontSee('spaetstart-beispiel.de')->assertDontSee('direkt-beispiel.de');
 
+        // Einstiege außerhalb der Mappe: Aufgabe im Überblick und Hinweis im Abo-Detail der Domain.
+        $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()
+            ->assertSee(__('resale.overview.task.billing_start'))
+            ->assertSee(route('finance.resale.reconcile.show', $this->partner), false);
+        $this->actingAs($admin)->get(route('finance.resale.show', $early->sqid))->assertOk()
+            ->assertSee(route('finance.resale.reconcile.billing-start.create', $this->partner), false);
+        $this->actingAs($admin)->get(route('finance.resale.show', $late->sqid))->assertOk()
+            ->assertDontSee(__('resale.billing_start.action'));
+        $this->assertSame(['count' => 2, 'customer_id' => $this->partner->id], app(ProviderBillingStart::class)->overview());
+
         $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner))
             ->assertRedirect(route('finance.resale.reconcile.show', $this->partner))
             ->assertSessionHas('success', trans_choice('resale.billing_start.flash', 2, ['count' => 2]));
@@ -109,6 +119,7 @@ class ProviderBillingStartTest extends TestCase {
         $this->assertSame([], app(ProviderBillingStart::class)->candidates($this->partner));
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->partner))->assertOk()->assertDontSee(__('resale.billing_start.action'));
         $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner))->assertSessionHas('warning');
+        $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()->assertDontSee(__('resale.overview.task.billing_start'));
 
         // Einzeln wieder öffnen bleibt möglich.
         $this->actingAs($admin)->post(route('finance.resale.periods.reopen', $closed->sqid))->assertRedirect();

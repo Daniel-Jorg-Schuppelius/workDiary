@@ -163,6 +163,19 @@
             </x-card>
         </div>
 
+        @if ($billingStart !== null && ($billedTo = $subscription->billedTo()) !== null)
+            {{-- Portalkonto jünger als die Domain (MVP-1746): die Sammelaktion gilt für alle Domains des Kunden. --}}
+            <div role="status" class="alert alert-info mb-4 text-sm">
+                <div>
+                    <span class="font-medium">{{ __('resale.billing_start.title', ['account' => $billingStart['account'], 'date' => $billingStart['since']->fdate()]) }}</span>
+                    <span class="block text-xs">{{ trans_choice('resale.billing_start.hint', count($billingStart['periods']), ['count' => count($billingStart['periods'])]) }} {{ __('resale.billing_start.all_domains', ['customer' => $billedTo->name]) }}</span>
+                </div>
+                @if ($canManage)
+                    <x-icon-btn icon="event_available" tone="primary" size="sm" data-entry-modal-trigger :href="route('finance.resale.reconcile.billing-start.create', $billedTo)" show-label>{{ __('resale.billing_start.action') }}</x-icon-btn>
+                @endif
+            </div>
+        @endif
+
         <x-card :title="__('resale.section.periods')" padding="p-0">
             <div class="flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm">
                 <span class="text-base-content/70">{{ trans_choice('resale.periods.count', $subscription->periods->count(), ['count' => $subscription->periods->count()]) }}</span>

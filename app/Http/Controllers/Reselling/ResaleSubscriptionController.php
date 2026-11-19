@@ -30,7 +30,7 @@ use App\Services\Reselling\Contracts\DomainHolderWriter;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Plan\{PlanLine, PlanLinkEditor, RecurringPlans};
-use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, RecipientReconciler, ResaleOverview};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ProviderBillingStart, RecipientReconciler, ResaleOverview};
 use App\Support\{CsvExport, ErrorText, Sqid, UrlSafety};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\DateTimeFormat;
@@ -159,6 +159,8 @@ class ResaleSubscriptionController extends Controller {
             'today' => $today,
             'assignedNow' => $subscription->assignments->isNotEmpty() ? $subscription->assignedQuantityOn($today) : 0,
             'openPeriods' => $openPeriods,
+            // Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746): Hinweis mit Weg zur Sammelaktion des Kunden.
+            'billingStart' => app(ProviderBillingStart::class)->forSubscription($subscription),
             'invoices' => $this->recipientInvoices($organization, $subscription, $openPeriods->first()),
             // Vertragsakte (079) nur verlinken, wenn Modul und Recht sie öffnen können.
             'contractLink' => $subscription->contract !== null && $this->contractsEnabled() && Gate::allows('view', $subscription->contract) ? route('contracts.show', $subscription->contract) : null,

@@ -1393,6 +1393,8 @@ return [
             'task' => 'Tâche',
         ],
         'task' => [
+            'billing_start' => 'Années de licence avant le début de facturation',
+            'billing_start_detail' => 'Compte portail plus récent que les domaines — à clôturer ensemble chez :customer',
             'open' => 'Périodes échues sans facture',
             'open_detail' => 'ouvert :amount · échu depuis plus de :days jours',
             'open_detail_grace' => 'échu depuis plus de :days jours',
@@ -1497,6 +1499,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'billing_start' => [
+        'all_domains' => 'L’action vaut pour tous les domaines de :customer.',
         'title' => 'Le compte portail « :account » existe depuis le :date',
         'hint' => '{1} :count année de licence ouverte a commencé avant et n’a jamais été facturée via le portail.|[2,*] :count années de licence ouvertes ont commencé avant et n’ont jamais été facturées via le portail.',
         'action' => 'Reprendre le début de facturation',

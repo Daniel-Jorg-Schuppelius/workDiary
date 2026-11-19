@@ -1393,6 +1393,8 @@ return [
             'task' => 'Attività',
         ],
         'task' => [
+            'billing_start' => 'Anni di licenza prima dell’inizio della fatturazione',
+            'billing_start_detail' => 'Account del portale più recente dei domini: chiuderli insieme presso :customer',
             'open' => 'Periodi scaduti senza fattura',
             'open_detail' => 'aperto :amount · scaduto da più di :days giorni',
             'open_detail_grace' => 'scaduto da più di :days giorni',
@@ -1497,6 +1499,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'billing_start' => [
+        'all_domains' => 'L’azione vale per tutti i domini di :customer.',
         'title' => 'L’account del portale «:account» esiste dal :date',
         'hint' => '{1} :count anno di licenza aperto è iniziato prima e non è mai stato fatturato tramite il portale.|[2,*] :count anni di licenza aperti sono iniziati prima e non sono mai stati fatturati tramite il portale.',
         'action' => 'Applica inizio fatturazione',

@@ -1393,6 +1393,8 @@ return [
             'task' => 'Aufgabe',
         ],
         'task' => [
+            'billing_start' => 'Lizenzjahre vor Abrechnungsbeginn',
+            'billing_start_detail' => 'Portalkonto jünger als die Domains — bei :customer gesammelt abschließen',
             'open' => 'Fällige Perioden ohne Rechnung',
             'open_detail' => 'offen :amount · fällig seit mehr als :days Tagen',
             'open_detail_grace' => 'fällig seit mehr als :days Tagen',
@@ -1497,6 +1499,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'billing_start' => [
+        'all_domains' => 'Die Aktion gilt für alle Domains von :customer.',
         'title' => 'Portalkonto „:account“ besteht seit :date',
         'hint' => '{1} :count offenes Lizenzjahr begann davor und wurde nie über das Portal berechnet.|[2,*] :count offene Lizenzjahre begannen davor und wurden nie über das Portal berechnet.',
         'action' => 'Abrechnungsbeginn übernehmen',
