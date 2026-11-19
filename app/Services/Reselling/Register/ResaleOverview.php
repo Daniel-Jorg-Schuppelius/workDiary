@@ -74,7 +74,7 @@ final class ResaleOverview {
     ) {}
 
     /**
-     * @return array{summary: array{active: int, open: int, open_amount: string, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, findings: int, findings_parts: array{links: int, plans: int, allocations: int}}, groups: list<string>, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
+     * @return array{summary: array{active: int, open: int, open_amount: string, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, findings: int, findings_parts: array{links: int, plans: int, allocations: int}, findings_url: string}, groups: list<string>, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
      */
     public function build(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -95,7 +95,7 @@ final class ResaleOverview {
         // Prüffälle stehen in der Arbeitsmappe des Empfängers (MVP-1749); ohne Empfänger bleibt das Lizenzkonto.
         $findingsCustomer = $counters['link_findings_customer'] !== null ? Customer::query()->find($counters['link_findings_customer']) : null;
         $this->task($tasks, 'berechnen', 'link_findings', 'warning', 'link_off', (int) array_sum($linkFindings), $this->kindDetail($linkFindings, 'resale.account.finding.'), $findingsCustomer !== null ? route('finance.resale.reconcile.show', $findingsCustomer) . '#findings' : route('finance.resale.accounts.index'));
-        $this->task($tasks, 'berechnen', 'allocation_conflicts', 'warning', 'call_split', $counters['allocation_conflicts'], null, route('finance.resale.accounts.index'));
+        $this->task($tasks, 'berechnen', 'allocation_conflicts', 'warning', 'call_split', $counters['allocation_conflicts'], null, route('finance.resale.accounts.index', ['show' => 'conflicts']));
         $this->task($tasks, 'berechnen', 'unbilled_licenses', 'warning', 'key_off', $counters['unbilled_licenses'], (string) __('resale.overview.task.unbilled_licenses_detail', ['days' => LicenseInvoiceLinks::UNBILLED_DAYS]), route('finance.resale.licenses.index', ['status' => 'sold', 'unbilled' => 1]));
         // Lizenzjahre vor dem Beginn eines Portalkontos (MVP-1746): gesammelt abschließen, in der Mappe des Kunden.
         $billingCustomer = $counters['billing_start']['customer_id'] !== null ? Customer::query()->find($counters['billing_start']['customer_id']) : null;
@@ -130,6 +130,8 @@ final class ResaleOverview {
                 'unlinked' => $counters['unlinked'],
                 'findings' => (int) array_sum($linkFindings) + (int) array_sum($planFindings) + $counters['allocation_conflicts'],
                 'findings_parts' => ['links' => (int) array_sum($linkFindings), 'plans' => (int) array_sum($planFindings), 'allocations' => $counters['allocation_conflicts']],
+                // Die Kachel führt in die Arbeitsliste ihres ersten Bestandteils mit Fällen.
+                'findings_url' => collect($tasks)->first(static fn(array $task): bool => in_array($task['key'], ['link_findings', 'allocation_conflicts', 'plan_findings'], true))['url'] ?? route('finance.resale.accounts.index'),
             ],
             'groups' => self::GROUPS,
             'tasks' => $tasks,
