@@ -3336,6 +3336,9 @@ Route::middleware('auth')->group(function () {
                 Route::get('inbox', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'inbox'])->name('inbox');
                 Route::get('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignCreate'])->name('inbox.assign');
                 Route::post('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignStore'])->name('inbox.store');
+                // Arbeitsliste der Abo-Ketten (MVP-1755) — fester Pfad vor {subscription}.
+                Route::get('ketten/liste', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'chainIndex'])->name('chain.index');
+                Route::post('ketten/liste', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'chainBulk'])->name('chain.bulk');
                 // Sammelzuordnung des Halters aus der Liste (Nachbesserung 2026-10-27) — fester Pfad, {subscription} ist einsegmentig.
                 Route::get('liste/sammel/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'bulkAssignCreate'])->name('subscriptions.bulk.assign.create');
                 Route::post('liste/sammel/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'bulkAssignStore'])->name('subscriptions.bulk.assign');

@@ -1397,7 +1397,7 @@ return [
             'billing_start' => 'Années de licence avant le début de facturation',
             'billing_start_detail' => 'Compte portail plus récent que les domaines — à clôturer ensemble chez :customer',
             'chain' => 'Abonnements terminés sans successeur',
-            'chain_detail' => 'Un abonnement correspondant commence à la fin — enchaîner sur « :subscription »',
+            'chain_detail' => 'Un abonnement du même titulaire et du même produit commence à la fin — enchaîner dans la liste',
             'open' => 'Périodes échues sans facture',
             'open_detail' => 'ouvert :amount · échu depuis plus de :days jours',
             'open_detail_grace' => 'échu depuis plus de :days jours',
@@ -1477,6 +1477,11 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     // Phase 185 (MVP-1752/1753)
     'chain' => [
+        'dialog_title' => 'Abonnements terminés sans successeur',
+        'dialog_hint' => 'À la fin de ces abonnements commence un abonnement du même titulaire et du même produit. Les paires sans ambiguïté sont présélectionnées ; si plusieurs correspondent, choisissez vous-même ou laissez la ligne.',
+        'skip' => 'ne pas enchaîner',
+        'empty' => 'Aucun abonnement terminé n’attend de successeur.',
+        'flash_bulk' => '{0} Aucune chaîne définie.|{1} :count chaîne définie.|[2,*] :count chaînes définies.',
         'link' => 'Enchaîner',
         'unlink' => 'Supprimer la chaîne',
         'confirm_unlink' => 'Retirer le successeur ? L’abonnement compte alors de nouveau comme terminé sans remplacement.',

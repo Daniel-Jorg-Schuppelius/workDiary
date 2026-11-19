@@ -45,3 +45,6 @@ ended subscription offers it as successor in its master data. Chained, both
 share their history and the recurring template assignment. The overview lists
 such subscriptions under “Ended subscriptions without successor”. The chain can
 be removed again.
+The task in the overview opens a list of all these subscriptions. Unambiguous
+pairs are preselected and can be chained in one step; where several
+subscriptions match, choose the successor per row or skip the row.

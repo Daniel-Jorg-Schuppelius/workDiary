@@ -46,3 +46,6 @@ proveedor), la suscripción finalizada la ofrece como sucesor en sus datos
 maestros. Encadenadas comparten el historial y la asignación de la plantilla
 recurrente. El resumen las lista en «Suscripciones finalizadas sin sucesor».
 La cadena puede quitarse de nuevo.
+La tarea del resumen abre una lista de todas estas suscripciones. Los pares
+inequívocos están preseleccionados y pueden encadenarse en un paso; si
+coinciden varias suscripciones, elija el sucesor por fila o deje la fila.

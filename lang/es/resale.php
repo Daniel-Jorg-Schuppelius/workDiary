@@ -1397,7 +1397,7 @@ return [
             'billing_start' => 'Años de licencia antes del inicio de facturación',
             'billing_start_detail' => 'Cuenta del portal más reciente que los dominios: cerrarlos juntos en :customer',
             'chain' => 'Suscripciones finalizadas sin sucesor',
-            'chain_detail' => 'Una suscripción coincidente empieza al final — encadenar en «:subscription»',
+            'chain_detail' => 'Al final empieza una suscripción del mismo titular y producto — encadenar en la lista',
             'open' => 'Periodos vencidos sin factura',
             'open_detail' => 'abierto :amount · vencido desde hace más de :days días',
             'open_detail_grace' => 'vencido desde hace más de :days días',
@@ -1477,6 +1477,11 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     // Phase 185 (MVP-1752/1753)
     'chain' => [
+        'dialog_title' => 'Suscripciones finalizadas sin sucesor',
+        'dialog_hint' => 'Al final de estas suscripciones empieza una suscripción del mismo titular y producto. Los pares inequívocos están preseleccionados; si coinciden varias, elija usted o deje la fila.',
+        'skip' => 'no encadenar',
+        'empty' => 'Ninguna suscripción finalizada espera un sucesor.',
+        'flash_bulk' => '{0} Ninguna cadena establecida.|{1} :count cadena establecida.|[2,*] :count cadenas establecidas.',
         'link' => 'Encadenar',
         'unlink' => 'Quitar cadena',
         'confirm_unlink' => '¿Quitar el sucesor? La suscripción vuelve a contar como finalizada sin sustitución.',

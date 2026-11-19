@@ -44,3 +44,6 @@ fornitore), l'abbonamento terminato lo propone come successore nei dati di
 base. Concatenati condividono lo storico e l'assegnazione del modello
 ricorrente. La panoramica li elenca sotto «Abbonamenti terminati senza
 successore». La catena può essere rimossa.
+L'attività nella panoramica apre un elenco di tutti questi abbonamenti. Le
+coppie univoche sono preselezionate e si concatenano in un solo passaggio; se
+corrispondono più abbonamenti, scelga il successore per riga o salti la riga.

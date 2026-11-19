@@ -106,6 +106,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Steuerregelmatrix: Satzart „Innergemeinschaftliche Lieferung“
   (`intra_community`, `MVP-1731`); ihr Hinweistext ersetzt den Standardhinweis
   bei Waren an EU-Unternehmen.
+- Abos & Lizenzen, Arbeitsliste der Abo-Ketten (`MVP-1755`): Die Aufgabe
+  „Beendete Abos ohne Nachfolger“ im Überblick öffnet eine Liste aller Abos mit
+  Kandidaten. Eindeutige Paare sind vorgewählt und werden in einem Schritt
+  verkettet; bei mehreren passenden Abos wählt man je Zeile.
 - Abos & Lizenzen, Ketten und überzählige Positionen (`MVP-1752`, `MVP-1753`, `MVP-1754`):
   Ein beendetes Abo bietet in den Stammdaten das Abo desselben Halters und
   Produkts, das an seinem Ende beginnt, als Nachfolger an; verkettet teilen
@@ -127,6 +131,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Geändert
 
+- Abos & Lizenzen (`MVP-1756`): Die Aufgabe „Prüffälle an Bezügen“ im Überblick
+  führt in die Arbeitsmappe des ersten betroffenen Rechnungsempfängers statt
+  in die Liste der Lizenzkonten.
 - Abos & Lizenzen (`MVP-1743`): Offene Perioden an eigenem Bestand heißen
   „Eigener Bestand“ statt „offen“. Sie werden nie berechnet und tragen nur den
   Einkauf des Laufzeitjahrs.

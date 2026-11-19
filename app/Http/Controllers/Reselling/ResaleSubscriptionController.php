@@ -348,6 +348,25 @@ class ResaleSubscriptionController extends Controller {
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.created'));
     }
 
+    /** Dialog: beendete Abos ohne Nachfolger mit ihren Kandidaten (MVP-1755); eindeutige Paare sind vorgewählt. */
+    public function chainIndex(SubscriptionChain $chain): View {
+        return view('finance.resale._chain_dialog', ['rows' => $chain->worklist((int) $this->currentOrganizationOrAbort(404)->id)]);
+    }
+
+    public function chainBulk(Request $request, SubscriptionChain $chain): RedirectResponse {
+        $pairs = [];
+        foreach ((array) $request->input('successors', []) as $predecessor => $successor) {
+            $predecessorId = Sqid::decode(ResaleSubscription::class, (string) $predecessor);
+            $successorId = is_string($successor) ? Sqid::decode(ResaleSubscription::class, $successor) : null;
+            if ($predecessorId !== null && $successorId !== null) {
+                $pairs[$predecessorId] = $successorId;
+            }
+        }
+        $linked = $chain->linkMany((int) $this->currentOrganizationOrAbort(404)->id, $pairs);
+
+        return back()->with('success', trans_choice('resale.chain.flash_bulk', $linked, ['count' => $linked]));
+    }
+
     /** Nachfolger eines beendeten Abos setzen (MVP-1752) — nur aus den Kandidaten der Kette. */
     public function chainStore(Request $request, ResaleSubscription $subscription, SubscriptionChain $chain): RedirectResponse {
         $successorId = Sqid::decode(ResaleSubscription::class, (string) $request->input('successor', ''));

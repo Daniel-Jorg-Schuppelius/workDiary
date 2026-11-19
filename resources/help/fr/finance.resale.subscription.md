@@ -47,3 +47,7 @@ changement de fournisseur), l'abonnement terminé le propose comme successeur
 dans ses données de base. Enchaînés, ils partagent l'historique et
 l'affectation du modèle récurrent. L'aperçu les liste sous « Abonnements
 terminés sans successeur ». La chaîne peut être supprimée.
+La tâche de l'aperçu ouvre une liste de tous ces abonnements. Les paires sans
+ambiguïté sont présélectionnées et peuvent être enchaînées en une étape ; si
+plusieurs abonnements correspondent, choisissez le successeur par ligne ou
+laissez la ligne.

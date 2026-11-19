@@ -1397,7 +1397,7 @@ return [
             'billing_start' => 'License years before billing start',
             'billing_start_detail' => 'Portal account younger than the domains — close them together at :customer',
             'chain' => 'Ended subscriptions without successor',
-            'chain_detail' => 'A matching subscription starts at the end — chain at “:subscription”',
+            'chain_detail' => 'A subscription of the same holder and product starts at the end — chain them in the list',
             'open' => 'Due periods without invoice',
             'open_detail' => 'open :amount · due for more than :days days',
             'open_detail_grace' => 'due for more than :days days',
@@ -1477,6 +1477,11 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     // Phase 185 (MVP-1752/1753)
     'chain' => [
+        'dialog_title' => 'Ended subscriptions without successor',
+        'dialog_hint' => 'A subscription of the same holder and product starts at the end of these subscriptions. Unambiguous pairs are preselected; where several match, choose yourself or skip the row.',
+        'skip' => 'do not chain',
+        'empty' => 'No ended subscription is waiting for a successor.',
+        'flash_bulk' => '{0} No chain set.|{1} :count chain set.|[2,*] :count chains set.',
         'link' => 'Chain',
         'unlink' => 'Remove chain',
         'confirm_unlink' => 'Remove the successor? The subscription then counts as ended without replacement again.',

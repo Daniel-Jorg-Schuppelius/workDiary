@@ -44,3 +44,6 @@ Halters und Produkts (etwa nach einem Anbieterwechsel), bietet das beendete
 Abo es in den Stammdaten als Nachfolger an. Verkettet teilen beide den Verlauf
 und die Zuordnung der Serienvorlage. Der Überblick nennt solche Abos unter
 „Beendete Abos ohne Nachfolger“. Die Kette lässt sich wieder lösen.
+Die Aufgabe im Überblick öffnet eine Liste aller dieser Abos. Eindeutige Paare
+sind vorgewählt und lassen sich in einem Schritt verketten; wo mehrere Abos
+passen, wählen Sie den Nachfolger je Zeile oder lassen die Zeile aus.

@@ -108,6 +108,38 @@ class SubscriptionChainTest extends TestCase {
         $this->assertSame(SubscriptionStatus::Ended, $old->status);
     }
 
+    public function test_worklist_preselects_unambiguous_pairs_and_chains_the_chosen_ones(): void {
+        $admin = $this->orgAdmin();
+        // Eindeutig: ein Vorgänger, ein Kandidat.
+        $teamsOld = $this->subscription('2023-11-09', '2025-11-09', ['label' => 'Microsoft Teams Essentials', 'article_ref' => 'lex:501']);
+        $teamsNew = $this->subscription('2025-11-09', null, ['label' => 'Microsoft Teams Essentials', 'article_ref' => 'lex:501']);
+        // Mehrdeutig: zwei Vorgänger, zwei Kandidaten mit nahen Stichtagen.
+        $oldA = $this->subscription('2023-10-13', '2025-10-18');
+        $oldB = $this->subscription('2023-10-20', '2025-10-25');
+        $newA = $this->subscription('2025-10-18', null);
+        $newB = $this->subscription('2025-10-25', null);
+
+        $rows = collect(app(SubscriptionChain::class)->worklist($this->organization->id))->keyBy(static fn(array $row): int => $row['subscription']->id);
+        $this->assertSame($teamsNew->id, $rows[$teamsOld->id]['unique']?->id);
+        $this->assertNull($rows[$oldA->id]['unique']);
+        $this->assertSame([$newA->id, $newB->id], $rows[$oldA->id]['candidates']->pluck('id')->all(), 'nächster Beginn zuerst');
+
+        $this->actingAs($admin)->get(route('finance.resale.chain.index'))->assertOk()
+            ->assertSee(__('resale.chain.dialog_title'))->assertSee($teamsOld->sqid)->assertSee($oldB->sqid);
+        $overview = collect(app(ResaleOverview::class)->build($this->organization)['tasks'])->firstWhere('key', 'chain');
+        $this->assertSame(3, $overview['count'] ?? null);
+        $this->assertSame(route('finance.resale.chain.index'), $overview['url'] ?? null);
+
+        // Vorwahl plus eine Handauswahl; die dritte Zeile bleibt aus, ein Nicht-Kandidat wird übergangen.
+        $this->actingAs($admin)->post(route('finance.resale.chain.bulk'), ['successors' => [
+            $teamsOld->sqid => $teamsNew->sqid, $oldA->sqid => $newA->sqid, $oldB->sqid => $teamsNew->sqid,
+        ]])->assertSessionHasNoErrors()->assertSessionHas('success', trans_choice('resale.chain.flash_bulk', 2, ['count' => 2]));
+
+        $this->assertSame($teamsNew->id, $teamsOld->fresh()?->successor_id);
+        $this->assertSame($newA->id, $oldA->fresh()?->successor_id);
+        $this->assertNull($oldB->fresh()?->successor_id);
+    }
+
     public function test_subscription_created_from_an_invoice_line_continues_the_ended_one(): void {
         $admin = $this->orgAdmin();
         $old = $this->subscription('2023-04-22', '2024-04-27');

@@ -1397,7 +1397,7 @@ return [
             'billing_start' => 'Lizenzjahre vor Abrechnungsbeginn',
             'billing_start_detail' => 'Portalkonto jünger als die Domains — bei :customer gesammelt abschließen',
             'chain' => 'Beendete Abos ohne Nachfolger',
-            'chain_detail' => 'Passendes Abo beginnt am Ende — bei „:subscription“ verketten',
+            'chain_detail' => 'Am Ende beginnt ein Abo desselben Halters und Produkts — in der Liste verketten',
             'open' => 'Fällige Perioden ohne Rechnung',
             'open_detail' => 'offen :amount · fällig seit mehr als :days Tagen',
             'open_detail_grace' => 'fällig seit mehr als :days Tagen',
@@ -1477,6 +1477,11 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     // Phase 185 (MVP-1752/1753)
     'chain' => [
+        'dialog_title' => 'Beendete Abos ohne Nachfolger',
+        'dialog_hint' => 'Am Ende dieser Abos beginnt ein Abo desselben Halters und Produkts. Eindeutige Paare sind vorgewählt; wo mehrere Abos passen, wählen Sie selbst oder lassen die Zeile aus.',
+        'skip' => 'nicht verketten',
+        'empty' => 'Kein beendetes Abo wartet auf einen Nachfolger.',
+        'flash_bulk' => '{0} Keine Kette gesetzt.|{1} :count Kette gesetzt.|[2,*] :count Ketten gesetzt.',
         'link' => 'Verketten',
         'unlink' => 'Kette lösen',
         'confirm_unlink' => 'Nachfolger entfernen? Das Abo gilt dann wieder als beendet ohne Ablösung.',

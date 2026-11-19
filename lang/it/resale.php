@@ -1397,7 +1397,7 @@ return [
             'billing_start' => 'Anni di licenza prima dell’inizio della fatturazione',
             'billing_start_detail' => 'Account del portale più recente dei domini: chiuderli insieme presso :customer',
             'chain' => 'Abbonamenti terminati senza successore',
-            'chain_detail' => 'Un abbonamento corrispondente inizia alla fine — concatenare su «:subscription»',
+            'chain_detail' => 'Alla fine inizia un abbonamento dello stesso titolare e prodotto — concatenare nell’elenco',
             'open' => 'Periodi scaduti senza fattura',
             'open_detail' => 'aperto :amount · scaduto da più di :days giorni',
             'open_detail_grace' => 'scaduto da più di :days giorni',
@@ -1477,6 +1477,11 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     // Phase 185 (MVP-1752/1753)
     'chain' => [
+        'dialog_title' => 'Abbonamenti terminati senza successore',
+        'dialog_hint' => 'Alla fine di questi abbonamenti inizia un abbonamento dello stesso titolare e prodotto. Le coppie univoche sono preselezionate; se ne corrispondono diversi, scelga Lei o salti la riga.',
+        'skip' => 'non concatenare',
+        'empty' => 'Nessun abbonamento terminato attende un successore.',
+        'flash_bulk' => '{0} Nessuna catena impostata.|{1} :count catena impostata.|[2,*] :count catene impostate.',
         'link' => 'Concatena',
         'unlink' => 'Rimuovi catena',
         'confirm_unlink' => 'Rimuovere il successore? L’abbonamento torna a essere considerato terminato senza sostituzione.',

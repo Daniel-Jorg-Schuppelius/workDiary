@@ -116,28 +116,60 @@ final class SubscriptionChain {
     }
 
     /**
-     * Abos ohne Nachfolger, für die es genau passende Kandidaten gibt (Überblick).
+     * Arbeitsliste (MVP-1755): beendete Abos ohne Nachfolger mit ihren Kandidaten. Eindeutig ist ein
+     * Paar, wenn das Abo genau einen Kandidaten hat und dieser zu keinem anderen Abo der Liste passt.
      *
-     * @return array{count: int, subscription_id: int|null}
+     * @return list<array{subscription: ResaleSubscription, candidates: Collection<int, ResaleSubscription>, unique: ResaleSubscription|null}>
      */
-    public function overview(int $organizationId): array {
+    public function worklist(int $organizationId): array {
         $open = ResaleSubscription::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->whereNull('successor_id')
             ->whereNotNull('ends_on')
             ->whereNotIn('status', [SubscriptionStatus::Active->value, SubscriptionStatus::Cancelled->value])
+            ->with(['customer', 'foreignCustomer'])
             ->orderByDesc('ends_on')
+            ->orderBy('id')
             ->get();
-        $result = ['count' => 0, 'subscription_id' => null];
+        $rows = [];
+        /** @var array<int, int> $claims Kandidat → Anzahl der Abos, zu denen er passt */
+        $claims = [];
         foreach ($open as $subscription) {
-            if ($this->successorsFor($subscription)->isEmpty()) {
+            $candidates = $this->successorsFor($subscription);
+            if ($candidates->isEmpty()) {
                 continue;
             }
-            $result['count']++;
-            $result['subscription_id'] ??= (int) $subscription->id;
+            foreach ($candidates as $candidate) {
+                $claims[$candidate->id] = ($claims[$candidate->id] ?? 0) + 1;
+            }
+            $rows[] = ['subscription' => $subscription, 'candidates' => $candidates, 'unique' => null];
+        }
+        foreach ($rows as $index => $row) {
+            $only = $row['candidates']->count() === 1 ? $row['candidates']->first() : null;
+            $rows[$index]['unique'] = $only !== null && ($claims[$only->id] ?? 0) === 1 ? $only : null;
         }
 
-        return $result;
+        return $rows;
+    }
+
+    /**
+     * Gewählte Paare verketten; nur, was im Augenblick der Anwendung noch Kandidat ist.
+     *
+     * @param  array<int, int>  $pairs  Vorgänger-ID → Nachfolger-ID
+     */
+    public function linkMany(int $organizationId, array $pairs): int {
+        $linked = 0;
+        foreach ($pairs as $predecessorId => $successorId) {
+            $predecessor = ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->find($predecessorId);
+            $successor = $predecessor !== null ? $this->successorsFor($predecessor)->firstWhere('id', $successorId) : null;
+            if ($predecessor === null || $successor === null) {
+                continue;
+            }
+            $this->link($predecessor, $successor);
+            $linked++;
+        }
+
+        return $linked;
     }
 
     /** @return \Illuminate\Database\Eloquent\Builder<ResaleSubscription> */
