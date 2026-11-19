@@ -49,14 +49,16 @@
             <x-kpi-tile :label="__('resale.overview.kpi.open')" :value="$overview['summary']['open']" :tone="$overview['summary']['open'] > 0 ? 'error' : 'success'"
                         :hint="($overview['summary']['open_amount'] !== '' ? $overview['summary']['open_amount'] . ' · ' : '') . __('resale.overview.kpi.open_hint', ['days' => \App\Services\Reselling\Register\ResaleOverview::GRACE_DAYS])"
                         :href="route('finance.resale.periods.index', ['status' => 'problems'])" />
-            <x-kpi-tile :label="__('resale.account.summary.conflicts')" :value="$overview['summary']['findings']" :tone="$overview['summary']['findings'] > 0 ? 'warning' : 'neutral'"
-                        :href="route('finance.resale.accounts.index', ['show' => 'conflicts'])" />
+            {{-- Summe dreier Aufgaben mit eigenen Arbeitslisten: die Kachel führt zur Aufgabenliste, nicht zu einer davon. --}}
+            <x-kpi-tile :label="__('resale.overview.kpi.findings')" :value="$overview['summary']['findings']" :tone="$overview['summary']['findings'] > 0 ? 'warning' : 'neutral'"
+                        :hint="$overview['summary']['findings'] > 0 ? __('resale.overview.kpi.findings_hint', $overview['summary']['findings_parts']) : null"
+                        href="#resale-tasks" />
             <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$overview['summary']['unassigned']" :tone="$overview['summary']['unassigned'] > 0 ? 'warning' : 'neutral'"
                         :href="route('finance.resale.subscriptions', ['unassigned' => 1])" />
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 min-h-0 flex-1 overflow-y-auto">
-            <x-card :title="__('resale.overview.tasks')" icon="checklist" :count="count($tasks) ?: null" padding="p-0" class="xl:col-span-2 self-start">
+            <x-card :title="__('resale.overview.tasks')" icon="checklist" :count="count($tasks) ?: null" padding="p-0" class="xl:col-span-2 self-start" id="resale-tasks">
                 @if ($tasks === [])
                     <x-empty-state compact icon="task_alt" :title="__('resale.overview.all_clear')" :message="__('resale.overview.all_clear_hint')" />
                 @else

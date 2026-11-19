@@ -1200,7 +1200,7 @@ return [
         'summary' => [
             'accounts' => 'Cuentas de licencias',
             'open' => 'Periodos vencidos sin factura',
-            'conflicts' => 'Incidencias',
+            'conflicts' => 'Repartos por encima del inventario',
         ],
         'col' => [
             'account' => 'Cuenta',
@@ -1208,7 +1208,7 @@ return [
             'licences' => 'Licencias',
             'holders' => 'Titulares',
             'open' => 'Abiertos',
-            'conflicts' => 'Incidencias',
+            'conflicts' => 'Sobre inventario',
             'expected_purchase' => 'Compra prevista',
             'actual_purchase' => 'Compra real',
             'margin' => 'Margen',
@@ -1388,6 +1388,8 @@ return [
         'kpi' => [
             'open' => 'Vencido sin factura',
             'open_hint' => 'tras :days días de carencia',
+            'findings' => 'Incidencias',
+            'findings_hint' => ':links vínculos · :plans plantillas · :allocations repartos',
         ],
         'col' => [
             'count' => 'Número',

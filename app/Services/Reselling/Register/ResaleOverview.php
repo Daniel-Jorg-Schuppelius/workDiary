@@ -74,7 +74,7 @@ final class ResaleOverview {
     ) {}
 
     /**
-     * @return array{summary: array{active: int, open: int, open_amount: string, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, findings: int}, groups: list<string>, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
+     * @return array{summary: array{active: int, open: int, open_amount: string, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, findings: int, findings_parts: array{links: int, plans: int, allocations: int}}, groups: list<string>, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
      */
     public function build(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -129,6 +129,7 @@ final class ResaleOverview {
                 'unassigned' => $counters['unassigned'],
                 'unlinked' => $counters['unlinked'],
                 'findings' => (int) array_sum($linkFindings) + (int) array_sum($planFindings) + $counters['allocation_conflicts'],
+                'findings_parts' => ['links' => (int) array_sum($linkFindings), 'plans' => (int) array_sum($planFindings), 'allocations' => $counters['allocation_conflicts']],
             ],
             'groups' => self::GROUPS,
             'tasks' => $tasks,

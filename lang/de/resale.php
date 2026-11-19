@@ -1200,7 +1200,7 @@ return [
         'summary' => [
             'accounts' => 'Lizenzkonten',
             'open' => 'Fällige Perioden ohne Rechnung',
-            'conflicts' => 'Prüffälle',
+            'conflicts' => 'Aufteilungen über dem Bestand',
         ],
         'col' => [
             'account' => 'Konto',
@@ -1208,7 +1208,7 @@ return [
             'licences' => 'Lizenzen',
             'holders' => 'Halter',
             'open' => 'Offen',
-            'conflicts' => 'Prüffälle',
+            'conflicts' => 'Über Bestand',
             'expected_purchase' => 'Soll-Einkauf',
             'actual_purchase' => 'Ist-Einkauf',
             'margin' => 'Marge',
@@ -1388,6 +1388,8 @@ return [
         'kpi' => [
             'open' => 'Fällig ohne Rechnung',
             'open_hint' => 'nach :days Tagen Karenz',
+            'findings' => 'Prüffälle',
+            'findings_hint' => ':links Bezüge · :plans Vorlagen · :allocations Aufteilungen',
         ],
         'col' => [
             'count' => 'Anzahl',

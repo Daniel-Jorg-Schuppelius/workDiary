@@ -1200,7 +1200,7 @@ return [
         'summary' => [
             'accounts' => 'Conti licenze',
             'open' => 'Periodi scaduti senza fattura',
-            'conflicts' => 'Da verificare',
+            'conflicts' => 'Ripartizioni oltre la dotazione',
         ],
         'col' => [
             'account' => 'Conto',
@@ -1208,7 +1208,7 @@ return [
             'licences' => 'Licenze',
             'holders' => 'Intestatari',
             'open' => 'Aperti',
-            'conflicts' => 'Da verificare',
+            'conflicts' => 'Oltre la dotazione',
             'expected_purchase' => 'Acquisto previsto',
             'actual_purchase' => 'Acquisto effettivo',
             'margin' => 'Margine',
@@ -1388,6 +1388,8 @@ return [
         'kpi' => [
             'open' => 'Scaduto senza fattura',
             'open_hint' => 'dopo :days giorni di tolleranza',
+            'findings' => 'Da verificare',
+            'findings_hint' => ':links collegamenti · :plans modelli · :allocations ripartizioni',
         ],
         'col' => [
             'count' => 'Numero',

@@ -1200,7 +1200,7 @@ return [
         'summary' => [
             'accounts' => 'License accounts',
             'open' => 'Due periods without invoice',
-            'conflicts' => 'Findings',
+            'conflicts' => 'Allocations above the holdings',
         ],
         'col' => [
             'account' => 'Account',
@@ -1208,7 +1208,7 @@ return [
             'licences' => 'Licences',
             'holders' => 'Holders',
             'open' => 'Open',
-            'conflicts' => 'Findings',
+            'conflicts' => 'Above holdings',
             'expected_purchase' => 'Expected purchase',
             'actual_purchase' => 'Actual purchase',
             'margin' => 'Margin',
@@ -1388,6 +1388,8 @@ return [
         'kpi' => [
             'open' => 'Due without invoice',
             'open_hint' => 'after :days days of grace',
+            'findings' => 'Findings',
+            'findings_hint' => ':links links · :plans templates · :allocations allocations',
         ],
         'col' => [
             'count' => 'Count',

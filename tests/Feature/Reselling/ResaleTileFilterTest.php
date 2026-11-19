@@ -147,4 +147,19 @@ class ResaleTileFilterTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.accounts.index', ['show' => 'alles']))->assertOk()
             ->assertSee('acc-offen-1')->assertSee('acc-bezahlt-2');
     }
+
+    public function test_overview_findings_tile_is_the_sum_of_its_tasks_and_leads_to_the_task_list(): void {
+        $admin = $this->orgAdmin();
+        $this->subscription($this->customer('Kachelberg GmbH', 'c-kb'), $this->exchange, 'acc-offen-1');
+
+        $summary = app(\App\Services\Reselling\Register\ResaleOverview::class)->build($admin->organization)['summary'];
+        $this->assertSame($summary['findings'], array_sum($summary['findings_parts']));
+
+        // Die Kachel zählt drei Aufgaben; die Kachel der Lizenzkonten nur Aufteilungen und heißt auch so.
+        $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()
+            ->assertSee('href="#resale-tasks"', false)->assertSee('id="resale-tasks"', false)
+            ->assertDontSee(route('finance.resale.accounts.index', ['show' => 'conflicts']));
+        $this->actingAs($admin)->get(route('finance.resale.accounts.index'))->assertOk()
+            ->assertSee(__('resale.account.summary.conflicts'))->assertDontSee(__('resale.overview.kpi.findings'));
+    }
 }

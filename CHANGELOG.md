@@ -131,6 +131,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Geändert
 
+- Abos & Lizenzen (`MVP-1757`): Die Kachel „Prüffälle“ im Überblick nennt ihre
+  Bestandteile (Bezüge, Serienvorlagen, Aufteilungen) und führt zur
+  Aufgabenliste. Kachel und Spalte der Lizenzkonten heißen „Aufteilungen über
+  dem Bestand“, denn nur diese zählen sie; bisher trugen beide denselben Namen
+  bei verschiedenen Zahlen.
 - Abos & Lizenzen (`MVP-1756`): Die Aufgabe „Prüffälle an Bezügen“ im Überblick
   führt in die Arbeitsmappe des ersten betroffenen Rechnungsempfängers statt
   in die Liste der Lizenzkonten.

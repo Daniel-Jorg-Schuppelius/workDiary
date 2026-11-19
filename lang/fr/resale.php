@@ -1200,7 +1200,7 @@ return [
         'summary' => [
             'accounts' => 'Comptes de licences',
             'open' => 'Périodes échues sans facture',
-            'conflicts' => 'Points à vérifier',
+            'conflicts' => 'Répartitions au-delà du stock',
         ],
         'col' => [
             'account' => 'Compte',
@@ -1208,7 +1208,7 @@ return [
             'licences' => 'Licences',
             'holders' => 'Détenteurs',
             'open' => 'Ouvert',
-            'conflicts' => 'À vérifier',
+            'conflicts' => 'Au-delà du stock',
             'expected_purchase' => 'Achat prévu',
             'actual_purchase' => 'Achat réel',
             'margin' => 'Marge',
@@ -1388,6 +1388,8 @@ return [
         'kpi' => [
             'open' => 'Échu sans facture',
             'open_hint' => 'après :days jours de délai',
+            'findings' => 'Points à vérifier',
+            'findings_hint' => ':links liaisons · :plans modèles · :allocations répartitions',
         ],
         'col' => [
             'count' => 'Nombre',
