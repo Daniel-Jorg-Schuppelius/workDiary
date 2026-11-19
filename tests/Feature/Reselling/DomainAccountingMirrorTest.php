@@ -121,6 +121,33 @@ class DomainAccountingMirrorTest extends TestCase {
             ->assertSee(\CommonToolkit\ValueObjects\Money::of('5.36', \CommonToolkit\Enums\CurrencyCode::Euro, 2)->format());
     }
 
+    public function test_transfer_with_kept_cycle_covers_the_year_from_the_next_anniversary(): void {
+        // Transfer im April, die Registry verlängert ab dem alten Laufzeitende: das bezahlte Jahr beginnt am Stichtag.
+        $kept = $this->domain('optikwerk-beispiel.one');
+        $kept->update(['registration_at' => '2026-04-08', 'expiration_at' => '2027-11-25', 'finalization_at' => null]);
+        $keptSubscription = $this->subscription('optikwerk-beispiel.one', '2026-11-25');
+        $this->entry('2026-04-08 12:00:00', 'TRANSFER_DOMAIN', 'optikwerk-beispiel.one', '-7.50', ['domain_projection_id' => $kept->id]);
+        // Stichtag beginnt mit dem Transfer (zwei Tage Drift): der Buchungstag bleibt.
+        $fresh = $this->domain('optikwerk-beispiel.de');
+        $fresh->update(['registration_at' => '2026-04-07', 'expiration_at' => '2027-04-05', 'finalization_at' => null]);
+        $freshSubscription = $this->subscription('optikwerk-beispiel.de', '2026-04-07');
+        $this->entry('2026-04-07 12:00:00', 'TRANSFER_DOMAIN', 'optikwerk-beispiel.de', '-4.50', ['domain_projection_id' => $fresh->id]);
+        $this->travelTo('2026-11-26'); // der Lauf bewertet nur begonnene Perioden
+
+        (new LinkProposer)->propose($this->organization);
+
+        $period = $keptSubscription->periods()->orderBy('starts_on')->first();
+        $this->assertSame('2026-11-25', $period?->starts_on->toDateString());
+        $this->assertSame(PeriodStatus::Billed, $period?->status);
+        $this->assertSame('90021-04-2026', $period?->links()->first()?->voucher_number);
+        $this->assertSame(PeriodStatus::Billed, $freshSubscription->periods()->orderBy('starts_on')->first()?->status);
+
+        $lines = app(DomainAccountingMirrorSource::class)->linesFor($this->organization, [$this->nordlicht->id], licenceOnly: false)->keyBy(static fn($line): string => $line->name);
+        $this->assertSame('2026-11-25', $lines['optikwerk-beispiel.one']->serviceFrom?->toDateString());
+        $this->assertSame('2027-11-24', $lines['optikwerk-beispiel.one']->serviceTo?->toDateString());
+        $this->assertSame('2026-04-07', $lines['optikwerk-beispiel.de']->serviceFrom?->toDateString());
+    }
+
     public function test_months_before_the_first_booked_monthly_invoice_were_never_invoiced(): void {
         // Befund 2026-11-16: Das Journal ist das des Inhaberkontos, der Sync hängt Buchungen über den heutigen Besitzer
         // der Domain an den Subuser — auch aus Monaten, bevor es das Unterkonto gab. Berechnet ist nur, was eine gebuchte

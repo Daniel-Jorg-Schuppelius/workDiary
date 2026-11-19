@@ -118,6 +118,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Abos & Lizenzen, Domain-Transfer mit festem Stichtag (`MVP-1748`): Verlängert
+  ein Transfer die Laufzeit ab dem alten Laufzeitende statt ab dem Transfertag
+  (etwa Transfer im April, Lizenzjahr ab 25.11.), deckt die Transferbuchung der
+  Monatsrechnung jetzt das Lizenzjahr ab dem nächsten Stichtag. Bisher blieb
+  dieses Jahr offen, die Buchung stand als frei. Beginnt der Stichtag mit dem
+  Transfer (DENIC), bleibt der Buchungstag.
 - Fertigung: Der Eingang des Fertigerzeugnisses war unbewertet, die
   Auslieferung bewertet — das Bewertungsbuch des Erzeugnisses lief ins Minus.
   Die Gutmenge geht jetzt mit den Herstellkosten ins Lager (Materialverbrauch

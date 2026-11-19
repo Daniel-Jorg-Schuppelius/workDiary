@@ -17,6 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainResellerAccount};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePriceEntry;
+use App\Services\Reselling\Register\DomainSubscriptionSync;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -58,6 +59,8 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
     private const string NEVER_INVOICED = 'never';
 
     private const string PENDING = 'pending';
+
+    private const string TYPE_TRANSFER = 'TRANSFER_DOMAIN';
 
     public function key(): string {
         return self::KEY;
@@ -156,7 +159,7 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             ->whereNotNull('reseller_account_id')
             ->whereNotNull('entry_date')
             ->whereNotNull('net_amount')
-            ->with(['resellerAccount', 'domainProjection:id,external_domain']);
+            ->with(['resellerAccount', 'domainProjection:id,external_domain,expiration_at,finalization_at']);
     }
 
     /**
@@ -291,6 +294,7 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
     private function toLine(DomainAccountingEntry $entry, DomainResellerAccount $reseller, CarbonImmutable $start, string $voucherKey, int $position, ?string $recipientName, ?Money $classUnit, string $status): MirrorLine {
         $currency = $entry->currency instanceof CurrencyCode ? $entry->currency : CurrencyCode::Euro;
         $years = self::yearsOf($entry);
+        $serviceFrom = self::serviceStart($entry, $start);
         // Belastung steht negativ im Journal; ein positiver Betrag mit Domain ist eine Rückbuchung.
         $net = Money::of((string) $entry->net_amount, $currency, 4);
         $isCreditNote = ! $net->isNegative();
@@ -330,8 +334,8 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             unitNet: $total->withScale(4)->dividedBy($years),
             totalNet: $total->withScale(2),
             currency: $currency,
-            serviceFrom: $start,
-            serviceTo: $start->addMonthsNoOverflow($years * 12)->subDay(),
+            serviceFrom: $serviceFrom,
+            serviceTo: $serviceFrom->addMonthsNoOverflow($years * 12)->subDay(),
             voucherText: null,
             voucherTextHint: null,
             position: $position,
@@ -515,6 +519,28 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
         }
 
         return $extra === [] ? $lines : $lines->concat($extra)->values();
+    }
+
+    /**
+     * Beginn des bezahlten Laufzeitjahres. Ein Transfer verlängert bei Registries mit festem
+     * Stichtag ab dem alten Laufzeitende, nicht ab dem Transfertag (Befund 2026-11-19: Transfer
+     * im April, Laufzeitjahr ab 25.11.) — dann zählt der nächste Jahrestag des Laufzeitendes.
+     * Innerhalb der Toleranz bleibt der Buchungstag (DENIC: Stichtag beginnt mit dem Transfer).
+     */
+    private static function serviceStart(DomainAccountingEntry $entry, CarbonImmutable $booked): CarbonImmutable {
+        if ((string) $entry->type !== self::TYPE_TRANSFER || $entry->domainProjection === null) {
+            return $booked;
+        }
+        $anniversary = DomainSubscriptionSync::termEndOf($entry->domainProjection);
+        if ($anniversary === null || $anniversary->lessThan($booked)) {
+            return $booked;
+        }
+        $floor = $booked->subDays(DomainSubscriptionSync::START_TOLERANCE_DAYS);
+        while ($anniversary->subYearNoOverflow()->greaterThanOrEqualTo($floor)) {
+            $anniversary = $anniversary->subYearNoOverflow();
+        }
+
+        return $anniversary->greaterThan($booked->addDays(DomainSubscriptionSync::START_TOLERANCE_DAYS)) ? $anniversary : $booked;
     }
 
     private static function yearsOf(DomainAccountingEntry $entry): int {
