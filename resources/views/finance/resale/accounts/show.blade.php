@@ -38,6 +38,10 @@
 
         <x-validation-errors class="mb-4" />
 
+        @if ($customer !== null)
+            @include('finance.resale._billing_start_hint', ['billingStart' => $billingStart, 'customer' => $customer, 'canManage' => $canManage])
+        @endif
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             {{-- Bestand je Produkt mit Halteranteilen am Stichtag --}}
             <x-card :title="__('resale.account.section.products')" padding="p-0">

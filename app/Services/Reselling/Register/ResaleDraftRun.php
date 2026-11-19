@@ -21,7 +21,6 @@ use App\Services\Billing\BillingModeResolver;
 use App\Settings\SettingsRegistry;
 use App\Support\OrganizationContext;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{Cache, Log};
 use RuntimeException;
 use Throwable;
@@ -145,7 +144,7 @@ final class ResaleDraftRun {
     private function recipients(CarbonImmutable $dueBy): array {
         $periods = ResalePeriod::query()->due($dueBy)
             ->whereNull('draft_reference')
-            ->whereHas('subscription', static fn(Builder $s) => $s->notBilledByProvider())
+            ->billedByRegister()
             ->with(['subscription.customer', 'subscription.foreignCustomer.customer'])
             ->get();
 

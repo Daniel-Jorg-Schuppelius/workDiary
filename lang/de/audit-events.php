@@ -1489,6 +1489,7 @@ return [
         'link_moved' => 'Rechnungsbezug auf andere Periode verschoben',
         'auto_confirmed' => 'Rechnungsbezug automatisch bestätigt (sicherer Treffer des Vorschlagslaufs)',
         'order_change' => 'Restperiode beim Bestellungswechsel verzichtet, Bezüge an den Nachfolger',
+        'direct_billing' => 'Lizenzjahr vor dem Portalkonto wird direkt berechnet',
     ],
     'resale_account_allocation' => [
         'saved' => 'Aufteilung eines Lizenzkontos gespeichert',

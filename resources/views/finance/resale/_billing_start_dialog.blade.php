@@ -7,8 +7,9 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{--
-  Abrechnungsbeginn des Portalkontos übernehmen (MVP-1746): die offenen
-  Lizenzjahre, die vor dem Kontobeginn begannen, gesammelt abschließen.
+  Abrechnungsbeginn des Portalkontos übernehmen (MVP-1746/1747): für die offenen
+  Lizenzjahre, die vor dem Kontobeginn begannen, gesammelt entscheiden —
+  verzichten oder noch selbst berechnen.
   Erwartet: $customer, $groups (ProviderBillingStart::candidates).
 --}}
 <x-modal
@@ -35,4 +36,11 @@
     @empty
         <x-empty-state compact icon="event_available" :title="__('resale.billing_start.empty')" />
     @endforelse
+    @if ($groups !== [])
+        <x-select-field name="decision" :label="__('resale.billing_start.decision')" required :hint="__('resale.billing_start.decision_hint')">
+            <option value="waive" @selected(old('decision', 'waive') === 'waive')>{{ __('resale.billing_start.decision_waive') }}</option>
+            <option value="bill" @selected(old('decision') === 'bill')>{{ __('resale.billing_start.decision_bill') }}</option>
+        </x-select-field>
+        <x-input-field name="note" :label="__('resale.billing_start.note')" :value="old('note')" maxlength="120" :hint="__('resale.billing_start.note_hint')" />
+    @endif
 </x-modal>

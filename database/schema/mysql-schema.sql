@@ -22952,6 +22952,7 @@ CREATE TABLE `resale_periods` (
   `decided_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `is_direct_billing` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `resale_periods_sub_start_uq` (`subscription_id`,`starts_on`),
   KEY `resale_periods_decided_by_user_id_foreign` (`decided_by_user_id`),
@@ -29830,3 +29831,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1140,'2027_04_24_3
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1141,'2027_04_25_100000_add_property_country_to_invoices',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1142,'2027_04_25_100100_add_external_reference_to_project_time_shortfalls',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1143,'2027_04_26_120000_add_stock_delivery_to_claim_rma_returns',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1144,'2027_04_27_100000_add_is_direct_billing_to_resale_periods',2);

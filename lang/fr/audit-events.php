@@ -1489,6 +1489,7 @@ return [
         'link_moved' => 'Lien de facture déplacé vers une autre période',
         'auto_confirmed' => 'Lien de facture confirmé automatiquement (correspondance sûre)',
         'order_change' => 'Période résiduelle abandonnée lors du changement de commande, liens transférés au successeur',
+        'direct_billing' => 'Année de licence antérieure au compte portail facturée directement',
     ],
     'resale_account_allocation' => [
         'saved' => 'Répartition du compte de licences enregistrée',

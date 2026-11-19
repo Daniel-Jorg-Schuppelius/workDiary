@@ -19,21 +19,29 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Abrechnungsbeginn eines Portalkontos (MVP-1746): Domains, die ein Subuser
- * über das Anbieterportal abrechnet, berechnet der Reseller erst, seit es das
- * Unterkonto gibt. Lizenzjahre, die vorher begannen, hat er dem Kunden nie in
- * Rechnung gestellt und wird es nicht — sie werden gesammelt abgeschlossen,
- * mit dem Kontobeginn als Grund. Kein Forderungsverzicht: ohne Rechnung gab es
- * keine Forderung ({@see ResalePeriod::isBeforeBillingStart()}).
+ * Abrechnungsbeginn eines Portalkontos (MVP-1746/1747): Domains, die ein Subuser
+ * über das Anbieterportal abrechnet, berechnet das Portal erst, seit es das
+ * Unterkonto gibt. Für die Lizenzjahre, die vorher begannen, entscheidet der
+ * Reseller gesammelt: verzichten (etwa weil intern abgegolten) oder noch
+ * selbst berechnen — dann bleiben sie offen und kommen trotz Portalabrechnung
+ * der Domain in den Rechnungsvorschlag ({@see ResalePeriod::scopeBilledByRegister()}).
  *
  * @phpstan-type BillingStart array{account: string, since: CarbonImmutable, periods: list<ResalePeriod>}
  */
 final class ProviderBillingStart {
+    public const string WAIVE = 'waive';
+
+    public const string BILL = 'bill';
+
+    public const array DECISIONS = [self::WAIVE, self::BILL];
+
+    public const string AUDIT_BILL = 'resale_period.direct_billing';
+
     public function __construct(private readonly PeriodLinker $linker) {}
 
     /**
-     * Je Portalkonto des Kunden die offenen fälligen Perioden, die vor dem Kontobeginn begannen.
-     * Teilweise gedeckte bleiben außen vor: dort wurde etwas berechnet, das gehört angesehen.
+     * Je Portalkonto des Kunden die offenen fälligen Perioden, die vor dem Kontobeginn begannen und
+     * noch nicht entschieden sind. Teilweise gedeckte bleiben außen vor: dort wurde etwas berechnet.
      *
      * @return list<BillingStart>
      */
@@ -93,7 +101,7 @@ final class ProviderBillingStart {
             }
             $since = CarbonImmutable::parse($account->provider_created_at->toDateString());
             foreach ($subscription->periods as $period) {
-                if (! $period->starts_on->lessThan($since) || ! $period->isDecidable()) {
+                if (! $period->starts_on->lessThan($since) || ! $period->isDecidable() || $period->is_direct_billing) {
                     continue;
                 }
                 $period->setRelation('subscription', $subscription);
@@ -111,16 +119,23 @@ final class ProviderBillingStart {
     }
 
     /**
-     * Schließt die Kandidaten ab; gerechnet wird neu, nicht aus dem Formular.
+     * Entscheidet die Kandidaten; gerechnet wird neu, nicht aus dem Formular.
      *
-     * @return int Zahl der abgeschlossenen Perioden
+     * @return int Zahl der entschiedenen Perioden
      */
-    public function apply(Customer $customer, ?int $userId): int {
+    public function apply(Customer $customer, string $decision, ?string $note, ?int $userId): int {
+        $note = trim((string) $note);
         $done = 0;
         foreach ($this->candidates($customer) as $group) {
             $reason = (string) __('resale.billing_start.reason', ['account' => $group['account'], 'date' => $group['since']->format('d.m.Y')]);
             foreach ($group['periods'] as $period) {
-                $this->linker->decide($period, PeriodStatus::Waived, $reason, $userId);
+                if ($decision === self::BILL) {
+                    $period->appendNote((string) __('resale.billing_start.note_bill', ['account' => $group['account'], 'date' => $group['since']->format('d.m.Y')]));
+                    $period->forceFill(['is_direct_billing' => true])->save();
+                    $period->audit(self::AUDIT_BILL, ['account' => $group['account'], 'since' => $group['since']->toDateString()]);
+                } else {
+                    $this->linker->decide($period, PeriodStatus::Waived, $note === '' ? $reason : $reason . ' — ' . $note, $userId);
+                }
                 $done++;
             }
         }

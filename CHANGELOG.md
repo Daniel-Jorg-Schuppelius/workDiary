@@ -31,15 +31,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   eine solche Rechnung bei der Periode des zugeordneten Abos an. Wer sie von
   Hand einem anderen Abo zuordnet, bestätigt die Abweichung („gehört laut
   Serienvorlage zu einem anderen Abo“).
-- Abos & Lizenzen, Abrechnungsbeginn des Portalkontos (`MVP-1746`): Rechnet
-  ein Subuser seine Domains über das Anbieterportal ab, meldet die
-  Arbeitsmappe die offenen Lizenzjahre, die vor dem Beginn dieses Unterkontos
-  begannen. „Abrechnungsbeginn übernehmen“ schließt sie in einem Schritt mit
-  dem Kontobeginn als Grund ab; sie heißen „vor Abrechnungsbeginn“ und zählen
-  nicht mehr als offen. Lizenzjahre nach dem Kontobeginn und teilweise
-  berechnete bleiben, jede Periode lässt sich wieder öffnen. Der Überblick
-  führt die Aufgabe „Lizenzjahre vor Abrechnungsbeginn“, und das Abo-Detail
-  einer betroffenen Domain zeigt denselben Hinweis mit Knopf.
+- Abos & Lizenzen, Abrechnungsbeginn des Portalkontos (`MVP-1746`, `MVP-1747`):
+  Rechnet ein Subuser seine Domains über das Anbieterportal ab, melden
+  Lizenzkonto, Arbeitsmappe, Überblick („Lizenzjahre vor Abrechnungsbeginn“)
+  und das Abo-Detail der Domain die offenen Lizenzjahre, die vor dem Beginn
+  dieses Unterkontos begannen. „Abrechnungsbeginn übernehmen“ entscheidet sie
+  in einem Schritt: „Nicht mehr berechnen (Verzicht)“ schließt sie mit dem
+  Kontobeginn und einer Begründung ab; „Noch selbst berechnen“ lässt sie
+  offen und nimmt sie in den Rechnungsvorschlag des Registers auf, obwohl die
+  Domain sonst über das Portal abgerechnet wird. Lizenzjahre nach dem
+  Kontobeginn und teilweise berechnete bleiben unberührt.
 - Einstandspreis beim manuellen Eingang (`MVP-1709`): Buchungsformular im
   Lager und Scan-Eingang führen das optionale Feld „Einstandspreis je
   Einheit“ (Komma oder Punkt, je erfasster Einheit, gebucht je
@@ -391,6 +392,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinweise zum Update
 
+- Abos & Lizenzen (`MVP-1747`): Die Migration `add_is_direct_billing_to_resale_periods`
+  läuft mit dem Deploy; danach ist nichts von Hand zu tun.
 - Der manuelle Lagereingang (Formular und Scan) ist jetzt bewertet
   (`MVP-1709`); der Hinweis in 1.4.0, er bleibe unbewertet, ist überholt.
 - Bewertung von Eingang und Fertigungsverbrauch (`MVP-1709`, `MVP-1710`):

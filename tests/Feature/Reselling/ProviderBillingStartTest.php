@@ -99,18 +99,25 @@ class ProviderBillingStartTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.show', $late->sqid))->assertOk()
             ->assertDontSee(__('resale.billing_start.action'));
         $this->assertSame(['count' => 2, 'customer_id' => $this->partner->id], app(ProviderBillingStart::class)->overview());
+        // Lizenzkonto des Kunden: derselbe Hinweis.
+        $accounts = app(\App\Services\Reselling\Register\LicenseAccounts::class);
+        $accountKey = $accounts->group($this->organization, $accounts->keyFor($this->organization, $early))?->routeKey();
+        $this->assertNotNull($accountKey);
+        $this->actingAs($admin)->get(route('finance.resale.accounts.show', $accountKey))->assertOk()
+            ->assertSee(route('finance.resale.reconcile.billing-start.create', $this->partner), false);
 
-        $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner))
+        // Ohne Entscheidung geschieht nichts.
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner))->assertSessionHasErrors('decision');
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner), ['decision' => 'waive', 'note' => 'vorher eine Firma'])
             ->assertRedirect(route('finance.resale.reconcile.show', $this->partner))
-            ->assertSessionHas('success', trans_choice('resale.billing_start.flash', 2, ['count' => 2]));
+            ->assertSessionHas('success', trans_choice('resale.billing_start.flash_waive', 2, ['count' => 2]));
 
         $this->assertSame(['2015-01-10:waived', '2016-01-10:waived', '2017-01-10:open', '2018-01-10:open'], $this->statuses($early));
         $this->assertSame(['2016-09-01:open', '2017-09-01:open'], $this->statuses($late), 'nach dem Kontobeginn begonnen: bleibt offen');
         $this->assertNotContains('waived', array_map(static fn(string $s): string => explode(':', $s)[1], $this->statuses($direct)));
         $closed = $early->periods()->orderBy('starts_on')->firstOrFail();
-        $this->assertTrue($closed->isBeforeBillingStart());
-        $this->assertSame(__('resale.billing_start.label'), $closed->statusLabel());
-        $this->assertSame('info', $closed->statusTone());
+        $this->assertSame(PeriodStatus::Waived->label(), $closed->statusLabel());
+        $this->assertStringEndsWith('— vorher eine Firma', (string) $closed->waived_reason);
         $this->assertSame($admin->id, $closed->decided_by_user_id);
         $this->assertStringContainsString('10.08.2016', (string) $closed->waived_reason);
         $this->assertSame(2, AuditLog::query()->where('event', 'resale_period.waived')->count());
@@ -118,7 +125,7 @@ class ProviderBillingStartTest extends TestCase {
         // Danach nichts mehr zu tun; der Hinweis verschwindet, ein zweiter Aufruf ändert nichts.
         $this->assertSame([], app(ProviderBillingStart::class)->candidates($this->partner));
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->partner))->assertOk()->assertDontSee(__('resale.billing_start.action'));
-        $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner))->assertSessionHas('warning');
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner), ['decision' => 'waive'])->assertSessionHas('warning');
         $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()->assertDontSee(__('resale.overview.task.billing_start'));
 
         // Einzeln wieder öffnen bleibt möglich.
@@ -126,11 +133,36 @@ class ProviderBillingStartTest extends TestCase {
         $this->assertSame(PeriodStatus::Open, $closed->fresh()?->status);
     }
 
+    public function test_license_years_before_the_account_start_can_still_be_invoiced_by_the_register(): void {
+        $admin = $this->orgAdmin();
+        $early = $this->domain('fruehstart-beispiel.de', '2016-01-10');
+        $late = $this->domain('spaetstart-beispiel.de', '2016-09-01');
+        $billable = static fn(): array => ResalePeriod::query()->due()->billedByRegister()->orderBy('starts_on')->get()
+            ->map(static fn(ResalePeriod $p): string => $p->subscription->label . ':' . $p->starts_on->toDateString())->all();
+        $this->assertSame([], $billable(), 'Portal-Domains berechnet das Portal — nichts für den Rechnungsvorschlag');
+
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.billing-start.store', $this->partner), ['decision' => 'bill'])
+            ->assertRedirect(route('finance.resale.reconcile.show', $this->partner))
+            ->assertSessionHas('success', trans_choice('resale.billing_start.flash_bill', 1, ['count' => 1]));
+
+        $period = $early->periods()->orderBy('starts_on')->firstOrFail();
+        $this->assertSame(PeriodStatus::Open, $period->status, 'bleibt offen und fällig');
+        $this->assertTrue($period->is_direct_billing);
+        $this->assertStringContainsString('10.08.2016', (string) $period->note);
+        $this->assertSame(['fruehstart-beispiel.de:2016-01-10'], $billable(), 'nur das Lizenzjahr vor dem Kontobeginn; spätere Jahre und die andere Domain bleiben beim Portal');
+        $this->assertSame(1, AuditLog::query()->where('event', ProviderBillingStart::AUDIT_BILL)->count());
+        $this->assertSame(0, $late->periods()->where('is_direct_billing', true)->count());
+
+        // Entschieden: der Hinweis ist weg, ein zweiter Aufruf findet nichts mehr.
+        $this->assertSame([], app(ProviderBillingStart::class)->candidates($this->partner));
+        $this->assertSame(['count' => 0, 'customer_id' => null], app(ProviderBillingStart::class)->overview());
+    }
+
     public function test_action_needs_the_manage_permission(): void {
         $this->domain('fruehstart-beispiel.de', '2015-01-10');
         $viewer = User::factory()->create(['organization_id' => $this->organization->id]);
 
-        $this->actingAs($viewer)->post(route('finance.resale.reconcile.billing-start.store', $this->partner))->assertForbidden();
+        $this->actingAs($viewer)->post(route('finance.resale.reconcile.billing-start.store', $this->partner), ['decision' => 'waive'])->assertForbidden();
         $this->assertSame(0, ResalePeriod::query()->where('status', PeriodStatus::Waived->value)->count());
     }
 }

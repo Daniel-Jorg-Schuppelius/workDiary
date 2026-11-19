@@ -49,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ResalePurchaseEntry> $purchases
  * @property int|null $decided_by_user_id
  * @property CarbonImmutable|null $decided_at
+ * @property bool $is_direct_billing
  * @property-read ResaleSubscription $subscription
  */
 class ResalePeriod extends Model {
@@ -74,6 +75,7 @@ class ResalePeriod extends Model {
         'draft_created_at',
         'decided_by_user_id',
         'decided_at',
+        'is_direct_billing',
     ];
 
     /** Höchstlänge der Bemerkungsspalte (string 255). */
@@ -88,6 +90,7 @@ class ResalePeriod extends Model {
         'expected_sale' => MoneyCast::class . ':currency,2',
         'status' => PeriodStatus::class,
         'decided_at' => 'immutable_datetime',
+        'is_direct_billing' => 'boolean',
         'draft_created_at' => 'immutable_datetime',
     ];
 
@@ -296,6 +299,22 @@ class ResalePeriod extends Model {
     }
 
     /**
+     * Perioden, die das Register selbst berechnet: Abos außerhalb der Portalabrechnung — und bei
+     * Portal-Domains die Lizenzjahre vor dem Kontobeginn, die der Reseller ausdrücklich noch
+     * berechnen will (`is_direct_billing`, {@see \App\Services\Reselling\Register\ProviderBillingStart}).
+     *
+     * @param  Builder<ResalePeriod>  $query
+     * @param  \Closure(Builder<ResaleSubscription>): mixed|null  $subscriptionScope  weitere Bedingung am Abo (Halter)
+     * @return Builder<ResalePeriod>
+     */
+    public function scopeBilledByRegister(Builder $query, ?\Closure $subscriptionScope = null): Builder {
+        return $query
+            ->when($subscriptionScope !== null, static fn(Builder $q) => $q->whereHas('subscription', $subscriptionScope))
+            ->where(static fn(Builder $w) => $w->where('is_direct_billing', true)
+                ->orWhereHas('subscription', static fn(Builder $s) => $s->notBilledByProvider()));
+    }
+
+    /**
      * Nicht entschiedene Zustände: offen, auf Wunsch auch teilweise gedeckt.
      *
      * @return list<PeriodStatus>
@@ -320,16 +339,6 @@ class ResalePeriod extends Model {
         return $this->status === PeriodStatus::Waived && $this->decided_by_user_id === null && $prefix !== '' && str_starts_with((string) $this->waived_reason, $prefix);
     }
 
-    /**
-     * Lizenzjahr vor dem Abrechnungsbeginn des Portalkontos ({@see \App\Services\Reselling\Register\ProviderBillingStart}):
-     * abgeschlossen mit dessen Grund — nie berechnet und nie geschuldet, kein Forderungsverzicht.
-     */
-    public function isBeforeBillingStart(): bool {
-        $prefix = rtrim(explode(':account', (string) __('resale.billing_start.reason'))[0]);
-
-        return $this->status === PeriodStatus::Waived && $prefix !== '' && str_starts_with((string) $this->waived_reason, $prefix);
-    }
-
     /** Steht in einem Rechnungsentwurf, der noch nicht als Rechnung zurückkam: nichts fehlt, es ist in Arbeit. */
     public function isInDraft(): bool {
         return (string) $this->draft_reference !== '' && in_array($this->status, [PeriodStatus::Open, PeriodStatus::Partial], true);
@@ -346,7 +355,6 @@ class ResalePeriod extends Model {
     public function statusLabel(): string {
         return match (true) {
             $this->isOrderChange() => (string) __('resale.link.order_change'),
-            $this->isBeforeBillingStart() => (string) __('resale.billing_start.label'),
             $this->isInDraft() => (string) __('resale.draft.in_draft'),
             $this->isOwnHolding() => (string) __('resale.holder.own'),
             default => $this->status->label(),
@@ -355,7 +363,7 @@ class ResalePeriod extends Model {
 
     public function statusTone(): string {
         return match (true) {
-            $this->isOrderChange(), $this->isInDraft(), $this->isBeforeBillingStart() => 'info',
+            $this->isOrderChange(), $this->isInDraft() => 'info',
             $this->isOwnHolding() => 'neutral',
             default => $this->status->tone(),
         };

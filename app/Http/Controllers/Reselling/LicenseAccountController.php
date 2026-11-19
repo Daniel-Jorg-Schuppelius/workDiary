@@ -19,7 +19,7 @@ use App\Http\Controllers\Reselling\Concerns\ProvidesHolderPicker;
 use App\Http\Requests\Reselling\SaveResaleAllocationRequest;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleAccountAllocation, ResalePeriod, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Register\{AllocationDeriver, LicenseAccountGroup, LicenseAccountOverview, LicenseAccounts};
+use App\Services\Reselling\Register\{AllocationDeriver, LicenseAccountGroup, LicenseAccountOverview, LicenseAccounts, ProviderBillingStart};
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -67,6 +67,8 @@ class LicenseAccountController extends Controller {
         return view('finance.resale.accounts.show', $this->overview->detail($organization, $group) + [
             'today' => ResalePeriod::today(),
             'canManage' => $this->authUser()->can(Permission::ResellingManage->value),
+            // Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746) — Sammelaktion des Kunden.
+            'billingStart' => ($customer = $group->customer()) !== null ? app(ProviderBillingStart::class)->candidates($customer) : [],
         ]);
     }
 

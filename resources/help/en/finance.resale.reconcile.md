@@ -55,10 +55,13 @@ price taken from the invoice. Assignment may target a period of another
 subscription of the same recipient — never a period of a different customer.
 
 **Billing start of the portal account:** If a sub-user bills their domains
-through the provider portal, you only invoice since that sub-account exists.
-The workbook reports open license years that started earlier, together with
-the account start. “Apply billing start” closes them in one step; they are
-then labelled “before billing start” and no longer count as open. This is not
-a waiver of a claim, because without an invoice there was no claim. License
-years that started after the account start and partially invoiced ones remain
-untouched; each period can be reopened individually.
+through the provider portal, the portal only invoices since that sub-account
+exists. The license account, the workbook, the overview and the domain's
+subscription page report open license years that started earlier, together
+with the account start. “Apply billing start” decides them in one step: **Do
+not invoice any more (waiver)** closes them, with the account start and your
+reason as the reason. **Invoice them yourself** keeps them open and includes
+them in the register's invoice proposal although the domain is otherwise
+billed through the portal. License years that started after the account start
+and partially invoiced ones remain untouched; afterwards each period can be
+reopened or waived individually.

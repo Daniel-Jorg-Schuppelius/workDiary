@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Reselling;
 use App\Enums\Reselling\PeriodStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Reselling\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
+use App\Http\Requests\Reselling\{ApplyBillingStartRequest, AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
@@ -134,12 +134,13 @@ class ResaleReconcileController extends Controller {
         return view('finance.resale._billing_start_dialog', ['customer' => $customer, 'groups' => $billingStart->candidates($customer)]);
     }
 
-    public function billingStartStore(Customer $customer, ProviderBillingStart $billingStart): RedirectResponse {
+    public function billingStartStore(ApplyBillingStartRequest $request, Customer $customer, ProviderBillingStart $billingStart): RedirectResponse {
         $this->assertSameOrganization($customer);
-        $done = $billingStart->apply($customer, $this->authUser()->id);
+        $decision = (string) $request->validated('decision');
+        $done = $billingStart->apply($customer, $decision, $request->validated('note'), $this->authUser()->id);
 
         return redirect()->route('finance.resale.reconcile.show', $customer)
-            ->with($done === 0 ? 'warning' : 'success', trans_choice('resale.billing_start.flash', $done, ['count' => $done]));
+            ->with($done === 0 ? 'warning' : 'success', trans_choice('resale.billing_start.flash_' . $decision, $done, ['count' => $done]));
     }
 
     /**

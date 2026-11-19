@@ -83,18 +83,7 @@
             <div class="alert alert-info mb-4 text-sm" title="{{ __('resale.link_ui.pending_hint') }}">{{ trans_choice('resale.invoices.pending', $pending, ['count' => $pending]) }}</div>
         @endif
 
-        @foreach ($billingStart as $start)
-            {{-- Portalkonto jünger als die Domains (MVP-1746): die Lizenzjahre davor hat der Reseller nie berechnet. --}}
-            <div role="status" class="alert alert-info mb-4 text-sm">
-                <div>
-                    <span class="font-medium">{{ __('resale.billing_start.title', ['account' => $start['account'], 'date' => $start['since']->fdate()]) }}</span>
-                    <span class="block text-xs">{{ trans_choice('resale.billing_start.hint', count($start['periods']), ['count' => count($start['periods'])]) }}</span>
-                </div>
-                @if ($canManage && $loop->first)
-                    <x-icon-btn icon="event_available" tone="primary" size="sm" data-entry-modal-trigger :href="route('finance.resale.reconcile.billing-start.create', $customer)" show-label>{{ __('resale.billing_start.action') }}</x-icon-btn>
-                @endif
-            </div>
-        @endforeach
+        @include('finance.resale._billing_start_hint', ['billingStart' => $billingStart, 'customer' => $customer, 'canManage' => $canManage])
 
         @if ($inbox !== [])
             {{-- Endkunden im Rechnungstext, deren Abos noch ohne Halter sind. --}}

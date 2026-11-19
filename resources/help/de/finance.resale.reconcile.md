@@ -54,10 +54,13 @@ aus der Rechnung. Die Zuordnung darf eine Periode eines anderen Abos
 desselben Empfängers treffen — nie eine Periode eines fremden Kunden.
 
 **Abrechnungsbeginn des Portalkontos:** Rechnet ein Subuser seine Domains
-über das Anbieterportal ab, berechnen Sie erst, seit es dieses Unterkonto
-gibt. Offene Lizenzjahre, die vorher begannen, meldet die Arbeitsmappe mit dem
-Kontobeginn. „Abrechnungsbeginn übernehmen“ schließt sie in einem Schritt ab;
-sie heißen dann „vor Abrechnungsbeginn“ und zählen nicht mehr als offen. Das
-ist kein Forderungsverzicht, denn ohne Rechnung gab es keine Forderung.
-Lizenzjahre, die nach dem Kontobeginn begannen, und teilweise berechnete
-bleiben unberührt; jede Periode lässt sich einzeln wieder öffnen.
+über das Anbieterportal ab, berechnet das Portal erst, seit es dieses
+Unterkonto gibt. Offene Lizenzjahre, die vorher begannen, melden Lizenzkonto,
+Arbeitsmappe, Überblick und das Abo-Detail der Domain mit dem Kontobeginn.
+„Abrechnungsbeginn übernehmen“ entscheidet sie in einem Schritt: **Nicht mehr
+berechnen (Verzicht)** schließt sie ab, mit dem Kontobeginn und Ihrer
+Begründung als Grund. **Noch selbst berechnen** lässt sie offen und nimmt sie
+in den Rechnungsvorschlag des Registers auf, obwohl die Domain sonst über das
+Portal abgerechnet wird. Lizenzjahre, die nach dem Kontobeginn begannen, und
+teilweise berechnete bleiben unberührt; jede Periode lässt sich danach einzeln
+wieder öffnen oder verzichten.

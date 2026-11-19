@@ -154,8 +154,9 @@ final class ResaleInvoiceDraftService {
 
         return ResalePeriod::query()->due($reference)
             ->when($planned !== [], static fn($q) => $q->whereNotIn('subscription_id', $planned))
-            // Domains im Subuser-Konto berechnet das Domainportal (MVP-1446) — nie ein zweites Mal über das Register.
-            ->whereHas('subscription', fn($s) => $s->where($this->holderScope($recipient))->notBilledByProvider())
+            // Domains im Subuser-Konto berechnet das Domainportal (MVP-1446) — nie ein zweites Mal über das Register;
+            // Lizenzjahre vor dem Kontobeginn nur, wenn sie ausdrücklich noch berechnet werden sollen (MVP-1747).
+            ->billedByRegister(fn($s) => $s->where($this->holderScope($recipient)))
             ->with(['subscription.foreignCustomer', 'links'])
             ->orderBy('starts_on');
     }

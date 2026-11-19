@@ -370,7 +370,7 @@ class ResaleReportController extends Controller {
         /** @var array<int, array{customer: Customer, periods: int, net: Money, drafted: int, draft_reference: string|null, draft_created_at: CarbonImmutable|null}> $recipients */
         $recipients = [];
         $periods = ResalePeriod::query()->due($until)
-            ->whereHas('subscription', static fn(Builder $s) => $s->notBilledByProvider())
+            ->billedByRegister()
             ->with(['subscription.customer:id,name,currency', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name,currency', 'links'])
             ->get();
         foreach ($periods as $period) {

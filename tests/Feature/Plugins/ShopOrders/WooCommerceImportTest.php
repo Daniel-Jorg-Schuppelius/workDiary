@@ -57,6 +57,8 @@ class WooCommerceImportTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Feste Uhr: der erste Lauf liest nur die letzten 30 Tage, die Bestellungen des Shops tragen den 19./20.10.2026.
+        $this->travelTo('2026-10-24 12:00:00');
         $this->setUpOrganization();
         $this->pluginSecret(WooCommercePlugin::ID, ['base_url' => self::BASE . '/', 'consumer_key' => 'ck_test', 'consumer_secret' => 'cs_test']);
         $this->admin = $this->orgAdmin();

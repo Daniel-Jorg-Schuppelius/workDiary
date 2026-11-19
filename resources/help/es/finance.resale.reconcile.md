@@ -56,11 +56,14 @@ dirigirse a un periodo de otra suscripción del mismo destinatario — nunca a
 un periodo de otro cliente.
 
 **Inicio de facturación de la cuenta del portal:** si un subusuario factura
-sus dominios a través del portal del proveedor, usted solo factura desde que
-existe esa subcuenta. El cuaderno de trabajo indica los años de licencia
+sus dominios a través del portal del proveedor, el portal solo factura desde
+que existe esa subcuenta. La cuenta de licencias, el cuaderno de trabajo, el
+resumen y la página de suscripción del dominio indican los años de licencia
 abiertos que empezaron antes, junto con el inicio de la cuenta. «Aplicar
-inicio de facturación» los cierra en un solo paso; pasan a llamarse «antes
-del inicio de facturación» y dejan de contar como abiertos. No es una renuncia
-a un crédito, porque sin factura no había crédito. Los años de licencia que
-empezaron después del inicio de la cuenta y los facturados parcialmente no se
-tocan; cada periodo puede reabrirse individualmente.
+inicio de facturación» los decide en un solo paso: **No facturar más
+(renuncia)** los cierra, con el inicio de la cuenta y su motivo. **Facturar
+usted mismo** los deja abiertos y los incluye en la propuesta de factura del
+registro, aunque el dominio se facture normalmente a través del portal. Los
+años de licencia que empezaron después del inicio de la cuenta y los
+facturados parcialmente no se tocan; después, cada periodo puede reabrirse o
+darse por renunciado individualmente.
