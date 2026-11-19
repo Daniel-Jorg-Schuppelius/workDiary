@@ -1504,6 +1504,8 @@ return [
         'rehomed' => 'Titular de la suscripción cambiado',
         'holder_assigned' => 'Titular de la suscripción asignado',
         'taken_over' => 'Suscripción traspasada a otra empresa desde una fecha efectiva',
+        'chained' => 'Sucesor de la suscripción establecido',
+        'unchained' => 'Sucesor de la suscripción quitado',
     ],
     'lexware' => [
         'tariffChanged' => 'Perfil de tarifa Lexware modificado',

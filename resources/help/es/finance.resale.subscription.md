@@ -39,3 +39,10 @@ tiempo — una empresa se escinde y la nueva asume los contratos — también es
 una cesión: todas las licencias del periodo antiguo al titular anterior; la
 conciliación lo ofrece en una factura del otro cliente como «Ceder el
 periodo a …», ya rellenado.
+
+**Encadenar un sucesor:** Si una suscripción termina y al final empieza una
+suscripción del mismo titular y producto (por ejemplo tras un cambio de
+proveedor), la suscripción finalizada la ofrece como sucesor en sus datos
+maestros. Encadenadas comparten el historial y la asignación de la plantilla
+recurrente. El resumen las lista en «Suscripciones finalizadas sin sucesor».
+La cadena puede quitarse de nuevo.

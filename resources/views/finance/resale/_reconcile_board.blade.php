@@ -265,6 +265,10 @@
                             @if ($lineRow['free'] > 0.001)
                                 <span class="text-warning">{{ __('resale.invoices.remaining', ['amount' => $licenceMonths::label($lineRow['free'], $lineRow['per_licence'])]) }}</span>
                             @endif
+                            {{-- Überzählig (MVP-1754): alle Perioden des Produkts sind gedeckt, die Position bleibt frei. --}}
+                            @if ($lineRow['free'] > 0.001 && ! $lineRow['gap'] && $openMonths <= 0.001)
+                                <x-status-badge size="xs" tone="info" class="mt-0.5" :label="__('resale.board.surplus_line')" :title="__('resale.board.surplus_line_hint')" />
+                            @endif
                             @if ($lineRow['linked'] > 0.001)
                                 <span class="block text-muted">{{ __('resale.board.line_taken', ['periods' => implode(' · ', array_unique($lineRow['periods']))]) }}</span>
                             @endif
@@ -277,6 +281,13 @@
                                         <x-icon-btn icon="add" size="xs" tone="primary" data-entry-modal-trigger
                                                     :href="route('finance.resale.create', ['customer' => $customer->sqid, 'line' => $line->key])"
                                                     show-label>{{ __('resale.board.create_subscription') }}</x-icon-btn>
+                                    @endif
+                                    @if ($lineRow['free'] > 0.001 && $lineRow['linked'] <= 0.001 && $line->sourceKey !== \App\Services\Reselling\Mirror\DomainAccountingMirrorSource::KEY)
+                                        <form method="POST" action="{{ route('finance.resale.periods.unlinked.ignore') }}" class="inline" data-confirm-dialog data-confirm-message="{{ __('resale.unlinked.ignore_confirm') }}">
+                                            @csrf
+                                            <input type="hidden" name="key" value="{{ $line->key }}">
+                                            <x-icon-btn icon="visibility_off" size="xs" tone="ghost" type="submit" :title="__('resale.unlinked.ignore')" />
+                                        </form>
                                     @endif
                                     @if ($lineRow['free'] > 0.001 && $periods !== [])
                                         <x-icon-btn icon="add_link" size="xs" tone="ghost" data-entry-modal-trigger

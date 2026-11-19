@@ -1396,6 +1396,8 @@ return [
         'task' => [
             'billing_start' => 'Años de licencia antes del inicio de facturación',
             'billing_start_detail' => 'Cuenta del portal más reciente que los dominios: cerrarlos juntos en :customer',
+            'chain' => 'Suscripciones finalizadas sin sucesor',
+            'chain_detail' => 'Una suscripción coincidente empieza al final — encadenar en «:subscription»',
             'open' => 'Periodos vencidos sin factura',
             'open_detail' => 'abierto :amount · vencido desde hace más de :days días',
             'open_detail_grace' => 'vencido desde hace más de :days días',
@@ -1473,8 +1475,24 @@ return [
         'link_warning' => 'Este vínculo no encaja en el tiempo con el periodo: revisarlo y deshacerlo si es necesario.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    // Phase 185 (MVP-1752/1753)
+    'chain' => [
+        'link' => 'Encadenar',
+        'unlink' => 'Quitar cadena',
+        'confirm_unlink' => '¿Quitar el sucesor? La suscripción vuelve a contar como finalizada sin sustitución.',
+        'hint' => 'Una suscripción del mismo titular y producto empieza al terminar esta. Encadenadas comparten el historial y la asignación de la plantilla recurrente.',
+        'from' => 'desde :date',
+        'until' => 'hasta :date',
+        'none' => 'Sin predecesor',
+        'predecessor_hint' => 'La factura continúa esta suscripción finalizada. Encadenadas comparten el historial.',
+        'flash_linked' => 'Sucesor establecido: :successor.',
+        'flash_unlinked' => 'Cadena quitada.',
+        'error' => 'Esta suscripción no puede establecerse como sucesor.',
+    ],
     'board' => [
         'hint' => 'A la izquierda los periodos de facturación, a la derecha las facturas. Cada factura libre está en el periodo que mejor le encaja; un clic la asigna.',
+        'surplus_line' => 'sobrante',
+        'surplus_line_hint' => 'Todos los periodos de este producto están cubiertos. Facturado dos veces o falta la suscripción en el registro: abono, crear suscripción o ignorar la posición.',
         'reorder' => [
             'action' => 'Reordenar producto',
             'confirm' => '¿Quitar todos los vínculos de factura de «:product» de este destinatario y volver a proponerlos? Los vínculos confirmados y manuales se pierden; renuncias, disputas y abonos se mantienen.',

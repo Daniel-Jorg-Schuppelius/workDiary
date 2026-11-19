@@ -2265,6 +2265,7 @@ return [
         'subscription_id' => 'Subscription',
         'plan_key' => 'Recurring template',
         'plan_position' => 'Template position',
+        'predecessor' => 'predecessor',
         'line_position' => 'Template line',
         'product_id' => 'Product',
         'product_version' => 'Version',

@@ -3483,6 +3483,8 @@ Route::middleware('auth')->group(function () {
                 // Übernahme durch eine andere Firma ab Stichtag, etwa nach Insolvenz (Phase 166, MVP-1451).
                 Route::get('{subscription}/uebernahme', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'takeoverCreate'])->name('takeover.create');
                 Route::post('{subscription}/uebernahme', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'takeoverStore'])->name('takeover.store');
+                Route::post('{subscription}/nachfolger', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'chainStore'])->name('chain.store');
+                Route::delete('{subscription}/nachfolger', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'chainDestroy'])->name('chain.destroy');
                 Route::put('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'update'])->name('update');
                 Route::delete('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'destroy'])->name('destroy');
             });

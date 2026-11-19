@@ -1504,6 +1504,8 @@ return [
         'rehomed' => 'Titulaire de l’abonnement modifié',
         'holder_assigned' => 'Titulaire de l’abonnement affecté',
         'taken_over' => 'Abonnement repris par une autre société à partir d’une date d’effet',
+        'chained' => 'Successeur de l’abonnement défini',
+        'unchained' => 'Successeur de l’abonnement retiré',
     ],
     'lexware' => [
         'tariffChanged' => 'Profil tarifaire Lexware modifié',

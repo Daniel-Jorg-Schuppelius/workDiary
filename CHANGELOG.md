@@ -106,7 +106,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Steuerregelmatrix: Satzart „Innergemeinschaftliche Lieferung“
   (`intra_community`, `MVP-1731`); ihr Hinweistext ersetzt den Standardhinweis
   bei Waren an EU-Unternehmen.
-- Abos & Lizenzen, Klärfälle in der Arbeitsmappe (`MVP-1749`–`MVP-1751`):
+- Abos & Lizenzen, Ketten und überzählige Positionen (`MVP-1752`, `MVP-1753`, `MVP-1754`):
+  Ein beendetes Abo bietet in den Stammdaten das Abo desselben Halters und
+  Produkts, das an seinem Ende beginnt, als Nachfolger an; verkettet teilen
+  beide den Verlauf und die Zuordnung der Serienvorlage, die Kette lässt sich
+  wieder lösen. Der Überblick nennt solche Abos unter „Beendete Abos ohne
+  Nachfolger“. „Abo aus Position anlegen“ bietet ein kurz davor beendetes Abo
+  als Vorgänger an. In der Abgleichstafel heißt eine freie Position bei voll
+  gedeckten Perioden „überzählig“ und lässt sich dort ignorieren.
+- Abos & Lizenzen, Klärfälle in der Arbeitsmappe (`MVP-1749`, `MVP-1750`, `MVP-1751`):
   Die Arbeitsmappe je Rechnungsempfänger zeigt jetzt die Prüffälle an Bezügen
   (überbuchte Position, Leistungszeitraum trifft die Periode nicht), bisher
   nur im Lizenzkonto, mit Verschieben und Lösen. „Produkt neu ordnen“ im Kopf

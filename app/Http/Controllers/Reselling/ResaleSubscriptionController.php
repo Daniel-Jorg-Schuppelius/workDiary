@@ -30,7 +30,7 @@ use App\Services\Reselling\Contracts\DomainHolderWriter;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Plan\{PlanLine, PlanLinkEditor, RecurringPlans};
-use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ProviderBillingStart, RecipientReconciler, ResaleOverview};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ProviderBillingStart, RecipientReconciler, ResaleOverview, SubscriptionChain};
 use App\Support\{CsvExport, ErrorText, Sqid, UrlSafety};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\DateTimeFormat;
@@ -161,6 +161,8 @@ class ResaleSubscriptionController extends Controller {
             'openPeriods' => $openPeriods,
             // Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746): Hinweis mit Weg zur Sammelaktion des Kunden.
             'billingStart' => app(ProviderBillingStart::class)->forSubscription($subscription),
+            // Beendetes Abo ohne Nachfolger (MVP-1752): Kandidaten zum Verketten.
+            'successorCandidates' => app(SubscriptionChain::class)->successorsFor($subscription),
             'invoices' => $this->recipientInvoices($organization, $subscription, $openPeriods->first()),
             // Vertragsakte (079) nur verlinken, wenn Modul und Recht sie öffnen können.
             'contractLink' => $subscription->contract !== null && $this->contractsEnabled() && Gate::allows('view', $subscription->contract) ? route('contracts.show', $subscription->contract) : null,
@@ -266,6 +268,10 @@ class ResaleSubscriptionController extends Controller {
                 // Laufzeit nur aus der Position, wenn die Lizenzzahl sicher ist („24 Monat" allein kann 2 × 12 sein).
                 'term_months' => LicenseMonths::isLicenceCountCertain($line) && (int) round($split['months']) > 0 ? (int) round($split['months']) : 12,
             ];
+            // Die Position schließt an ein beendetes Abo des Halters an (MVP-1753): als Vorgänger anbieten.
+            if ($start !== null) {
+                $prefill['predecessors'] = app(SubscriptionChain::class)->predecessorsFor((int) $organization->id, $customerId, $foreignId, $line->articleKey, $start);
+            }
         }
 
         // „Abo aus Vorlage anlegen" (Feature 185, MVP-1413): die Vorlagenposition liefert Artikel, Menge, Rhythmus und Preis.
@@ -328,6 +334,10 @@ class ResaleSubscriptionController extends Controller {
                 if ($planKey !== null) {
                     $planLinks->save($organization, $subscription, $planKey, $request->planPosition(), $subscription->quantity, $request->user()?->id);
                 }
+                $predecessor = ResaleSubscription::query()->find(Sqid::decode(ResaleSubscription::class, (string) $request->input('predecessor', '')) ?? 0);
+                if ($predecessor !== null && SubscriptionChain::needsSuccessor($predecessor)) {
+                    app(SubscriptionChain::class)->link($predecessor, $subscription);
+                }
 
                 return $subscription;
             });
@@ -336,6 +346,28 @@ class ResaleSubscriptionController extends Controller {
         }
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.created'));
+    }
+
+    /** Nachfolger eines beendeten Abos setzen (MVP-1752) — nur aus den Kandidaten der Kette. */
+    public function chainStore(Request $request, ResaleSubscription $subscription, SubscriptionChain $chain): RedirectResponse {
+        $successorId = Sqid::decode(ResaleSubscription::class, (string) $request->input('successor', ''));
+        $successor = $chain->successorsFor($subscription)->firstWhere('id', $successorId);
+        if ($successor === null) {
+            throw ValidationException::withMessages(['successor' => (string) __('resale.chain.error')]);
+        }
+        try {
+            $chain->link($subscription, $successor);
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['successor' => ErrorText::for($e)]);
+        }
+
+        return back()->with('success', __('resale.chain.flash_linked', ['successor' => $successor->label]));
+    }
+
+    public function chainDestroy(ResaleSubscription $subscription, SubscriptionChain $chain): RedirectResponse {
+        $chain->unlink($subscription);
+
+        return back()->with('success', __('resale.chain.flash_unlinked'));
     }
 
     public function edit(ResaleSubscription $subscription): View {

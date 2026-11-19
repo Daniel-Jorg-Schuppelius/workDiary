@@ -1396,6 +1396,8 @@ return [
         'task' => [
             'billing_start' => 'License years before billing start',
             'billing_start_detail' => 'Portal account younger than the domains — close them together at :customer',
+            'chain' => 'Ended subscriptions without successor',
+            'chain_detail' => 'A matching subscription starts at the end — chain at “:subscription”',
             'open' => 'Due periods without invoice',
             'open_detail' => 'open :amount · due for more than :days days',
             'open_detail_grace' => 'due for more than :days days',
@@ -1473,8 +1475,24 @@ return [
         'link_warning' => 'This link does not fit the period in time — check it and unlink if needed.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    // Phase 185 (MVP-1752/1753)
+    'chain' => [
+        'link' => 'Chain',
+        'unlink' => 'Remove chain',
+        'confirm_unlink' => 'Remove the successor? The subscription then counts as ended without replacement again.',
+        'hint' => 'A subscription of the same holder and product starts when this one ends. Chained, both share their history and the recurring template assignment.',
+        'from' => 'from :date',
+        'until' => 'until :date',
+        'none' => 'No predecessor',
+        'predecessor_hint' => 'The invoice follows this ended subscription. Chained as predecessor, both share their history.',
+        'flash_linked' => 'Successor set: :successor.',
+        'flash_unlinked' => 'Chain removed.',
+        'error' => 'This subscription cannot be set as successor.',
+    ],
     'board' => [
         'hint' => 'Billing periods on the left, invoices on the right. Each free invoice sits at the period it fits best — one click assigns it.',
+        'surplus_line' => 'surplus',
+        'surplus_line_hint' => 'All periods of this product are covered. Invoiced twice or the subscription is missing in the register: credit note, create subscription or ignore the line.',
         'reorder' => [
             'action' => 'Reorder product',
             'confirm' => 'Remove all invoice links of “:product” for this recipient and have them proposed again? Confirmed and manual links are lost; waivers, disputes and credit notes stay.',

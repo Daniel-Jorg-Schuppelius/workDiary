@@ -1504,6 +1504,8 @@ return [
         'rehomed' => 'Halter des Abos gewechselt',
         'holder_assigned' => 'Halter des Abos zugeordnet',
         'taken_over' => 'Abo ab Stichtag von anderer Firma übernommen',
+        'chained' => 'Nachfolger des Abos gesetzt',
+        'unchained' => 'Nachfolger des Abos entfernt',
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware-Tarifprofil geändert',

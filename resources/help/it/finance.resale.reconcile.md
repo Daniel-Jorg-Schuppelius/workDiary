@@ -83,3 +83,10 @@ vanno persi. Rinunce, contestazioni e note di credito restano.
 dello stesso prodotto con esattamente il periodo di prestazione del periodo
 aperto, compare accanto al periodo, anche per una sola licenza. Da lì si può
 cambiare il titolare o cedere il periodo.
+
+**Posizione in eccesso:** Se tutti i periodi di un prodotto sono coperti e una
+fattura resta libera, compare come «in eccesso» nella tavola. O è stata
+fatturata due volte (nota di credito), o l'abbonamento manca nel registro
+(creare l'abbonamento), o la posizione non appartiene qui (ignorare). Se si
+crea l'abbonamento dalla posizione e poco prima è terminato un abbonamento
+dello stesso prodotto, la finestra lo propone come predecessore.

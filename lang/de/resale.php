@@ -1396,6 +1396,8 @@ return [
         'task' => [
             'billing_start' => 'Lizenzjahre vor Abrechnungsbeginn',
             'billing_start_detail' => 'Portalkonto jünger als die Domains — bei :customer gesammelt abschließen',
+            'chain' => 'Beendete Abos ohne Nachfolger',
+            'chain_detail' => 'Passendes Abo beginnt am Ende — bei „:subscription“ verketten',
             'open' => 'Fällige Perioden ohne Rechnung',
             'open_detail' => 'offen :amount · fällig seit mehr als :days Tagen',
             'open_detail_grace' => 'fällig seit mehr als :days Tagen',
@@ -1473,8 +1475,24 @@ return [
         'link_warning' => 'Dieser Bezug passt zeitlich nicht zur Periode — prüfen und bei Bedarf lösen.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    // Phase 185 (MVP-1752/1753)
+    'chain' => [
+        'link' => 'Verketten',
+        'unlink' => 'Kette lösen',
+        'confirm_unlink' => 'Nachfolger entfernen? Das Abo gilt dann wieder als beendet ohne Ablösung.',
+        'hint' => 'Ein Abo desselben Halters und Produkts beginnt am Ende dieses Abos. Verkettet teilen beide den Verlauf und die Zuordnung der Serienvorlage.',
+        'from' => 'ab :date',
+        'until' => 'bis :date',
+        'none' => 'Kein Vorgänger',
+        'predecessor_hint' => 'Die Rechnung schließt an dieses beendete Abo an. Als Vorgänger verkettet teilen beide den Verlauf.',
+        'flash_linked' => 'Nachfolger gesetzt: :successor.',
+        'flash_unlinked' => 'Kette gelöst.',
+        'error' => 'Dieses Abo kann nicht als Nachfolger gesetzt werden.',
+    ],
     'board' => [
         'hint' => 'Links die Abrechnungsperioden, rechts die Rechnungen. Jede freie Rechnung steht bei der Periode, zu der sie am besten passt — ein Klick ordnet sie zu.',
+        'surplus_line' => 'überzählig',
+        'surplus_line_hint' => 'Alle Perioden dieses Produkts sind gedeckt. Doppelt berechnet oder das Abo fehlt im Register: Gutschrift, Abo anlegen oder Position ignorieren.',
         'reorder' => [
             'action' => 'Produkt neu ordnen',
             'confirm' => 'Alle Rechnungsbezüge von „:product“ bei diesem Empfänger lösen und neu vorschlagen lassen? Bestätigte und von Hand gesetzte Bezüge gehen dabei verloren; Verzicht, Einspruch und Gutschriften bleiben.',

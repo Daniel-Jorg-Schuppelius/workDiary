@@ -1396,6 +1396,8 @@ return [
         'task' => [
             'billing_start' => 'Anni di licenza prima dell’inizio della fatturazione',
             'billing_start_detail' => 'Account del portale più recente dei domini: chiuderli insieme presso :customer',
+            'chain' => 'Abbonamenti terminati senza successore',
+            'chain_detail' => 'Un abbonamento corrispondente inizia alla fine — concatenare su «:subscription»',
             'open' => 'Periodi scaduti senza fattura',
             'open_detail' => 'aperto :amount · scaduto da più di :days giorni',
             'open_detail_grace' => 'scaduto da più di :days giorni',
@@ -1473,8 +1475,24 @@ return [
         'link_warning' => 'Questo collegamento non corrisponde temporalmente al periodo: verificarlo e scollegarlo se necessario.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    // Phase 185 (MVP-1752/1753)
+    'chain' => [
+        'link' => 'Concatena',
+        'unlink' => 'Rimuovi catena',
+        'confirm_unlink' => 'Rimuovere il successore? L’abbonamento torna a essere considerato terminato senza sostituzione.',
+        'hint' => 'Un abbonamento dello stesso titolare e prodotto inizia alla fine di questo. Concatenati condividono lo storico e l’assegnazione del modello ricorrente.',
+        'from' => 'dal :date',
+        'until' => 'fino al :date',
+        'none' => 'Nessun predecessore',
+        'predecessor_hint' => 'La fattura prosegue questo abbonamento terminato. Concatenati condividono lo storico.',
+        'flash_linked' => 'Successore impostato: :successor.',
+        'flash_unlinked' => 'Catena rimossa.',
+        'error' => 'Questo abbonamento non può essere impostato come successore.',
+    ],
     'board' => [
         'hint' => 'A sinistra i periodi di fatturazione, a destra le fatture. Ogni fattura libera si trova al periodo che le corrisponde meglio: un clic la assegna.',
+        'surplus_line' => 'in eccesso',
+        'surplus_line_hint' => 'Tutti i periodi di questo prodotto sono coperti. Fatturato due volte o abbonamento mancante nel registro: nota di credito, creare l’abbonamento o ignorare la posizione.',
         'reorder' => [
             'action' => 'Riordina prodotto',
             'confirm' => 'Rimuovere tutti i collegamenti fattura di «:product» per questo destinatario e farli riproporre? I collegamenti confermati e manuali vanno persi; rinunce, contestazioni e note di credito restano.',

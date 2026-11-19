@@ -40,3 +40,10 @@ et la nouvelle reprend les contrats — est aussi une cession : toutes les
 licences de l’ancienne période à l’ancien détenteur ; le rapprochement le
 propose sur une facture de l’autre client sous « Céder la période à … »,
 prérempli.
+
+**Enchaîner un successeur :** Si un abonnement se termine et qu'un abonnement
+du même titulaire et du même produit commence à sa fin (par exemple après un
+changement de fournisseur), l'abonnement terminé le propose comme successeur
+dans ses données de base. Enchaînés, ils partagent l'historique et
+l'affectation du modèle récurrent. L'aperçu les liste sous « Abonnements
+terminés sans successeur ». La chaîne peut être supprimée.

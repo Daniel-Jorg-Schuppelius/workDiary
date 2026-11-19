@@ -148,6 +148,17 @@
         <x-input-field name="purchase_unit_price" type="number" step="0.01" min="0" :label="__('resale.field.purchase_unit_price')" :value="old('purchase_unit_price', $editing ? $subscription->purchase_unit_price?->withScale(2)->getAmount() : null)" span="3" :hint="__('resale.dialog.price_hint')" />
         <x-input-field name="sale_unit_price" type="number" step="0.01" min="0" :label="__('resale.field.sale_unit_price')" :value="old('sale_unit_price', $editing ? $subscription->sale_unit_price?->withScale(2)->getAmount() : ($prefill['sale_unit_price'] ?? null))" span="3" />
 
+        @php $predecessors = $editing ? collect() : ($prefill['predecessors'] ?? collect()); @endphp
+        @if ($predecessors->isNotEmpty())
+            {{-- Die Rechnungsposition schließt an ein beendetes Abo an (MVP-1753): als Vorgänger verketten. --}}
+            <x-select-field name="predecessor" :label="__('resale.field.predecessor')" :hint="__('resale.chain.predecessor_hint')" span="6">
+                <option value="">{{ __('resale.chain.none') }}</option>
+                @foreach ($predecessors as $index => $candidate)
+                    <option value="{{ $candidate->sqid }}" @selected(old('predecessor', $predecessors->count() === 1 ? $candidate->sqid : '') === $candidate->sqid)>{{ $candidate->label }} · ×{{ $candidate->quantity }} · {{ $candidate->provider->label() }} · {{ __('resale.chain.until', ['date' => $candidate->ends_on?->fdate()]) }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
+
         <x-textarea-field name="notes" :label="__('resale.field.notes')" :value="$value('notes')" span="6" rows="2" />
     </div>
 </x-modal>

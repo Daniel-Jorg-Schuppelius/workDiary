@@ -1396,6 +1396,8 @@ return [
         'task' => [
             'billing_start' => 'Années de licence avant le début de facturation',
             'billing_start_detail' => 'Compte portail plus récent que les domaines — à clôturer ensemble chez :customer',
+            'chain' => 'Abonnements terminés sans successeur',
+            'chain_detail' => 'Un abonnement correspondant commence à la fin — enchaîner sur « :subscription »',
             'open' => 'Périodes échues sans facture',
             'open_detail' => 'ouvert :amount · échu depuis plus de :days jours',
             'open_detail_grace' => 'échu depuis plus de :days jours',
@@ -1473,8 +1475,24 @@ return [
         'link_warning' => 'Ce lien ne correspond pas à la période dans le temps — à vérifier et à supprimer si nécessaire.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
+    // Phase 185 (MVP-1752/1753)
+    'chain' => [
+        'link' => 'Enchaîner',
+        'unlink' => 'Supprimer la chaîne',
+        'confirm_unlink' => 'Retirer le successeur ? L’abonnement compte alors de nouveau comme terminé sans remplacement.',
+        'hint' => 'Un abonnement du même titulaire et du même produit commence à la fin de celui-ci. Enchaînés, ils partagent l’historique et l’affectation du modèle récurrent.',
+        'from' => 'à partir du :date',
+        'until' => 'jusqu’au :date',
+        'none' => 'Aucun prédécesseur',
+        'predecessor_hint' => 'La facture fait suite à cet abonnement terminé. Enchaînés, ils partagent l’historique.',
+        'flash_linked' => 'Successeur défini : :successor.',
+        'flash_unlinked' => 'Chaîne supprimée.',
+        'error' => 'Cet abonnement ne peut pas être défini comme successeur.',
+    ],
     'board' => [
         'hint' => 'À gauche les périodes de facturation, à droite les factures. Chaque facture libre se trouve à la période qui lui correspond le mieux — un clic l’affecte.',
+        'surplus_line' => 'excédentaire',
+        'surplus_line_hint' => 'Toutes les périodes de ce produit sont couvertes. Facturé deux fois ou abonnement absent du registre : avoir, créer l’abonnement ou ignorer la ligne.',
         'reorder' => [
             'action' => 'Réordonner le produit',
             'confirm' => 'Supprimer tous les liens de facture de « :product » pour ce destinataire et les faire proposer à nouveau ? Les liens confirmés et manuels sont perdus ; renonciations, contestations et avoirs restent.',

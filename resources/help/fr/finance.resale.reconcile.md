@@ -84,3 +84,11 @@ Renonciations, contestations et avoirs restent.
 du même produit avec exactement la période de prestation de la période
 ouverte, elle apparaît à la période, même pour une seule licence. De là, vous
 pouvez changer le titulaire ou céder la période.
+
+**Ligne excédentaire :** Si toutes les périodes d'un produit sont couvertes et
+qu'une facture reste libre, elle apparaît comme « excédentaire » dans le
+tableau. Soit elle a été facturée deux fois (avoir), soit l'abonnement manque
+dans le registre (créer l'abonnement), soit la ligne n'a pas sa place ici
+(ignorer). Si vous créez l'abonnement à partir de la ligne et qu'un abonnement
+du même produit s'est terminé peu avant, la boîte de dialogue le propose comme
+prédécesseur.

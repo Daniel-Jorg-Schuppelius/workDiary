@@ -1504,6 +1504,8 @@ return [
         'rehomed' => 'Subscription holder changed',
         'holder_assigned' => 'Subscription holder assigned',
         'taken_over' => 'Subscription taken over by another company from an effective date',
+        'chained' => 'Successor of the subscription set',
+        'unchained' => 'Successor of the subscription removed',
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware plan profile changed',

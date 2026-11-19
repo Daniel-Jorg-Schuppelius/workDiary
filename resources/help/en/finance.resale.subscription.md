@@ -38,3 +38,10 @@ company splits and the new one takes over the contracts — is a transfer
 too: all licences for the old period to the former holder; the
 reconciliation offers this at an invoice of the other customer as
 "Transfer period to …", prefilled.
+
+**Chaining a successor:** If a subscription ends and a subscription of the same
+holder and product starts at its end (for example after a provider change), the
+ended subscription offers it as successor in its master data. Chained, both
+share their history and the recurring template assignment. The overview lists
+such subscriptions under “Ended subscriptions without successor”. The chain can
+be removed again.

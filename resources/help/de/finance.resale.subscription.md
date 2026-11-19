@@ -38,3 +38,9 @@ ein Halterwechsel im Zeitverlauf — eine Firma wird aufgespalten, die neue
 übernimmt die Verträge — ist eine Abtretung: alle Lizenzen für den alten
 Zeitraum an den früheren Halter; der Abgleich bietet das an einer Rechnung
 des anderen Kunden als „Periode an … abtreten" vorbelegt an.
+
+**Nachfolger verketten:** Endet ein Abo und beginnt am Ende ein Abo desselben
+Halters und Produkts (etwa nach einem Anbieterwechsel), bietet das beendete
+Abo es in den Stammdaten als Nachfolger an. Verkettet teilen beide den Verlauf
+und die Zuordnung der Serienvorlage. Der Überblick nennt solche Abos unter
+„Beendete Abos ohne Nachfolger“. Die Kette lässt sich wieder lösen.

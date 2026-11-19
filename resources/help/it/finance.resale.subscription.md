@@ -37,3 +37,10 @@ rimosso le cessioni. Anche un cambio di titolare nel tempo — un’azienda si
 scinde e la nuova rileva i contratti — è una cessione: tutte le licenze del
 vecchio periodo al titolare precedente; la riconciliazione lo propone su una
 fattura dell’altro cliente come «Cedere il periodo a …», precompilato.
+
+**Concatenare un successore:** Se un abbonamento termina e alla fine inizia un
+abbonamento dello stesso titolare e prodotto (ad esempio dopo un cambio di
+fornitore), l'abbonamento terminato lo propone come successore nei dati di
+base. Concatenati condividono lo storico e l'assegnazione del modello
+ricorrente. La panoramica li elenca sotto «Abbonamenti terminati senza
+successore». La catena può essere rimossa.

@@ -108,7 +108,34 @@
                         <x-detail-grid.row :label="__('resale.field.company_name')">{{ $subscription->company_name }}</x-detail-grid.row>
                     @endif
                     @if ($subscription->successor !== null)
-                        <x-detail-grid.row :label="__('resale.field.successor')"><a href="{{ route('finance.resale.show', $subscription->successor->sqid) }}" class="link link-hover">{{ $subscription->successor->label }} ({{ $subscription->successor->provider->label() }})</a></x-detail-grid.row>
+                        <x-detail-grid.row :label="__('resale.field.successor')">
+                            <span class="flex flex-wrap items-center gap-1">
+                                <a href="{{ route('finance.resale.show', $subscription->successor->sqid) }}" class="link link-hover">{{ $subscription->successor->label }} ({{ $subscription->successor->provider->label() }})</a>
+                                @can(\App\Enums\User\Permission::ResellingManage->value)
+                                    <form method="POST" action="{{ route('finance.resale.chain.destroy', $subscription->sqid) }}" class="inline" data-confirm-dialog data-confirm-message="{{ __('resale.chain.confirm_unlink') }}" data-confirm-tone="warning">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-icon-btn icon="link_off" size="xs" tone="ghost" type="submit" :title="__('resale.chain.unlink')" />
+                                    </form>
+                                @endcan
+                            </span>
+                        </x-detail-grid.row>
+                    @elseif ($successorCandidates->isNotEmpty())
+                        {{-- Beendet ohne Nachfolger, ein passendes Abo beginnt am Ende (MVP-1752). --}}
+                        @can(\App\Enums\User\Permission::ResellingManage->value)
+                            <x-detail-grid.row :label="__('resale.field.successor')">
+                                <form method="POST" action="{{ route('finance.resale.chain.store', $subscription->sqid) }}" class="flex flex-wrap items-center gap-1">
+                                    @csrf
+                                    <select name="successor" class="select select-bordered select-xs" aria-label="{{ __('resale.field.successor') }}">
+                                        @foreach ($successorCandidates as $candidate)
+                                            <option value="{{ $candidate->sqid }}">{{ $candidate->label }} · ×{{ $candidate->quantity }} · {{ $candidate->provider->label() }} · {{ __('resale.chain.from', ['date' => $candidate->starts_on->fdate()]) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <x-icon-btn icon="link" size="xs" tone="primary" type="submit" show-label>{{ __('resale.chain.link') }}</x-icon-btn>
+                                </form>
+                                <span class="block text-xs text-muted">{{ __('resale.chain.hint') }}</span>
+                            </x-detail-grid.row>
+                        @endcan
                     @endif
                     @foreach ($subscription->predecessors as $predecessor)
                         <x-detail-grid.row :label="__('resale.field.predecessor')"><a href="{{ route('finance.resale.show', $predecessor->sqid) }}" class="link link-hover">{{ $predecessor->label }} ({{ $predecessor->provider->label() }})</a></x-detail-grid.row>

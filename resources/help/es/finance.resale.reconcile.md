@@ -84,3 +84,10 @@ Renuncias, disputas y abonos se mantienen.
 producto con exactamente el periodo de prestación del periodo abierto, aparece
 junto al periodo, también con una sola licencia. Desde ahí puede cambiar el
 titular o ceder el periodo.
+
+**Posición sobrante:** Si todos los periodos de un producto están cubiertos y
+una factura queda libre, aparece como «sobrante» en el tablero. O se facturó
+dos veces (abono), o falta la suscripción en el registro (crear suscripción),
+o la posición no corresponde aquí (ignorar). Si crea la suscripción desde la
+posición y poco antes terminó una suscripción del mismo producto, el diálogo
+la ofrece como predecesor.

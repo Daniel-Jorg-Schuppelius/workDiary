@@ -81,3 +81,10 @@ dabei verloren. Verzicht, Einspruch und Gutschriften bleiben.
 Position desselben Produkts mit genau dem Leistungszeitraum der offenen
 Periode, steht sie bei der Periode, auch bei einer einzelnen Lizenz. Von dort
 lässt sich der Halter wechseln oder die Periode abtreten.
+
+**Überzählige Position:** Sind alle Perioden eines Produkts gedeckt und eine
+Rechnung bleibt frei, steht sie als „überzählig“ in der Tafel. Entweder wurde
+doppelt berechnet (Gutschrift), oder das Abo fehlt im Register (Abo anlegen),
+oder die Position gehört nicht hierher (ignorieren). Legen Sie das Abo aus der
+Position an und endete kurz davor ein Abo desselben Produkts, bietet der Dialog
+es als Vorgänger an.

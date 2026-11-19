@@ -81,3 +81,10 @@ notes stay.
 the same product with exactly the service period of the open period, it is
 shown at the period, even for a single license. From there you can change the
 holder or assign the period.
+
+**Surplus line:** If all periods of a product are covered and an invoice stays
+free, it is shown as “surplus” on the board. Either it was invoiced twice
+(credit note), or the subscription is missing in the register (create
+subscription), or the line does not belong here (ignore). If you create the
+subscription from the line and a subscription of the same product ended shortly
+before, the dialog offers it as predecessor.

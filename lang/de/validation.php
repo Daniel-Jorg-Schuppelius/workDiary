@@ -2231,6 +2231,7 @@ return [
         'subscription_id' => 'Abo',
         'plan_key' => 'Serienvorlage',
         'plan_position' => 'Vorlagenposition',
+        'predecessor' => 'Vorgänger',
         'line_position' => 'Vorlagenposition',
         'product_id' => 'Produkt',
         'product_version' => 'Version',

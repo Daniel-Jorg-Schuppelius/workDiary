@@ -1,0 +1,142 @@
+<?php
+/*
+ * Created on   : Thu Nov 19 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SubscriptionChainTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Reselling;
+
+use App\Enums\Reselling\SubscriptionStatus;
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Reselling\ResaleSubscription;
+use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Services\Reselling\Register\{PeriodPlanner, ResaleOverview, SubscriptionChain};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithOrganization;
+use Tests\TestCase;
+
+/**
+ * Phase 185 (MVP-1752–1754): Vorgänger und Nachfolger von Hand verketten, „Abo aus
+ * Position anlegen“ setzt ein beendetes Abo fort, überzählige Position in der Tafel.
+ */
+class SubscriptionChainTest extends TestCase {
+    use RefreshDatabase;
+    use WithOrganization;
+
+    private LexofficeArticle $exchange;
+
+    private Customer $customer;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+        $this->travelTo('2026-09-07');
+        $this->exchange = LexofficeArticle::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'art-exo', 'name' => 'Exchange Online (Plan 1)', 'article_number' => 'ART-EXO',
+            'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '3.95', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
+        ]);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Grünweg Technik GmbH']);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-gw', 'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->getKey(),
+        ]);
+    }
+
+    /** @param  array<string, mixed>  $attributes */
+    private function subscription(string $startsOn, ?string $endsOn, array $attributes = []): ResaleSubscription {
+        $subscription = ResaleSubscription::query()->create($attributes + [
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => $endsOn === null ? 'manual' : 'telekom_marketplace',
+            'label' => 'Exchange Online (Plan 1)', 'quantity' => 1, 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
+            'status' => $endsOn === null ? 'active' : 'ended', 'currency' => 'EUR', 'sale_unit_price' => '47.40', 'customer_id' => $this->customer->id,
+            'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => $startsOn, 'ends_on' => $endsOn,
+        ]);
+        (new PeriodPlanner)->sync($subscription);
+
+        return $subscription;
+    }
+
+    private function invoice(string $number, string $from, string $to): LexofficeVoucherLine {
+        $voucher = LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-' . $number, 'contact_external_id' => 'c-gw', 'voucher_type' => 'invoice',
+            'voucher_status' => 'paid', 'voucher_number' => $number, 'voucher_date' => $from, 'total_amount' => 56.41, 'currency' => 'EUR', 'archived' => false,
+            'service_starts_on' => $from, 'service_ends_on' => $to, 'lines_synced_at' => now(),
+        ]);
+
+        return LexofficeVoucherLine::create([
+            'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service',
+            'external_article_id' => 'art-exo', 'lexoffice_article_id' => $this->exchange->id, 'name' => 'Exchange Online (Plan 1)',
+            'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '3.95', 'total_net' => '47.40', 'tax_rate' => 19, 'currency' => 'EUR',
+        ]);
+    }
+
+    public function test_ended_subscription_is_chained_to_the_matching_successor_and_released_again(): void {
+        $admin = $this->orgAdmin();
+        $old = $this->subscription('2023-02-13', '2026-02-13', ['quantity' => 4]);
+        $new = $this->subscription('2026-02-13', null, ['quantity' => 4]);
+        // Anderes Produkt und weit entfernter Beginn: keine Kandidaten.
+        $this->subscription('2026-02-13', null, ['label' => 'Microsoft Teams Essentials', 'article_ref' => 'lex:999']);
+        $this->subscription('2024-08-01', null);
+
+        $this->assertSame([$new->id], app(SubscriptionChain::class)->successorsFor($old)->pluck('id')->all());
+        $overview = app(ResaleOverview::class)->build($this->organization);
+        $this->assertContains('chain', array_column($overview['tasks'], 'key'));
+
+        $detail = route('finance.resale.show', $old->sqid);
+        $this->actingAs($admin)->get($detail)->assertOk()->assertSee(__('resale.chain.link'))->assertSee(__('resale.chain.hint'));
+        // Kein Kandidat: abgewiesen.
+        $this->actingAs($admin)->from($detail)->post(route('finance.resale.chain.store', $old->sqid), ['successor' => $old->sqid])->assertSessionHasErrors('successor');
+        $this->actingAs($admin)->from($detail)->post(route('finance.resale.chain.store', $old->sqid), ['successor' => $new->sqid])->assertRedirect($detail)->assertSessionHasNoErrors();
+
+        $old->refresh();
+        $this->assertSame($new->id, $old->successor_id);
+        $this->assertSame(SubscriptionStatus::Superseded, $old->status);
+        $this->assertSame(1, AuditLog::query()->where('event', SubscriptionChain::AUDIT_LINKED)->count());
+        $this->actingAs($admin)->get($detail)->assertOk()->assertDontSee(__('resale.chain.hint'))->assertSee(__('resale.chain.unlink'));
+
+        $this->actingAs($admin)->from($detail)->delete(route('finance.resale.chain.destroy', $old->sqid))->assertRedirect($detail);
+        $old->refresh();
+        $this->assertNull($old->successor_id);
+        $this->assertSame(SubscriptionStatus::Ended, $old->status);
+    }
+
+    public function test_subscription_created_from_an_invoice_line_continues_the_ended_one(): void {
+        $admin = $this->orgAdmin();
+        $old = $this->subscription('2023-04-22', '2024-04-27');
+        $line = $this->invoice('RE/2024/0630', '2024-04-22', '2025-04-21');
+        $key = \App\Support\Sqid::encode(LexofficeVoucherLine::class, $line->id);
+
+        $this->actingAs($admin)->get(route('finance.resale.create', ['customer' => $this->customer->sqid, 'line' => $key]))->assertOk()
+            ->assertSee(__('resale.chain.predecessor_hint'))->assertSee($old->sqid);
+
+        $this->actingAs($admin)->post(route('finance.resale.store'), [
+            'kind' => 'license', 'provider' => 'manual', 'label' => 'Exchange Online (Plan 1)', 'holder' => 'customer', 'customer_id' => $this->customer->id,
+            'quantity' => 1, 'starts_on' => '2024-04-22', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active',
+            'sale_unit_price' => '47.40', 'predecessor' => $old->sqid,
+        ])->assertSessionHasNoErrors();
+
+        $new = ResaleSubscription::query()->where('provider', 'manual')->firstOrFail();
+        $this->assertSame($new->id, $old->fresh()?->successor_id);
+        $this->assertSame(SubscriptionStatus::Superseded, $old->fresh()?->status);
+    }
+
+    public function test_board_marks_a_surplus_line_and_offers_to_ignore_it(): void {
+        $admin = $this->orgAdmin();
+        $this->subscription('2023-10-18', '2024-10-17');
+        $this->invoice('RE/2023/0100', '2023-10-18', '2024-10-17');
+        $this->invoice('RE/2023/0101', '2023-10-20', '2024-10-19');
+        app(\App\Services\Reselling\Register\LinkProposer::class)->propose($this->organization);
+
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->customer))->assertOk()
+            ->assertSee(__('resale.board.surplus_line'))
+            ->assertSee(route('finance.resale.periods.unlinked.ignore'));
+    }
+}

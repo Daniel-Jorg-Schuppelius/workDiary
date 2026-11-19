@@ -100,6 +100,8 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             // Domains kommen nur über den Domain-Sync; ein Datei-/Hand-Abo würde er nachts beenden.
             'provider' => $locked['provider'] ? ['nullable', Rule::in($providers)] : ['required', Rule::enum(SubscriptionProvider::class), Rule::notIn([SubscriptionProvider::DomainReselling->value])],
             'label' => ['required', 'string', 'max:190'],
+            // Sqid des beendeten Abos, das dieses fortsetzt (MVP-1753); nur beim Anlegen ausgewertet.
+            'predecessor' => ['nullable', 'string', 'max:32'],
             'external_id' => $locked['external_id'] ? ['nullable', 'string', 'max:120'] : ['nullable', 'string', 'max:120', $this->uniqueExternalId()],
             'external_order_id' => ['nullable', 'string', 'max:120'],
             'holder' => ['required', Rule::in(['customer', 'foreign', 'own', 'none'])],

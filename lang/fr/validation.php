@@ -2231,6 +2231,7 @@ return [
         'subscription_id' => 'Abonnement',
         'plan_key' => 'Modèle récurrent',
         'plan_position' => 'Position du modèle',
+        'predecessor' => 'prédécesseur',
         'line_position' => 'Ligne du modèle',
         'product_id' => 'Produit',
         'product_version' => 'Version',
