@@ -597,6 +597,7 @@ return [
         'subtitle' => 'Periodi di tutti gli abbonamenti di un destinatario contro le righe licenza delle sue fatture — in mesi licenza',
         'show_title' => 'Riconciliazione · :customer',
         'show_subtitle' => 'Abbonamenti, tavola di riconciliazione per prodotto con corrispondenza, modelli ricorrenti e note di credito del destinatario',
+        'findings_hint' => 'Collegamenti che coprono più mesi di licenza di quanti ne ha la posizione, o il cui periodo di prestazione non coincide con il periodo.',
         'legend' => 'Tutti i valori sono mesi licenza = licenze × mesi (5 licenze × 1 anno = 60). Libero = mesi licenza di righe non ancora collegate a un periodo. Mancante = mesi di periodi aperti senza riga libera (probabilmente mai fatturati). Eccedenza = mesi di righe libere senza periodo aperto (abbonamento mancante o doppia fatturazione).',
         'filter_problems' => 'Solo da chiarire',
         'filter_all' => 'Tutti i destinatari',
@@ -1474,6 +1475,12 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'A sinistra i periodi di fatturazione, a destra le fatture. Ogni fattura libera si trova al periodo che le corrisponde meglio: un clic la assegna.',
+        'reorder' => [
+            'action' => 'Riordina prodotto',
+            'confirm' => 'Rimuovere tutti i collegamenti fattura di «:product» per questo destinatario e farli riproporre? I collegamenti confermati e manuali vanno persi; rinunce, contestazioni e note di credito restano.',
+            'flash' => ':links collegamenti su :periods periodi rimossi, la proposta li ha ridistribuiti.',
+            'error_product' => 'Il prodotto non appartiene a questo destinatario.',
+        ],
         'focus' => 'Solo prodotti con «:filter»',
         'focus_reset' => 'Mostra tutti i prodotti',
         'summary' => 'Previsto :required · coperto :covered · fatturato :invoiced · libero :free',

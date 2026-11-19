@@ -1490,6 +1490,7 @@ return [
         'auto_confirmed' => 'Invoice link auto-confirmed (sure match of the proposal run)',
         'order_change' => 'Stub period waived at order change, links moved to the successor',
         'direct_billing' => 'License year before the portal account is invoiced directly',
+        'links_reset' => 'Invoice links removed (reorder product)',
     ],
     'resale_account_allocation' => [
         'saved' => 'License account allocation saved',

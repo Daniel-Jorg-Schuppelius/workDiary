@@ -85,6 +85,22 @@
 
         @include('finance.resale._billing_start_hint', ['billingStart' => $billingStart, 'customer' => $customer, 'canManage' => $canManage])
 
+        @if ($findings !== [])
+            {{-- Prüffälle an Bezügen (MVP-1749): überbuchte Positionen und Bezüge neben der Periode, mit dem Weg zur Korrektur. --}}
+            <x-card :title="__('resale.account.section.findings')" :subtitle="__('resale.reconcile.findings_hint')" padding="p-0" class="mb-4" id="findings">
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th>{{ __('resale.account.finding.kind') }}</x-table.th>
+                            <x-table.th>{{ __('resale.account.finding.detail') }}</x-table.th>
+                            <x-table.th class="text-right"></x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    @include('finance.resale._link_findings', ['findings' => $findings, 'canManage' => $canManage])
+                </x-table>
+            </x-card>
+        @endif
+
         @if ($inbox !== [])
             {{-- Endkunden im Rechnungstext, deren Abos noch ohne Halter sind. --}}
             <div role="alert" class="alert alert-warning mb-4 text-sm">

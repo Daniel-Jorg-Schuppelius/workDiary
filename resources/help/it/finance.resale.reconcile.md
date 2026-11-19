@@ -66,3 +66,20 @@ fattura del registro, anche se il dominio è altrimenti fatturato tramite il
 portale. Gli anni di licenza iniziati dopo l'inizio dell'account e quelli
 fatturati in parte restano invariati; in seguito ogni periodo può essere
 riaperto o rinunciato singolarmente.
+
+**Collegamenti da verificare:** Sopra la tavola compaiono i collegamenti che
+non possono essere corretti: una posizione copre più mesi di licenza di quanti
+ne ha (sovraprenotata), o il suo periodo di prestazione non coincide con il
+periodo (fuori posto). Un collegamento fuori posto può essere spostato sul
+periodo proposto o rimosso, uno sovraprenotato solo rimosso.
+
+**Riordina prodotto:** Se i collegamenti di un prodotto sono in disordine, ad
+esempio spostati di un anno, il pulsante nell'intestazione del prodotto
+rimuove tutti i collegamenti fattura di quel prodotto per questo destinatario,
+e la proposta ridistribuisce le fatture. I collegamenti confermati e manuali
+vanno persi. Rinunce, contestazioni e note di credito restano.
+
+**Fattura a un altro cliente:** Se un altro cliente ha una posizione libera
+dello stesso prodotto con esattamente il periodo di prestazione del periodo
+aperto, compare accanto al periodo, anche per una sola licenza. Da lì si può
+cambiare il titolare o cedere il periodo.

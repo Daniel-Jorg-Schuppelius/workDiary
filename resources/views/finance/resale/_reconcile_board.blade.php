@@ -42,6 +42,14 @@
                 @if ($product['gap_since'] !== null)
                     <span class="text-warning">{{ __('resale.reconcile.verdict.gap_since', ['date' => $product['gap_since']->fdate()]) }}</span>
                 @endif
+                {{-- Produkt neu ordnen (MVP-1751): Bezüge lösen, der Vorschlagslauf verteilt neu. --}}
+                @if ($canManage && $product['covered'] > 0.001)
+                    <form method="POST" action="{{ route('finance.resale.reconcile.reorder', $customer) }}" class="inline" data-confirm-dialog data-confirm-message="{{ __('resale.board.reorder.confirm', ['product' => $product['label']]) }}" data-confirm-tone="warning">
+                        @csrf
+                        <input type="hidden" name="product" value="{{ $product['key'] }}">
+                        <x-icon-btn icon="restart_alt" size="xs" tone="ghost" type="submit" :title="__('resale.board.reorder.action')" />
+                    </form>
+                @endif
             </span>
         </div>
         <x-table bare>

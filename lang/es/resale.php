@@ -597,6 +597,7 @@ return [
         'subtitle' => 'Periodos de todas las suscripciones de un destinatario frente a las líneas de licencia de sus facturas — en meses de licencia',
         'show_title' => 'Conciliación · :customer',
         'show_subtitle' => 'Suscripciones, tablero de conciliación por producto con encaje, plantillas periódicas y abonos del destinatario',
+        'findings_hint' => 'Vínculos que cubren más meses de licencia de los que tiene la posición, o cuyo periodo de prestación no coincide con el periodo.',
         'legend' => 'Todas las cifras son meses de licencia = licencias × meses (5 licencias × 1 año = 60). Libre = meses de licencia de líneas aún no vinculadas a un periodo. Falta = meses de periodos abiertos sin línea libre (probablemente nunca facturados). Exceso = meses de líneas libres sin periodo abierto (suscripción ausente o doble facturación).',
         'filter_problems' => 'Solo pendientes de aclarar',
         'filter_all' => 'Todos los destinatarios',
@@ -1474,6 +1475,12 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'A la izquierda los periodos de facturación, a la derecha las facturas. Cada factura libre está en el periodo que mejor le encaja; un clic la asigna.',
+        'reorder' => [
+            'action' => 'Reordenar producto',
+            'confirm' => '¿Quitar todos los vínculos de factura de «:product» de este destinatario y volver a proponerlos? Los vínculos confirmados y manuales se pierden; renuncias, disputas y abonos se mantienen.',
+            'flash' => ':links vínculos en :periods periodos quitados, la propuesta los ha redistribuido.',
+            'error_product' => 'El producto no pertenece a este destinatario.',
+        ],
         'focus' => 'Solo productos con «:filter»',
         'focus_reset' => 'Mostrar todos los productos',
         'summary' => 'Previsto :required · cubierto :covered · facturado :invoiced · libre :free',

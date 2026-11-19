@@ -597,6 +597,7 @@ return [
         'subtitle' => 'Periods of all subscriptions of a recipient against the licence lines of their invoices — in licence months',
         'show_title' => 'Reconciliation · :customer',
         'show_subtitle' => 'Subscriptions, reconciliation board per product with fit, recurring templates and credit notes of the recipient',
+        'findings_hint' => 'Links that cover more license months than the line has, or whose service period misses the billing period.',
         'legend' => 'All figures are licence months = licences × months (5 licences × 1 year = 60). Free = licence months from lines not yet linked to any period. Missing = open period months without a free line (probably never invoiced). Surplus = free line months without an open period (missing subscription or double billing).',
         'filter_problems' => 'Needs attention only',
         'filter_all' => 'All recipients',
@@ -1474,6 +1475,12 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'Billing periods on the left, invoices on the right. Each free invoice sits at the period it fits best — one click assigns it.',
+        'reorder' => [
+            'action' => 'Reorder product',
+            'confirm' => 'Remove all invoice links of “:product” for this recipient and have them proposed again? Confirmed and manual links are lost; waivers, disputes and credit notes stay.',
+            'flash' => ':links links on :periods periods removed, the proposal run has redistributed them.',
+            'error_product' => 'The product does not belong to this recipient.',
+        ],
         'focus' => 'Only products with “:filter”',
         'focus_reset' => 'Show all products',
         'summary' => 'Target :required · covered :covered · invoiced :invoiced · free :free',

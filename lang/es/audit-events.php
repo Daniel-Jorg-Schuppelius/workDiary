@@ -1490,6 +1490,7 @@ return [
         'auto_confirmed' => 'Vínculo de factura confirmado automáticamente (coincidencia segura)',
         'order_change' => 'Periodo residual renunciado por cambio de pedido, vínculos trasladados al sucesor',
         'direct_billing' => 'Año de licencia anterior a la cuenta del portal facturado directamente',
+        'links_reset' => 'Vínculos de factura quitados (reordenar producto)',
     ],
     'resale_account_allocation' => [
         'saved' => 'Reparto de cuenta de licencias guardado',

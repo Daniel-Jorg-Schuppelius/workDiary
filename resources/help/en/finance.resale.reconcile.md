@@ -65,3 +65,19 @@ them in the register's invoice proposal although the domain is otherwise
 billed through the portal. License years that started after the account start
 and partially invoiced ones remain untouched; afterwards each period can be
 reopened or waived individually.
+
+**Link findings:** Above the board you see links that cannot be right: a line
+covers more license months than it has (overbooked), or its service period
+misses the billing period (misplaced). A misplaced link can be moved to the
+suggested period or removed, an overbooked one can only be removed.
+
+**Reorder product:** If the links of a product are mixed up, for example
+shifted by a year, the button in the product header removes all invoice links
+of that product for this recipient, and the proposal run redistributes the
+invoices. Confirmed and manual links are lost. Waivers, disputes and credit
+notes stay.
+
+**Invoice sent to another customer:** If another customer has a free line of
+the same product with exactly the service period of the open period, it is
+shown at the period, even for a single license. From there you can change the
+holder or assign the period.

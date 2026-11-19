@@ -597,6 +597,7 @@ return [
         'subtitle' => 'Perioden aller Abos eines Empfängers gegen die Lizenzpositionen seiner Rechnungen — in Lizenzmonaten',
         'show_title' => 'Abgleich · :customer',
         'show_subtitle' => 'Abos, Abgleichstafel je Produkt mit Passung, Serienvorlagen und Gutschriften des Empfängers',
+        'findings_hint' => 'Bezüge, die mehr Lizenzmonate decken, als die Position hat, oder deren Leistungszeitraum die Periode nicht trifft.',
         'legend' => 'Alle Zahlen sind Lizenzmonate = Lizenzen × Monate (5 Lizenzen × 1 Jahr = 60). Frei = Lizenzmonate aus Positionen, die noch keiner Periode zugeordnet sind. Fehlt = offene Perioden-Monate, für die es keine freie Position gibt (vermutlich nie abgerechnet). Zu viel = freie Positions-Monate ohne offene Periode (fehlendes Abo oder Doppelabrechnung).',
         'filter_problems' => 'Nur mit Klärungsbedarf',
         'filter_all' => 'Alle Empfänger',
@@ -1474,6 +1475,12 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'Links die Abrechnungsperioden, rechts die Rechnungen. Jede freie Rechnung steht bei der Periode, zu der sie am besten passt — ein Klick ordnet sie zu.',
+        'reorder' => [
+            'action' => 'Produkt neu ordnen',
+            'confirm' => 'Alle Rechnungsbezüge von „:product“ bei diesem Empfänger lösen und neu vorschlagen lassen? Bestätigte und von Hand gesetzte Bezüge gehen dabei verloren; Verzicht, Einspruch und Gutschriften bleiben.',
+            'flash' => ':links Bezüge an :periods Perioden gelöst, der Vorschlagslauf hat neu verteilt.',
+            'error_product' => 'Das Produkt gehört nicht zu diesem Empfänger.',
+        ],
         'focus' => 'Nur Produkte mit „:filter“',
         'focus_reset' => 'Alle Produkte zeigen',
         'summary' => 'Soll :required · gedeckt :covered · abgerechnet :invoiced · frei :free',

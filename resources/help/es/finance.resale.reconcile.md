@@ -67,3 +67,20 @@ registro, aunque el dominio se facture normalmente a través del portal. Los
 años de licencia que empezaron después del inicio de la cuenta y los
 facturados parcialmente no se tocan; después, cada periodo puede reabrirse o
 darse por renunciado individualmente.
+
+**Vínculos por revisar:** Encima del tablero aparecen los vínculos que no
+pueden ser correctos: una posición cubre más meses de licencia de los que
+tiene (sobrerreservada), o su periodo de prestación no coincide con el periodo
+(mal ubicada). Un vínculo mal ubicado puede moverse al periodo propuesto o
+quitarse; uno sobrerreservado solo puede quitarse.
+
+**Reordenar producto:** Si los vínculos de un producto están desordenados, por
+ejemplo desplazados un año, el botón en la cabecera del producto quita todos
+los vínculos de factura de ese producto para este destinatario, y la propuesta
+redistribuye las facturas. Los vínculos confirmados y manuales se pierden.
+Renuncias, disputas y abonos se mantienen.
+
+**Factura a otro cliente:** Si otro cliente tiene una posición libre del mismo
+producto con exactamente el periodo de prestación del periodo abierto, aparece
+junto al periodo, también con una sola licencia. Desde ahí puede cambiar el
+titular o ceder el periodo.

@@ -21,7 +21,7 @@ use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\{PlanLinkEditor, PlanSection};
-use App\Services\Reselling\Register\{LineFit, LinkProposer, PeriodLinker, ProviderBillingStart, RecipientReconciler, ReconcileBoard};
+use App\Services\Reselling\Register\{LineFit, LinkAudit, LinkProposer, PeriodLinker, ProductRelink, ProviderBillingStart, RecipientReconciler, ReconcileBoard};
 use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -84,7 +84,7 @@ class ResaleReconcileController extends Controller {
         return redirect()->route('finance.resale.reconcile.show', $first['customer']);
     }
 
-    public function show(Request $request, Customer $customer, ProviderBillingStart $billingStart): View {
+    public function show(Request $request, Customer $customer, ProviderBillingStart $billingStart, LinkAudit $audit): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $focus = $request->string('focus')->toString();
         $focus = in_array($focus, ReconcileBoard::FOCUS, true) ? $focus : '';
@@ -124,6 +124,8 @@ class ResaleReconcileController extends Controller {
             'workspace' => $workspace,
             // Offene Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746).
             'billingStart' => $billingStart->candidates($customer),
+            // Überbuchte Positionen und Bezüge neben der Periode (MVP-1749) — bisher nur im Lizenzkonto.
+            'findings' => $audit->forSubscriptions($organization, $result['subscriptions']),
         ] + $result);
     }
 
@@ -218,6 +220,31 @@ class ResaleReconcileController extends Controller {
             $proposer->propose($this->currentOrganizationOrAbort(404));
         } catch (RuntimeException $e) {
             // Lauf läuft schon: der Halterwechsel ist gespeichert, die Vorschläge kommen mit dem nächsten Lauf.
+            $redirect->with('warning', ErrorText::for($e));
+        }
+
+        return $redirect;
+    }
+
+    /**
+     * Produkt neu ordnen (MVP-1751): alle Rechnungsbezüge des Produkts bei diesem Empfänger lösen
+     * und den Vorschlagslauf neu verteilen lassen.
+     */
+    public function reorder(Request $request, Customer $customer, ProductRelink $relink, LinkProposer $proposer): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $result = $this->reconciler->forCustomer($organization, $customer, ResalePeriod::today());
+        $product = (string) $request->input('product', '');
+        $subscriptions = $result['subscriptions']->filter(static fn(ResaleSubscription $s): bool => ($result['product_by_subscription'][$s->id] ?? null) === $product);
+        if ($subscriptions->isEmpty()) {
+            throw ValidationException::withMessages(['product' => (string) __('resale.board.reorder.error_product')]);
+        }
+        $reset = $relink->reset($subscriptions);
+        $redirect = redirect(route('finance.resale.reconcile.show', $customer) . '#board')
+            ->with('success', __('resale.board.reorder.flash', ['links' => $reset['links'], 'periods' => $reset['periods']]));
+        try {
+            $proposer->propose($organization);
+        } catch (RuntimeException $e) {
+            // Lauf läuft schon: die Bezüge sind gelöst, die Vorschläge kommen mit dem nächsten Lauf.
             $redirect->with('warning', ErrorText::for($e));
         }
 

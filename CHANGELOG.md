@@ -106,6 +106,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Steuerregelmatrix: Satzart „Innergemeinschaftliche Lieferung“
   (`intra_community`, `MVP-1731`); ihr Hinweistext ersetzt den Standardhinweis
   bei Waren an EU-Unternehmen.
+- Abos & Lizenzen, Klärfälle in der Arbeitsmappe (`MVP-1749`–`MVP-1751`):
+  Die Arbeitsmappe je Rechnungsempfänger zeigt jetzt die Prüffälle an Bezügen
+  (überbuchte Position, Leistungszeitraum trifft die Periode nicht), bisher
+  nur im Lizenzkonto, mit Verschieben und Lösen. „Produkt neu ordnen“ im Kopf
+  eines Produkts löst alle Rechnungsbezüge dieses Produkts beim Empfänger und
+  lässt den Vorschlagslauf neu verteilen; Verzicht, Einspruch und Gutschriften
+  bleiben. Eine freie Position eines anderen Kunden mit genau dem
+  Leistungszeitraum der offenen Periode steht jetzt auch bei einer einzelnen
+  Lizenz bei der Periode (Abo beim falschen Halter oder Rechnung an die
+  falsche Firma).
 
 ### Geändert
 

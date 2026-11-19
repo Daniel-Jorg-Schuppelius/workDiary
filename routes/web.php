@@ -3372,6 +3372,7 @@ Route::middleware('auth')->group(function () {
             // Rechnung ohne passende Periode einer gewählten Periode zuordnen (Phase 168, MVP-1462).
             Route::get('abgleich/{customer}/position', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'lineCreate'])->name('reconcile.line.create')->middleware('can:reselling.manage');
             Route::post('abgleich/{customer}/halter', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'rehome'])->name('reconcile.rehome')->middleware('can:reselling.manage');
+            Route::post('abgleich/{customer}/neu-ordnen', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'reorder'])->name('reconcile.reorder')->middleware('can:reselling.manage');
             // Abrechnungsbeginn des Portalkontos: offene Lizenzjahre davor gesammelt abschließen (MVP-1746).
             Route::get('abgleich/{customer}/abrechnungsbeginn', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'billingStartCreate'])->name('reconcile.billing-start.create')->middleware('can:reselling.manage');
             Route::post('abgleich/{customer}/abrechnungsbeginn', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'billingStartStore'])->name('reconcile.billing-start.store')->middleware('can:reselling.manage');

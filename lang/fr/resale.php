@@ -597,6 +597,7 @@ return [
         'subtitle' => 'Périodes de tous les abonnements d’un destinataire face aux lignes de licence de ses factures — en mois de licence',
         'show_title' => 'Rapprochement · :customer',
         'show_subtitle' => 'Abonnements, tableau de rapprochement par produit avec correspondance, modèles récurrents et avoirs du destinataire',
+        'findings_hint' => 'Liens qui couvrent plus de mois de licence que la ligne n’en contient, ou dont la période de prestation ne correspond pas à la période.',
         'legend' => 'Tous les chiffres sont des mois de licence = licences × mois (5 licences × 1 an = 60). Libre = mois de licence de lignes non encore rattachées à une période. Manque = mois de périodes ouvertes sans ligne libre (probablement jamais facturés). Excédent = mois de lignes libres sans période ouverte (abonnement manquant ou double facturation).',
         'filter_problems' => 'À clarifier seulement',
         'filter_all' => 'Tous les destinataires',
@@ -1474,6 +1475,12 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'À gauche les périodes de facturation, à droite les factures. Chaque facture libre se trouve à la période qui lui correspond le mieux — un clic l’affecte.',
+        'reorder' => [
+            'action' => 'Réordonner le produit',
+            'confirm' => 'Supprimer tous les liens de facture de « :product » pour ce destinataire et les faire proposer à nouveau ? Les liens confirmés et manuels sont perdus ; renonciations, contestations et avoirs restent.',
+            'flash' => ':links liens sur :periods périodes supprimés, la proposition les a redistribués.',
+            'error_product' => 'Le produit n’appartient pas à ce destinataire.',
+        ],
         'focus' => 'Uniquement les produits avec « :filter »',
         'focus_reset' => 'Afficher tous les produits',
         'summary' => 'Prévu :required · couvert :covered · facturé :invoiced · libre :free',

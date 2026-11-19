@@ -67,3 +67,20 @@ facture du registre, bien que le domaine soit sinon facturé via le portail.
 Les années de licence commencées après le début du compte et celles
 partiellement facturées restent inchangées ; chaque période peut ensuite être
 rouverte ou abandonnée individuellement.
+
+**Liens à vérifier :** Au-dessus du tableau figurent les liens qui ne peuvent
+pas être corrects : une ligne couvre plus de mois de licence qu'elle n'en
+contient (surréservée), ou sa période de prestation ne correspond pas à la
+période (mal placée). Un lien mal placé peut être déplacé vers la période
+proposée ou supprimé, un lien surréservé seulement supprimé.
+
+**Réordonner le produit :** Si les liens d'un produit sont mélangés, par
+exemple décalés d'un an, le bouton dans l'en-tête du produit supprime tous les
+liens de facture de ce produit pour ce destinataire, et la proposition
+redistribue les factures. Les liens confirmés et manuels sont perdus.
+Renonciations, contestations et avoirs restent.
+
+**Facture adressée à un autre client :** Si un autre client a une ligne libre
+du même produit avec exactement la période de prestation de la période
+ouverte, elle apparaît à la période, même pour une seule licence. De là, vous
+pouvez changer le titulaire ou céder la période.

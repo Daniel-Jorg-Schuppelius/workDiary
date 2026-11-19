@@ -59,6 +59,9 @@ final class RecipientReconciler {
     /** Lebensdauer der Übersicht und der Belegtexte im Cache (Sekunden); der Org-Stempel verwirft früher. */
     public const int CACHE_TTL = 60;
 
+    /** Spielraum in Tagen, in dem Leistungszeitraum und Periode als gleich gelten. */
+    private const int SAME_TERM_DAYS = 3;
+
     private readonly InvoiceMirror $mirror;
 
     private readonly PeriodLinker $linker;
@@ -304,6 +307,13 @@ final class RecipientReconciler {
 
         return ['subscriptions' => $subscriptions, 'has_source' => $this->mirror->coversRecipient($organization, $customer), 'pending' => $pending, 'inbox' => $inbox, 'credit_notes' => $this->creditNoteRows($organization, $customer)]
             + $this->analyze($subscriptions, $lines, $linkedMonths, $reference, $others, $voided, $recipientTokens, $baseTokens, $customer->id);
+    }
+
+    /** Leistungszeitraum der Position = Laufzeit der Periode, an beiden Enden auf {@see SAME_TERM_DAYS} Tage. */
+    private static function sameTerm(ResalePeriod $period, MirrorLine $line): bool {
+        return $line->serviceFrom !== null && $line->serviceTo !== null
+            && abs($line->serviceFrom->diffInDays($period->starts_on)) <= self::SAME_TERM_DAYS
+            && abs($line->serviceTo->diffInDays($period->ends_on)) <= self::SAME_TERM_DAYS;
     }
 
     /**
@@ -769,7 +779,10 @@ final class RecipientReconciler {
                     // Menge (mehr als eine Lizenz) dicht am Periodenbeginn: Rechnung an die
                     // falsche Firma. „12 Monat" passt sonst überall.
                     $former = in_array($lineRow['contact'], $formerHolders, true) && $distance <= LinkProposer::WINDOW_BEFORE;
-                    if ($bucket === 'foreign' && ! $related && ! $former && ($periodRows[$index]['candidates'] !== [] || $row['needed'] <= 12.001 || abs($lineRow['free'] - $row['needed']) > 0.001 || $distance > LinkProposer::SHARED_NEAREST_DAYS)) {
+                    // Gleicher Leistungszeitraum wie die Periode (MVP-1750): auch eine einzelne Lizenz ist dann
+                    // kein Zufall mehr — Abo beim falschen Halter oder Rechnung an die falsche Firma.
+                    $exact = $bucket === 'foreign' && self::sameTerm($row['period'], $lineRow['line']) && $row['needed'] <= $lineRow['free'] + 0.001;
+                    if ($bucket === 'foreign' && ! $related && ! $former && ! $exact && ($periodRows[$index]['candidates'] !== [] || $row['needed'] <= 12.001 || abs($lineRow['free'] - $row['needed']) > 0.001 || $distance > LinkProposer::SHARED_NEAREST_DAYS)) {
                         continue;
                     }
                     $periodRows[$index][$bucket][] = ['row' => $lineRow, 'distance' => $distance];

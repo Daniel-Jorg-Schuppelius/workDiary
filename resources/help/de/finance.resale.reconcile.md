@@ -64,3 +64,20 @@ in den Rechnungsvorschlag des Registers auf, obwohl die Domain sonst über das
 Portal abgerechnet wird. Lizenzjahre, die nach dem Kontobeginn begannen, und
 teilweise berechnete bleiben unberührt; jede Periode lässt sich danach einzeln
 wieder öffnen oder verzichten.
+
+**Prüffälle an Bezügen:** Über der Tafel stehen Bezüge, die nicht stimmen
+können: eine Position deckt mehr Lizenzmonate, als sie hat (überbucht), oder
+ihr Leistungszeitraum trifft die Periode nicht (zeitlich unpassend). Ein
+unpassender Bezug lässt sich auf die vorgeschlagene Periode verschieben oder
+lösen, ein überbuchter nur lösen.
+
+**Produkt neu ordnen:** Sind die Bezüge eines Produkts durcheinander, etwa um
+ein Jahr verschoben, löst die Schaltfläche im Kopf des Produkts alle
+Rechnungsbezüge dieses Produkts bei diesem Empfänger, und der Vorschlagslauf
+verteilt die Rechnungen neu. Bestätigte und von Hand gesetzte Bezüge gehen
+dabei verloren. Verzicht, Einspruch und Gutschriften bleiben.
+
+**Rechnung an einen anderen Kunden:** Hat ein anderer Kunde eine freie
+Position desselben Produkts mit genau dem Leistungszeitraum der offenen
+Periode, steht sie bei der Periode, auch bei einer einzelnen Lizenz. Von dort
+lässt sich der Halter wechseln oder die Periode abtreten.
