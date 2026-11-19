@@ -466,6 +466,17 @@ class ResaleSubscription extends Model {
     }
 
     /**
+     * Nur Abos, die der Domainanbieter abrechnet.
+     *
+     * @param  Builder<ResaleSubscription>  $query
+     * @return Builder<ResaleSubscription>
+     */
+    public function scopeBilledByProvider(Builder $query): Builder {
+        return $query->whereHas('domainProjection', static fn ($projection) => $projection->withoutGlobalScopes()
+            ->whereHas('resellerAccount', static fn ($account) => $account->withoutGlobalScopes()->where('depth', '>', 0)));
+    }
+
+    /**
      * Ohne Abos, die der Domainanbieter abrechnet (Entwurf, Serienlauf, Vorlagen-Vorschlag).
      *
      * @param  Builder<ResaleSubscription>  $query

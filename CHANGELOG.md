@@ -124,6 +124,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Monatsrechnung jetzt das Lizenzjahr ab dem nächsten Stichtag. Bisher blieb
   dieses Jahr offen, die Buchung stand als frei. Beginnt der Stichtag mit dem
   Transfer (DENIC), bleibt der Buchungstag.
+  Domains, die das Portal abrechnet, bewertet der Vorschlagslauf außerdem schon
+  mit dem nächsten Lizenzjahr: Eine im Voraus gebuchte Verlängerung gilt sofort
+  als berechnet, nicht erst ab dem Stichtag.
 - Fertigung: Der Eingang des Fertigerzeugnisses war unbewertet, die
   Auslieferung bewertet — das Bewertungsbuch des Erzeugnisses lief ins Minus.
   Die Gutmenge geht jetzt mit den Herstellkosten ins Lager (Materialverbrauch

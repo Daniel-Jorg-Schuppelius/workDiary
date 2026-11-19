@@ -132,7 +132,9 @@ class DomainAccountingMirrorTest extends TestCase {
         $fresh->update(['registration_at' => '2026-04-07', 'expiration_at' => '2027-04-05', 'finalization_at' => null]);
         $freshSubscription = $this->subscription('optikwerk-beispiel.de', '2026-04-07');
         $this->entry('2026-04-07 12:00:00', 'TRANSFER_DOMAIN', 'optikwerk-beispiel.de', '-4.50', ['domain_projection_id' => $fresh->id]);
-        $this->travelTo('2026-11-26'); // der Lauf bewertet nur begonnene Perioden
+        // Das Portal hat im Voraus berechnet: die Periode gilt schon vor ihrem Beginn als berechnet.
+        $keptSubscription->forceFill(['domain_projection_id' => $kept->id])->save();
+        $kept->update(['reseller_account_id' => $this->reseller->id]);
 
         (new LinkProposer)->propose($this->organization);
 

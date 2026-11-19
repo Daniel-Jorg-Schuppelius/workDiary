@@ -437,7 +437,11 @@ final class LinkProposer {
             ->whereIn('subscription_id', $subscriptions->pluck('id')->all())
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Billed->value])
             ->whereNull('decided_at')
-            ->where('starts_on', '<', DateRange::dayAfter($reference))
+            // Begonnene Perioden; das Portal bucht im Voraus (Verlängerung vor dem Stichtag, Transfer mit
+            // festem Stichtag Monate davor) — seine Domains zählen schon mit dem nächsten Lizenzjahr.
+            ->where(static fn(Builder $w) => $w->where('starts_on', '<', DateRange::dayAfter($reference))
+                ->orWhere(static fn(Builder $ahead) => $ahead->where('starts_on', '<', DateRange::dayAfter($reference->addYearNoOverflow()))
+                    ->whereHas('subscription', static fn(Builder $s) => $s->withoutGlobalScopes()->billedByProvider())))
             ->with('links')
             ->orderBy('starts_on')
             // Gleicher Beginn: feste Reihenfolge, damit wiederholte Läufe gleich ausfallen.
