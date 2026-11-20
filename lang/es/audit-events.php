@@ -1491,6 +1491,7 @@ return [
         'order_change' => 'Periodo residual renunciado por cambio de pedido, vínculos trasladados al sucesor',
         'direct_billing' => 'Año de licencia anterior a la cuenta del portal facturado directamente',
         'links_reset' => 'Vínculos de factura quitados (reordenar producto)',
+        'deviation_accepted' => 'Vínculos divergentes justificados',
     ],
     'resale_account_allocation' => [
         'saved' => 'Reparto de cuenta de licencias guardado',

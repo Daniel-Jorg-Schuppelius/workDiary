@@ -66,6 +66,7 @@ class LicenseAccountController extends Controller {
 
         return view('finance.resale.accounts.show', $this->overview->detail($organization, $group) + [
             'today' => ResalePeriod::today(),
+            'holderAccounts' => app(LicenseAccounts::class)->accountsOfHolder($organization, $group),
             'canManage' => $this->authUser()->can(Permission::ResellingManage->value),
             // Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746) — Sammelaktion des Kunden.
             'billingStart' => ($customer = $group->customer()) !== null ? app(ProviderBillingStart::class)->candidates($customer) : [],

@@ -83,8 +83,29 @@ shown at the period, even for a single license. From there you can change the
 holder or assign the period.
 
 **Surplus line:** If all periods of a product are covered and an invoice stays
-free, it is shown as “surplus” on the board. Either it was invoiced twice
+free, it is shown as “billed twice” or “billed after the end” on the board. Either it was invoiced twice
 (credit note), or the subscription is missing in the register (create
 subscription), or the line does not belong here (ignore). If you create the
 subscription from the line and a subscription of the same product ended shortly
 before, the dialog offers it as predecessor.
+
+**Too much, differing, missing — in euros:** The reconciliation list and the
+overview show per invoice recipient what was billed too much (a line in a
+licence year that is already covered: “billed twice”; a line after the last
+licence year of the product: “billed after the end”) and what was billed
+differently. What is missing is shown as the open amount. Lines “outside the
+term” or with “no subscription” are not counted: there a subscription is
+usually missing in the register.
+
+**Deviating link:** If you link a line whose article is not the one of the
+subscription, or whose amount differs from the target by more than 5 % (at
+least €1), the dialog asks for a reason. The link remains possible; the reason
+is stored on the period. Existing links without a reason appear among the
+findings as “Different article” or “Amount differs” and can be justified or
+removed there.
+
+**Licence picture and correction sheet:** The workspace shows product ×
+licence year across all providers of the customer at the top. The correction
+sheet below lists the invoices to credit, the licence years to bill, the
+deviations and the balance; it can be downloaded as XLSX. A credit note that
+refers to the invoice removes its lines from the list.

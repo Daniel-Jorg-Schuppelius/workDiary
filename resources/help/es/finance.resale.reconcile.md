@@ -86,8 +86,28 @@ junto al periodo, también con una sola licencia. Desde ahí puede cambiar el
 titular o ceder el periodo.
 
 **Posición sobrante:** Si todos los periodos de un producto están cubiertos y
-una factura queda libre, aparece como «sobrante» en el tablero. O se facturó
+una factura queda libre, aparece en el tablero como «facturado dos veces» o «facturado tras el fin». O se facturó
 dos veces (abono), o falta la suscripción en el registro (crear suscripción),
 o la posición no corresponde aquí (ignorar). Si crea la suscripción desde la
 posición y poco antes terminó una suscripción del mismo producto, el diálogo
 la ofrece como predecesor.
+
+**De más, distinto, falta — en euros:** la lista de conciliación y el resumen
+muestran por destinatario lo que se facturó de más (línea en un año de
+licencia ya cubierto: «facturado dos veces»; línea tras el último año de
+licencia del producto: «facturado tras el fin») y lo que se facturó distinto.
+Lo que falta aparece como importe abierto. Las líneas «fuera del plazo» o «sin
+suscripción» no se cuentan: normalmente falta una suscripción en el registro.
+
+**Vínculo divergente:** si asigna una línea cuyo artículo no es el de la
+suscripción o cuyo importe se desvía más de un 5 % (al menos 1 €) del
+previsto, el diálogo pide una justificación. El vínculo sigue siendo posible;
+la justificación queda en el periodo. Los vínculos existentes sin
+justificación aparecen entre las incidencias como «Otro artículo» o «Importe
+distinto» y pueden justificarse o quitarse allí.
+
+**Cuadro de licencias y hoja de corrección:** el espacio de trabajo muestra
+arriba producto × año de licencia en todos los proveedores del cliente. La
+hoja de corrección debajo indica las facturas que hay que abonar, los años de
+licencia que hay que facturar, las desviaciones y el saldo; se descarga como
+XLSX. Un abono que hace referencia a la factura retira sus líneas de la lista.

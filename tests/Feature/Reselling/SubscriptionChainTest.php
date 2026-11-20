@@ -202,6 +202,55 @@ class SubscriptionChainTest extends TestCase {
         $this->assertSame('50.00', $own->sale_unit_price?->withScale(2)->getAmount());
     }
 
+    public function test_invoices_after_the_end_of_the_product_count_as_overbilled_in_euro(): void {
+        $admin = $this->orgAdmin();
+        // Produktwechsel: das Postfach endete 2023, die Serienvorlage berechnete es zwei Jahre weiter.
+        $this->subscription('2022-10-18', '2023-10-17');
+        $this->invoice('RE/2022/0100', '2022-10-18', '2023-10-17');
+        $this->invoice('RE/2024/0100', '2024-10-18', '2025-10-17');
+        $this->invoice('RE/2025/0100', '2025-10-18', '2026-10-17');
+        app(\App\Services\Reselling\Register\LinkProposer::class)->propose($this->organization);
+
+        $row = collect(app(\App\Services\Reselling\Register\RecipientReconciler::class)->overview($this->organization))->firstWhere('customer.id', $this->customer->id);
+        $this->assertNotNull($row);
+        $this->assertSame(94.80, $row['overbilled'], 'zwei Jahre à 47,40 € nach dem Abo-Ende');
+        $this->assertSame(0.0, $row['deviating']);
+
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->customer))->assertOk()
+            ->assertSee(__('resale.board.surplus.after_end'))
+            ->assertDontSee(__('resale.board.surplus.duplicate'));
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.index', ['show' => 'overbilled']))->assertOk()->assertSee($this->customer->name);
+        $this->assertStringContainsString('94,80', app(ResaleOverview::class)->build($this->organization)['summary']['overbilled']);
+    }
+
+    public function test_correction_sheet_nets_what_to_credit_against_what_to_bill(): void {
+        $admin = $this->orgAdmin();
+        // Altes Produkt lief nach dem Ende weiter (zwei Rechnungen), das neue Produkt wurde nie berechnet.
+        $this->subscription('2022-10-18', '2023-10-17');
+        $this->invoice('RE/2022/0200', '2022-10-18', '2023-10-17');
+        $this->invoice('RE/2024/0200', '2024-10-18', '2025-10-17');
+        $this->invoice('RE/2025/0200', '2025-10-18', '2026-10-17');
+        $this->subscription('2026-01-01', null, ['label' => 'Microsoft Teams Essentials', 'article_ref' => 'lex:999']);
+        app(\App\Services\Reselling\Register\LinkProposer::class)->propose($this->organization);
+
+        $today = \App\Models\Reselling\ResalePeriod::today();
+        $analysis = app(\App\Services\Reselling\Register\RecipientReconciler::class)->forCustomer($this->organization, $this->customer, $today);
+        $sheet = \App\Services\Reselling\Register\RecipientCorrection::build($analysis, [], $today);
+        $this->assertSame(94.80, $sheet['totals']['credit']);
+        $this->assertSame(47.40, $sheet['totals']['bill']);
+        $this->assertSame(-47.40, $sheet['totals']['balance'], 'mehr gutzuschreiben als zu berechnen');
+        $this->assertCount(2, $sheet['rows'], 'beide Produkte im Lizenzbild');
+        $this->assertContains(2022, $sheet['years']);
+        $this->assertContains(2026, $sheet['years']);
+
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->customer))->assertOk()
+            ->assertSee(__('resale.correction.title'))
+            ->assertSee(__('resale.correction.picture_title'))
+            ->assertSee('RE/2024/0200')
+            ->assertSee(route('finance.resale.reconcile.correction', $this->customer));
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.correction', $this->customer))->assertOk();
+    }
+
     public function test_board_marks_a_surplus_line_and_offers_to_ignore_it(): void {
         $admin = $this->orgAdmin();
         $this->subscription('2023-10-18', '2024-10-17');
@@ -210,7 +259,7 @@ class SubscriptionChainTest extends TestCase {
         app(\App\Services\Reselling\Register\LinkProposer::class)->propose($this->organization);
 
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->customer))->assertOk()
-            ->assertSee(__('resale.board.surplus_line'))
+            ->assertSee(__('resale.board.surplus.duplicate'))
             ->assertSee(route('finance.resale.periods.unlinked.ignore'));
     }
 }

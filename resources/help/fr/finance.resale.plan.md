@@ -81,3 +81,13 @@ au-delà, le registre le signale à l’avance. Créez le modèle suivant, sinon
 prochaine année de licence reste sans facture. **Durée partielle :** une
 quantité de mois qui n’est pas un multiple du rythme (« 7 mois » sur un modèle
 annuel) compte comme une licence sur ces mois.
+
+**Avant la prochaine exécution :** les constats sur les modèles indiquent
+quand le modèle s’exécute la prochaine fois et quel montant la ligne facturera
+alors. Si un modèle avec constat s’exécute dans les 30 prochains jours, il
+figure dans l’aperçu sous « Vérifier les modèles avant la prochaine
+exécution ». **Produit terminé :** si un modèle facture un article dont
+l’abonnement est terminé chez le destinataire, le constat indique la fin et,
+en cas de changement de produit, l’abonnement qui court depuis. **Prix
+différent :** le prix de la ligne par licence est comparé au prix de vente de
+l’abonnement (tolérance 5 %, au moins 1 €).

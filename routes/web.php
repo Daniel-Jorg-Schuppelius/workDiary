@@ -3358,6 +3358,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waiveCreate'])->name('periods.waive.create');
                 Route::post('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waive'])->name('periods.waive');
                 Route::post('perioden/{period}/oeffnen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'reopen'])->name('periods.reopen');
+                Route::post('perioden/{period}/abweichung', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'deviationStore'])->name('periods.deviation.store');
                 Route::get('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkCreate'])->name('periods.link.create');
                 Route::post('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkStore'])->name('periods.link.store');
                 Route::delete('bezuege/{link}', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkDestroy'])->name('links.destroy');
@@ -3371,6 +3372,7 @@ Route::middleware('auth')->group(function () {
             // Arbeitsliste (Phase 165, MVP-1445): nächster offener Empfänger — fester Pfad vor {customer}.
             Route::get('abgleich/weiter', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'next'])->name('reconcile.next')->middleware('can:reselling.view');
             Route::get('abgleich/{customer}', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'show'])->name('reconcile.show')->middleware('can:reselling.view');
+            Route::get('abgleich/{customer}/korrekturblatt.xlsx', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'correction'])->name('reconcile.correction')->middleware('can:reselling.view');
             Route::post('abgleich/{customer}/bezug', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'assign'])->name('reconcile.assign')->middleware('can:reselling.manage');
             // Rechnung ohne passende Periode einer gewählten Periode zuordnen (Phase 168, MVP-1462).
             Route::get('abgleich/{customer}/position', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'lineCreate'])->name('reconcile.line.create')->middleware('can:reselling.manage');

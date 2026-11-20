@@ -2232,6 +2232,7 @@ return [
         'plan_key' => 'Modello ricorrente',
         'plan_position' => 'Posizione del modello',
         'predecessor' => 'predecessore',
+        'deviation_reason' => 'motivazione dello scostamento',
         'line_position' => 'Riga del modello',
         'product_id' => 'Prodotto',
         'product_version' => 'Versione',

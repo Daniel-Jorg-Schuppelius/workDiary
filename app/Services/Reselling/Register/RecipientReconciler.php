@@ -45,19 +45,34 @@ use Illuminate\Support\Facades\Cache;
  * Übersicht und die Belegtexte liegen 60 s im Cache unter dem Org-Stempel
  * ({@see ResaleCacheStamp}) — Leistungsanalyse 2026-11-02, perfc-01/03/09.
  *
- * @phpstan-type LineRow array{line: MirrorLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool}
+ * @phpstan-type LineRow array{line: MirrorLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool, surplus: string|null, free_amount: float}
  * @phpstan-type Candidate array{row: LineRow, distance: int, count: int, rows: list<LineRow>, group_free: float, group_licences: float}
  * @phpstan-type PeriodRow array{period: ResalePeriod, subscription: ResaleSubscription, required: float, covered: float, needed: float, product: string, candidates: list<Candidate>, taken: list<Candidate>, foreign: list<Candidate>, voided: list<Candidate>}
  * @phpstan-type CreditNoteRow array{line: MirrorLine, months: float, licences: float, per_licence: float, linked: float, periods: list<string>}
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
  * @phpstan-type ProductRow array{key: string, label: string, term: int, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float, gap_since: CarbonImmutable|null}
- * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: Money|null, findings: int, done: bool}
- * @phpstan-type CachedOverviewRow array{customer_id: int|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: array{amount: string, currency: string}|null, findings: int, done: bool}
+ * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: Money|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int}
+ * @phpstan-type CachedOverviewRow array{customer_id: int|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: array{amount: string, currency: string}|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int}
  * @phpstan-type VoucherText array{recipient: int, date: string|null, ends: string|null, text: string}
  */
 final class RecipientReconciler {
     /** Lebensdauer der Übersicht und der Belegtexte im Cache (Sekunden); der Org-Stempel verwirft früher. */
     public const int CACHE_TTL = 60;
+
+    /** Freie Position in der Laufzeit eines gedeckten Lizenzjahrs: doppelt berechnet. */
+    public const string SURPLUS_DUPLICATE = 'duplicate';
+
+    /** Freie Position nach dem letzten Lizenzjahr des Produkts: die Rechnung lief nach dem Abo-Ende weiter. */
+    public const string SURPLUS_AFTER_END = 'after_end';
+
+    /** Freie Position außerhalb der Laufzeiten des Produkts (davor oder in einer Lücke): eher fehlt ein Abo. */
+    public const string SURPLUS_OUTSIDE = 'outside';
+
+    /** Freie Position, für deren Produkt der Empfänger kein Abo hat. */
+    public const string SURPLUS_UNKNOWN = 'unknown';
+
+    /** Gründe, die als „zu viel berechnet“ in Euro zählen; die übrigen sind Klärfälle am Bestand. */
+    public const array OVERBILLED = [self::SURPLUS_DUPLICATE, self::SURPLUS_AFTER_END];
 
     /** Spielraum in Tagen, in dem Leistungszeitraum und Periode als gleich gelten. */
     private const int SAME_TERM_DAYS = 3;
@@ -110,7 +125,7 @@ final class RecipientReconciler {
      */
     public function overview(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
-        $key = ResaleCacheStamp::key('reconcile-overview', 1, (int) $organization->id, $reference->toDateString());
+        $key = ResaleCacheStamp::key('reconcile-overview', 2, (int) $organization->id, $reference->toDateString());
         $cached = Cache::get($key);
         if (! is_array($cached)) {
             $cached = $this->overviewRows($organization, $reference);
@@ -125,7 +140,7 @@ final class RecipientReconciler {
         $customers = $customerIds === [] ? collect() : Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('id', $customerIds)->get(['id', 'name'])->keyBy('id');
         $rows = [];
         foreach ($cached as $row) {
-            if (! is_array($row) || ! array_key_exists('customer_id', $row)) {
+            if (! is_array($row) || ! array_key_exists('customer_id', $row) || ! array_key_exists('overbilled', $row)) {
                 continue;
             }
             /** @var CachedOverviewRow $row */
@@ -143,6 +158,9 @@ final class RecipientReconciler {
                 'lines' => $row['lines'],
                 'open_amount' => $amount !== null ? Money::of($amount['amount'], CurrencyCode::tryFrom($amount['currency']) ?? CurrencyCode::Euro) : null,
                 'findings' => $row['findings'],
+                'overbilled' => $row['overbilled'],
+                'deviating' => $row['deviating'],
+                'deviations' => $row['deviations'],
                 'done' => $row['done'],
             ];
         }
@@ -189,6 +207,19 @@ final class RecipientReconciler {
             }
         }
 
+        // Abweichende Bezüge je Empfänger (Phase 187, MVP-1769): Summe der Differenzen zum Soll.
+        /** @var array<int, array{amount: float, count: int}> $deviatingByRecipient */
+        $deviatingByRecipient = [];
+        $bySubscription = $subscriptions->keyBy('id');
+        foreach ((new LinkAudit($this->mirror, $this->linker))->forSubscriptions($organization, $subscriptions) as $finding) {
+            $recipientId = in_array($finding['kind'], LinkAudit::DEVIATIONS, true) ? $bySubscription->get($finding['period']->subscription_id ?? 0)?->billedTo()?->id : null;
+            if ($recipientId !== null) {
+                $deviatingByRecipient[$recipientId] ??= ['amount' => 0.0, 'count' => 0];
+                $deviatingByRecipient[$recipientId]['amount'] += abs($finding['diff']);
+                $deviatingByRecipient[$recipientId]['count']++;
+            }
+        }
+
         $rows = [];
         foreach (array_unique(array_merge(array_keys($byCustomer), array_keys($linesByRecipient))) as $key) {
             $customer = is_int($key) ? $customers->get($key) : null;
@@ -197,6 +228,7 @@ final class RecipientReconciler {
             $firstLine = $recipientLines->first();
             $name = $customer !== null ? $customer->name : ($firstLine !== null ? (string) $firstLine->recipientName : '');
             $findings = is_int($key) ? ($findingsByRecipient[$key] ?? 0) : 0;
+            $deviating = is_int($key) ? ($deviatingByRecipient[$key] ?? ['amount' => 0.0, 'count' => 0]) : ['amount' => 0.0, 'count' => 0];
             $openAmount = self::openAmount($byCustomer[$key] ?? collect(), $reference);
             $rows[] = [
                 'customer_id' => $customer?->id,
@@ -211,12 +243,16 @@ final class RecipientReconciler {
                 'lines' => $recipientLines->count(),
                 'open_amount' => $openAmount !== null ? ['amount' => $openAmount->getAmount(), 'currency' => $openAmount->getCurrency()->value] : null,
                 'findings' => $findings,
+                'overbilled' => $analysis['overbilled'],
+                'deviating' => round($deviating['amount'], 2),
+                'deviations' => $deviating['count'],
                 // Fertig = keine fällige Periode ohne Entscheidung und kein Vorlagenbefund (Entscheidung des Inhabers 2026-10-31).
                 'done' => $analysis['open'] + $analysis['partial'] === 0 && $findings === 0,
             ];
         }
         // Offener Betrag zuerst (Entscheidung 2026-10-31), dann offene Perioden, Befunde, freie Positionen, Name.
-        usort($rows, static fn(array $a, array $b): int => (((float) ($b['open_amount']['amount'] ?? 0.0)) <=> ((float) ($a['open_amount']['amount'] ?? 0.0)))
+        $stake = static fn(array $r): float => (float) ($r['open_amount']['amount'] ?? 0.0) + $r['overbilled'] + $r['deviating'];
+        usort($rows, static fn(array $a, array $b): int => ($stake($b) <=> $stake($a))
             ?: (($b['open'] + $b['partial']) <=> ($a['open'] + $a['partial']))
             ?: ($b['findings'] <=> $a['findings'])
             ?: ($b['free'] <=> $a['free'])
@@ -261,7 +297,7 @@ final class RecipientReconciler {
      * Gutschrift-Positionen des Empfängers (`credit_notes`) stehen daneben —
      * als negative Bezüge nur von Hand, nie heuristisch (Review 2026-09-10, A3).
      *
-     * @return array{subscriptions: Collection<int, ResaleSubscription>, has_source: bool, pending: int, inbox: list<InboxHint>, credit_notes: list<CreditNoteRow>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
+     * @return array{subscriptions: Collection<int, ResaleSubscription>, has_source: bool, pending: int, inbox: list<InboxHint>, credit_notes: list<CreditNoteRow>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, overbilled: float}
      */
     public function forCustomer(Organization $organization, Customer $customer, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -593,7 +629,7 @@ final class RecipientReconciler {
      * @param  Collection<int, MirrorLine>  $voided  stornierte Lizenzpositionen dieses Empfängers und verwandter Empfänger
      * @param  array<string, array<string, true>>  $recipientTokens  Empfängerschlüssel → Kern-Tokens des Empfängernamens
      * @param  array<string, true>  $baseTokens  Kern-Tokens des Empfängers selbst
-     * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
+     * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, overbilled: float}
      */
     private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $recipientTokens = [], array $baseTokens = [], ?int $ownCustomerId = null): array {
         /** @var array<string, string> $articleNames Katalogschlüssel → Name */
@@ -636,7 +672,7 @@ final class RecipientReconciler {
             $linked = $linkedMonths[$identity]['months'] ?? 0.0;
             $key = $productOf($line);
             $labels[$key] ??= $line->label();
-            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => null, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false];
+            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => null, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0];
             $lineRows[] = $lineRow;
             $invoiced[$key] = ($invoiced[$key] ?? 0.0) + $months;
             $freeByProduct[$key] = ($freeByProduct[$key] ?? 0.0) + $lineRow['free'];
@@ -653,7 +689,7 @@ final class RecipientReconciler {
                 continue;
             }
             $recipient = trim((string) $line->recipientName);
-            $otherRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'recipient_id' => $line->recipientCustomerId, 'contact' => $line->recipientKey, 'gap' => false];
+            $otherRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'recipient_id' => $line->recipientCustomerId, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0];
         }
         /** @var list<LineRow> $voidedRows */
         $voidedRows = [];
@@ -661,7 +697,7 @@ final class RecipientReconciler {
             $split = LicenseMonths::split($line);
             $own = $ownCustomerId !== null && $line->recipientCustomerId === $ownCustomerId;
             $recipient = trim((string) $line->recipientName);
-            $voidedRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => $own || $recipient === '' ? null : $recipient, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false];
+            $voidedRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => $own || $recipient === '' ? null : $recipient, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0];
         }
         // Je Produkt gruppiert: die Periodenschleife sieht nur die Zeilen ihres Produkts (perfc-03).
         /** @var array<string, list<LineRow>> $lineRowsByProduct */
@@ -723,6 +759,8 @@ final class RecipientReconciler {
         }
         usort($periodRows, static fn(array $a, array $b): int => ($a['period']->starts_on <=> $b['period']->starts_on) ?: ($a['subscription']->id <=> $b['subscription']->id));
 
+        /** @var array<string, true> $wanted Freie Positionen, die eine offene Periode noch brauchen kann */
+        $wanted = [];
         foreach ($periodRows as $index => $row) {
             $start = $row['period']->starts_on;
             foreach ($lineRowsByProduct[$row['product']] ?? [] as $lineRow) {
@@ -734,6 +772,9 @@ final class RecipientReconciler {
                     continue;
                 }
                 $distance = (int) abs($date->diffInDays($start));
+                if ($lineRow['free'] > 0.001) {
+                    $wanted[$lineRow['line']->identity()] = true;
+                }
                 $periodRows[$index][$lineRow['free'] > 0.001 ? 'candidates' : 'taken'][] = ['row' => $lineRow, 'distance' => $distance];
             }
             // Verwandt je Periode: Empfänger, Firmenname des Abos oder sein Endkunde
@@ -807,19 +848,37 @@ final class RecipientReconciler {
         }
         /** @var array<string, CarbonImmutable> $gapSince */
         $gapSince = [];
+        $overbilled = 0.0;
         foreach ($lineRows as $index => $lineRow) {
             if ($lineRow['free'] <= 0.001) {
                 continue;
             }
+            $lineRows[$index]['free_amount'] = $lineRow['months'] > 0.0 ? round($lineRow['line']->totalNet->toFloat() * $lineRow['free'] / $lineRow['months'], 2) : 0.0;
             $date = LicenseMonths::referenceDate($lineRow['line']);
             if ($date === null) {
                 continue;
             }
             $covered = false;
+            $lastEnd = null;
             foreach ($ranges[$lineRow['product']] ?? [] as [$from, $to]) {
+                $lastEnd = $lastEnd === null || $to->greaterThan($lastEnd) ? $to : $lastEnd;
                 if (! $date->lessThan($from) && ! $date->greaterThan($to)) {
                     $covered = true;
-                    break;
+                }
+            }
+            // Zu viel berechnet (Phase 187, MVP-1766): keine offene Periode kann die Position brauchen. In der
+            // Laufzeit eines gedeckten Jahres ist sie doppelt, nach dem letzten Lizenzjahr des Produkts lief
+            // die Rechnung weiter. Ohne Abo des Produkts oder vor seinem Beginn fehlt eher ein Abo im Register.
+            if (! isset($wanted[$lineRow['line']->identity()]) && $lineRow['line']->articleIsLicence) {
+                $reason = match (true) {
+                    $covered => self::SURPLUS_DUPLICATE,
+                    $lastEnd === null => self::SURPLUS_UNKNOWN,
+                    $date->greaterThan($lastEnd) => self::SURPLUS_AFTER_END,
+                    default => self::SURPLUS_OUTSIDE,
+                };
+                $lineRows[$index]['surplus'] = $reason;
+                if (in_array($reason, self::OVERBILLED, true)) {
+                    $overbilled += $lineRows[$index]['free_amount'];
                 }
             }
             if ($covered) {
@@ -861,7 +920,7 @@ final class RecipientReconciler {
         }
         usort($productRows, static fn(array $a, array $b): int => (($b['missing'] + $b['surplus']) <=> ($a['missing'] + $a['surplus'])) ?: strcmp($a['label'], $b['label']));
 
-        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'product_by_subscription' => $productBySubscription, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus];
+        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'product_by_subscription' => $productBySubscription, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus, 'overbilled' => round($overbilled, 2)];
     }
 
     /** @return \Illuminate\Database\Eloquent\Builder<ResaleSubscription> */

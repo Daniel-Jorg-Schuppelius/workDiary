@@ -2266,6 +2266,7 @@ return [
         'plan_key' => 'Recurring template',
         'plan_position' => 'Template position',
         'predecessor' => 'predecessor',
+        'deviation_reason' => 'reason for the deviation',
         'line_position' => 'Template line',
         'product_id' => 'Product',
         'product_version' => 'Version',

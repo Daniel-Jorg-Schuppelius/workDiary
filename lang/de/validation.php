@@ -2232,6 +2232,7 @@ return [
         'plan_key' => 'Serienvorlage',
         'plan_position' => 'Vorlagenposition',
         'predecessor' => 'Vorgänger',
+        'deviation_reason' => 'Begründung der Abweichung',
         'line_position' => 'Vorlagenposition',
         'product_id' => 'Produkt',
         'product_version' => 'Version',

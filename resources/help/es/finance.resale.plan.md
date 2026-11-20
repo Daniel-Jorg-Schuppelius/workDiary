@@ -77,3 +77,13 @@ el registro lo avisa con antelación. Cree la plantilla siguiente; de lo
 contrario, el próximo año de licencia queda sin factura. **Periodo parcial:**
 una cantidad de meses que no es múltiplo del ritmo («7 meses» en una plantilla
 anual) cuenta como una licencia durante esos meses.
+
+**Antes de la próxima ejecución:** las incidencias de las plantillas muestran
+cuándo se ejecuta la plantilla la próxima vez y qué importe facturará entonces
+la línea. Si una plantilla con incidencia se ejecuta en los próximos 30 días,
+aparece en el resumen en «Revisar las plantillas antes de la próxima
+ejecución». **Producto finalizado:** si una plantilla factura un artículo cuya
+suscripción ha terminado para el destinatario, la incidencia indica el fin y,
+si hubo cambio de producto, la suscripción activa desde entonces. **Precio
+distinto:** el precio de la línea por licencia se compara con el precio de
+venta de la suscripción (tolerancia 5 %, al menos 1 €).

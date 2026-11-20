@@ -86,9 +86,30 @@ ouverte, elle apparaît à la période, même pour une seule licence. De là, vo
 pouvez changer le titulaire ou céder la période.
 
 **Ligne excédentaire :** Si toutes les périodes d'un produit sont couvertes et
-qu'une facture reste libre, elle apparaît comme « excédentaire » dans le
-tableau. Soit elle a été facturée deux fois (avoir), soit l'abonnement manque
+qu'une facture reste libre, elle apparaît dans le tableau comme « facturé deux fois » ou « facturé
+après la fin ». Soit elle a été facturée deux fois (avoir), soit l'abonnement manque
 dans le registre (créer l'abonnement), soit la ligne n'a pas sa place ici
 (ignorer). Si vous créez l'abonnement à partir de la ligne et qu'un abonnement
 du même produit s'est terminé peu avant, la boîte de dialogue le propose comme
 prédécesseur.
+
+**Trop, écart, manque — en euros :** la liste de rapprochement et l’aperçu
+indiquent par destinataire ce qui a été trop facturé (ligne dans une année de
+licence déjà couverte : « facturé deux fois » ; ligne après la dernière année
+de licence du produit : « facturé après la fin ») et ce qui a été facturé
+différemment. Ce qui manque figure comme montant ouvert. Les lignes « hors
+durée » ou « sans abonnement » ne sont pas comptées : il manque généralement
+un abonnement dans le registre.
+
+**Lien divergent :** si vous affectez une ligne dont l’article n’est pas celui
+de l’abonnement ou dont le montant s’écarte de plus de 5 % (au moins 1 €) du
+montant prévu, la boîte de dialogue demande une justification. Le lien reste
+possible ; la justification est enregistrée sur la période. Les liens
+existants sans justification apparaissent parmi les constats comme « Autre
+article » ou « Montant différent » et peuvent y être justifiés ou supprimés.
+
+**Vue des licences et feuille de correction :** l’espace de travail affiche en
+haut produit × année de licence chez tous les fournisseurs du client. La
+feuille de correction en dessous indique les factures à créditer, les années
+de licence à facturer, les écarts et le solde ; elle se télécharge en XLSX. Un
+avoir qui se réfère à la facture retire ses lignes de la liste.

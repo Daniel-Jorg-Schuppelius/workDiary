@@ -25,12 +25,21 @@ use Illuminate\Support\Collection;
  * Vorschlag, auf welche Periode desselben Abos er gehört. Nichts wird
  * umgehängt; der Betreiber entscheidet.
  *
- * @phpstan-type Finding array{kind: string, line: MirrorLine, link: ResalePeriodLink|null, links: list<ResalePeriodLink>, period: ResalePeriod|null, suggested: ResalePeriod|null, excess: float}
+ * @phpstan-type Finding array{kind: string, line: MirrorLine, link: ResalePeriodLink|null, links: list<ResalePeriodLink>, period: ResalePeriod|null, suggested: ResalePeriod|null, excess: float, diff: float}
  */
 final class LinkAudit {
     public const string OVERBOOKED = 'overbooked';
 
     public const string MISMATCH = 'mismatch';
+
+    /** Bezug an einer Position mit anderem Artikel als das Abo (Phase 187, MVP-1769). */
+    public const string ARTICLE = LinkDeviation::ARTICLE;
+
+    /** Gedeckte Periode, deren Bezüge im Betrag vom Soll abweichen (MVP-1769). */
+    public const string AMOUNT = LinkDeviation::AMOUNT;
+
+    /** Arten, die eine Abweichung vom Abo sind und mit einer Begründung an der Periode enden. */
+    public const array DEVIATIONS = [self::ARTICLE, self::AMOUNT];
 
     private readonly InvoiceMirror $mirror;
 
@@ -56,6 +65,7 @@ final class LinkAudit {
         $periodsBySubscription = [];
         foreach ($subscriptions as $subscription) {
             foreach ($subscription->periods as $period) {
+                $period->setRelation('subscription', $subscription);
                 $periodsById[$period->id] = $period;
                 $periodsBySubscription[$subscription->id][] = $period;
                 foreach ($period->links as $link) {
@@ -89,6 +99,7 @@ final class LinkAudit {
                     'period' => null,
                     'suggested' => null,
                     'excess' => round($used - $available, 2),
+                    'diff' => 0.0,
                 ];
             }
         }
@@ -108,7 +119,56 @@ final class LinkAudit {
                 'period' => $period,
                 'suggested' => $this->suggest($line, $link, $periodsBySubscription[$period->subscription_id] ?? []),
                 'excess' => 0.0,
+                'diff' => 0.0,
             ];
+        }
+
+        return [...$findings, ...$this->deviations($periodsById, $lines)];
+    }
+
+    /**
+     * Abweichungen vom Abo: anderer Artikel je Bezug, anderer Betrag je gedeckter Periode.
+     * `diff` ist Soll minus Ist (positiv = zu wenig berechnet). Begründete, erlassene und
+     * strittige Perioden sind entschieden und fehlen hier.
+     *
+     * @param  array<int, ResalePeriod>  $periodsById
+     * @param  array<string, MirrorLine>  $lines
+     * @return list<Finding>
+     */
+    private function deviations(array $periodsById, array $lines): array {
+        $findings = [];
+        foreach ($periodsById as $period) {
+            if ($period->deviation_note !== null || $period->links->isEmpty() || in_array($period->status, [PeriodStatus::Waived, PeriodStatus::Disputed], true)) {
+                continue;
+            }
+            $foreign = false;
+            foreach ($period->links as $link) {
+                $line = $lines[$link->mirrorIdentity()] ?? null;
+                if ($line === null || $line->isCreditNote || ! LinkDeviation::articleDiffers($period->subscription, $line)) {
+                    continue;
+                }
+                $foreign = true;
+                $expected = $period->amountForMonths((float) $link->months);
+                $findings[] = [
+                    'kind' => self::ARTICLE, 'line' => $line, 'link' => $link, 'links' => [$link], 'period' => $period, 'suggested' => null, 'excess' => 0.0,
+                    'diff' => $expected === null ? 0.0 : round($expected->toFloat() - (float) ($link->amount?->toFloat() ?? 0.0), 2),
+                ];
+            }
+            $expected = $period->expected_sale;
+            $first = $period->links->first();
+            $line = $lines[$first->mirrorIdentity()] ?? null;
+            // Altbezüge ohne Betrag und Rumpfperioden lassen sich nicht vergleichen.
+            $unknown = $period->links->contains(static fn(ResalePeriodLink $l): bool => $l->amount === null);
+            if ($foreign || $unknown || $expected === null || $line === null || ! LinkDeviation::comparable($period) || $period->coveredMonths() + 0.001 < $period->requiredMonths()) {
+                continue;
+            }
+            $actual = (float) $period->links->sum(static fn(ResalePeriodLink $l): float => (float) ($l->amount?->toFloat() ?? 0.0));
+            if (LinkDeviation::amountDiffers($expected->toFloat(), $actual)) {
+                $findings[] = [
+                    'kind' => self::AMOUNT, 'line' => $line, 'link' => $first, 'links' => array_values($period->links->all()), 'period' => $period, 'suggested' => null, 'excess' => 0.0,
+                    'diff' => round($expected->toFloat() - $actual, 2),
+                ];
+            }
         }
 
         return $findings;

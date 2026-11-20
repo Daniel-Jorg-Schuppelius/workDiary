@@ -50,6 +50,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $decided_by_user_id
  * @property CarbonImmutable|null $decided_at
  * @property bool $is_direct_billing
+ * @property string|null $deviation_note  Begründung abweichender Bezüge (Artikel, Betrag)
  * @property-read ResaleSubscription $subscription
  */
 class ResalePeriod extends Model {
@@ -76,6 +77,7 @@ class ResalePeriod extends Model {
         'decided_by_user_id',
         'decided_at',
         'is_direct_billing',
+        'deviation_note',
     ];
 
     /** Höchstlänge der Bemerkungsspalte (string 255). */

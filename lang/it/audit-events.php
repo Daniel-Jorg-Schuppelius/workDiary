@@ -1491,6 +1491,7 @@ return [
         'order_change' => 'Periodo residuo rinunciato per cambio d’ordine, collegamenti spostati al successore',
         'direct_billing' => 'Anno di licenza precedente all’account del portale fatturato direttamente',
         'links_reset' => 'Collegamenti fattura rimossi (riordina prodotto)',
+        'deviation_accepted' => 'Collegamenti divergenti motivati',
     ],
     'resale_account_allocation' => [
         'saved' => 'Ripartizione del conto licenze salvata',

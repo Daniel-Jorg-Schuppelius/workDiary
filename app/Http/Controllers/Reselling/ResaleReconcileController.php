@@ -21,7 +21,7 @@ use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\{PlanLinkEditor, PlanSection};
-use App\Services\Reselling\Register\{LineFit, LinkAudit, LinkProposer, PeriodLinker, ProductRelink, ProviderBillingStart, RecipientReconciler, ReconcileBoard};
+use App\Services\Reselling\Register\{LineFit, LinkAudit, LinkProposer, PeriodLinker, ProductRelink, ProviderBillingStart, RecipientCorrection, RecipientReconciler, ReconcileBoard};
 use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -54,9 +54,9 @@ class ResaleReconcileController extends Controller {
         $filter = (string) $request->query('show', 'problems');
         if ($filter !== 'all') {
             // Nicht fertig (Phase 165, MVP-1445) — oder ohne Kunde mit freien Positionen, die noch niemand erklärt.
-            $rows = array_values(array_filter($rows, static fn(array $r): bool => ! $r['done'] || $r['proposed'] > 0 || $r['free'] > 0.001));
+            $rows = array_values(array_filter($rows, static fn(array $r): bool => ! $r['done'] || $r['proposed'] > 0 || $r['free'] > 0.001 || $r['deviating'] > 0.001));
         }
-        $totals = ['open' => 0, 'partial' => 0, 'proposed' => 0, 'free' => 0.0, 'missing' => 0.0, 'surplus' => 0.0];
+        $totals = ['open' => 0, 'partial' => 0, 'proposed' => 0, 'free' => 0.0, 'missing' => 0.0, 'surplus' => 0.0, 'overbilled' => 0.0, 'deviating' => 0.0];
         foreach ($rows as $row) {
             foreach ($totals as $key => $value) {
                 $totals[$key] = $value + $row[$key];
@@ -64,7 +64,7 @@ class ResaleReconcileController extends Controller {
         }
         // Eine Kachel filtert auf die Empfänger hinter ihrer Zahl (Pilot 2026-11-01); jede Kennzahl > 0 ist Klärungsbedarf,
         // die Summen der Kacheln bleiben daher stehen.
-        if (in_array($filter, ReconcileBoard::FOCUS, true)) {
+        if (in_array($filter, [...ReconcileBoard::FOCUS, 'overbilled', 'deviating'], true)) {
             $rows = array_values(array_filter($rows, static fn(array $r): bool => $r[$filter] > 0.001));
         } elseif ($filter !== 'all') {
             $filter = 'problems';
@@ -125,7 +125,9 @@ class ResaleReconcileController extends Controller {
             // Offene Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746).
             'billingStart' => $billingStart->candidates($customer),
             // Überbuchte Positionen und Bezüge neben der Periode (MVP-1749) — bisher nur im Lizenzkonto.
-            'findings' => $audit->forSubscriptions($organization, $result['subscriptions']),
+            'findings' => $findings = $audit->forSubscriptions($organization, $result['subscriptions']),
+            // Lizenzbild und Korrekturblatt in Euro (Phase 187, MVP-1772/1776).
+            'correction' => RecipientCorrection::build($result, $findings, $today),
         ] + $result);
     }
 
@@ -299,7 +301,7 @@ class ResaleReconcileController extends Controller {
             $link = DB::transaction(function () use ($period, $lines, $request): ResalePeriodLink {
                 $remaining = $request->months();
                 if (count($lines) === 1) {
-                    return $this->linker->attach($period, $lines[0], $remaining, $request->note(), $request->user()?->id);
+                    return $this->linker->attach($period, $lines[0], $remaining, $request->note(), $request->user()?->id, $request->input('deviation_reason'));
                 }
                 $first = null;
                 foreach ($lines as $line) {
@@ -307,7 +309,7 @@ class ResaleReconcileController extends Controller {
                     if ($take <= 0.001) {
                         continue;
                     }
-                    $link = $this->linker->attach($period, $line, $take, $request->note(), $request->user()?->id);
+                    $link = $this->linker->attach($period, $line, $take, $request->note(), $request->user()?->id, $request->input('deviation_reason'));
                     $first ??= $link;
                     $remaining -= $take;
                     if ($remaining <= 0.001) {
@@ -321,6 +323,8 @@ class ResaleReconcileController extends Controller {
 
                 return $first;
             });
+        } catch (\App\Exceptions\ResaleLinkDeviationException $e) {
+            throw ValidationException::withMessages(['deviation_reason' => ErrorText::for($e)]);
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages(['months' => ErrorText::for($e)]);
         }

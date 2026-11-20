@@ -95,6 +95,16 @@ final class LicenseAccountGroup {
         return $first->company_name ?? $first->holderLabel();
     }
 
+    /** Schlüssel des Haupthalters — Konten desselben Halters bei anderen Anbietern tragen denselben. */
+    public function holderKey(): ?string {
+        return $this->mainHolderContract()?->holderKey();
+    }
+
+    /** Läuft im Konto noch ein Vertrag? */
+    public function isRunning(): bool {
+        return $this->contracts()->contains(static fn(ResaleSubscription $s): bool => $s->status->isPlanning());
+    }
+
     /** Partner, über den das Konto abgerechnet wird — nur wenn der Haupthalter Endkunde eines Partners ist. */
     public function partner(): ?Customer {
         return $this->mainHolderContract()?->foreignCustomer?->customer;

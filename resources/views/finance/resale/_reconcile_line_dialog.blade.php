@@ -40,6 +40,7 @@
             @endforeach
         </x-select-field>
         <x-input-field name="months" type="number" step="0.01" min="0.01" :label="__('resale.link.months_field')" :value="old('months', number_format(min($free, $first['open'] ?? $free), 2, '.', ''))" required :hint="__('resale.link.months_hint')" />
+        <x-input-field name="deviation_reason" :label="__('resale.deviation.reason_field')" :value="old('deviation_reason')" :hint="__('resale.deviation.reason_hint')" maxlength="255" />
         <x-checkbox-field name="confirm_fit" :toggle="false" tone="warning" :checked="(bool) old('confirm_fit')" :label="__('resale.fit.confirm_field')" :hint="__('resale.fit.confirm_hint')" />
     @endif
 </x-modal>

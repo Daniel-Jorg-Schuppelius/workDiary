@@ -16648,6 +16648,7 @@ CREATE TABLE IF NOT EXISTS "resale_periods"(
   "draft_reference" varchar,
   "draft_created_at" datetime,
   "is_direct_billing" tinyint(1) not null default '0',
+  "deviation_note" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("subscription_id") references "resale_subscriptions"("id") on delete cascade,
   foreign key("decided_by_user_id") references "users"("id") on delete set null
@@ -27480,3 +27481,4 @@ INSERT INTO migrations VALUES(1141,'2027_04_25_100000_add_property_country_to_in
 INSERT INTO migrations VALUES(1142,'2027_04_25_100100_add_external_reference_to_project_time_shortfalls',1);
 INSERT INTO migrations VALUES(1143,'2027_04_26_120000_add_stock_delivery_to_claim_rma_returns',1);
 INSERT INTO migrations VALUES(1144,'2027_04_27_100000_add_is_direct_billing_to_resale_periods',2);
+INSERT INTO migrations VALUES(1145,'2027_04_28_100000_add_deviation_note_to_resale_periods',3);

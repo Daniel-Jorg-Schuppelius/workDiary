@@ -10,6 +10,37 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Abos & Lizenzen, Abweichungen in Euro (`MVP-1765`, `MVP-1766`, `MVP-1767`):
+  Das Register trennt „zu viel berechnet“ von „noch nicht zugeordnet“. Eine
+  freie Lizenzposition in einem schon gedeckten Lizenzjahr heißt „doppelt
+  berechnet“, eine nach dem letzten Lizenzjahr des Produkts „nach Abo-Ende
+  berechnet“; beide zählen mit ihrem Betrag. Überblick und Abgleichsliste
+  zeigen je Rechnungsempfänger „Zu viel berechnet“ und „Abweichend berechnet“
+  in Euro, die Liste ist nach dem Betrag sortiert. Das Kennzeichen „überzählig“
+  und die Kachel „Prüffälle“ im Überblick entfallen dafür.
+- Abos & Lizenzen, Begründung bei abweichendem Bezug (`MVP-1768`, `MVP-1769`,
+  `MVP-1770`): Wird eine Position zugeordnet, deren Artikel nicht der des Abos
+  ist oder deren Betrag um mehr als 5 % (mindestens 1 €) vom Soll abweicht,
+  verlangen Bezugsdialog und Tafel eine Begründung. Der Dialog kennzeichnet
+  solche Positionen vor dem Speichern. Abweichende Bezüge im Bestand
+  erscheinen als Prüffälle „Anderer Artikel“ und „Betrag weicht ab“ und lassen
+  sich dort begründen oder lösen.
+- Abos & Lizenzen, Korrekturblatt und Lizenzbild (`MVP-1772`, `MVP-1773`,
+  `MVP-1776`): Die Arbeitsmappe zeigt Produkt × Lizenzjahr über alle Anbieter
+  des Kunden und darunter, was gutzuschreiben, zu berechnen und abweichend
+  ist, mit Saldo; als XLSX ladbar. Gutgeschriebene Rechnungen fallen aus der
+  Liste.
+- Abos & Lizenzen, Vorlagenprüfung vor dem Lauf (`MVP-1774`, `MVP-1775`):
+  Befunde an Serienvorlagen nennen die nächste Ausführung und ihren Betrag;
+  führt eine Vorlage mit Befund in den nächsten 30 Tagen aus, steht sie im
+  Überblick unter „Vorlagen vor dem nächsten Lauf prüfen“. Neu sind die
+  Befunde „Vorlage berechnet ein beendetes Produkt“ (mit dem Abo, das seit dem
+  Produktwechsel läuft) und „Preis weicht ab“.
+- Abos & Lizenzen (`MVP-1764`): Hat ein Halter Lizenzkonten bei mehreren
+  Anbietern (nach einem Anbieterwechsel, Domains), zeigt die Kontoseite sie
+  als Reiter mit Anbieter und Zahl der Verträge; beendete Konten sind
+  gekennzeichnet. Bisher zeigte sie nur die Verträge des einen
+  Anbieterkontos, ohne dass das erkennbar war.
 - Abos & Lizenzen (`MVP-1760`): Das Register meldet vorab, wenn eine
   Serienvorlage in den nächsten 90 Tagen endet und das zugeordnete Abo
   weiterläuft („Vorlage endet, Abo läuft weiter“). Bisher fiel das erst auf,
@@ -162,6 +193,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Abos & Lizenzen (`MVP-1763`): Die Meldung nach einer Übergabe an das
+  Buchhaltungsprogramm nennt den Nettobetrag nicht mehr mit doppeltem
+  Währungszeichen („538,80 € €“).
 - Abos & Lizenzen (`MVP-1758`): Eine Serienvorlage mit Rumpflaufzeit („7 Monat“
   bei halbjährlicher Ausführung) zählt je Position als eine Lizenz über die
   genannten Monate statt als sieben Lizenzen. Eine automatische Zuordnung, die

@@ -83,8 +83,29 @@ Periode, steht sie bei der Periode, auch bei einer einzelnen Lizenz. Von dort
 lässt sich der Halter wechseln oder die Periode abtreten.
 
 **Überzählige Position:** Sind alle Perioden eines Produkts gedeckt und eine
-Rechnung bleibt frei, steht sie als „überzählig“ in der Tafel. Entweder wurde
+Rechnung bleibt frei, steht sie in der Tafel als „doppelt berechnet“ oder „nach Abo-Ende berechnet“. Entweder wurde
 doppelt berechnet (Gutschrift), oder das Abo fehlt im Register (Abo anlegen),
 oder die Position gehört nicht hierher (ignorieren). Legen Sie das Abo aus der
 Position an und endete kurz davor ein Abo desselben Produkts, bietet der Dialog
 es als Vorgänger an.
+
+**Zu viel, abweichend, fehlt — in Euro:** Die Abgleichsliste und der Überblick
+zeigen je Rechnungsempfänger, was zu viel berechnet wurde (Position in einem
+schon gedeckten Lizenzjahr: „doppelt berechnet“; Position nach dem letzten
+Lizenzjahr des Produkts: „nach Abo-Ende berechnet“) und was abweichend
+berechnet wurde. Was fehlt, steht als offener Betrag. Positionen „außerhalb
+der Laufzeit“ oder „ohne Abo“ zählen nicht mit: dort fehlt meist ein Abo im
+Register.
+
+**Abweichender Bezug:** Ordnen Sie eine Position zu, deren Artikel nicht der
+des Abos ist oder deren Betrag um mehr als 5 % (mindestens 1 €) vom Soll
+abweicht, verlangt der Dialog eine Begründung. Der Bezug bleibt möglich, die
+Begründung steht an der Periode. Bezüge aus dem Bestand ohne Begründung
+erscheinen unter den Prüffällen als „Anderer Artikel“ oder „Betrag weicht ab“
+und lassen sich dort begründen oder lösen.
+
+**Lizenzbild und Korrekturblatt:** Die Arbeitsmappe zeigt oben Produkt ×
+Lizenzjahr über alle Anbieter des Kunden. Das Korrekturblatt darunter nennt
+die Rechnungen zum Gutschreiben, die Lizenzjahre zum Berechnen, die
+Abweichungen und den Saldo; es lässt sich als XLSX laden. Eine Gutschrift mit
+Bezug auf die Rechnung nimmt deren Positionen aus der Liste.

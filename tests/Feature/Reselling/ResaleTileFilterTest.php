@@ -148,17 +148,43 @@ class ResaleTileFilterTest extends TestCase {
             ->assertSee('acc-offen-1')->assertSee('acc-bezahlt-2');
     }
 
-    public function test_overview_findings_tile_is_the_sum_of_its_tasks_and_leads_to_a_worklist(): void {
+    public function test_account_page_shows_the_accounts_of_the_same_holder_as_tabs(): void {
+        $admin = $this->orgAdmin();
+        $holder = $this->customer('Kachelberg GmbH', 'c-kb');
+        $current = $this->subscription($holder, $this->exchange, 'acc-neu-1');
+        $current->forceFill(['provider' => 'qualityhosting'])->save();
+        $old = $this->subscription($holder, $this->exchange, 'acc-alt-2');
+        $old->forceFill(['status' => 'ended', 'ends_on' => '2025-12-31'])->save();
+        $this->subscription($this->customer('Zahlfeld AG', 'c-zf'), $this->exchange, 'acc-fremd-3');
+
+        $accounts = app(\App\Services\Reselling\Register\LicenseAccounts::class);
+        $key = $accounts->keyFor($this->organization, $current->fresh());
+        $oldKey = $accounts->keyFor($this->organization, $old->fresh());
+        $otherKey = 'telekom_marketplace:acc-fremd-3';
+
+        $this->actingAs($admin)->get(route('finance.resale.accounts.show', $key))->assertOk()
+            ->assertSee('role="tablist"', false)
+            ->assertSee(route('finance.resale.accounts.show', $oldKey))
+            ->assertSee('(' . __('resale.account.tab_ended') . ')')
+            ->assertDontSee(route('finance.resale.accounts.show', $otherKey));
+    }
+
+    public function test_account_page_of_a_holder_with_one_account_has_no_tabs(): void {
+        $this->subscription($this->customer('Kachelberg GmbH', 'c-kb'), $this->exchange, 'acc-einzel-1');
+
+        $this->actingAs($this->orgAdmin())->get(route('finance.resale.accounts.show', 'telekom_marketplace:acc-einzel-1'))->assertOk()
+            ->assertDontSee('role="tablist"', false);
+    }
+
+    public function test_overview_shows_the_euro_tiles_and_the_account_tile_names_what_it_counts(): void {
         $admin = $this->orgAdmin();
         $this->subscription($this->customer('Kachelberg GmbH', 'c-kb'), $this->exchange, 'acc-offen-1');
 
-        $summary = app(\App\Services\Reselling\Register\ResaleOverview::class)->build($admin->organization)['summary'];
-        $this->assertSame($summary['findings'], array_sum($summary['findings_parts']));
-
-        // Die Kachel zählt drei Aufgaben; die Kachel der Lizenzkonten nur Aufteilungen und heißt auch so.
+        // Der Überblick zeigt die Abweichungen in Euro und führt in die gefilterte Abgleichsliste (Phase 187).
         $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()
-            ->assertSee('href="' . e($summary['findings_url']) . '"', false);
+            ->assertSee(route('finance.resale.reconcile.index', ['show' => 'overbilled']))
+            ->assertSee(route('finance.resale.reconcile.index', ['show' => 'deviating']));
         $this->actingAs($admin)->get(route('finance.resale.accounts.index'))->assertOk()
-            ->assertSee(__('resale.account.summary.conflicts'))->assertDontSee(__('resale.overview.kpi.findings'));
+            ->assertSee(__('resale.account.summary.conflicts'));
     }
 }

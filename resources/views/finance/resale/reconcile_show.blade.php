@@ -77,6 +77,8 @@
             <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($surplus)" format="raw" :tone="$surplus > 0.001 ? 'info' : 'neutral'" :href="$focusUrl('surplus')" :active="$focus === 'surplus'" />
         </div>
 
+        @include('finance.resale._correction', ['correction' => $correction, 'customer' => $customer])
+
         @if (! $has_source)
             <div role="alert" class="alert alert-warning mb-4 text-sm">{{ __('resale.mirror.no_source') }}</div>
         @elseif ($pending > 0)

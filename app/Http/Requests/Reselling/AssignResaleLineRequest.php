@@ -48,6 +48,7 @@ class AssignResaleLineRequest extends BaseFormRequest {
             'line_ids.*' => ['string', 'max:64'],
             'note' => ['nullable', 'string', 'max:255'],
             'confirm_fit' => ['nullable', 'boolean'],
+            'deviation_reason' => ['nullable', 'string', 'max:255'],
         ] + PeriodLinker::amountRules();
     }
 

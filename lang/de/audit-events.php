@@ -1491,6 +1491,7 @@ return [
         'order_change' => 'Restperiode beim Bestellungswechsel verzichtet, Bezüge an den Nachfolger',
         'direct_billing' => 'Lizenzjahr vor dem Portalkonto wird direkt berechnet',
         'links_reset' => 'Rechnungsbezüge gelöst (Produkt neu ordnen)',
+        'deviation_accepted' => 'Abweichende Bezüge begründet',
     ],
     'resale_account_allocation' => [
         'saved' => 'Aufteilung eines Lizenzkontos gespeichert',

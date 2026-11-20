@@ -265,9 +265,12 @@
                             @if ($lineRow['free'] > 0.001)
                                 <span class="text-warning">{{ __('resale.invoices.remaining', ['amount' => $licenceMonths::label($lineRow['free'], $lineRow['per_licence'])]) }}</span>
                             @endif
-                            {{-- Überzählig (MVP-1754): alle Perioden des Produkts sind gedeckt, die Position bleibt frei. --}}
-                            @if ($lineRow['free'] > 0.001 && ! $lineRow['gap'] && $openMonths <= 0.001)
-                                <x-status-badge size="xs" tone="info" class="mt-0.5" :label="__('resale.board.surplus_line')" :title="__('resale.board.surplus_line_hint')" />
+                            {{-- Keine offene Periode kann die Position brauchen (MVP-1766): doppelt, nach Abo-Ende, außerhalb der Laufzeit, ohne Abo. --}}
+                            @if ($lineRow['surplus'] !== null)
+                                @php $overbilled = in_array($lineRow['surplus'], \App\Services\Reselling\Register\RecipientReconciler::OVERBILLED, true); @endphp
+                                <x-status-badge size="xs" :tone="$overbilled ? 'warning' : 'info'" class="mt-0.5"
+                                                :label="__('resale.board.surplus.' . $lineRow['surplus']) . ($overbilled ? ' · ' . \CommonToolkit\ValueObjects\Money::ofFloat($lineRow['free_amount'], $line->currency, 2)->format() : '')"
+                                                :title="__('resale.board.surplus_hint.' . $lineRow['surplus'])" />
                             @endif
                             @if ($lineRow['linked'] > 0.001)
                                 <span class="block text-muted">{{ __('resale.board.line_taken', ['periods' => implode(' · ', array_unique($lineRow['periods']))]) }}</span>

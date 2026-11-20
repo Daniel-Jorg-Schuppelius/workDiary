@@ -38,6 +38,23 @@
 
         <x-validation-errors class="mb-4" />
 
+        @if (count($holderAccounts) > 1)
+            {{-- Ein Lizenzkonto ist ein Anbieterkonto: die Konten des Halters als Reiter (MVP-1764). --}}
+            @php
+                $providerCounts = array_count_values(array_map(static fn($account): string => $account->provider->value, $holderAccounts));
+                $accountTabs = array_map(static fn($account): array => [
+                    'href' => route('finance.resale.accounts.show', $account->routeKey()),
+                    'active' => $account->key === $group->key,
+                    'icon' => $account->isRunning() ? 'account_balance_wallet' : 'history',
+                    'label' => $account->provider->label()
+                        . ($providerCounts[$account->provider->value] > 1 ? ' · ' . $account->account : '')
+                        . ($account->isRunning() ? '' : ' (' . __('resale.account.tab_ended') . ')'),
+                    'count' => $account->headContracts()->count(),
+                ], $holderAccounts);
+            @endphp
+            <x-tab-nav class="flex-none mb-4" :items="$accountTabs" />
+        @endif
+
         @if ($customer !== null)
             @include('finance.resale._billing_start_hint', ['billingStart' => $billingStart, 'customer' => $customer, 'canManage' => $canManage])
         @endif

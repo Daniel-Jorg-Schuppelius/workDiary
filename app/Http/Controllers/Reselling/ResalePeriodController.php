@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
+use App\Exceptions\ResaleLinkDeviationException;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{BulkWaiveResalePeriodsRequest, LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
@@ -21,7 +22,7 @@ use App\Models\Reselling\{ResaleIgnoredLine, ResalePeriod, ResalePeriodLink, Res
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Plan\RecurringPlans;
-use App\Services\Reselling\Register\{LicenseMonths, LineFit, LinkProposer, PeriodLinker, ResaleInvoiceDraftService};
+use App\Services\Reselling\Register\{LicenseMonths, LineFit, LinkDeviation, LinkProposer, PeriodLinker, ResaleInvoiceDraftService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -349,6 +350,18 @@ class ResalePeriodController extends Controller {
     }
 
     /**
+     * Abweichende Bezüge einer Periode begründen (MVP-1769): anderer Artikel
+     * oder anderer Betrag bleibt stehen, zählt aber nicht mehr als Prüffall.
+     */
+    public function deviationStore(Request $request, ResalePeriod $period): RedirectResponse {
+        $reason = (string) $request->validate(['deviation_reason' => ['required', 'string', 'max:255']])['deviation_reason'];
+        $period->forceFill(['deviation_note' => trim($reason)])->save();
+        $period->audit('resale_period.deviation_accepted', ['reason' => trim($reason)]);
+
+        return back()->with('success', __('resale.deviation.flash'));
+    }
+
+    /**
      * Dialog für den manuellen Bezug: nur Abo-Positionen (Artikel laut
      * Einstufung) des Empfängers im Fenster der Periode, je Position
      * Lizenzen × Monate und der noch freie Rest; verbrauchte Positionen
@@ -385,6 +398,7 @@ class ResalePeriodController extends Controller {
                     'partly' => $free > 0.001 && $free < $months - 0.001,
                     'taken_by' => $taken['periods'] ?? [],
                     'fit' => LineFit::of($line, $period, $competitors),
+                    'deviation' => LinkDeviation::of($period, $line, max(0.01, min($free, $period->openMonths()))),
                     // Suche im Dialog (Pilot 2026-11-01): Nummer, Datum, Leistungszeitraum, Artikel.
                     'haystack' => mb_strtolower(implode(' ', array_filter([$line->voucherNumber, $line->voucherDate?->format('d.m.Y'), $line->servicePeriodLabel(), $line->label()]))),
                 ];
@@ -408,7 +422,7 @@ class ResalePeriodController extends Controller {
         if ($line === null) {
             throw ValidationException::withMessages(['line_id' => (string) __('resale.link.error.line_missing')]);
         }
-        $link = $this->attach($period, $line, $request->months(), $request->note(), $request->user()?->id);
+        $link = $this->attach($period, $line, $request->months(), $request->note(), $request->user()?->id, $request->input('deviation_reason'));
 
         // Zurück dorthin, wo der Dialog geöffnet wurde (Mappe, Abo-Seite, Perioden-Liste) — wie beim Verzicht.
         return redirect(url()->previous(route('finance.resale.show', $period->subscription->sqid)))->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
@@ -423,15 +437,17 @@ class ResalePeriodController extends Controller {
         if ($period === null || $line === null) {
             throw ValidationException::withMessages(['line_id' => (string) __('resale.link.error.line_missing')]);
         }
-        $link = $this->attach($period, $line, $request->months(), null, $request->user()?->id);
+        $link = $this->attach($period, $line, $request->months(), null, $request->user()?->id, $request->input('deviation_reason'));
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }
 
     /** Bezug schreiben; „mehr als frei" wird zum Feldfehler an `months`. */
-    private function attach(ResalePeriod $period, MirrorLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
+    private function attach(ResalePeriod $period, MirrorLine $line, float $months, ?string $note, ?int $userId, mixed $reason = null): ResalePeriodLink {
         try {
-            return $this->linker->attach($period, $line, $months, $note, $userId);
+            return $this->linker->attach($period, $line, $months, $note, $userId, is_string($reason) ? $reason : null);
+        } catch (ResaleLinkDeviationException $e) {
+            throw ValidationException::withMessages(['deviation_reason' => ErrorText::for($e)]);
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages(['months' => ErrorText::for($e)]);
         }

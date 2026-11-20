@@ -85,8 +85,29 @@ aperto, compare accanto al periodo, anche per una sola licenza. Da lì si può
 cambiare il titolare o cedere il periodo.
 
 **Posizione in eccesso:** Se tutti i periodi di un prodotto sono coperti e una
-fattura resta libera, compare come «in eccesso» nella tavola. O è stata
+fattura resta libera, compare nella tavola come «fatturato due volte» o «fatturato dopo la fine». O è stata
 fatturata due volte (nota di credito), o l'abbonamento manca nel registro
 (creare l'abbonamento), o la posizione non appartiene qui (ignorare). Se si
 crea l'abbonamento dalla posizione e poco prima è terminato un abbonamento
 dello stesso prodotto, la finestra lo propone come predecessore.
+
+**In eccesso, diverso, mancante — in euro:** l’elenco di riconciliazione e il
+riepilogo mostrano per destinatario ciò che è stato fatturato in eccesso (riga
+in un anno di licenza già coperto: «fatturato due volte»; riga dopo l’ultimo
+anno di licenza del prodotto: «fatturato dopo la fine») e ciò che è stato
+fatturato diversamente. Ciò che manca compare come importo aperto. Le righe
+«fuori durata» o «senza abbonamento» non vengono contate: di solito manca un
+abbonamento nel registro.
+
+**Collegamento divergente:** se assegna una riga il cui articolo non è quello
+dell’abbonamento o il cui importo si discosta di oltre il 5 % (almeno 1 €) da
+quello previsto, la finestra chiede una motivazione. Il collegamento resta
+possibile; la motivazione è salvata sul periodo. I collegamenti esistenti
+senza motivazione compaiono tra i rilievi come «Altro articolo» o «Importo
+diverso» e possono essere motivati o rimossi lì.
+
+**Quadro delle licenze e foglio di correzione:** l’area di lavoro mostra in
+alto prodotto × anno di licenza presso tutti i fornitori del cliente. Il
+foglio di correzione sotto indica le fatture da accreditare, gli anni di
+licenza da fatturare, gli scostamenti e il saldo; si scarica come XLSX. Una
+nota di credito riferita alla fattura toglie le sue righe dall’elenco.

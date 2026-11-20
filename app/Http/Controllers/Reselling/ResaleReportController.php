@@ -137,6 +137,18 @@ class ResaleReportController extends Controller {
         return CsvExport::streamFromRows($filename . '.csv', $header, $rows);
     }
 
+    /** Korrekturblatt eines Rechnungsempfängers als XLSX (Phase 187, MVP-1772): gutschreiben, berechnen, abweichend, Saldo. */
+    public function correction(Request $request, Customer $customer, \App\Services\Reselling\Register\RecipientReconciler $reconciler, \App\Services\Reselling\Register\LinkAudit $audit): StreamedResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $today = ResalePeriod::today();
+        $analysis = $reconciler->forCustomer($organization, $customer, $today);
+        $sheet = \App\Services\Reselling\Register\RecipientCorrection::build($analysis, $audit->forSubscriptions($organization, $analysis['subscriptions']), $today);
+        $this->auditExport($request, 'resale.correction', 'xlsx', ['customer' => $customer->id]);
+        $header = [__('resale.correction.col.kind'), __('resale.correction.col.voucher'), __('resale.correction.col.period'), __('resale.correction.col.subject'), __('resale.correction.col.reason'), __('resale.correction.col.amount')];
+
+        return XlsxExport::streamFromArray('korrekturblatt-' . $today->format('Y-m-d') . '.xlsx', $header, \App\Services\Reselling\Register\RecipientCorrection::exportRows($sheet));
+    }
+
     /** Derselbe Rechnungsvorschlag als XLSX (Review 2026-09-10, A5). */
     public function exportXlsx(Request $request): StreamedResponse {
         [$header, $rows, $filename] = $this->proposalRows();

@@ -43,6 +43,7 @@ class QuickLinkResalePeriodRequest extends BaseFormRequest {
             'period_id' => ['required', 'integer', new ExistsInCurrentOrganization('resale_periods')],
             'line_id' => ['required', 'string', 'max:64'],
             'confirm_fit' => ['nullable', 'boolean'],
+            'deviation_reason' => ['nullable', 'string', 'max:255'],
         ] + PeriodLinker::amountRules();
     }
 

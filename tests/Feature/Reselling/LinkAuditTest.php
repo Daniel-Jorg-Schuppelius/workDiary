@@ -131,6 +131,62 @@ class LinkAuditTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2022->sqid))->assertOk()->assertSee('⚠ ' . __('resale.fit.outside'));
     }
 
+    public function test_link_with_another_article_or_amount_needs_a_reason_and_is_reported_until_justified(): void {
+        $admin = $this->orgAdmin();
+        $contract = $this->contract('ex-abw', 1, '2025-01-01', '2026-01-01');
+        $period = $contract->periods()->firstOrFail();
+        $linker = app(PeriodLinker::class);
+        $mirrorLine = fn(LexofficeVoucherLine $line): \App\Services\Reselling\Mirror\MirrorLine => app(\App\Services\Reselling\Mirror\InvoiceMirror::class)->lineById($this->organization, $line->getMorphClass(), (int) $line->id) ?? throw new \LogicException('Spiegelzeile fehlt');
+
+        // Passender Bezug: gleicher Artikel, Betrag im Soll — keine Rückfrage.
+        $fitting = $this->line('RE/2025/0901', '2025-01-02', 12, '2025-01-01', '2025-12-31');
+        $this->assertNull(\App\Services\Reselling\Register\LinkDeviation::of($period, $mirrorLine($fitting), 12.0));
+
+        // Anderer Artikel: Domain-Position an ein Exchange-Jahr.
+        $domainArticle = LexofficeArticle::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'art-dom', 'name' => 'DE-Domain', 'article_number' => 'ART-DOM',
+            'type' => 'SERVICE', 'unit_name' => 'Jahr', 'net_unit_price' => '8.03', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
+        ]);
+        $domain = $this->line('RE/2025/0902', '2025-01-03', 1, '2025-01-01', '2025-12-31');
+        $domain->forceFill(['external_article_id' => 'art-dom', 'lexoffice_article_id' => $domainArticle->id, 'name' => 'DE-Domain', 'unit_name' => 'Jahr', 'unit_net' => '8.03', 'total_net' => '8.03'])->save();
+        try {
+            $linker->attach($period, $domain, 12.0, null, $admin->id);
+            $this->fail('Bezug an fremdem Artikel braucht eine Begründung.');
+        } catch (\App\Exceptions\ResaleLinkDeviationException $e) {
+            $this->assertSame(LinkAudit::ARTICLE, $e->kind);
+        }
+        $this->assertSame(0, $period->links()->count());
+
+        $linker->attach($period, $domain, 12.0, null, $admin->id, 'Kulanz: Domain statt Postfach berechnet');
+        $this->assertSame('Kulanz: Domain statt Postfach berechnet', $period->fresh()?->deviation_note);
+        $kinds = fn(): array => array_column((new LinkAudit)->forSubscriptions($this->organization, LinkAudit::loadedWithLinks($this->organization, [$contract->id])), 'kind');
+        $this->assertNotContains(LinkAudit::ARTICLE, $kinds(), 'begründet ist kein Prüffall');
+
+        // Altbestand ohne Begründung: Prüffall, bis er begründet wird.
+        $period->forceFill(['deviation_note' => null])->save();
+        $this->assertContains(LinkAudit::ARTICLE, $kinds());
+        $this->actingAs($admin)->post(route('finance.resale.periods.deviation.store', $period->sqid), ['deviation_reason' => 'Altfall 2025'])->assertSessionHasNoErrors();
+        $this->assertNotContains(LinkAudit::ARTICLE, $kinds());
+
+        // Anderer Betrag: gleicher Artikel, halber Preis.
+        $cheapContract = $this->contract('ex-preis', 1, '2024-01-01', '2025-01-01');
+        $cheapPeriod = $cheapContract->periods()->firstOrFail();
+        $cheap = $this->line('RE/2024/0903', '2024-01-02', 12, '2024-01-01', '2024-12-31');
+        $cheap->forceFill(['unit_net' => '2.00', 'total_net' => '24.00'])->save();
+        try {
+            $linker->attach($cheapPeriod, $cheap, 12.0, null, $admin->id);
+            $this->fail('Bezug mit abweichendem Betrag braucht eine Begründung.');
+        } catch (\App\Exceptions\ResaleLinkDeviationException $e) {
+            $this->assertSame(LinkAudit::AMOUNT, $e->kind);
+        }
+        // Der Dialog meldet es am Begründungsfeld.
+        $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $cheapPeriod->sqid), ['line_id' => $mirrorLine($cheap)->key, 'months' => 12, 'confirm_fit' => 1])
+            ->assertSessionHasErrors('deviation_reason');
+        $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $cheapPeriod->sqid), ['line_id' => $mirrorLine($cheap)->key, 'months' => 12, 'confirm_fit' => 1, 'deviation_reason' => 'Preis von 2024'])
+            ->assertSessionHasNoErrors();
+        $this->assertSame('Preis von 2024', $cheapPeriod->fresh()?->deviation_note);
+    }
+
     public function test_fits_uses_service_period_or_invoice_date_window(): void {
         $contract = $this->contract('ent-2', 1, '2024-10-13', '2025-10-12');
         $period = $contract->periods()->firstOrFail();

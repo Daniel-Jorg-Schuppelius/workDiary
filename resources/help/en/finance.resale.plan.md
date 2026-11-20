@@ -76,3 +76,12 @@ register reports this in advance. Create the follow-up template, otherwise the
 next licence year stays without an invoice. **Short term:** A month quantity
 that is not a multiple of the rhythm (“7 months” on a yearly template) counts
 as one licence over these months.
+
+**Before the next run:** Findings on templates show when the template runs
+next and which amount the line will bill then. If a template with a finding
+runs within the next 30 days, it appears in the overview under “Check
+templates before the next run”. **Ended product:** If a template bills an
+article whose subscription has ended for the recipient, the finding states the
+end and, after a product change, the subscription that has been running since.
+**Price differs:** The price of the line per licence is compared with the sale
+price of the subscription (tolerance 5 %, at least €1).

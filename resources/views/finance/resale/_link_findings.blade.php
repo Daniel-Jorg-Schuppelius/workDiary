@@ -1,7 +1,10 @@
-{{-- Prüffälle an Bezügen (überbucht, zeitlich unpassend) als Tabellenzeilen: Lizenzkonto und Arbeitsmappe (MVP-1749). --}}
+{{-- Prüffälle an Bezügen (überbucht, zeitlich unpassend, anderer Artikel, anderer Betrag) als Tabellenzeilen: Lizenzkonto und Arbeitsmappe (MVP-1749, MVP-1769). --}}
 @php $compact = \App\View\Components\Resale\LicenceMonths::class; @endphp
 @foreach ($findings as $finding)
-    @php $line = $finding['line']; @endphp
+    @php
+        $line = $finding['line'];
+        $isDeviation = in_array($finding['kind'], \App\Services\Reselling\Register\LinkAudit::DEVIATIONS, true);
+    @endphp
     <tr class="hover">
         <td class="align-top"><x-status-badge size="xs" :tone="$finding['kind'] === \App\Services\Reselling\Register\LinkAudit::OVERBOOKED ? 'error' : 'warning'" :label="__('resale.account.finding.' . $finding['kind'])" /></td>
         <td class="text-sm">
@@ -22,11 +25,39 @@
                         </li>
                     @endforeach
                 </ul>
+            @elseif ($isDeviation)
+                @php
+                    $currency = $finding['period']->currency;
+                    $money = static fn(float $value): string => \CommonToolkit\ValueObjects\Money::ofFloat($value, $currency, 2)->format();
+                @endphp
+                <span class="block text-xs text-muted">{{ __('resale.account.finding.' . $finding['kind'] . '_text', [
+                    'period' => $finding['period']->subscription->label . ' · ' . $finding['period']->label(),
+                    'diff' => $money(abs($finding['diff'])),
+                    'direction' => __('resale.deviation.' . ($finding['diff'] >= 0 ? 'under' : 'over')),
+                ]) }}</span>
             @else
                 <span class="block text-xs text-muted">{{ __('resale.account.finding.mismatch_text', ['service' => $line->servicePeriodLabel() ?? $line->voucherDate?->fdate() ?? '—', 'period' => $finding['period']->label()]) }}</span>
             @endif
         </td>
         <td class="text-right align-top">
+            @if ($canManage && $isDeviation)
+                {{-- Abweichung bleibt möglich, aber nur begründet (MVP-1768): danach zählt sie nicht mehr als Prüffall. --}}
+                <div class="flex justify-end items-center gap-1">
+                    <form method="POST" action="{{ route('finance.resale.periods.deviation.store', $finding['period']->sqid) }}" class="flex items-center gap-1">
+                        @csrf
+                        <input type="text" name="deviation_reason" required maxlength="255" class="input input-xs input-bordered w-48"
+                               placeholder="{{ __('resale.deviation.reason_field') }}" aria-label="{{ __('resale.deviation.reason_field') }}">
+                        <x-icon-btn icon="task_alt" size="xs" tone="primary" type="submit" show-label>{{ __('resale.deviation.accept') }}</x-icon-btn>
+                    </form>
+                    @if ($finding['kind'] === \App\Services\Reselling\Register\LinkAudit::ARTICLE)
+                        <form method="POST" action="{{ route('finance.resale.links.destroy', $finding['link']->sqid) }}">
+                            @csrf
+                            @method('DELETE')
+                            <x-icon-btn icon="link_off" size="xs" tone="ghost" type="submit" :title="__('resale.link.action.unlink')" />
+                        </form>
+                    @endif
+                </div>
+            @endif
             @if ($canManage && $finding['kind'] === \App\Services\Reselling\Register\LinkAudit::MISMATCH)
                 <div class="flex justify-end gap-1">
                     @if ($finding['suggested'] !== null)

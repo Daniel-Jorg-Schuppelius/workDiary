@@ -79,3 +79,13 @@ registro lo segnala in anticipo. Crei il modello successivo, altrimenti il
 prossimo anno di licenza resta senza fattura. **Durata parziale:** una
 quantità di mesi che non è un multiplo del ritmo («7 mesi» su un modello
 annuale) conta come una licenza per quei mesi.
+
+**Prima della prossima esecuzione:** i rilievi sui modelli mostrano quando il
+modello verrà eseguito la prossima volta e quale importo fatturerà allora la
+riga. Se un modello con rilievo viene eseguito nei prossimi 30 giorni, compare
+nel riepilogo sotto «Verificare i modelli prima della prossima esecuzione».
+**Prodotto terminato:** se un modello fattura un articolo il cui abbonamento è
+terminato presso il destinatario, il rilievo indica la fine e, in caso di
+cambio prodotto, l’abbonamento attivo da allora. **Prezzo diverso:** il prezzo
+della riga per licenza viene confrontato con il prezzo di vendita
+dell’abbonamento (tolleranza 5 %, almeno 1 €).

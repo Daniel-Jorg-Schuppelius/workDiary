@@ -43,16 +43,17 @@
 
         @include('finance.resale._tabs')
 
-        {{-- Vier Kennzahlen (Phase 163, MVP-1433): fällig nach Karenz mit Betrag, Prüffälle, ohne Halter — Vorschläge sind keine Aufgabe mehr. --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        {{-- Kennzahlen: fällig nach Karenz mit Betrag (fehlt), zu viel und abweichend berechnet in Euro (Phase 187), ohne Halter. Prüffälle stehen als Aufgaben in der Liste. --}}
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
             <x-kpi-tile :label="__('resale.summary.active')" :value="$overview['summary']['active']" :href="route('finance.resale.subscriptions')" />
             <x-kpi-tile :label="__('resale.overview.kpi.open')" :value="$overview['summary']['open']" :tone="$overview['summary']['open'] > 0 ? 'error' : 'success'"
                         :hint="($overview['summary']['open_amount'] !== '' ? $overview['summary']['open_amount'] . ' · ' : '') . __('resale.overview.kpi.open_hint', ['days' => \App\Services\Reselling\Register\ResaleOverview::GRACE_DAYS])"
                         :href="route('finance.resale.periods.index', ['status' => 'problems'])" />
-            {{-- Summe dreier Aufgaben mit eigenen Arbeitslisten: die Kachel führt in die erste mit Fällen. --}}
-            <x-kpi-tile :label="__('resale.overview.kpi.findings')" :value="$overview['summary']['findings']" :tone="$overview['summary']['findings'] > 0 ? 'warning' : 'neutral'"
-                        :hint="$overview['summary']['findings'] > 0 ? __('resale.overview.kpi.findings_hint', $overview['summary']['findings_parts']) : null"
-                        :href="$overview['summary']['findings_url']" />
+            {{-- Euro-Sicht (Phase 187): je Kunde in der Abgleichsliste, die Kachel filtert sie. --}}
+            <x-kpi-tile :label="__('resale.reconcile.kpi.overbilled')" :value="$overview['summary']['overbilled']" format="raw" :tone="$overview['summary']['has_overbilled'] ? 'warning' : 'neutral'"
+                        :hint="__('resale.reconcile.kpi.overbilled_hint')" :href="route('finance.resale.reconcile.index', ['show' => 'overbilled'])" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.deviating')" :value="$overview['summary']['deviating']" format="raw" :tone="$overview['summary']['has_deviating'] ? 'warning' : 'neutral'"
+                        :hint="__('resale.reconcile.kpi.deviating_hint')" :href="route('finance.resale.reconcile.index', ['show' => 'deviating'])" />
             <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$overview['summary']['unassigned']" :tone="$overview['summary']['unassigned'] > 0 ? 'warning' : 'neutral'"
                         :href="route('finance.resale.subscriptions', ['unassigned' => 1])" />
         </div>

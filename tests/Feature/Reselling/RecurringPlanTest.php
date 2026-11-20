@@ -350,6 +350,52 @@ class RecurringPlanTest extends TestCase {
         $this->assertSame([], $ends(app(PlanAudit::class)->findings($this->organization, null, \Carbon\CarbonImmutable::parse('2026-07-18'))));
     }
 
+    public function test_template_billing_an_ended_product_is_reported_with_the_switch_and_before_the_run(): void {
+        // Produktwechsel: das Postfach endete im Sommer, seitdem läuft ein anderes Produkt — die Vorlage berechnet weiter das alte.
+        $old = $this->subscription('CNLCON00160', 'Exchange Online Plan 1', 1, '2024-07-01', 'lex:' . $this->exchange->id);
+        $old->forceFill(['ends_on' => '2026-06-30', 'status' => 'ended'])->save();
+        $standard = LexofficeArticle::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'art-bs', 'name' => 'Microsoft 365 Business Standard', 'article_number' => 'ART-BS',
+            'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '11.70', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
+        ]);
+        $this->subscription('CNLCON00161', 'Microsoft 365 Business Standard', 1, '2026-07-01', 'lex:' . $standard->id);
+        $this->fakeApi([$this->templateEntry('tpl-alt', 'ACTIVE', '2026-11-10')], $this->exchangeLines(1));
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        app(PlanLinkProposer::class)->propose($this->organization);
+
+        $audit = app(PlanAudit::class);
+        $byKind = collect($audit->findings($this->organization))->groupBy('kind');
+        $this->assertFalse($byKind->has(PlanAudit::PLAN_WITHOUT_SUBSCRIPTION), 'der genauere Befund ersetzt „Vorlage ohne Abo“');
+        $finding = $byKind->get(PlanAudit::PLAN_ENDED_PRODUCT)?->first();
+        $this->assertNotNull($finding);
+        $this->assertSame('30.06.2026', $finding['params']['end']);
+        $this->assertStringContainsString('Microsoft 365 Business Standard', (string) $finding['params']['hint']);
+        $this->assertSame('2026-11-10', $finding['due']?->toDateString());
+        $this->assertSame(47.40, $finding['amount']);
+
+        // Die Vorlage führt in 15 Tagen aus: Aufgabe im Überblick mit Betrag.
+        $due = $audit->dueSoon($this->organization);
+        $this->assertGreaterThanOrEqual(1, $due['count']);
+        $this->assertSame(47.40, $due['amount'], 'die Position zählt mit ihrem Betrag einmal');
+        $this->assertSame($this->schub->id, $due['customer_id']);
+        $task = collect(app(\App\Services\Reselling\Register\ResaleOverview::class)->build($this->organization)['tasks'])->firstWhere('key', 'plan_due');
+        $this->assertNotNull($task);
+        $this->assertStringContainsString('47,40', (string) $task['detail']);
+    }
+
+    public function test_template_price_differing_from_the_subscription_is_reported(): void {
+        $this->subscription('CNLCON00170', 'Exchange Online Plan 1', 1, '2025-10-18', 'lex:' . $this->exchange->id);
+        $lines = array_map(static fn(array $line): array => isset($line['unitPrice']) ? ['unitPrice' => ['currency' => 'EUR', 'netAmount' => 3.0, 'taxRatePercentage' => 19.0]] + $line : $line, $this->exchangeLines(1));
+        $this->fakeApi([$this->templateEntry('tpl-preis')], $lines);
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        app(PlanLinkProposer::class)->propose($this->organization);
+
+        $finding = collect(app(PlanAudit::class)->findings($this->organization))->firstWhere('kind', PlanAudit::PRICE_OFF);
+        $this->assertNotNull($finding, '12 × 3,00 € gegen 47,40 € Verkaufspreis');
+        $this->assertStringContainsString('36,00', (string) $finding['params']['plan']);
+        $this->assertStringContainsString('47,40', (string) $finding['params']['subscription']);
+    }
+
     public function test_mismatched_quantity_and_template_without_subscription_are_reported(): void {
         $this->subscription('CNLCON00111', 'Exchange Online Plan 1', 9, '2025-10-18', 'lex:' . $this->exchange->id);
         $this->fakeApi([$this->templateEntry('tpl-1')], $this->exchangeLines(5));

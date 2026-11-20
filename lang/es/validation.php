@@ -2232,6 +2232,7 @@ return [
         'plan_key' => 'Plantilla recurrente',
         'plan_position' => 'Posición de la plantilla',
         'predecessor' => 'predecesor',
+        'deviation_reason' => 'justificación de la desviación',
         'line_position' => 'Línea de plantilla',
         'product_id' => 'Producto',
         'product_version' => 'Versión',

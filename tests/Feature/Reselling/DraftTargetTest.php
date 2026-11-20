@@ -292,7 +292,9 @@ class DraftTargetTest extends TestCase {
             },
         ]);
         $this->actingAs($admin)->post(route('finance.resale.periods.draft.store'), ['customer_id' => $customer->sqid, 'until' => '2028-09-04'])
-            ->assertRedirect(route('finance.resale.periods.index'))->assertSessionHas('success');
+            ->assertRedirect(route('finance.resale.periods.index'))
+            // Der Betrag kommt formatiert mit Währung: kein zweites Zeichen im Text (MVP-1763).
+            ->assertSessionHas('success', static fn(string $message): bool => ! str_contains($message, '€ €') && str_contains($message, '€'));
         $this->assertCount(1, $payloads);
         $this->assertCount(1, $payloads[0]['lineItems'], 'drei Jahre, eine Zeile');
         $this->assertEquals(3, $payloads[0]['lineItems'][0]['quantity']);

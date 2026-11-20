@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Cache;
  *
  * @phpstan-type Task array{group: string, key: string, tone: string, icon: string, title: string, detail: string|null, count: int, url: string, dialog: bool, manage: bool}
  * @phpstan-type ImportState array{provider: SubscriptionProvider, last: ResaleImport|null, age: int|null, stale: bool, retired: bool}
- * @phpstan-type Counters array{active: int, open: int, open_amounts: list<array{amount: string, currency: string}>, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, allocation_conflicts: int, link_findings: array<string, int>, plan_findings: array<string, int>, unbilled_licenses: int, provider_prices: int, renewals: int, billing_start: array{count: int, customer_id: int|null}, chain: int, link_findings_customer: int|null}
+ * @phpstan-type Counters array{active: int, open: int, open_amounts: list<array{amount: string, currency: string}>, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, allocation_conflicts: int, link_findings: array<string, int>, plan_findings: array<string, int>, unbilled_licenses: int, provider_prices: int, renewals: int, billing_start: array{count: int, customer_id: int|null}, chain: int, link_findings_customer: int|null, overbilled: float, deviating: float, plan_due: array{count: int, amount: float, customer_id: int|null}}
  */
 final class ResaleOverview {
     /** Ab diesem Alter gilt der Anbieterstand als veraltet (Übersicht und Digest). */
@@ -71,10 +71,11 @@ final class ResaleOverview {
         private readonly ResalePriceCheck $prices,
         private readonly SubscriptionChain $chain,
         private readonly ProviderBillingStart $billingStart,
+        private readonly RecipientReconciler $reconciler,
     ) {}
 
     /**
-     * @return array{summary: array{active: int, open: int, open_amount: string, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, findings: int, findings_parts: array{links: int, plans: int, allocations: int}, findings_url: string}, groups: list<string>, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
+     * @return array{summary: array{active: int, open: int, open_amount: string, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, overbilled: string, has_overbilled: bool, deviating: string, has_deviating: bool}, groups: list<string>, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
      */
     public function build(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -107,7 +108,9 @@ final class ResaleOverview {
         // Beendete Abos ohne Nachfolger, zu denen ein passendes Abo beginnt (MVP-1752/1755): Arbeitsliste im Dialog.
         $this->task($tasks, 'zuordnen', 'chain', 'neutral', 'link', $counters['chain'], (string) __('resale.overview.task.chain_detail'), route('finance.resale.chain.index'), dialog: true, manage: true);
         $this->task($tasks, 'zuordnen', 'unlinked', 'warning', 'playlist_add', $counters['unlinked'], (string) __('resale.overview.task.unlinked_detail'), route('finance.resale.periods.index', ['unlinked' => 1]), manage: true);
-        // Plan prüfen — was die nächste Rechnung falsch macht
+        // Plan prüfen — was die nächste Rechnung falsch macht; zuerst, was in den nächsten Tagen ausführt (MVP-1774).
+        $dueCustomer = $counters['plan_due']['customer_id'] !== null ? Customer::query()->find($counters['plan_due']['customer_id']) : null;
+        $this->task($tasks, 'plan', 'plan_due', 'error', 'alarm', $counters['plan_due']['count'], (string) __('resale.overview.task.plan_due_detail', ['days' => PlanAudit::DUE_DAYS, 'amount' => Money::ofFloat($counters['plan_due']['amount'], CurrencyCode::Euro, 2)->format()]), $dueCustomer !== null ? route('finance.resale.reconcile.show', $dueCustomer) : route('finance.resale.accounts.index'));
         $this->task($tasks, 'plan', 'plan_findings', 'warning', 'event_repeat', (int) array_sum($planFindings), $this->kindDetail($planFindings, 'resale.plan.finding.', '_short'), route('finance.resale.accounts.index'));
         // Anbieterstand und Termine
         $this->task($tasks, 'anbieter', 'stale_imports', 'neutral', 'upload', count($stale), $stale === [] ? null : implode(' · ', array_map(static fn(array $i): string => $i['provider']->label() . ' (' . __('resale.overview.state.age', ['days' => $i['age']]) . ')', $stale)), route('finance.resale.import.create'), dialog: true, manage: true);
@@ -128,10 +131,10 @@ final class ResaleOverview {
                 'proposed' => $counters['proposed'],
                 'unassigned' => $counters['unassigned'],
                 'unlinked' => $counters['unlinked'],
-                'findings' => (int) array_sum($linkFindings) + (int) array_sum($planFindings) + $counters['allocation_conflicts'],
-                'findings_parts' => ['links' => (int) array_sum($linkFindings), 'plans' => (int) array_sum($planFindings), 'allocations' => $counters['allocation_conflicts']],
-                // Die Kachel führt in die Arbeitsliste ihres ersten Bestandteils mit Fällen.
-                'findings_url' => collect($tasks)->first(static fn(array $task): bool => in_array($task['key'], ['link_findings', 'allocation_conflicts', 'plan_findings'], true))['url'] ?? route('finance.resale.accounts.index'),
+                'overbilled' => Money::ofFloat($counters['overbilled'], CurrencyCode::Euro, 2)->format(),
+                'has_overbilled' => $counters['overbilled'] > 0.001,
+                'deviating' => Money::ofFloat($counters['deviating'], CurrencyCode::Euro, 2)->format(),
+                'has_deviating' => $counters['deviating'] > 0.001,
             ],
             'groups' => self::GROUPS,
             'tasks' => $tasks,
@@ -146,9 +149,9 @@ final class ResaleOverview {
      * @return Counters
      */
     private function counters(Organization $organization, CarbonImmutable $reference): array {
-        $key = ResaleCacheStamp::key('overview-counters', 5, (int) $organization->id, $reference->toDateString());
+        $key = ResaleCacheStamp::key('overview-counters', 7, (int) $organization->id, $reference->toDateString());
         $cached = Cache::get($key);
-        if (is_array($cached) && isset($cached['open'], $cached['open_amounts'], $cached['link_findings'], $cached['plan_findings'], $cached['provider_prices'], $cached['billing_start'], $cached['chain']) && array_key_exists('link_findings_customer', $cached) && is_array($cached['open_amounts'])) {
+        if (is_array($cached) && isset($cached['open'], $cached['open_amounts'], $cached['link_findings'], $cached['plan_findings'], $cached['provider_prices'], $cached['billing_start'], $cached['chain'], $cached['overbilled'], $cached['deviating'], $cached['plan_due']) && array_key_exists('link_findings_customer', $cached) && is_array($cached['open_amounts'])) {
             /** @var Counters $cached */
             return $cached;
         }
@@ -198,8 +201,12 @@ final class ResaleOverview {
         $accountRows = $this->accounts->overview($organization, $reference);
 
         $findings = $this->linkFindings($organization);
+        // Euro-Sicht (Phase 187): zu viel berechnet und abweichend berechnet über alle Rechnungsempfänger.
+        $reconcile = $this->reconciler->overview($organization, $reference);
 
         return [
+            'overbilled' => round((float) array_sum(array_column($reconcile, 'overbilled')), 2),
+            'deviating' => round((float) array_sum(array_column($reconcile, 'deviating')), 2),
             'active' => ResaleSubscription::query()->planning()->count(),
             'open' => $open,
             'open_amounts' => array_values(array_map(static fn(Money $m): array => ['amount' => $m->getAmount(), 'currency' => $m->getCurrency()->value], $amounts)),
@@ -212,6 +219,7 @@ final class ResaleOverview {
             'link_findings' => $findings['counts'],
             'link_findings_customer' => $findings['customer_id'],
             'plan_findings' => $this->plans->availableFor($organization) ? $this->planAudit->countByKind($organization) : [],
+            'plan_due' => $this->plans->availableFor($organization) ? $this->planAudit->dueSoon($organization, $reference) : ['count' => 0, 'amount' => 0.0, 'customer_id' => null],
             'unbilled_licenses' => $this->licenseLinks->unbilledCount($organization, $reference),
             'provider_prices' => $this->prices->providerDeviations()->count(),
             'billing_start' => $this->billingStart->overview(),

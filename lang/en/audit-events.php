@@ -1491,6 +1491,7 @@ return [
         'order_change' => 'Stub period waived at order change, links moved to the successor',
         'direct_billing' => 'License year before the portal account is invoiced directly',
         'links_reset' => 'Invoice links removed (reorder product)',
+        'deviation_accepted' => 'Deviating links justified',
     ],
     'resale_account_allocation' => [
         'saved' => 'License account allocation saved',

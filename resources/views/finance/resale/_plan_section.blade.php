@@ -202,6 +202,11 @@
                                     @if ($finding['subscription'] !== null)<a href="{{ route('finance.resale.show', $finding['subscription']->sqid) }}" class="link link-hover font-medium">{{ $finding['subscription']->label }}</a> <span class="text-xs text-muted">· {{ $finding['subscription']->holderLabel() }} · {{ $finding['subscription']->identityLabel() }}</span>@endif
                                     @if ($finding['template'] !== null)<span class="block text-xs text-muted">{{ __('resale.plan.col.line') }}: {{ $finding['template']->label() }}@if ($finding['line'] !== null) · {{ $finding['line']->label() }}@endif</span>@endif
                                     @unless ($sharedText)<span class="block text-xs text-muted">{{ __('resale.plan.finding.' . $kind, $finding['params']) }}</span>@endunless
+                                    @if (($finding['due'] ?? null) !== null && ($finding['amount'] ?? null) !== null && $finding['line'] !== null)
+                                        {{-- Was die Vorlage beim nächsten Lauf berechnet (MVP-1774): innerhalb des Vorlaufs hervorgehoben. --}}
+                                        @php $dueDays = (int) \App\Models\Reselling\ResalePeriod::today()->diffInDays($finding['due'], false); @endphp
+                                        <span @class(['block text-xs', 'text-warning font-medium' => $dueDays >= 0 && $dueDays <= \App\Services\Reselling\Plan\PlanAudit::DUE_DAYS, 'text-muted' => $dueDays < 0 || $dueDays > \App\Services\Reselling\Plan\PlanAudit::DUE_DAYS])>{{ __('resale.plan.finding.due', ['date' => $finding['due']->fdate(), 'amount' => \CommonToolkit\ValueObjects\Money::ofFloat($finding['amount'], $finding['line']->currency, 2)->format()]) }}</span>
+                                    @endif
                                     @if (($finding['params']['error'] ?? '') !== '')<span class="block text-xs text-muted/80 line-clamp-1" title="{{ $finding['params']['error'] }}">{{ $finding['params']['error'] }}</span>@endif
                                     @php
                                         $findingExecution = $finding['template'] !== null ? ($executionByTemplate[$finding['template']->key] ?? null) : null;

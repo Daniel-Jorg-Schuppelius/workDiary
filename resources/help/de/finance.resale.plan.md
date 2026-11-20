@@ -77,3 +77,12 @@ Register das vorab. Legen Sie die Anschlussvorlage an, sonst bleibt das
 nächste Lizenzjahr ohne Rechnung. **Rumpflaufzeit:** Eine Monatsmenge, die
 kein Vielfaches des Rhythmus ist („7 Monat“ bei jährlicher Vorlage), zählt als
 eine Lizenz über diese Monate.
+
+**Vor dem nächsten Lauf:** Befunde an Vorlagen zeigen, wann die Vorlage das
+nächste Mal ausführt und welchen Betrag die Position dann berechnet. Führt
+eine Vorlage mit Befund in den nächsten 30 Tagen aus, steht sie im Überblick
+unter „Vorlagen vor dem nächsten Lauf prüfen“. **Beendetes Produkt:** Berechnet
+eine Vorlage einen Artikel, dessen Abo beim Empfänger beendet ist, nennt der
+Befund das Ende und bei einem Produktwechsel das Abo, das seitdem läuft.
+**Preis weicht ab:** Der Preis der Position je Lizenz wird mit dem
+Verkaufspreis des Abos verglichen (Toleranz 5 %, mindestens 1 €).

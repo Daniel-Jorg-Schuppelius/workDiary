@@ -61,6 +61,24 @@ final class LicenseAccounts {
         return $this->groups($organization)[$key] ?? null;
     }
 
+    /**
+     * Alle Konten des Halters samt diesem (MVP-1764): ein Lizenzkonto ist ein
+     * Anbieterkonto, der Kunde hat oft mehrere (Anbieterwechsel, Domains).
+     * Feste Reihenfolge für die Reiter: laufende zuerst, dann nach Anbieter.
+     *
+     * @return list<LicenseAccountGroup>
+     */
+    public function accountsOfHolder(Organization $organization, LicenseAccountGroup $group): array {
+        $holder = $group->holderKey();
+        if ($holder === null) {
+            return [$group];
+        }
+        $accounts = array_values(array_filter($this->groups($organization), static fn(LicenseAccountGroup $other): bool => $other->key === $group->key || $other->holderKey() === $holder));
+        usort($accounts, static fn(LicenseAccountGroup $a, LicenseAccountGroup $b): int => ($b->isRunning() <=> $a->isRunning()) ?: strcmp($a->provider->label() . $a->account, $b->provider->label() . $b->account));
+
+        return $accounts;
+    }
+
     /** Konto eines Abos (Schlüssel des Kopfes seiner Kette). */
     public function keyFor(Organization $organization, ResaleSubscription $subscription): string {
         $byId = $this->subscriptions($organization)->keyBy('id');

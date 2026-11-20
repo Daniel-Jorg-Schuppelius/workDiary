@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Plan;
 
-use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
+use App\Enums\Reselling\{BillingFrequency, PeriodStatus, SubscriptionStatus};
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Register\{LicenseAccounts, ResaleCacheStamp, ResaleDraftRun};
+use App\Services\Reselling\Register\{LicenseAccounts, LicenseMonths, LinkDeviation, ResaleCacheStamp, ResaleDraftRun};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Cache;
  * dem Ende weiter, pausiert oder beendet bei laufendem Abo, nächste Ausführung
  * neben dem Periodenbeginn, letzte Ausführung fehlgeschlagen.
  *
- * @phpstan-type Finding array{kind: string, subscription: ResaleSubscription|null, template: PlanTemplate|null, line: PlanLine|null, params: array<string, string|int>}
+ * @phpstan-type Finding array{kind: string, subscription: ResaleSubscription|null, template: PlanTemplate|null, line: PlanLine|null, params: array<string, string|int>, due: CarbonImmutable|null, amount: float|null}
  */
 final class PlanAudit {
     public const string SUBSCRIPTION_WITHOUT_PLAN = 'subscription_without_plan';
@@ -54,9 +55,15 @@ final class PlanAudit {
     /** Vorlage endet bald, das zugeordnete Abo läuft weiter (MVP-1760): das nächste Lizenzjahr bliebe ohne Rechnung. */
     public const string PLAN_ENDS = 'plan_ends';
 
+    /** Vorlagenposition ohne Abo, deren Artikel beim Empfänger nur noch ein beendetes Abo hat (Phase 187, MVP-1774/1775). */
+    public const string PLAN_ENDED_PRODUCT = 'plan_ended_product';
+
+    /** Preis der Vorlagenposition je Lizenz weicht vom Verkaufspreis des Abos ab (MVP-1774). */
+    public const string PRICE_OFF = 'price_off';
+
     public const array KINDS = [
         self::SUBSCRIPTION_WITHOUT_PLAN, self::PLAN_WITHOUT_SUBSCRIPTION, self::QUANTITY_MISMATCH, self::PLAN_AFTER_END,
-        self::PLAN_PAUSED, self::PLAN_MISSING, self::NEXT_EXECUTION_OFF, self::LAST_FAILED, self::LINE_OVERBOOKED, self::PLAN_ENDS,
+        self::PLAN_PAUSED, self::PLAN_MISSING, self::NEXT_EXECUTION_OFF, self::LAST_FAILED, self::LINE_OVERBOOKED, self::PLAN_ENDS, self::PLAN_ENDED_PRODUCT, self::PRICE_OFF,
     ];
 
     /** Toleranz zwischen nächster Ausführung der Vorlage und Periodenbeginn. */
@@ -67,6 +74,12 @@ final class PlanAudit {
 
     /** So weit darf das Abo-Ende hinter dem Vorlagenende liegen, ohne dass etwas fehlt. */
     private const int PLAN_END_GRACE_DAYS = 45;
+
+    /** Vorlauf der Aufgabe „Vorlagen vor dem nächsten Lauf prüfen“ in Tagen. */
+    public const int DUE_DAYS = 30;
+
+    /** So lange nach dem Ende eines Abos gilt ein neues Abo mit anderem Artikel als Produktwechsel. */
+    private const int SWITCH_DAYS = 120;
 
     /** Lebensdauer der Befundzähler im Cache (Sekunden). */
     private const int COUNT_TTL = 60;
@@ -131,6 +144,8 @@ final class PlanAudit {
         $nextStarts = $this->nextPeriodStarts($organization, array_values(array_map('intval', $subscriptions->pluck('id')->all())), $reference);
         $executions = $this->executions->statesFor($organization, $templates->filter(static fn(PlanTemplate $t): bool => $t->lastFailed));
 
+        $products = $this->productsByRecipient($organization);
+
         $findings = [];
         /** @var array<int, bool> $drafted Empfänger → der Serienlauf des Registers entwirft seine Rechnungen */
         $drafted = [];
@@ -181,6 +196,18 @@ final class PlanAudit {
                     $findings[] = $this->finding(self::NEXT_EXECUTION_OFF, $subscription, $template, $line, ['next' => $template->nextExecutionOn->format('d.m.Y'), 'period' => $next->format('d.m.Y')]);
                 }
             }
+            foreach ($own as $link) {
+                $template = $templates->get($link->plan_key);
+                $line = $template?->line($link->line_position);
+                $prices = $template !== null && $line !== null && $template->isActive() && $subscription->status->isPlanning() ? self::priceDeviation($subscription, $template, $line) : null;
+                if ($template !== null && $line !== null && $prices !== null) {
+                    $findings[] = $this->finding(self::PRICE_OFF, $subscription, $template, $line, [
+                        'plan' => Money::ofFloat($prices[0], $line->currency, 2)->format(),
+                        'subscription' => Money::ofFloat($prices[1], $line->currency, 2)->format(),
+                    ]);
+                    break; // ein Befund je Abo, nicht je Position
+                }
+            }
             if ($subscription->status->isPlanning() && $linked !== $subscription->quantity) {
                 $findings[] = $this->finding(self::QUANTITY_MISMATCH, $subscription, null, null, ['linked' => $linked, 'quantity' => $subscription->quantity]);
             }
@@ -192,7 +219,10 @@ final class PlanAudit {
             foreach ($template->licenceLines() as $line) {
                 $lineKey = ResalePlanLink::lineKeyOf($template->key, $line->position);
                 if (! isset($linkedLines[$lineKey])) {
-                    $findings[] = $this->finding(self::PLAN_WITHOUT_SUBSCRIPTION, null, $template, $line, ['quantity' => (string) round($line->licences($template->intervalMonths()), 2)]);
+                    $ended = $this->endedProduct($products, $template->recipientCustomerId, $line->articleKey);
+                    $findings[] = $ended !== null
+                        ? $this->finding(self::PLAN_ENDED_PRODUCT, null, $template, $line, $ended + ['product' => $line->label()])
+                        : $this->finding(self::PLAN_WITHOUT_SUBSCRIPTION, null, $template, $line, ['quantity' => (string) round($line->licences($template->intervalMonths()), 2)]);
 
                     continue;
                 }
@@ -264,6 +294,115 @@ final class PlanAudit {
      * @return Finding
      */
     private function finding(string $kind, ?ResaleSubscription $subscription, ?PlanTemplate $template, ?PlanLine $line, array $params = []): array {
-        return ['kind' => $kind, 'subscription' => $subscription, 'template' => $template, 'line' => $line, 'params' => $params];
+        return [
+            'kind' => $kind, 'subscription' => $subscription, 'template' => $template, 'line' => $line, 'params' => $params,
+            // Wann die Vorlage das nächste Mal berechnet und wie viel die Position dann kostet (MVP-1774).
+            'due' => $template !== null && $template->isActive() ? $template->nextExecutionOn : null,
+            'amount' => $line !== null ? round($line->quantity * $line->unitNet->toFloat(), 2) : null,
+        ];
+    }
+
+    /**
+     * Befunde an Vorlagen, die in den nächsten {@see DUE_DAYS} Tagen ausführen: was vor dem Lauf zu prüfen ist.
+     *
+     * @return array{count: int, amount: float, customer_id: int|null}
+     */
+    public function dueSoon(Organization $organization, ?CarbonImmutable $reference = null): array {
+        $reference ??= ResalePeriod::today();
+        $until = $reference->addDays(self::DUE_DAYS);
+        $result = ['count' => 0, 'amount' => 0.0, 'customer_id' => null];
+        /** @var array<string, true> $seen Vorlagenposition zählt mit ihrem Betrag nur einmal */
+        $seen = [];
+        foreach ($this->findings($organization, null, $reference) as $finding) {
+            $due = $finding['due'];
+            if ($finding['template'] === null || $due === null || $due->lessThan($reference) || $due->greaterThan($until)) {
+                continue;
+            }
+            $result['count']++;
+            $result['customer_id'] ??= $finding['template']->recipientCustomerId;
+            $key = $finding['template']->key . ':' . ($finding['line']->position ?? 0);
+            if (! isset($seen[$key])) {
+                $seen[$key] = true;
+                $result['amount'] += $finding['amount'] ?? 0.0;
+            }
+        }
+        $result['amount'] = round($result['amount'], 2);
+
+        return $result;
+    }
+
+    /**
+     * Abos je Rechnungsempfänger und Artikel: läuft eines, wann endete das letzte, welche beginnen wann.
+     *
+     * @return array<int, array{articles: array<string, array{running: bool, end: CarbonImmutable|null}>, starts: list<array{on: CarbonImmutable, article: string, label: string}>}>
+     */
+    private function productsByRecipient(Organization $organization): array {
+        $products = [];
+        foreach ($this->accounts->subscriptions($organization) as $subscription) {
+            $recipient = $subscription->billedTo()?->id;
+            $article = $subscription->article_ref;
+            if ($recipient === null || $article === null || $subscription->is_own_holding) {
+                continue;
+            }
+            $products[$recipient] ??= ['articles' => [], 'starts' => []];
+            $state = $products[$recipient]['articles'][$article] ?? ['running' => false, 'end' => null];
+            if ($subscription->status->isPlanning()) {
+                $state['running'] = true;
+            } elseif ($subscription->ends_on !== null && ($state['end'] === null || $subscription->ends_on->greaterThan($state['end']))) {
+                $state['end'] = $subscription->ends_on;
+            }
+            $products[$recipient]['articles'][$article] = $state;
+            $products[$recipient]['starts'][] = ['on' => $subscription->starts_on, 'article' => $article, 'label' => $subscription->productName()];
+        }
+
+        return $products;
+    }
+
+    /**
+     * Berechnet die Vorlagenposition ein Produkt, dessen Abo beim Empfänger beendet ist? Dann das Ende
+     * und, bei einem Produktwechsel, das Abo, das danach begann (MVP-1775).
+     *
+     * @param  array<int, array{articles: array<string, array{running: bool, end: CarbonImmutable|null}>, starts: list<array{on: CarbonImmutable, article: string, label: string}>}>  $products
+     * @return array{end: string, hint: string}|null
+     */
+    private function endedProduct(array $products, ?int $recipientId, ?string $article): ?array {
+        $state = $recipientId !== null && $article !== null ? ($products[$recipientId]['articles'][$article] ?? null) : null;
+        if ($recipientId === null || $state === null || $state['running'] || $state['end'] === null) {
+            return null;
+        }
+        $end = $state['end'];
+        $hint = '';
+        foreach ($products[$recipientId]['starts'] as $start) {
+            if ($start['article'] !== $article && ! $start['on']->lessThan($end->subDays(self::SWITCH_DAYS)) && ! $start['on']->greaterThan($end->addDays(self::SWITCH_DAYS))) {
+                $hint = ' ' . __('resale.plan.finding.plan_ended_product_switch', ['product' => $start['label'], 'date' => $start['on']->format('d.m.Y')]);
+                break;
+            }
+        }
+
+        return ['end' => $end->format('d.m.Y'), 'hint' => $hint];
+    }
+
+    /**
+     * Preis der Vorlagenposition je Lizenz und Ausführung gegen den Verkaufspreis des Abos — nur bei
+     * gleichem Rhythmus und ohne Rumpflaufzeit vergleichbar.
+     *
+     * @return array{0: float, 1: float}|null  Vorlage, Abo — null, wenn es passt oder nicht vergleichbar ist
+     */
+    private static function priceDeviation(ResaleSubscription $subscription, PlanTemplate $template, PlanLine $line): ?array {
+        $sale = $subscription->sale_unit_price;
+        $interval = $template->intervalMonths();
+        if ($sale === null || $interval !== ($subscription->interval === BillingFrequency::Yearly ? 12 : 1)) {
+            return null;
+        }
+        if (LicenseMonths::isMonthUnit($line->unitName) && abs(fmod($line->quantity, $interval)) > 0.001) {
+            return null;
+        }
+        $licences = $line->licences($interval);
+        if ($licences <= 0.0) {
+            return null;
+        }
+        $perLicence = round($line->quantity * $line->unitNet->toFloat() / $licences, 2);
+
+        return LinkDeviation::amountDiffers($sale->toFloat(), $perLicence) ? [$perLicence, round($sale->toFloat(), 2)] : null;
     }
 }

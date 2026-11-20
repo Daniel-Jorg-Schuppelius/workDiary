@@ -49,13 +49,21 @@
             <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($totals['surplus'])" format="raw" :tone="$totals['surplus'] > 0.001 ? 'info' : 'neutral'"
                         :href="route('finance.resale.reconcile.index', ['show' => 'surplus'])" :active="$filter === 'surplus'" />
         </div>
+        {{-- In Euro (Phase 187): was zu viel berechnet wurde und was vom Soll abweicht; „fehlt“ ist der offene Betrag je Zeile. --}}
+        @php $euro = static fn(float $value): string => \CommonToolkit\ValueObjects\Money::ofFloat($value, \CommonToolkit\Enums\CurrencyCode::Euro, 2)->format(); @endphp
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <x-kpi-tile :label="__('resale.reconcile.kpi.overbilled')" :value="$euro($totals['overbilled'])" format="raw" :tone="$totals['overbilled'] > 0.001 ? 'warning' : 'neutral'"
+                        :hint="__('resale.reconcile.kpi.overbilled_hint')" :href="route('finance.resale.reconcile.index', ['show' => 'overbilled'])" :active="$filter === 'overbilled'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.deviating')" :value="$euro($totals['deviating'])" format="raw" :tone="$totals['deviating'] > 0.001 ? 'warning' : 'neutral'"
+                        :hint="__('resale.reconcile.kpi.deviating_hint')" :href="route('finance.resale.reconcile.index', ['show' => 'deviating'])" :active="$filter === 'deviating'" />
+        </div>
         <p class="text-xs text-muted mb-3">{{ __('resale.reconcile.legend') }}</p>
 
         <x-filter-bar :action="route('finance.resale.reconcile.index')" :reset="route('finance.resale.reconcile.index')">
             <select name="show" class="select select-sm select-bordered w-56" aria-label="{{ __('resale.field.status') }}">
                 <option value="problems" @selected($filter === 'problems')>{{ __('resale.reconcile.filter_problems') }}</option>
                 <option value="all" @selected($filter === 'all')>{{ __('resale.reconcile.filter_all') }}</option>
-                @foreach (\App\Services\Reselling\Register\ReconcileBoard::FOCUS as $key)
+                @foreach ([...\App\Services\Reselling\Register\ReconcileBoard::FOCUS, 'overbilled', 'deviating'] as $key)
                     <option value="{{ $key }}" @selected($filter === $key)>{{ __('resale.reconcile.kpi.' . $key) }}</option>
                 @endforeach
             </select>
@@ -73,6 +81,8 @@
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.free') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.missing') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.surplus') }}</x-table.th>
+                    <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.overbilled') }}</x-table.th>
+                    <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.deviating') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.col.findings') }}</x-table.th>
                     <x-table.th class="text-right"></x-table.th>
                 </tr>
@@ -101,6 +111,8 @@
                     <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['free'] > 0.001])><x-resale.licence-months :value="$row['free']" /></span></td>
                     <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['missing'] > 0.001])><x-resale.licence-months :value="$row['missing']" /></span></td>
                     <td class="text-right tabular-nums"><span @class(['text-info font-medium' => $row['surplus'] > 0.001])><x-resale.licence-months :value="$row['surplus']" /></span></td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ $row['overbilled'] }}"><span @class(['text-warning font-medium' => $row['overbilled'] > 0.001])>{{ $row['overbilled'] > 0.001 ? $euro($row['overbilled']) : '—' }}</span></td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ $row['deviating'] }}"><span @class(['text-warning font-medium' => $row['deviating'] > 0.001])>{{ $row['deviating'] > 0.001 ? $euro($row['deviating']) : '—' }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['findings'] > 0])>{{ $row['findings'] }}</span></td>
                     <td class="text-right">
                         @if ($row['customer'] !== null)
@@ -109,7 +121,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="11" icon="task_alt" :title="__('resale.reconcile.empty')" compact />
+                <x-table.empty :colspan="13" icon="task_alt" :title="__('resale.reconcile.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

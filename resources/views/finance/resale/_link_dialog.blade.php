@@ -52,6 +52,7 @@
                                 {{ $line->voucherNumber }} · {{ $line->voucherDate?->fdate() }}@if ($line->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $line->servicePeriodLabel() }}@endif · {{ __('resale.link_ui.position', ['position' => $line->position]) }} · {{ \Illuminate\Support\Str::limit($line->label(), 40) }} · {{ \App\Services\Reselling\Register\LicenseMonths::label($row['licences'] * $row['per_licence'], $row['per_licence']) }} × {{ $line->unitNet->withScale(2)->format() }}
                                 @if ($row['used']) · {{ $row['taken_by'] !== [] ? __('resale.board.line_taken', ['periods' => implode(', ', $row['taken_by'])]) : __('resale.link.line_used') }} @elseif ($row['partly']) · {{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['free'], $row['per_licence'])]) }} @endif
                                 @if ($row['fit']->needsConfirmation()) · ⚠ {{ $row['fit']->label() }} @endif
+                                @if (($row['deviation'] ?? null) !== null) · ⚠ {{ __('resale.deviation.kind.' . $row['deviation']) }} @endif
                             </option>
                         @endforeach
                     </optgroup>
@@ -66,5 +67,6 @@
     </div>
     <x-input-field name="months" type="number" step="0.01" min="0.01" :label="__('resale.link.months_field')" :value="old('months', number_format($needed, 2, '.', ''))" required :hint="__('resale.link.months_hint')" />
     <x-input-field name="note" :label="__('resale.field.note')" :value="old('note')" />
+    <x-input-field name="deviation_reason" :label="__('resale.deviation.reason_field')" :value="old('deviation_reason')" :hint="__('resale.deviation.reason_hint')" maxlength="255" />
     <x-checkbox-field name="confirm_fit" :toggle="false" tone="warning" :checked="(bool) old('confirm_fit')" :label="__('resale.fit.confirm_field')" :hint="__('resale.fit.confirm_hint')" />
 </x-modal>

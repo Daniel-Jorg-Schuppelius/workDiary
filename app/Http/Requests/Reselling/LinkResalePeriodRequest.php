@@ -35,6 +35,7 @@ class LinkResalePeriodRequest extends BaseFormRequest {
             'months' => ['required', 'numeric', 'min:0.01', 'max:100000'],
             'note' => ['nullable', 'string', 'max:255'],
             'confirm_fit' => ['nullable', 'boolean'],
+            'deviation_reason' => ['nullable', 'string', 'max:255'],
         ];
     }
 

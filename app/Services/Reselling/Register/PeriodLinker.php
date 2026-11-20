@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
+use App\Exceptions\ResaleLinkDeviationException;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
@@ -152,10 +153,11 @@ final class PeriodLinker {
      * die Gutschrift senkt die Deckung, der Status folgt der Summe.
      * Rechnungspositionen brauchen weiterhin `months > 0`.
      */
-    public function attach(ResalePeriod $period, MirrorLine|Model $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
+    public function attach(ResalePeriod $period, MirrorLine|Model $line, float $months, ?string $note, ?int $userId, ?string $reason = null): ResalePeriodLink {
         $line = $this->resolve($line);
+        $reason = trim((string) $reason);
 
-        return DB::transaction(function () use ($period, $line, $months, $note, $userId): ResalePeriodLink {
+        return DB::transaction(function () use ($period, $line, $months, $note, $userId, $reason): ResalePeriodLink {
             if (abs($months) < 0.001) {
                 throw new \InvalidArgumentException((string) __('resale.credit_notes.error_amount'));
             }
@@ -175,6 +177,14 @@ final class PeriodLinker {
                 if ($months > $open + 0.001) {
                     throw new \InvalidArgumentException((string) __('resale.link.error.exceeds_period', ['amount' => LicenseMonths::label($open, (float) $period->termMonths())]));
                 }
+            }
+            // Anderer Artikel oder anderer Betrag (MVP-1768): möglich, aber nur mit Begründung an der Periode.
+            $deviation = LinkDeviation::of($period, $line, $months);
+            if ($deviation !== null && $period->deviation_note === null) {
+                if ($reason === '') {
+                    throw new ResaleLinkDeviationException($deviation);
+                }
+                $period->forceFill(['deviation_note' => mb_substr($reason, 0, 255)])->save();
             }
             $termMonths = $period->termMonths();
             $link = ResalePeriodLink::query()->updateOrCreate(
@@ -197,7 +207,7 @@ final class PeriodLinker {
             $period->unsetRelation('links');
             $this->settle($period, $userId, null);
             // Nutzerentscheidung (Review 2026-09-10, A2) — der Bezug selbst protokolliert nur created/updated.
-            $period->audit('resale_period.linked', ['voucher_number' => $link->voucher_number, 'months' => $link->months, 'status_now' => $period->status->value]);
+            $period->audit('resale_period.linked', ['voucher_number' => $link->voucher_number, 'months' => $link->months, 'status_now' => $period->status->value] + ($deviation !== null ? ['deviation' => $deviation, 'reason' => $period->deviation_note] : []));
 
             return $link;
         });
@@ -268,6 +278,10 @@ final class PeriodLinker {
         }
         if ($period->draftIsInvoiced()) {
             $attributes += ['draft_reference' => null, 'draft_created_at' => null];
+        }
+        // Ohne Bezug gibt es nichts mehr zu begründen; die nächste Abweichung fragt neu.
+        if ($period->links->isEmpty()) {
+            $attributes += ['deviation_note' => null];
         }
         $period->forceFill($attributes)->save();
     }
