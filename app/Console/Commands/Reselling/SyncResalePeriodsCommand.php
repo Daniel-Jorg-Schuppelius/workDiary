@@ -17,6 +17,7 @@ use App\Enums\Reselling\{SubscriptionProvider, SubscriptionStatus};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner, ResaleContractObligationSync};
+use App\Support\Query\DateRange;
 use Illuminate\Console\Command;
 
 /**
@@ -44,7 +45,7 @@ class SyncResalePeriodsCommand extends Command {
         $closed = 0;
         (clone $query)->where('provider', SubscriptionProvider::Manual->value)
             ->whereIn('status', [SubscriptionStatus::Active->value, SubscriptionStatus::Cancelled->value])
-            ->whereNotNull('ends_on')->whereDate('ends_on', '<', ResalePeriod::today())
+            ->whereNotNull('ends_on')->where('ends_on', '<', DateRange::dayStart(ResalePeriod::today()))
             ->orderBy('id')->get()
             ->each(static function (ResaleSubscription $subscription) use (&$closed): void {
                 $closed += $subscription->closeIfExpired() ? 1 : 0;
