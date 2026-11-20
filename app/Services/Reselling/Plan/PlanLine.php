@@ -49,15 +49,12 @@ final readonly class PlanLine {
 
     /**
      * Geplante Lizenzen je Ausführung: Monatsposition „12 Monat" bei jährlicher
-     * Ausführung = eine Lizenz, „60 Monat" = fünf; Jahr/Stück = Menge.
+     * Ausführung = eine Lizenz, „60 Monat" = fünf, „7 Monat" = eine (Rumpf);
+     * Jahr/Stück = Menge. Wochenrhythmen (0) leiten nichts ab.
      */
     public function licences(int $intervalMonths): float {
-        if (LicenseMonths::isMonthUnit($this->unitName)) {
-            if ($intervalMonths > 0 && $this->quantity >= $intervalMonths && abs(fmod($this->quantity, $intervalMonths)) < 0.001) {
-                return $this->quantity / $intervalMonths;
-            }
-
-            return $this->quantity;
+        if ($intervalMonths > 0 && LicenseMonths::isMonthUnit($this->unitName)) {
+            return LicenseMonths::monthlySplit($this->quantity, $intervalMonths)['licences'];
         }
 
         return $this->quantity;

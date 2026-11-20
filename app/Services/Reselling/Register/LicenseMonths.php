@@ -66,12 +66,7 @@ final class LicenseMonths {
         $quantity = $line->quantity;
         $service = self::serviceMonths($line);
         if (self::isMonthly($line)) {
-            // Monatsposition: Menge = Monate; mit Leistungszeitraum ergibt der Rest die Lizenzen.
-            if ($service !== null && $service > 0 && $quantity > $service && abs(fmod($quantity, $service)) < 0.001) {
-                return ['licences' => $quantity / $service, 'months' => (float) $service];
-            }
-
-            return ['licences' => 1.0, 'months' => $quantity];
+            return self::monthlySplit($quantity, $service);
         }
         if (self::isYearly($line)) {
             // „2 Jahr" bei 24 Monaten Leistung ist EINE Lizenz über zwei Jahre.
@@ -84,6 +79,22 @@ final class LicenseMonths {
 
         // Stück/ohne Einheit: Menge = Lizenzen, Laufzeit aus dem Leistungszeitraum, sonst ein Jahr.
         return ['licences' => $quantity, 'months' => $service !== null ? (float) $service : 12.0];
+    }
+
+    /**
+     * Monatsmenge einer Rechnungs- oder Vorlagenposition: ein Vielfaches der
+     * Laufzeit (Leistungszeitraum bzw. Rhythmus der Vorlage) sind mehrere
+     * Lizenzen, alles andere ist eine Lizenz über die genannten Monate —
+     * auch die Rumpflaufzeit („7 Monat“ bei halbjährlicher Vorlage).
+     *
+     * @return array{licences: float, months: float}
+     */
+    public static function monthlySplit(float $quantity, int|float|null $termMonths): array {
+        if ($termMonths !== null && $termMonths > 0 && $quantity > $termMonths && abs(fmod($quantity, $termMonths)) < 0.001) {
+            return ['licences' => $quantity / $termMonths, 'months' => (float) $termMonths];
+        }
+
+        return ['licences' => 1.0, 'months' => $quantity];
     }
 
     /**

@@ -124,6 +124,7 @@ return [
     ],
     'flash' => [
         'created' => 'Abo angelegt, Perioden geplant.',
+        'created_prices' => 'Abo angelegt, Perioden geplant. Preise vom Vorgänger übernommen.',
         'updated' => 'Abo gespeichert, Perioden neu geplant.',
         'deleted' => 'Abo gelöscht.',
         'has_decisions' => 'Dieses Abo hat entschiedene Perioden und kann nicht gelöscht werden. Setzen Sie es auf „beendet“.',
@@ -1357,6 +1358,7 @@ return [
             'plan_without_subscription_short' => 'Vorlage ohne Abo',
             'quantity_mismatch_short' => 'Menge weicht ab',
             'plan_after_end_short' => 'Vorlage läuft nach dem Ende weiter',
+            'plan_ends_short' => 'Vorlage endet, Abo läuft weiter',
             'plan_paused_short' => 'Vorlage pausiert oder beendet',
             'plan_missing_short' => 'Vorlage nicht mehr vorhanden',
             'next_execution_off_short' => 'Ausführung neben dem Periodenbeginn',
@@ -1366,6 +1368,7 @@ return [
             'plan_without_subscription' => 'Diese Vorlagenposition (:quantity Lizenzen) gehört zu keinem Abo im Register — Abo fehlt oder Vorlage ist veraltet.',
             'quantity_mismatch' => 'Die Vorlagen berechnen :linked Lizenzen, das Abo hat :quantity.',
             'plan_after_end' => 'Die Vorlage führt am :date erneut aus, das Abo endet am :end.',
+            'plan_ends' => 'Die Vorlage endet am :date, das Abo läuft weiter. Ohne neue Vorlage bleibt das nächste Lizenzjahr ohne Rechnung.',
             'plan_paused' => 'Die Vorlage ist :status, das Abo läuft weiter.',
             'plan_missing' => 'Die zugeordnete Vorlage :plan gibt es nicht mehr.',
             'next_execution_off' => 'Die Vorlage führt am :next aus, die nächste Periode beginnt am :period.',

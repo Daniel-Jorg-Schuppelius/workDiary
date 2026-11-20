@@ -51,3 +51,11 @@ La tâche de l'aperçu ouvre une liste de tous ces abonnements. Les paires sans
 ambiguïté sont présélectionnées et peuvent être enchaînées en une étape ; si
 plusieurs abonnements correspondent, choisissez le successeur par ligne ou
 laissez la ligne.
+
+**Abonnements créés manuellement :** un abonnement du fournisseur « manuel »
+avec une date de fin passe à « terminé » le lendemain de la fin (avec
+successeur « remplacé ») et apparaît ensuite dans la liste des chaînes. Si
+vous créez un abonnement sans prix, il reprend le prix d’achat et de vente du
+prédécesseur choisi, sinon du seul abonnement terminé du même titulaire et du
+même produit qu’il prolonge. Le message après l’enregistrement l’indique ;
+aucun chaînage n’a lieu.

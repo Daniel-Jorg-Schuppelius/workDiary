@@ -70,3 +70,10 @@ oder die Rechnung aus der Zeit vor dem Abo stammt. Je Zuordnung zeigt der
 Vorlagenblock den **Abrechnungslauf**: das Lizenzjahr des letzten Laufs und ob
 es am Beleg dieses Laufs hängt. „Beleg nicht zugeordnet“ führt direkt zur
 Zuordnung.
+
+**Vorlage endet, Abo läuft weiter:** Trägt eine Vorlage ein Enddatum in den
+nächsten 90 Tagen und läuft das zugeordnete Abo darüber hinaus, meldet das
+Register das vorab. Legen Sie die Anschlussvorlage an, sonst bleibt das
+nächste Lizenzjahr ohne Rechnung. **Rumpflaufzeit:** Eine Monatsmenge, die
+kein Vielfaches des Rhythmus ist („7 Monat“ bei jährlicher Vorlage), zählt als
+eine Lizenz über diese Monate.

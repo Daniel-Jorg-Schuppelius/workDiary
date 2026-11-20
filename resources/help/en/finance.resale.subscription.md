@@ -48,3 +48,10 @@ be removed again.
 The task in the overview opens a list of all these subscriptions. Unambiguous
 pairs are preselected and can be chained in one step; where several
 subscriptions match, choose the successor per row or skip the row.
+
+**Manually created subscriptions:** A subscription of the provider “manual”
+with an end date is set to “ended” on the day after the end (with a successor
+“superseded”) and then appears in the chain list. If you create a subscription
+without prices, it takes purchase and sale price from the chosen predecessor,
+otherwise from the only ended subscription of the same holder and product
+that it continues. The message after saving states this; nothing is chained.

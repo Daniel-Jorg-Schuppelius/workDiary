@@ -10,6 +10,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Abos & Lizenzen (`MVP-1760`): Das Register meldet vorab, wenn eine
+  Serienvorlage in den nächsten 90 Tagen endet und das zugeordnete Abo
+  weiterläuft („Vorlage endet, Abo läuft weiter“). Bisher fiel das erst auf,
+  wenn das nächste Lizenzjahr ohne Rechnung blieb.
+- Abos & Lizenzen (`MVP-1762`): Ein Abo, das ohne Preise angelegt wird,
+  übernimmt Einkaufs- und Verkaufspreis vom gewählten Vorgänger, sonst vom
+  einzigen beendeten Abo desselben Halters und Produkts, das es fortsetzt.
+  Die Meldung nach dem Speichern nennt die Übernahme.
 - Abos & Lizenzen, Serienvorlage als Anker der Zuordnung (`MVP-1741`): Ist
   eine Vorlagenposition des Buchhaltungsprogramms einem Abo zugeordnet, ordnet
   der Vorschlagslauf die Rechnungen dieser Position dem Lizenzjahr dieses Abos
@@ -131,6 +139,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Geändert
 
+- Abos & Lizenzen (`MVP-1759`): Von Hand angelegte Abos mit Enddatum werden am
+  Tag nach dem Ende von selbst „beendet“ (mit Nachfolger „abgelöst“), im
+  täglichen Periodenabgleich und beim Speichern. Sie blieben bisher „aktiv“
+  und fehlten deshalb in der Liste der Abo-Ketten.
+- Abos & Lizenzen (`MVP-1761`): Rechnungs- und Vorlagenpositionen leiten
+  Lizenzen und Monate aus einer Monatsmenge nach derselben Regel ab.
 - Abos & Lizenzen (`MVP-1757`): Die Kachel „Prüffälle“ im Überblick nennt ihre
   Bestandteile (Bezüge, Serienvorlagen, Aufteilungen) und führt in die
   Arbeitsliste des ersten Bestandteils mit Fällen. Kachel und Spalte der Lizenzkonten heißen „Aufteilungen über
@@ -148,6 +162,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Abos & Lizenzen (`MVP-1758`): Eine Serienvorlage mit Rumpflaufzeit („7 Monat“
+  bei halbjährlicher Ausführung) zählt je Position als eine Lizenz über die
+  genannten Monate statt als sieben Lizenzen. Eine automatische Zuordnung, die
+  dadurch mehr Lizenzen trägt als ihre Position, kürzt der Vorschlagslauf, so
+  dass die übrigen Positionen der Vorlage wieder zugeordnet werden.
 - Abos & Lizenzen, Domain-Transfer mit festem Stichtag (`MVP-1748`): Verlängert
   ein Transfer die Laufzeit ab dem alten Laufzeitende statt ab dem Transfertag
   (etwa Transfer im April, Lizenzjahr ab 25.11.), deckt die Transferbuchung der

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Console\Commands\Reselling;
 
 use App\Console\Concerns\IteratesModuleOrganizations;
+use App\Enums\Reselling\{SubscriptionProvider, SubscriptionStatus};
 use App\Models\Platform\Organization;
-use App\Models\Reselling\ResaleSubscription;
+use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner, ResaleContractObligationSync};
 use Illuminate\Console\Command;
 
@@ -37,6 +38,19 @@ class SyncResalePeriodsCommand extends Command {
         $query = ResaleSubscription::query()->withoutGlobalScopes()->replannable()->whereIn('organization_id', $active);
         if ($this->option('org') !== null) {
             $query->where('organization_id', (int) $this->option('org'));
+        }
+
+        // Handabos führt kein Anbieterabgleich: abgelaufene hier beenden (MVP-1759), bevor geplant wird.
+        $closed = 0;
+        (clone $query)->where('provider', SubscriptionProvider::Manual->value)
+            ->whereIn('status', [SubscriptionStatus::Active->value, SubscriptionStatus::Cancelled->value])
+            ->whereNotNull('ends_on')->whereDate('ends_on', '<', ResalePeriod::today())
+            ->orderBy('id')->get()
+            ->each(static function (ResaleSubscription $subscription) use (&$closed): void {
+                $closed += $subscription->closeIfExpired() ? 1 : 0;
+            });
+        if ($closed > 0) {
+            $this->info(sprintf('%d abgelaufene Handabos beendet.', $closed));
         }
 
         $totals = ['created' => 0, 'updated' => 0, 'removed' => 0, 'kept' => 0];

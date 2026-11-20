@@ -47,3 +47,11 @@ successore». La catena può essere rimossa.
 L'attività nella panoramica apre un elenco di tutti questi abbonamenti. Le
 coppie univoche sono preselezionate e si concatenano in un solo passaggio; se
 corrispondono più abbonamenti, scelga il successore per riga o salti la riga.
+
+**Abbonamenti creati a mano:** un abbonamento del fornitore «manuale» con
+data di fine passa a «terminato» il giorno dopo la fine (con successore
+«sostituito») e compare poi nell’elenco delle catene. Se crea un abbonamento
+senza prezzi, questo riprende prezzo di acquisto e di vendita dal predecessore
+scelto, altrimenti dall’unico abbonamento terminato dello stesso titolare e
+prodotto che prosegue. Il messaggio dopo il salvataggio lo indica; non viene
+concatenato nulla.

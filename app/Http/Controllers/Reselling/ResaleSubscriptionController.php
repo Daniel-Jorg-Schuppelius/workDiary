@@ -322,19 +322,34 @@ class ResaleSubscriptionController extends Controller {
     public function store(SaveResaleSubscriptionRequest $request, PeriodPlanner $planner, PlanLinkEditor $planLinks): RedirectResponse {
         $organization = $this->currentOrganizationOrAbort(404);
         $planKey = $request->planKey();
+        $attributes = $request->subscriptionAttributes();
+        $predecessor = ResaleSubscription::query()->find(Sqid::decode(ResaleSubscription::class, (string) $request->input('predecessor', '')) ?? 0);
+        // Ohne eigene Preise gelten die des Vorgängers (MVP-1762): der gewählte, sonst das einzige beendete Abo, das dieses fortsetzt.
+        $priceSource = $predecessor;
+        if ($priceSource === null) {
+            $candidates = app(SubscriptionChain::class)->predecessorsFor((int) $organization->id, $attributes['customer_id'], $attributes['foreign_customer_id'], $attributes['article_ref'], CarbonImmutable::parse((string) $attributes['starts_on']));
+            $priceSource = $candidates->count() === 1 ? $candidates->first() : null;
+        }
+        $inherited = false;
+        foreach (['purchase_unit_price', 'sale_unit_price'] as $field) {
+            if ($attributes[$field] === null && $priceSource?->getRawOriginal($field) !== null) {
+                $attributes[$field] = $priceSource->getRawOriginal($field);
+                $inherited = true;
+            }
+        }
         try {
-            $subscription = DB::transaction(function () use ($request, $planner, $planLinks, $organization, $planKey): ResaleSubscription {
-                $subscription = ResaleSubscription::query()->create($request->subscriptionAttributes() + [
+            $subscription = DB::transaction(function () use ($request, $planner, $planLinks, $organization, $planKey, $attributes, $predecessor): ResaleSubscription {
+                $subscription = ResaleSubscription::query()->create($attributes + [
                     'organization_id' => $organization->id,
                     'created_by_user_id' => $request->user()?->id,
                 ]);
+                $subscription->closeIfExpired();
                 $planner->sync($subscription);
                 // Aus einer Vorlagenposition angelegt: die Zuordnung gleich festhalten (Feature 185, MVP-1413) — über den
                 // Editor, der die freien Lizenzen der Position prüft und das Audit schreibt (Sicherheitsaudit 2026-11-02, sec-04).
                 if ($planKey !== null) {
                     $planLinks->save($organization, $subscription, $planKey, $request->planPosition(), $subscription->quantity, $request->user()?->id);
                 }
-                $predecessor = ResaleSubscription::query()->find(Sqid::decode(ResaleSubscription::class, (string) $request->input('predecessor', '')) ?? 0);
                 if ($predecessor !== null && SubscriptionChain::needsSuccessor($predecessor)) {
                     app(SubscriptionChain::class)->link($predecessor, $subscription);
                 }
@@ -345,7 +360,7 @@ class ResaleSubscriptionController extends Controller {
             throw ValidationException::withMessages(['quantity' => ErrorText::for($e)]);
         }
 
-        return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.created'));
+        return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __($inherited ? 'resale.flash.created_prices' : 'resale.flash.created'));
     }
 
     /** Dialog: beendete Abos ohne Nachfolger mit ihren Kandidaten (MVP-1755); eindeutige Paare sind vorgewählt. */
@@ -395,6 +410,7 @@ class ResaleSubscriptionController extends Controller {
 
     public function update(SaveResaleSubscriptionRequest $request, ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
         $subscription->fill($request->subscriptionAttributes())->save();
+        $subscription->closeIfExpired();
         $planner->sync($subscription);
         if ($subscription->isAssignment() && $subscription->parent !== null) {
             // Menge oder Laufzeit der Abtretung geändert: der Vertrag plant mit dem neuen Rest.

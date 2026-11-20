@@ -124,6 +124,7 @@ return [
     ],
     'flash' => [
         'created' => 'Subscription created, periods planned.',
+        'created_prices' => 'Subscription created, periods planned. Prices taken from the predecessor.',
         'updated' => 'Subscription saved, periods re-planned.',
         'deleted' => 'Subscription deleted.',
         'has_decisions' => 'This subscription has decided periods and cannot be deleted. Set it to “ended” instead.',
@@ -1357,6 +1358,7 @@ return [
             'plan_without_subscription_short' => 'Template without subscription',
             'quantity_mismatch_short' => 'Quantity differs',
             'plan_after_end_short' => 'Template runs past the end',
+            'plan_ends_short' => 'Template ends, subscription continues',
             'plan_paused_short' => 'Template paused or ended',
             'plan_missing_short' => 'Template gone',
             'next_execution_off_short' => 'Run off the period start',
@@ -1366,6 +1368,7 @@ return [
             'plan_without_subscription' => 'This template line (:quantity licences) belongs to no subscription in the register — subscription missing or template outdated.',
             'quantity_mismatch' => 'The templates invoice :linked licences, the subscription has :quantity.',
             'plan_after_end' => 'The template runs again on :date, the subscription ends on :end.',
+            'plan_ends' => 'The template ends on :date, the subscription continues. Without a new template the next licence year stays without an invoice.',
             'plan_paused' => 'The template is :status, the subscription keeps running.',
             'plan_missing' => 'The assigned template :plan no longer exists.',
             'next_execution_off' => 'The template runs on :next, the next period starts on :period.',

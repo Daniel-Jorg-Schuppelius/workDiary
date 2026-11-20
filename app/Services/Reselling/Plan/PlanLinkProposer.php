@@ -19,6 +19,7 @@ use App\Services\Reselling\Marketplace\{NameTokenMatcher, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Register\LicenseAccounts;
 use App\Support\DomainNames;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -40,6 +41,35 @@ final class PlanLinkProposer {
         private readonly InvoiceMirror $mirror,
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),
     ) {}
+
+    /**
+     * Automatische Zuordnungen über der Lizenzzahl ihrer Vorlagenposition auf
+     * diese kürzen: Wird die Vorlage umgebaut (Menge, Intervall), gibt der
+     * Rest die übrigen Positionen wieder frei. Bestätigte und manuelle bleiben.
+     *
+     * @param  Collection<int, PlanTemplate>  $templates
+     */
+    private function trimAutoLinks(Organization $organization, Collection $templates): void {
+        $byKey = $templates->keyBy(static fn(PlanTemplate $template): string => $template->key);
+        $links = ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('origin', LinkOrigin::Auto->value)->get();
+        foreach ($links->groupBy(static fn(ResalePlanLink $link): string => $link->lineKey()) as $group) {
+            $head = $group->first();
+            $template = $head !== null ? $byKey->get($head->plan_key) : null;
+            $line = $head !== null ? $template?->line((int) $head->line_position) : null;
+            if ($template === null || $line === null) {
+                continue;
+            }
+            $capacity = (int) round($line->licences($template->intervalMonths()));
+            foreach ($group as $link) {
+                $keep = min((int) $link->quantity, max(0, $capacity));
+                $capacity -= $keep;
+                if ($keep === (int) $link->quantity) {
+                    continue;
+                }
+                $keep > 0 ? $link->update(['quantity' => $keep]) : $link->delete();
+            }
+        }
+    }
 
     /**
      * @return array{templates: int, lines: int, links: int, unmatched: int}
@@ -64,6 +94,7 @@ final class PlanLinkProposer {
 
         DB::transaction(function () use ($organization, $templates, $subscriptions, $byId, $fromInvoices, &$result): void {
             ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('origin', LinkOrigin::Proposed->value)->delete();
+            $this->trimAutoLinks($organization, $templates);
             $decided = ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get();
             /** @var array<int, float> $linkedBySubscription Abo → schon zugeordnete Lizenzen (entschieden) */
             $linkedBySubscription = [];

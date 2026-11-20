@@ -124,6 +124,7 @@ return [
     ],
     'flash' => [
         'created' => 'Suscripción creada, periodos planificados.',
+        'created_prices' => 'Suscripción creada, periodos planificados. Precios tomados del predecesor.',
         'updated' => 'Suscripción guardada, periodos replanificados.',
         'deleted' => 'Suscripción eliminada.',
         'has_decisions' => 'Esta suscripción tiene periodos decididos y no se puede eliminar. Póngala en «terminada».',
@@ -1357,6 +1358,7 @@ return [
             'plan_without_subscription_short' => 'Plantilla sin suscripción',
             'quantity_mismatch_short' => 'La cantidad difiere',
             'plan_after_end_short' => 'La plantilla sigue tras el fin',
+            'plan_ends_short' => 'La plantilla termina, la suscripción continúa',
             'plan_paused_short' => 'Plantilla pausada o finalizada',
             'plan_missing_short' => 'Plantilla desaparecida',
             'next_execution_off_short' => 'Ejecución fuera del inicio del periodo',
@@ -1366,6 +1368,7 @@ return [
             'plan_without_subscription' => 'Esta posición de plantilla (:quantity licencias) no pertenece a ninguna suscripción del registro: falta la suscripción o la plantilla está obsoleta.',
             'quantity_mismatch' => 'Las plantillas facturan :linked licencias; la suscripción tiene :quantity.',
             'plan_after_end' => 'La plantilla vuelve a ejecutarse el :date; la suscripción termina el :end.',
+            'plan_ends' => 'La plantilla termina el :date, la suscripción continúa. Sin una plantilla nueva, el próximo año de licencia queda sin factura.',
             'plan_paused' => 'La plantilla está :status; la suscripción sigue activa.',
             'plan_missing' => 'La plantilla asignada :plan ya no existe.',
             'next_execution_off' => 'La plantilla se ejecuta el :next; el siguiente periodo empieza el :period.',

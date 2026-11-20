@@ -49,3 +49,11 @@ La cadena puede quitarse de nuevo.
 La tarea del resumen abre una lista de todas estas suscripciones. Los pares
 inequívocos están preseleccionados y pueden encadenarse en un paso; si
 coinciden varias suscripciones, elija el sucesor por fila o deje la fila.
+
+**Suscripciones creadas a mano:** una suscripción del proveedor «manual» con
+fecha de fin pasa a «finalizada» el día siguiente al fin (con sucesor
+«sustituida») y aparece después en la lista de cadenas. Si crea una
+suscripción sin precios, toma el precio de compra y de venta del predecesor
+elegido o, en su defecto, de la única suscripción finalizada del mismo titular
+y producto que continúa. El mensaje tras guardar lo indica; no se encadena
+nada.

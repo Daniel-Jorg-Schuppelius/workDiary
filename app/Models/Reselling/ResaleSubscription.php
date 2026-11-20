@@ -418,6 +418,21 @@ class ResaleSubscription extends Model {
         return $this->import_id !== null;
     }
 
+    /**
+     * Handabo mit abgelaufenem Ende beenden (MVP-1759). Bei importierten Abos
+     * führt der Anbieter den Status, Abtretungen folgen ihrem Vertrag.
+     */
+    public function closeIfExpired(?CarbonImmutable $reference = null): bool {
+        $today = ($reference ?? ResalePeriod::today())->toDateString();
+        if ($this->provider !== SubscriptionProvider::Manual || $this->isImported() || $this->isAssignment()
+            || ! $this->status->isPlanning() || $this->ends_on === null || $this->ends_on->toDateString() >= $today) {
+            return false;
+        }
+        $this->forceFill(['status' => $this->successor_id !== null ? SubscriptionStatus::Superseded : SubscriptionStatus::Ended])->save();
+
+        return true;
+    }
+
     /** Domain-Abo aus dem DomainReselling-Sync (Anbieter DomainReselling bzw. Projektion). */
     public function isDomain(): bool {
         return $this->provider === SubscriptionProvider::DomainReselling || $this->domain_projection_id !== null;

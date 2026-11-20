@@ -70,3 +70,10 @@ plantilla o la factura es anterior a la suscripción. Para cada asignación, el
 bloque de plantillas muestra la **ejecución de facturación**: el año de
 licencia de la última ejecución y si está vinculado al comprobante de esa
 ejecución. «Comprobante sin asignar» lleva directamente a la asignación.
+
+**La plantilla termina, la suscripción continúa:** si una plantilla tiene una
+fecha de fin en los próximos 90 días y la suscripción asignada sigue más allá,
+el registro lo avisa con antelación. Cree la plantilla siguiente; de lo
+contrario, el próximo año de licencia queda sin factura. **Periodo parcial:**
+una cantidad de meses que no es múltiplo del ritmo («7 meses» en una plantilla
+anual) cuenta como una licencia durante esos meses.

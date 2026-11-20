@@ -72,3 +72,10 @@ precedente all'abbonamento. Per ogni assegnazione il blocco dei modelli mostra
 l'**esecuzione di fatturazione**: l'anno di licenza dell'ultima esecuzione e
 se è collegato al documento di quell'esecuzione. «Documento non assegnato»
 porta direttamente all'assegnazione.
+
+**Il modello termina, l’abbonamento continua:** se un modello ha una data di
+fine nei prossimi 90 giorni e l’abbonamento assegnato prosegue oltre, il
+registro lo segnala in anticipo. Crei il modello successivo, altrimenti il
+prossimo anno di licenza resta senza fattura. **Durata parziale:** una
+quantità di mesi che non è un multiplo del ritmo («7 mesi» su un modello
+annuale) conta come una licenza per quei mesi.

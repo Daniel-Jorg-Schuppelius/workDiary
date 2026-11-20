@@ -160,6 +160,48 @@ class SubscriptionChainTest extends TestCase {
         $this->assertSame(SubscriptionStatus::Superseded, $old->fresh()?->status);
     }
 
+    public function test_expired_manual_subscription_is_ended_by_the_daily_run(): void {
+        $expired = $this->subscription('2026-02-13', '2026-09-06', ['provider' => 'manual', 'status' => 'active', 'renewal' => 'cancel']);
+        $today = $this->subscription('2026-02-13', '2026-09-07', ['provider' => 'manual', 'status' => 'active', 'renewal' => 'cancel']);
+        // Importierte Abos führt der Anbieter, auch mit abgelaufenem Ende.
+        $imported = $this->subscription('2025-02-13', '2026-02-13', ['status' => 'active']);
+        $successor = $this->subscription('2026-09-01', null);
+        $chained = $this->subscription('2026-01-01', '2026-08-31', ['provider' => 'manual', 'status' => 'cancelled', 'successor_id' => $successor->id]);
+
+        $this->artisan('resale:sync-periods')->assertSuccessful();
+
+        $this->assertSame(SubscriptionStatus::Ended, $expired->fresh()?->status);
+        $this->assertSame(SubscriptionStatus::Active, $today->fresh()?->status, 'der letzte Tag gehört noch dazu');
+        $this->assertSame(SubscriptionStatus::Active, $imported->fresh()?->status);
+        $this->assertSame(SubscriptionStatus::Superseded, $chained->fresh()?->status);
+        // Erst beendet erscheint das Handabo in der Kettenliste.
+        $this->assertTrue(SubscriptionChain::needsSuccessor($expired->fresh()));
+    }
+
+    public function test_subscription_without_prices_takes_them_from_the_one_it_continues(): void {
+        $admin = $this->orgAdmin();
+        $old = $this->subscription('2023-02-13', '2026-02-13', ['purchase_unit_price' => '40.00']);
+        $payload = [
+            'kind' => 'license', 'provider' => 'manual', 'label' => 'Exchange Online (Plan 1)', 'holder' => 'customer', 'customer_id' => $this->customer->id,
+            'article' => (string) app(\App\Services\Platform\Catalog\ArticleCatalog::class)->find((int) $this->organization->id, 'lex:' . $this->exchange->id)?->formKey, 'quantity' => 1, 'starts_on' => '2026-02-13', 'ends_on' => '2026-09-06', 'term_months' => 7,
+            'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'active',
+        ];
+
+        $this->actingAs($admin)->post(route('finance.resale.store'), $payload)->assertSessionHasNoErrors()->assertSessionHas('success', __('resale.flash.created_prices'));
+
+        $new = ResaleSubscription::query()->where('provider', 'manual')->firstOrFail();
+        $this->assertSame('47.40', $new->sale_unit_price?->withScale(2)->getAmount());
+        $this->assertSame('40.00', $new->purchase_unit_price?->withScale(2)->getAmount());
+        $this->assertNull($old->fresh()?->successor_id, 'verkettet wird nur ausdrücklich');
+        $this->assertSame(SubscriptionStatus::Ended, $new->status, 'Ende liegt schon hinter heute');
+
+        // Eigene Preise bleiben.
+        $this->actingAs($admin)->post(route('finance.resale.store'), ['label' => 'Exchange eigen', 'sale_unit_price' => '50.00', 'purchase_unit_price' => '41.00'] + $payload)
+            ->assertSessionHas('success', __('resale.flash.created'));
+        $own = ResaleSubscription::query()->where('label', 'Exchange eigen')->firstOrFail();
+        $this->assertSame('50.00', $own->sale_unit_price?->withScale(2)->getAmount());
+    }
+
     public function test_board_marks_a_surplus_line_and_offers_to_ignore_it(): void {
         $admin = $this->orgAdmin();
         $this->subscription('2023-10-18', '2024-10-17');

@@ -300,6 +300,56 @@ class RecurringPlanTest extends TestCase {
         $this->assertSame(1, $kinds[PlanAudit::PLAN_PAUSED] ?? 0, 'beendete Vorlage bei laufendem Abo');
     }
 
+    public function test_rump_term_line_is_one_licence_and_an_oversized_auto_link_is_trimmed(): void {
+        $exchange = $this->subscription('CNLCON00140', 'Exchange Online Plan 1', 4, '2025-10-18', 'lex:' . $this->exchange->id);
+        // Vorlage auf eine Rumpflaufzeit umgebaut: halbjährlich, je Position sieben Monate.
+        $entry = $this->templateEntry('tpl-rump');
+        $entry['recurringTemplateSettings']['executionInterval'] = 'BIANNUALLY';
+        $lines = array_map(static fn(array $line): array => isset($line['quantity']) ? ['quantity' => 7] + $line : $line, $this->exchangeLines(4));
+        $this->fakeApi([$entry], $lines);
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+
+        $template = app(RecurringPlans::class)->templateByKey($this->organization, 'lexoffice:tpl-rump');
+        $this->assertNotNull($template);
+        $this->assertSame(6, $template->intervalMonths());
+        $first = $template->licenceLines()[0];
+        $this->assertSame(1.0, $first->licences(6), 'sieben Monate sind eine Lizenz, nicht sieben');
+        $this->assertSame(7.0, $first->licences(1), 'monatlich bleibt die Menge die Lizenzzahl');
+
+        // Altbestand: die erste Position trägt automatisch alle vier Lizenzen des Abos.
+        ResalePlanLink::query()->create([
+            'organization_id' => $this->organization->id, 'subscription_id' => $exchange->id, 'plan_key' => 'lexoffice:tpl-rump',
+            'line_position' => $first->position, 'quantity' => 4, 'origin' => LinkOrigin::Auto, 'confirmed_at' => now(),
+        ]);
+
+        app(PlanLinkProposer::class)->propose($this->organization);
+
+        $links = ResalePlanLink::query()->where('subscription_id', $exchange->id)->orderBy('line_position')->get();
+        $this->assertCount(4, $links, 'jede Position trägt eine Lizenz');
+        $this->assertSame([1, 1, 1, 1], $links->pluck('quantity')->map(static fn($q): int => (int) $q)->all());
+    }
+
+    public function test_template_ending_soon_is_reported_while_the_subscription_continues(): void {
+        $running = $this->subscription('CNLCON00150', 'Exchange Online Plan 1', 1, '2025-10-18', 'lex:' . $this->exchange->id);
+        $ending = $this->subscription('CNLCON00151', 'Exchange Online Plan 1', 1, '2025-11-01', 'lex:' . $this->exchange->id);
+        $ending->forceFill(['ends_on' => '2026-12-20', 'status' => 'cancelled'])->save();
+        $entry = $this->templateEntry('tpl-end');
+        $entry['recurringTemplateSettings']['endDate'] = '2026-12-15T00:00:00.000+01:00';
+        $this->fakeApi([$entry], $this->exchangeLines(2));
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        app(PlanLinkProposer::class)->propose($this->organization);
+        $this->assertSame(2, ResalePlanLink::query()->count());
+
+        $ends = static fn(array $findings): array => array_values(array_filter($findings, static fn(array $f): bool => $f['kind'] === PlanAudit::PLAN_ENDS));
+        $found = $ends(app(PlanAudit::class)->findings($this->organization));
+        $this->assertCount(1, $found, 'das Abo, das mit der Vorlage endet, fehlt nichts');
+        $this->assertSame($running->id, $found[0]['subscription']?->id);
+        $this->assertSame('15.12.2026', $found[0]['params']['date']);
+
+        // Mehr als die Vorwarnzeit entfernt: noch kein Befund.
+        $this->assertSame([], $ends(app(PlanAudit::class)->findings($this->organization, null, \Carbon\CarbonImmutable::parse('2026-07-18'))));
+    }
+
     public function test_mismatched_quantity_and_template_without_subscription_are_reported(): void {
         $this->subscription('CNLCON00111', 'Exchange Online Plan 1', 9, '2025-10-18', 'lex:' . $this->exchange->id);
         $this->fakeApi([$this->templateEntry('tpl-1')], $this->exchangeLines(5));

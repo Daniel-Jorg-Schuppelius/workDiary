@@ -69,3 +69,10 @@ or the invoice predates the subscription. For each assignment the template
 block shows the **billing run**: the license year of the last run and whether
 it is linked to the voucher of that run. “Voucher not linked” leads straight
 to the assignment.
+
+**Template ends, subscription continues:** If a template has an end date
+within the next 90 days and the assigned subscription runs beyond it, the
+register reports this in advance. Create the follow-up template, otherwise the
+next licence year stays without an invoice. **Short term:** A month quantity
+that is not a multiple of the rhythm (“7 months” on a yearly template) counts
+as one licence over these months.

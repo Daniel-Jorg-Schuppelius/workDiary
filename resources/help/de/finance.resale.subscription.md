@@ -47,3 +47,10 @@ und die Zuordnung der Serienvorlage. Der Überblick nennt solche Abos unter
 Die Aufgabe im Überblick öffnet eine Liste aller dieser Abos. Eindeutige Paare
 sind vorgewählt und lassen sich in einem Schritt verketten; wo mehrere Abos
 passen, wählen Sie den Nachfolger je Zeile oder lassen die Zeile aus.
+
+**Von Hand angelegte Abos:** Ein Abo des Anbieters „manuell“ mit Enddatum
+wird am Tag nach dem Ende von selbst „beendet“ (mit Nachfolger „abgelöst“)
+und erscheint danach in der Kettenliste. Legen Sie ein Abo ohne Preise an,
+übernimmt es Einkaufs- und Verkaufspreis vom gewählten Vorgänger, sonst vom
+einzigen beendeten Abo desselben Halters und Produkts, das es fortsetzt. Die
+Meldung nach dem Speichern nennt die Übernahme; verkettet wird dabei nicht.

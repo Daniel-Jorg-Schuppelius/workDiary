@@ -124,6 +124,7 @@ return [
     ],
     'flash' => [
         'created' => 'Abonnement créé, périodes planifiées.',
+        'created_prices' => 'Abonnement créé, périodes planifiées. Prix repris du prédécesseur.',
         'updated' => 'Abonnement enregistré, périodes replanifiées.',
         'deleted' => 'Abonnement supprimé.',
         'has_decisions' => 'Cet abonnement a des périodes décidées et ne peut pas être supprimé. Passez-le à « terminé ».',
@@ -1357,6 +1358,7 @@ return [
             'plan_without_subscription_short' => 'Modèle sans abonnement',
             'quantity_mismatch_short' => 'Quantité différente',
             'plan_after_end_short' => 'Le modèle continue après la fin',
+            'plan_ends_short' => 'Le modèle se termine, l’abonnement continue',
             'plan_paused_short' => 'Modèle en pause ou terminé',
             'plan_missing_short' => 'Modèle disparu',
             'next_execution_off_short' => 'Exécution décalée du début de période',
@@ -1366,6 +1368,7 @@ return [
             'plan_without_subscription' => 'Cette ligne de modèle (:quantity licences) n\'appartient à aucun abonnement du registre : abonnement manquant ou modèle obsolète.',
             'quantity_mismatch' => 'Les modèles facturent :linked licences, l\'abonnement en a :quantity.',
             'plan_after_end' => 'Le modèle s\'exécute à nouveau le :date, l\'abonnement se termine le :end.',
+            'plan_ends' => 'Le modèle se termine le :date, l’abonnement continue. Sans nouveau modèle, la prochaine année de licence reste sans facture.',
             'plan_paused' => 'Le modèle est :status, l\'abonnement continue.',
             'plan_missing' => 'Le modèle affecté :plan n\'existe plus.',
             'next_execution_off' => 'Le modèle s\'exécute le :next, la prochaine période commence le :period.',

@@ -74,3 +74,10 @@ antérieure à l'abonnement. Pour chaque affectation, le bloc des modèles
 affiche l'**exécution de facturation** : l'année de licence de la dernière
 exécution et si elle est rattachée à la pièce de cette exécution. « Pièce non
 rattachée » mène directement à l'affectation.
+
+**Le modèle se termine, l’abonnement continue :** si un modèle porte une date
+de fin dans les 90 prochains jours et que l’abonnement associé se poursuit
+au-delà, le registre le signale à l’avance. Créez le modèle suivant, sinon la
+prochaine année de licence reste sans facture. **Durée partielle :** une
+quantité de mois qui n’est pas un multiple du rythme (« 7 mois » sur un modèle
+annuel) compte comme une licence sur ces mois.

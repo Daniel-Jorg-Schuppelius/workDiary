@@ -51,13 +51,22 @@ final class PlanAudit {
     /** Vorlagenposition mehr Lizenzen zugeordnet, als sie berechnet (Phase 167, MVP-1454). */
     public const string LINE_OVERBOOKED = 'line_overbooked';
 
+    /** Vorlage endet bald, das zugeordnete Abo läuft weiter (MVP-1760): das nächste Lizenzjahr bliebe ohne Rechnung. */
+    public const string PLAN_ENDS = 'plan_ends';
+
     public const array KINDS = [
         self::SUBSCRIPTION_WITHOUT_PLAN, self::PLAN_WITHOUT_SUBSCRIPTION, self::QUANTITY_MISMATCH, self::PLAN_AFTER_END,
-        self::PLAN_PAUSED, self::PLAN_MISSING, self::NEXT_EXECUTION_OFF, self::LAST_FAILED, self::LINE_OVERBOOKED,
+        self::PLAN_PAUSED, self::PLAN_MISSING, self::NEXT_EXECUTION_OFF, self::LAST_FAILED, self::LINE_OVERBOOKED, self::PLAN_ENDS,
     ];
 
     /** Toleranz zwischen nächster Ausführung der Vorlage und Periodenbeginn. */
     private const int EXECUTION_TOLERANCE_DAYS = 7;
+
+    /** Vorwarnzeit vor dem Enddatum einer Vorlage; früher gemeldet bliebe der Befund monatelang stehen. */
+    public const int PLAN_END_WARN_DAYS = 90;
+
+    /** So weit darf das Abo-Ende hinter dem Vorlagenende liegen, ohne dass etwas fehlt. */
+    private const int PLAN_END_GRACE_DAYS = 45;
 
     /** Lebensdauer der Befundzähler im Cache (Sekunden). */
     private const int COUNT_TTL = 60;
@@ -161,6 +170,11 @@ final class PlanAudit {
                 }
                 if ($template->isActive() && $subscription->ends_on !== null && $template->nextExecutionOn !== null && $template->nextExecutionOn->greaterThan($subscription->ends_on)) {
                     $findings[] = $this->finding(self::PLAN_AFTER_END, $subscription, $template, $line, ['date' => $template->nextExecutionOn->format('d.m.Y'), 'end' => $subscription->ends_on->format('d.m.Y')]);
+                }
+                if ($template->isActive() && $template->endsOn !== null && $subscription->status->isPlanning()
+                    && ! $template->endsOn->lessThan($reference) && ! $template->endsOn->greaterThan($reference->addDays(self::PLAN_END_WARN_DAYS))
+                    && ($subscription->ends_on === null || $subscription->ends_on->greaterThan($template->endsOn->addDays(self::PLAN_END_GRACE_DAYS)))) {
+                    $findings[] = $this->finding(self::PLAN_ENDS, $subscription, $template, $line, ['date' => $template->endsOn->format('d.m.Y')]);
                 }
                 $next = $nextStarts[$subscription->id] ?? null;
                 if ($template->isActive() && $template->nextExecutionOn !== null && $next !== null && abs($template->nextExecutionOn->diffInDays($next)) > self::EXECUTION_TOLERANCE_DAYS) {
