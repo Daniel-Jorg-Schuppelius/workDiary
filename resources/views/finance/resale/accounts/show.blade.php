@@ -144,7 +144,7 @@
                     @forelse ($rows as $row)
                         @php $subscription = $row['subscription']; @endphp
                         <tr @class(['hover', 'opacity-70' => $subscription->status === \App\Enums\Reselling\SubscriptionStatus::Superseded])>
-                            <td class="text-sm wd-pin-col min-w-[14rem]">
+                            <td class="text-sm wd-pin-col min-w-56">
                                 <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium whitespace-nowrap">{{ $row['product'] }}</a>
                                 <span class="block text-xs text-muted">
                                     @if ($subscription->hasHolder()){{ $row['holder'] }}@else<x-resale.holder :subscription="$subscription" />@endif · ×{{ $subscription->quantity }} · {{ $subscription->provider->label() }}
