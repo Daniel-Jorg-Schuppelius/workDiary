@@ -55,6 +55,20 @@
             <x-tab-nav class="flex-none mb-4" :items="$accountTabs" />
         @endif
 
+        @if ($customer !== null && $unassigned !== null && $unassigned['lines'] > 0)
+            {{-- Freie Rechnungspositionen gehören dem Kunden, nicht einem Anbieterkonto (MVP-1780): Hinweis mit Weg in die Arbeitsmappe. --}}
+            @php $euro = static fn(float $value): string => \CommonToolkit\ValueObjects\Money::ofFloat($value, \CommonToolkit\Enums\CurrencyCode::Euro, 2)->format(); @endphp
+            <div role="status" class="alert alert-warning text-sm mb-4 flex flex-wrap items-center justify-between gap-2">
+                <span>
+                    {{ trans_choice('resale.account.unassigned', $unassigned['lines'], ['count' => $unassigned['lines'], 'amount' => $euro($unassigned['amount']), 'name' => $customer->name]) }}
+                    @if ($unassigned['overbilled'] > 0.001)
+                        {{ __('resale.account.unassigned_overbilled', ['amount' => $euro($unassigned['overbilled'])]) }}
+                    @endif
+                </span>
+                <x-icon-btn icon="compare_arrows" size="xs" tone="ghost" :href="route('finance.resale.reconcile.show', $customer) . '#board'" show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
+            </div>
+        @endif
+
         @if ($customer !== null)
             @include('finance.resale._billing_start_hint', ['billingStart' => $billingStart, 'customer' => $customer, 'canManage' => $canManage])
         @endif
@@ -185,7 +199,14 @@
                                                 <x-status-badge size="xs" :label="$period->starts_on->format('d.m.')" />
                                             @elseif ($cell['vouchers'] !== [])
                                                 @foreach ($cell['vouchers'] as $voucher)
-                                                    <x-status-badge size="xs" :tone="$period->status->tone()" :label="$voucher" />
+                                                    @if ($voucher['line'] !== null)
+                                                        {{-- Beleg im Dialog: Positionen und Belegbild wie in der Arbeitsmappe (MVP-1779). --}}
+                                                        <a href="{{ route('finance.resale.vouchers.show', ['source' => $voucher['line']->sourceKey, 'voucher' => $voucher['line']->voucherKey, 'period' => $period->sqid, 'line' => $voucher['line']->morphId]) }}" data-entry-modal-trigger title="{{ __('resale.voucher.open') }}">
+                                                            <x-status-badge size="xs" :tone="$period->status->tone()" :label="$voucher['number']" />
+                                                        </a>
+                                                    @else
+                                                        <x-status-badge size="xs" :tone="$period->status->tone()" :label="$voucher['number']" />
+                                                    @endif
                                                 @endforeach
                                             @elseif ($upcoming)
                                                 <x-status-badge size="xs" outline :label="__('resale.account.grid.upcoming', ['date' => $period->starts_on->format('d.m.')])" />

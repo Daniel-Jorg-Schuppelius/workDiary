@@ -10,6 +10,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Abos & Lizenzen (`MVP-1779`): Die Belegnummern im Raster „Lizenzjahre“ des
+  Lizenzkontos öffnen den Beleg im Dialog, mit Positionen und Belegbild wie in
+  der Arbeitsmappe.
+- Abos & Lizenzen (`MVP-1780`): Das Lizenzkonto nennt im Kopf, wie viele
+  Rechnungspositionen des Kunden keinem Lizenzjahr zugeordnet sind, mit Betrag
+  und dem Anteil „zu viel berechnet“, und führt in die Arbeitsmappe. Freie
+  Positionen gehören zum Kunden, nicht zu einem Anbieterkonto, und standen auf
+  der Kontoseite bisher nirgends.
 - Abos & Lizenzen, Abweichungen in Euro (`MVP-1765`, `MVP-1766`, `MVP-1767`):
   Das Register trennt „zu viel berechnet“ von „noch nicht zugeordnet“. Eine
   freie Lizenzposition in einem schon gedeckten Lizenzjahr heißt „doppelt
@@ -170,6 +178,17 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Geändert
 
+- Abos & Lizenzen (`MVP-1781`): Die Liste der Lizenzkonten führt jeden Halter
+  einmal. Seine Anbieterkonten stehen in der Spalte „Anbieter“ untereinander
+  und führen auf den jeweiligen Reiter; Verträge, Lizenzen, offene Perioden
+  und Aufteilungen sind je Halter summiert. Bisher stand derselbe Name je
+  Anbieter in einer eigenen Zeile.
+- Navigation (`MVP-1778`): Der Rückpfeil einer Detailseite führt app-weit zur
+  Seite, von der sie geöffnet wurde (andere Akte, Dashboard, Bericht), und nur
+  ohne solche Herkunft zur Liste. Die Herkunft bleibt nach einer Aktion auf
+  der Seite erhalten; zwei Akten, die aufeinander verweisen, pendeln nicht.
+  Formularseiten gelten nicht als Herkunft. Rückpfeile auf ein Elternobjekt
+  bleiben unverändert.
 - Abos & Lizenzen (`MVP-1759`): Von Hand angelegte Abos mit Enddatum werden am
   Tag nach dem Ende von selbst „beendet“ (mit Nachfolger „abgelöst“), im
   täglichen Periodenabgleich und beim Speichern. Sie blieben bisher „aktiv“

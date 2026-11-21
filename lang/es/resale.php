@@ -1236,6 +1236,8 @@ return [
         'title' => 'Cuentas de licencias',
         'show_title' => 'Cuenta de licencias :name',
         'tab_ended' => 'finalizada',
+        'unassigned' => '{1} :count línea de factura de :name no está vinculada a ningún año de licencia (:amount).|[2,*] :count líneas de factura de :name no están vinculadas a ningún año de licencia (:amount).',
+        'unassigned_overbilled' => 'De ello, :amount facturado de más.',
         'subtitle' => 'Por cuenta de proveedor: licencias por producto, titulares con cantidades y los años de licencia con factura o hueco.',
         'empty' => 'Aún no hay cuentas de licencias; las suscripciones llegan por importación o diálogo.',
         'due_empty' => 'Todos los periodos vencidos están facturados.',

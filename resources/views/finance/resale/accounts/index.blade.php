@@ -47,9 +47,17 @@
                         @if ($row['partner'] !== null)
                             <span class="block text-xs text-muted">{{ __('resale.holder.via', ['partner' => $row['partner']->name]) }}</span>
                         @endif
-                        <span class="block font-mono text-xs text-muted">{{ $group->account }}</span>
                     </td>
-                    <td class="text-sm">{{ $group->provider->label() }}</td>
+                    <td class="text-sm">
+                        {{-- Je Anbieterkonto des Halters eine Zeile (MVP-1781): führt auf den Reiter dieses Kontos. --}}
+                        @foreach ($row['accounts'] as $account)
+                            <a href="{{ route('finance.resale.accounts.show', $account->routeKey()) }}" class="block whitespace-nowrap link link-hover">
+                                {{ $account->provider->label() }}
+                                <span class="font-mono text-xs text-muted">{{ $account->account }}</span>
+                                @if (! $account->isRunning())<span class="text-xs text-muted">({{ __('resale.account.tab_ended') }})</span>@endif
+                            </a>
+                        @endforeach
+                    </td>
                     <td class="text-right tabular-nums">{{ $row['contracts'] }}</td>
                     <td class="text-sm">
                         {{-- Höchstens fünf Produktzeilen, Domains nur als Summe — die volle Liste steht auf der Kontoseite. --}}

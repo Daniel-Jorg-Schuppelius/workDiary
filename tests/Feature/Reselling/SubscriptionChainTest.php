@@ -220,6 +220,15 @@ class SubscriptionChainTest extends TestCase {
             ->assertSee(__('resale.board.surplus.after_end'))
             ->assertDontSee(__('resale.board.surplus.duplicate'));
         $this->actingAs($admin)->get(route('finance.resale.reconcile.index', ['show' => 'overbilled']))->assertOk()->assertSee($this->customer->name);
+        // Das Lizenzkonto nennt die freien Positionen des Kunden im Kopf und öffnet zugeordnete Belege im Dialog.
+        $subscription = \App\Models\Reselling\ResaleSubscription::query()->firstOrFail();
+        $account = route('finance.resale.accounts.show', app(\App\Services\Reselling\Register\LicenseAccounts::class)->keyFor($this->organization, $subscription));
+        $this->actingAs($admin)->get($account)->assertOk()
+            ->assertSee(trans_choice('resale.account.unassigned', 2, ['count' => 2, 'amount' => '94,80 €', 'name' => $this->customer->name]))
+            ->assertSee('94,80')
+            ->assertSee(route('finance.resale.reconcile.show', $this->customer) . '#board')
+            ->assertSee('finanzen/', false)
+            ->assertSee(__('resale.voucher.open'));
         $this->assertStringContainsString('94,80', app(ResaleOverview::class)->build($this->organization)['summary']['overbilled']);
     }
 
@@ -251,7 +260,7 @@ class SubscriptionChainTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.reconcile.correction', $this->customer))->assertOk();
     }
 
-    public function test_subscription_page_returns_to_the_register_page_it_was_opened_from(): void {
+    public function test_detail_pages_return_to_the_page_they_were_opened_from(): void {
         $admin = $this->orgAdmin();
         $subscription = $this->subscription('2026-02-13', null);
         $show = route('finance.resale.show', $subscription->sqid);
@@ -262,9 +271,16 @@ class SubscriptionChainTest extends TestCase {
         $this->actingAs($admin)->get($show, ['referer' => $account])->assertOk()->assertSee($back($account), false);
         // Nach einer Aktion auf der Abo-Seite ist sie selbst der Referer: die Herkunft bleibt.
         $this->actingAs($admin)->get($show, ['referer' => $show])->assertOk()->assertSee($back($account), false);
-        // Von außerhalb des Registers: wieder die Abo-Liste.
-        $this->actingAs($admin)->get($show, ['referer' => route('customers.show', $this->customer)])->assertOk()
-            ->assertDontSee($back($account), false)->assertSee($back(route('finance.resale.subscriptions')), false);
+        // Zurück im Lizenzkonto: sein Rückpfeil zeigt weiter auf die Liste, nicht auf das Abo (kein Pendeln).
+        $this->actingAs($admin)->get($account, ['referer' => $show])->assertOk()
+            ->assertSee($back(route('finance.resale.accounts.index')), false);
+        $this->assertSame($account, session('back_origins')[parse_url($show, PHP_URL_PATH)] ?? null);
+        $this->assertArrayNotHasKey((string) parse_url($account, PHP_URL_PATH), (array) session('back_origins'));
+        // Von der Kundenakte geöffnet: zurück zur Kundenakte.
+        $customer = route('customers.show', $this->customer);
+        $this->actingAs($admin)->get($show, ['referer' => $customer])->assertOk()->assertSee($back($customer), false);
+        // Fremde Herkunft zählt nicht.
+        $this->actingAs($admin)->get($show, ['referer' => 'https://example.org/irgendwo'])->assertOk()->assertDontSee('example.org');
     }
 
     public function test_board_marks_a_surplus_line_and_offers_to_ignore_it(): void {

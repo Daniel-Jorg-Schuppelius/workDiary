@@ -16,6 +16,8 @@
     'backRoute' => null,
     'backParams' => [],
     'backLabel' => null,
+    // Rücksprung zur Herkunftsseite statt zur Liste; bei `back-route` an, bei `back` (Elternobjekt) nur auf Wunsch.
+    'backOrigin' => null,
 ])
 
 {{--
@@ -39,11 +41,17 @@
     immer im Menü, abgesetzt). Unter `md` stehen die Aktionen in eigener Zeile.
 
     Rückpfeil vor dem Titel: `back-route` (Liste samt gemerkter Filter) oder
-    `back` (URL, z. B. Elternobjekt); `back-label` benennt das Ziel.
+    `back` (URL, z. B. Elternobjekt); `back-label` benennt das Ziel. Mit
+    `back-route` führt der Pfeil zur Seite, von der der Nutzer kam
+    (\App\Support\BackOrigin), und nur ohne Herkunft zur Liste;
+    `:back-origin="false"` schaltet das ab, `:back-origin="true"` gilt auch für `back`.
     Statusabzeichen neben dem Titel über den Slot `badges`, nie im Aktionsslot.
 --}}
 @php
     $backUrl = $back ?? ($backRoute !== null ? \App\Http\Middleware\RememberListUrl::urlFor($backRoute, (array) $backParams) : null);
+    if ($backUrl !== null && ($backOrigin ?? ($back === null))) {
+        $backUrl = \App\Support\BackOrigin::resolve(request(), $backUrl);
+    }
     $backText = $backLabel ?? __('Zurück');
     $hasSlot = trim($slot) !== '';
     $hasTitleRow = $title || $badge || isset($badges);

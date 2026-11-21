@@ -51,8 +51,8 @@ use Illuminate\Support\Facades\Cache;
  * @phpstan-type CreditNoteRow array{line: MirrorLine, months: float, licences: float, per_licence: float, linked: float, periods: list<string>}
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
  * @phpstan-type ProductRow array{key: string, label: string, term: int, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float, gap_since: CarbonImmutable|null}
- * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: Money|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int}
- * @phpstan-type CachedOverviewRow array{customer_id: int|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: array{amount: string, currency: string}|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int}
+ * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: Money|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int, free_lines: int, free_amount: float}
+ * @phpstan-type CachedOverviewRow array{customer_id: int|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: array{amount: string, currency: string}|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int, free_lines: int, free_amount: float}
  * @phpstan-type VoucherText array{recipient: int, date: string|null, ends: string|null, text: string}
  */
 final class RecipientReconciler {
@@ -125,7 +125,7 @@ final class RecipientReconciler {
      */
     public function overview(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
-        $key = ResaleCacheStamp::key('reconcile-overview', 2, (int) $organization->id, $reference->toDateString());
+        $key = ResaleCacheStamp::key('reconcile-overview', 3, (int) $organization->id, $reference->toDateString());
         $cached = Cache::get($key);
         if (! is_array($cached)) {
             $cached = $this->overviewRows($organization, $reference);
@@ -140,7 +140,7 @@ final class RecipientReconciler {
         $customers = $customerIds === [] ? collect() : Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('id', $customerIds)->get(['id', 'name'])->keyBy('id');
         $rows = [];
         foreach ($cached as $row) {
-            if (! is_array($row) || ! array_key_exists('customer_id', $row) || ! array_key_exists('overbilled', $row)) {
+            if (! is_array($row) || ! array_key_exists('customer_id', $row) || ! array_key_exists('free_amount', $row)) {
                 continue;
             }
             /** @var CachedOverviewRow $row */
@@ -159,6 +159,8 @@ final class RecipientReconciler {
                 'open_amount' => $amount !== null ? Money::of($amount['amount'], CurrencyCode::tryFrom($amount['currency']) ?? CurrencyCode::Euro) : null,
                 'findings' => $row['findings'],
                 'overbilled' => $row['overbilled'],
+                'free_lines' => $row['free_lines'],
+                'free_amount' => $row['free_amount'],
                 'deviating' => $row['deviating'],
                 'deviations' => $row['deviations'],
                 'done' => $row['done'],
@@ -244,6 +246,8 @@ final class RecipientReconciler {
                 'open_amount' => $openAmount !== null ? ['amount' => $openAmount->getAmount(), 'currency' => $openAmount->getCurrency()->value] : null,
                 'findings' => $findings,
                 'overbilled' => $analysis['overbilled'],
+                'free_lines' => $analysis['free_lines'],
+                'free_amount' => $analysis['free_amount'],
                 'deviating' => round($deviating['amount'], 2),
                 'deviations' => $deviating['count'],
                 // Fertig = keine fällige Periode ohne Entscheidung und kein Vorlagenbefund (Entscheidung des Inhabers 2026-10-31).
@@ -297,7 +301,7 @@ final class RecipientReconciler {
      * Gutschrift-Positionen des Empfängers (`credit_notes`) stehen daneben —
      * als negative Bezüge nur von Hand, nie heuristisch (Review 2026-09-10, A3).
      *
-     * @return array{subscriptions: Collection<int, ResaleSubscription>, has_source: bool, pending: int, inbox: list<InboxHint>, credit_notes: list<CreditNoteRow>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, overbilled: float}
+     * @return array{subscriptions: Collection<int, ResaleSubscription>, has_source: bool, pending: int, inbox: list<InboxHint>, credit_notes: list<CreditNoteRow>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, overbilled: float, free_lines: int, free_amount: float}
      */
     public function forCustomer(Organization $organization, Customer $customer, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -629,7 +633,7 @@ final class RecipientReconciler {
      * @param  Collection<int, MirrorLine>  $voided  stornierte Lizenzpositionen dieses Empfängers und verwandter Empfänger
      * @param  array<string, array<string, true>>  $recipientTokens  Empfängerschlüssel → Kern-Tokens des Empfängernamens
      * @param  array<string, true>  $baseTokens  Kern-Tokens des Empfängers selbst
-     * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, overbilled: float}
+     * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, overbilled: float, free_lines: int, free_amount: float}
      */
     private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $recipientTokens = [], array $baseTokens = [], ?int $ownCustomerId = null): array {
         /** @var array<string, string> $articleNames Katalogschlüssel → Name */
@@ -849,11 +853,15 @@ final class RecipientReconciler {
         /** @var array<string, CarbonImmutable> $gapSince */
         $gapSince = [];
         $overbilled = 0.0;
+        $freeLines = 0;
+        $freeAmount = 0.0;
         foreach ($lineRows as $index => $lineRow) {
             if ($lineRow['free'] <= 0.001) {
                 continue;
             }
             $lineRows[$index]['free_amount'] = $lineRow['months'] > 0.0 ? round($lineRow['line']->totalNet->toFloat() * $lineRow['free'] / $lineRow['months'], 2) : 0.0;
+            $freeLines++;
+            $freeAmount += $lineRows[$index]['free_amount'];
             $date = LicenseMonths::referenceDate($lineRow['line']);
             if ($date === null) {
                 continue;
@@ -920,7 +928,7 @@ final class RecipientReconciler {
         }
         usort($productRows, static fn(array $a, array $b): int => (($b['missing'] + $b['surplus']) <=> ($a['missing'] + $a['surplus'])) ?: strcmp($a['label'], $b['label']));
 
-        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'product_by_subscription' => $productBySubscription, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus, 'overbilled' => round($overbilled, 2)];
+        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'product_by_subscription' => $productBySubscription, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus, 'overbilled' => round($overbilled, 2), 'free_lines' => $freeLines, 'free_amount' => round($freeAmount, 2)];
     }
 
     /** @return \Illuminate\Database\Eloquent\Builder<ResaleSubscription> */

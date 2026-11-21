@@ -16,6 +16,7 @@
     'backRoute' => null,
     'backParams' => [],
     'backLabel' => null,
+    'backOrigin' => null,
     'gap'      => 4,
     'overflow' => 'auto',
     'height'   => 'standard',
@@ -69,7 +70,7 @@
 <x-page-shell :gap="$gap" :overflow="$overflow" :height="$height">
     <x-slot:toolbar>
         <x-page-toolbar :title="$title" :subtitle="$subtitle" :badge="$badge" :badgeTone="$badgeTone" :badgeTitle="$badgeTitle"
-                        :back="$back" :backRoute="$backRoute" :backParams="$backParams" :backLabel="$backLabel">
+                        :back="$back" :backRoute="$backRoute" :backParams="$backParams" :backLabel="$backLabel" :backOrigin="$backOrigin">
             @isset($badges)
                 <x-slot:badges>{{ $badges }}</x-slot:badges>
             @endisset

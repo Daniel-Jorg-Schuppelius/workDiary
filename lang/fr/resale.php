@@ -1236,6 +1236,8 @@ return [
         'title' => 'Comptes de licences',
         'show_title' => 'Compte de licences :name',
         'tab_ended' => 'terminé',
+        'unassigned' => '{1} :count ligne de facture de :name n’est rattachée à aucune année de licence (:amount).|[2,*] :count lignes de facture de :name ne sont rattachées à aucune année de licence (:amount).',
+        'unassigned_overbilled' => 'Dont :amount trop facturés.',
         'subtitle' => 'Par compte fournisseur : licences par produit, détenteurs avec quantités et années de licence avec facture ou manque.',
         'empty' => 'Pas encore de comptes de licences : les abonnements arrivent par import ou dialogue.',
         'due_empty' => 'Toutes les périodes échues sont facturées.',

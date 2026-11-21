@@ -155,7 +155,6 @@ class ResaleSubscriptionController extends Controller {
 
         return view('finance.resale.show', [
             'subscription' => $subscription,
-            'backUrl' => $this->rememberedCaller($subscription),
             'planLinks' => $planLinks,
             'today' => $today,
             'assignedNow' => $subscription->assignments->isNotEmpty() ? $subscription->assignedQuantityOn($today) : 0,
@@ -431,32 +430,6 @@ class ResaleSubscriptionController extends Controller {
      */
     private function backToCaller(ResaleSubscription $subscription): RedirectResponse {
         return redirect(self::callerUrl($subscription) ?? route('finance.resale.show', $subscription->sqid));
-    }
-
-    /**
-     * Rücksprung der Abo-Seite (MVP-1777): die Seite des Registers, von der der Nutzer kam (Lizenzkonto,
-     * Arbeitsmappe, Perioden) — in der Sitzung gemerkt, weil nach einer Aktion auf der Abo-Seite der
-     * Referer die Abo-Seite selbst ist. Ohne solche Herkunft null: dann gilt die Abo-Liste.
-     */
-    private function rememberedCaller(ResaleSubscription $subscription): ?string {
-        $key = 'resale_back.' . $subscription->id;
-        $caller = self::callerUrl($subscription);
-        if ($caller !== null) {
-            try {
-                $name = (string) app('router')->getRoutes()->match(Request::create($caller))->getName();
-            } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
-                $name = '';
-            }
-            if (str_starts_with($name, 'finance.resale.')) {
-                session()->put($key, $caller);
-            } else {
-                // Von außerhalb des Registers geöffnet (Suche, Kunde): die alte Herkunft gilt nicht mehr.
-                session()->forget($key);
-            }
-        }
-        $remembered = session()->get($key);
-
-        return is_string($remembered) && $remembered !== '' ? $remembered : null;
     }
 
     /** Aufrufende Seite aus dem Referer — nur innerhalb der App und kein Dialog-Fragment, sonst null. */

@@ -15,6 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\SubscriptionStatus;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleAccountAllocation, ResalePeriod, ResalePlanLink, ResaleSubscription};
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Plan\{PlanLine, PlanSection, PlanTemplate, TemplateExecution};
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
@@ -27,7 +28,7 @@ use Illuminate\Support\Collection;
  *
  * @phpstan-type HolderShare array{label: string, quantity: int}
  * @phpstan-type ProductRow array{key: string, label: string, quantity: int, holders: array<string, HolderShare>, allocated: int, conflict: int, domain: bool}
- * @phpstan-type GridCell array{period: ResalePeriod, vouchers: list<string>}
+ * @phpstan-type GridCell array{period: ResalePeriod, vouchers: list<array{number: string, line: MirrorLine|null}>}
  * @phpstan-type GridRow array{subscription: ResaleSubscription, product: string, holder: string, cells: array<int, list<GridCell>>}
  * @phpstan-type OverviewRow array{group: LicenseAccountGroup, name: string, customer: \App\Models\Customer\Customer|null, partner: \App\Models\Customer\Customer|null, contracts: int, licences: int, products: list<HolderShare>, products_more: int, domains: int, holders: array<string, HolderShare>, open: int, conflicts: int}
  */
@@ -39,6 +40,7 @@ final class LicenseAccountOverview {
         private readonly LicenseAccounts $accounts,
         private readonly LinkAudit $audit,
         private readonly PlanSection $planSection,
+        private readonly InvoiceMirror $mirror,
     ) {}
 
     /** @return list<OverviewRow> */
@@ -101,6 +103,61 @@ final class LicenseAccountOverview {
     }
 
     /**
+     * Eine Zeile je Halter (MVP-1781): seine Anbieterkonten stehen auf der Kontoseite als Reiter,
+     * in der Liste wäre derselbe Name sonst je Anbieter einmal zu lesen. Zahlen summiert,
+     * Produkte und Halteranteile zusammengeführt; `group` ist das führende Konto (laufend,
+     * dann die meisten Verträge), `accounts` nennt alle.
+     *
+     * @param  list<OverviewRow>  $rows
+     * @return list<array<string, mixed>>
+     */
+    public static function byHolder(array $rows): array {
+        /** @var array<string, list<OverviewRow>> $grouped */
+        $grouped = [];
+        foreach ($rows as $row) {
+            $grouped[$row['group']->holderKey() ?? 'account:' . $row['group']->key][] = $row;
+        }
+        $merged = [];
+        foreach ($grouped as $members) {
+            usort($members, static fn(array $a, array $b): int => ($b['group']->isRunning() <=> $a['group']->isRunning()) ?: ($b['contracts'] <=> $a['contracts']) ?: strcmp($a['group']->provider->label(), $b['group']->provider->label()));
+            $lead = $members[0];
+            $products = [];
+            $holders = [];
+            $more = 0;
+            foreach ($members as $member) {
+                foreach ($member['products'] as $product) {
+                    $products[$product['label']] ??= ['label' => $product['label'], 'quantity' => 0];
+                    $products[$product['label']]['quantity'] += $product['quantity'];
+                }
+                foreach ($member['holders'] as $key => $holder) {
+                    $holders[$key] ??= ['label' => $holder['label'], 'quantity' => 0];
+                    $holders[$key]['quantity'] += $holder['quantity'];
+                }
+                $more += $member['products_more'];
+            }
+            $products = array_values($products);
+            $merged[] = [
+                'group' => $lead['group'],
+                'accounts' => array_map(static fn(array $member): LicenseAccountGroup => $member['group'], $members),
+                'name' => $lead['name'],
+                'customer' => $lead['customer'],
+                'partner' => $lead['partner'],
+                'contracts' => (int) array_sum(array_column($members, 'contracts')),
+                'licences' => (int) array_sum(array_column($members, 'licences')),
+                'products' => array_slice($products, 0, self::OVERVIEW_PRODUCT_LINES),
+                'products_more' => $more + max(0, count($products) - self::OVERVIEW_PRODUCT_LINES),
+                'domains' => (int) array_sum(array_column($members, 'domains')),
+                'holders' => $holders,
+                'open' => (int) array_sum(array_column($members, 'open')),
+                'conflicts' => (int) array_sum(array_column($members, 'conflicts')),
+            ];
+        }
+        usort($merged, static fn(array $a, array $b): int => ($b['open'] <=> $a['open']) ?: ($b['conflicts'] <=> $a['conflicts']) ?: strcmp($a['name'], $b['name']));
+
+        return $merged;
+    }
+
+    /**
      * @return array{group: LicenseAccountGroup, allocations: Collection<int, ResaleAccountAllocation>, products: list<ProductRow>, years: list<int>, rows: list<GridRow>, findings: list<array<string, mixed>>, selfAssignments: list<ResaleSubscription>, due: list<ResalePeriod>, plan: array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}>, findings: list<array<string, mixed>>}}
      */
     public function detail(Organization $organization, LicenseAccountGroup $group, ?CarbonImmutable $reference = null): array {
@@ -121,6 +178,9 @@ final class LicenseAccountOverview {
             ->orderBy('product_label')->orderBy('valid_from')
             ->get();
 
+        // Spiegelpositionen der Bezüge: das Raster öffnet den Beleg im Dialog (MVP-1779).
+        $lines = $this->mirror->preload($organization, $group->subscriptions->flatMap(static fn(ResaleSubscription $s) => $s->periods->flatMap(static fn(ResalePeriod $p) => $p->links)));
+
         $years = [];
         $rows = [];
         $due = [];
@@ -129,7 +189,14 @@ final class LicenseAccountOverview {
             foreach ($subscription->periods as $period) {
                 $year = (int) $period->starts_on->format('Y');
                 $years[$year] = true;
-                $cells[$year][] = ['period' => $period, 'vouchers' => array_values(array_unique(array_filter($period->links->pluck('voucher_number')->all())))];
+                $vouchers = [];
+                foreach ($period->links as $link) {
+                    $number = (string) $link->voucher_number;
+                    if ($number !== '') {
+                        $vouchers[$number] ??= ['number' => $number, 'line' => $lines[$link->mirrorIdentity()] ?? null];
+                    }
+                }
+                $cells[$year][] = ['period' => $period, 'vouchers' => array_values($vouchers)];
             }
             $due = [...$due, ...$subscription->duePeriods($reference)->all()];
             $rows[] = ['subscription' => $subscription, 'product' => $subscription->productName(), 'holder' => $subscription->holderLabel(), 'cells' => $cells];

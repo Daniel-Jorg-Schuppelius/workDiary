@@ -1236,6 +1236,8 @@ return [
         'title' => 'Conti licenze',
         'show_title' => 'Conto licenze :name',
         'tab_ended' => 'terminato',
+        'unassigned' => '{1} :count riga di fattura di :name non è collegata a nessun anno di licenza (:amount).|[2,*] :count righe di fattura di :name non sono collegate a nessun anno di licenza (:amount).',
+        'unassigned_overbilled' => 'Di cui :amount fatturati in eccesso.',
         'subtitle' => 'Per conto fornitore: licenze per prodotto, intestatari con quantità e anni di licenza con fattura o lacuna.',
         'empty' => 'Ancora nessun conto licenze: gli abbonamenti arrivano da importazione o finestra.',
         'due_empty' => 'Tutti i periodi scaduti sono fatturati.',

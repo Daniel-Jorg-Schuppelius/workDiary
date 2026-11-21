@@ -19,7 +19,7 @@ use App\Http\Controllers\Reselling\Concerns\ProvidesHolderPicker;
 use App\Http\Requests\Reselling\SaveResaleAllocationRequest;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleAccountAllocation, ResalePeriod, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Register\{AllocationDeriver, LicenseAccountGroup, LicenseAccountOverview, LicenseAccounts, ProviderBillingStart};
+use App\Services\Reselling\Register\{AllocationDeriver, LicenseAccountGroup, LicenseAccountOverview, LicenseAccounts, ProviderBillingStart, RecipientReconciler};
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -44,8 +44,11 @@ class LicenseAccountController extends Controller {
     public function index(Request $request): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $rows = $this->overview->overview($organization);
+        $accounts = count($rows);
+        // Eine Zeile je Halter (MVP-1781): die Anbieterkonten stehen auf der Kontoseite als Reiter.
+        $rows = LicenseAccountOverview::byHolder($rows);
         $summary = [
-            'accounts' => count($rows),
+            'accounts' => $accounts,
             'open' => array_sum(array_column($rows, 'open')),
             'conflicts' => array_sum(array_column($rows, 'conflicts')),
         ];
@@ -60,12 +63,16 @@ class LicenseAccountController extends Controller {
         return view('finance.resale.accounts.index', ['rows' => $rows, 'summary' => $summary, 'show' => $show]);
     }
 
-    public function show(string $account): View {
+    public function show(string $account, RecipientReconciler $reconciler): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $group = $this->groupOrAbort($organization, $account);
+        // Freie Rechnungspositionen des Kunden (MVP-1780) aus der Übersicht des Abgleichs (im Cache).
+        $customerId = $group->customer()?->id;
+        $row = $customerId === null ? null : collect($reconciler->overview($organization))->first(static fn(array $r): bool => $r['customer']?->id === $customerId);
 
         return view('finance.resale.accounts.show', $this->overview->detail($organization, $group) + [
             'today' => ResalePeriod::today(),
+            'unassigned' => $row === null ? null : ['lines' => $row['free_lines'], 'amount' => $row['free_amount'], 'overbilled' => $row['overbilled']],
             'holderAccounts' => app(LicenseAccounts::class)->accountsOfHolder($organization, $group),
             'canManage' => $this->authUser()->can(Permission::ResellingManage->value),
             // Lizenzjahre vor dem Beginn des Portalkontos (MVP-1746) — Sammelaktion des Kunden.

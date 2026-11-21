@@ -162,6 +162,12 @@ class ResaleTileFilterTest extends TestCase {
         $oldKey = $accounts->keyFor($this->organization, $old->fresh());
         $otherKey = 'telekom_marketplace:acc-fremd-3';
 
+        // Die Liste führt den Halter einmal, mit beiden Anbieterkonten in der Zeile (MVP-1781).
+        $list = (string) $this->actingAs($admin)->get(route('finance.resale.accounts.index'))->assertOk()
+            ->assertSee(route('finance.resale.accounts.show', $key))->assertSee(route('finance.resale.accounts.show', $oldKey))->getContent();
+        $this->assertSame(1, substr_count($list, 'Kachelberg GmbH</a>'), 'ein Halter, eine Zeile');
+        $this->assertSame(1, substr_count($list, 'Zahlfeld AG</a>'));
+
         $this->actingAs($admin)->get(route('finance.resale.accounts.show', $key))->assertOk()
             ->assertSee('role="tablist"', false)
             ->assertSee(route('finance.resale.accounts.show', $oldKey))

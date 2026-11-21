@@ -1236,6 +1236,8 @@ return [
         'title' => 'Lizenzkonten',
         'show_title' => 'Lizenzkonto :name',
         'tab_ended' => 'beendet',
+        'unassigned' => '{1} :count Rechnungsposition von :name ist keinem Lizenzjahr zugeordnet (:amount).|[2,*] :count Rechnungspositionen von :name sind keinem Lizenzjahr zugeordnet (:amount).',
+        'unassigned_overbilled' => 'Davon :amount zu viel berechnet.',
         'subtitle' => 'Je Anbieterkonto: Lizenzen je Produkt, Halter mit Mengen und die Lizenzjahre mit Rechnung oder Lücke.',
         'empty' => 'Noch keine Lizenzkonten — Abos kommen über Import oder Dialog.',
         'due_empty' => 'Alle fälligen Perioden sind berechnet.',

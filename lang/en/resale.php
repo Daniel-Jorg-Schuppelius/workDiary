@@ -1236,6 +1236,8 @@ return [
         'title' => 'License accounts',
         'show_title' => 'License account :name',
         'tab_ended' => 'ended',
+        'unassigned' => '{1} :count invoice line of :name is not linked to a licence year (:amount).|[2,*] :count invoice lines of :name are not linked to a licence year (:amount).',
+        'unassigned_overbilled' => ':amount of that was billed too much.',
         'subtitle' => 'Per provider account: licences per product, holders with quantities and the licence years with invoice or gap.',
         'empty' => 'No license accounts yet — subscriptions arrive via import or dialog.',
         'due_empty' => 'All due periods are invoiced.',
