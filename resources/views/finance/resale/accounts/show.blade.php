@@ -254,9 +254,14 @@
 
             {{-- Prüffälle an Bezügen: überbucht oder zeitlich unpassend --}}
             <x-card :title="__('resale.account.section.findings')" padding="p-0">
+                <div data-bulk-form class="contents">
+                @if ($canManage)
+                    @include('finance.resale._link_findings_bulk')
+                @endif
                 <x-table bare>
                     <x-slot:head>
                         <tr>
+                            <th class="w-8">@if ($canManage)<input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all aria-label="{{ __('Alle auswählen') }}">@endif</th>
                             <x-table.th>{{ __('resale.account.finding.kind') }}</x-table.th>
                             <x-table.th>{{ __('resale.account.finding.detail') }}</x-table.th>
                             <x-table.th class="text-right"></x-table.th>
@@ -265,7 +270,8 @@
                     {{-- Abtretung an den eigenen Halter (Phase 167, MVP-1458): Altfälle mit Rücknahme. --}}
                     @foreach ($selfAssignments as $assignment)
                         <tr class="hover">
-                            <td class="align-top"><x-status-badge size="xs" tone="error" :label="__('resale.transfer.self_assignment')" /></td>
+                            <td class="w-8"></td>
+                            <td class="align-top whitespace-nowrap"><x-status-badge size="xs" tone="error" :label="__('resale.transfer.self_assignment')" /></td>
                             <td class="text-sm">
                                 <a href="{{ route('finance.resale.show', $assignment->sqid) }}" class="link link-hover">{{ $assignment->label }}</a> · {{ $assignment->holderLabel() }} · {{ $assignment->identityLabel() }}
                                 <span class="block text-xs text-muted">{{ __('resale.transfer.self_assignment_text') }}</span>
@@ -283,9 +289,10 @@
                     @endforeach
                     @include('finance.resale._link_findings', ['findings' => $findings, 'canManage' => $canManage])
                     @if ($findings === [] && $selfAssignments === [])
-                        <x-table.empty :colspan="3" icon="task_alt" :title="__('resale.account.finding.none')" compact />
+                        <x-table.empty :colspan="4" icon="task_alt" :title="__('resale.account.finding.none')" compact />
                     @endif
                 </x-table>
+                </div>
             </x-card>
         </div>
 

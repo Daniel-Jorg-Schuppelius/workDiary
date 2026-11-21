@@ -486,6 +486,35 @@
 /* fixiert jedes <th> der Zeile — auch die Spaltenköpfe —, deshalb     */
 /* eine eigene Zellklasse. Ecke (Kopf + Spalte) über beidem.           */
 /* ------------------------------------------------------------------ */
+/* Absenden läuft (submit-busy.js): Schaltfläche gedämpft, nicht klickbar, */
+/* mit Laufzeichen — ohne `disabled`, damit name/value mitgesendet werden. */
+.wd-busy {
+    pointer-events: none;
+    opacity: 0.65;
+    cursor: progress;
+}
+.wd-busy::after {
+    content: "";
+    display: inline-block;
+    width: 0.85em;
+    height: 0.85em;
+    margin-inline-start: 0.35em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 9999px;
+    animation: wd-busy-spin 0.7s linear infinite;
+}
+@keyframes wd-busy-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wd-busy::after {
+        animation-duration: 2.4s;
+    }
+}
+
 .table .wd-pin-col {
     position: sticky;
     left: 0;

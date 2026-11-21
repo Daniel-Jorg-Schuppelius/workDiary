@@ -325,6 +325,9 @@ return [
             'waive' => 'Rinuncia / contesta',
             'reopen' => 'Annulla decisione',
         ],
+        'bulk_selected' => ':n collegamenti selezionati',
+        'bulk_unlink' => 'Rimuovi selezionati',
+        'bulk_unlink_confirm' => 'Rimuovere i collegamenti fattura selezionati? I periodi tornano aperti o parzialmente coperti.',
         'flash' => [
             'proposed' => 'Proposte: :periods periodi verificati, :linked coperti, :partial parziali, :links collegamenti; :lines_without_subscription righe di licenza senza abbonamento.',
             'confirmed' => 'Collegamenti confermati.',
@@ -332,6 +335,7 @@ return [
             'reopened' => 'Periodo riaperto.',
             'linked' => 'Riga :voucher collegata.',
             'unlinked' => 'Collegamento rimosso.',
+            'unlinked_many' => '{0} Nessun collegamento rimosso.|{1} :count collegamento rimosso.|[2,*] :count collegamenti rimossi.',
         ],
         'error' => [
             'line_missing' => 'Riga di fattura non trovata.',

@@ -325,6 +325,9 @@ return [
             'waive' => 'Renunciar / disputar',
             'reopen' => 'Deshacer decisión',
         ],
+        'bulk_selected' => ':n vínculos seleccionados',
+        'bulk_unlink' => 'Quitar seleccionados',
+        'bulk_unlink_confirm' => '¿Quitar los vínculos de factura seleccionados? Los periodos vuelven a quedar abiertos o parcialmente cubiertos.',
         'flash' => [
             'proposed' => 'Propuestas: :periods periodos comprobados, :linked cubiertos, :partial parciales, :links vínculos; :lines_without_subscription líneas de licencia sin suscripción.',
             'confirmed' => 'Vínculos confirmados.',
@@ -332,6 +335,7 @@ return [
             'reopened' => 'Periodo reabierto.',
             'linked' => 'Línea :voucher vinculada.',
             'unlinked' => 'Vínculo eliminado.',
+            'unlinked_many' => '{0} Ningún vínculo quitado.|{1} :count vínculo quitado.|[2,*] :count vínculos quitados.',
         ],
         'error' => [
             'line_missing' => 'Línea de factura no encontrada.',

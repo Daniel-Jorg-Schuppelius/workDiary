@@ -325,6 +325,9 @@ return [
             'waive' => 'Abandonner / contester',
             'reopen' => 'Annuler la décision',
         ],
+        'bulk_selected' => ':n liens sélectionnés',
+        'bulk_unlink' => 'Supprimer la sélection',
+        'bulk_unlink_confirm' => 'Supprimer les liens de facture sélectionnés ? Les périodes redeviennent ouvertes ou partiellement couvertes.',
         'flash' => [
             'proposed' => 'Propositions : :periods périodes vérifiées, :linked couvertes, :partial partielles, :links rattachements ; :lines_without_subscription lignes de licence sans abonnement.',
             'confirmed' => 'Rattachements confirmés.',
@@ -332,6 +335,7 @@ return [
             'reopened' => 'Période rouverte.',
             'linked' => 'Ligne :voucher rattachée.',
             'unlinked' => 'Rattachement supprimé.',
+            'unlinked_many' => '{0} Aucun lien supprimé.|{1} :count lien supprimé.|[2,*] :count liens supprimés.',
         ],
         'error' => [
             'line_missing' => 'Ligne de facture introuvable.',

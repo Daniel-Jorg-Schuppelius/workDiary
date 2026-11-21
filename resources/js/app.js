@@ -25,6 +25,7 @@ import { initStorageEstimate } from "./storage-estimate.js";
 import { initVideoQuality } from "./video-quality.js";
 import { initNfc } from "./nfc.js";
 import { initDialogForms } from "./dialog-forms.js";
+import { initSubmitBusy } from "./submit-busy.js";
 import { __ } from "./i18n.js";
 import { clearHtml, html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
 import { postJson, request } from "./lib/http.js";
@@ -79,6 +80,7 @@ if (typeof window !== "undefined") {
         initVideoPositions();
         initVideoQuality();
         initVideoProgress();
+        initSubmitBusy();
         initStorageEstimate();
     });
 }

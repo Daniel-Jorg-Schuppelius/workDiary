@@ -325,6 +325,9 @@ return [
             'waive' => 'Waive / dispute',
             'reopen' => 'Revert decision',
         ],
+        'bulk_selected' => ':n links selected',
+        'bulk_unlink' => 'Remove selected',
+        'bulk_unlink_confirm' => 'Remove the selected invoice links? The periods become open or partially covered again.',
         'flash' => [
             'proposed' => 'Proposal run: :periods periods checked, :linked covered, :partial partial, :links links; :lines_without_subscription licence lines without subscription.',
             'confirmed' => 'Links confirmed.',
@@ -332,6 +335,7 @@ return [
             'reopened' => 'Period reopened.',
             'linked' => 'Line :voucher linked.',
             'unlinked' => 'Link removed.',
+            'unlinked_many' => '{0} No link removed.|{1} :count link removed.|[2,*] :count links removed.',
         ],
         'error' => [
             'line_missing' => 'Invoice line item not found.',

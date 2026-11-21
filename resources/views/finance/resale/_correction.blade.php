@@ -59,7 +59,7 @@
             </x-slot:head>
             @foreach ($correction['credit'] as $entry)
                 <tr>
-                    <td class="align-top"><x-status-badge size="xs" tone="warning" class="whitespace-nowrap" :label="__('resale.correction.credit')" /></td>
+                    <td class="align-top whitespace-nowrap"><x-status-badge size="xs" tone="warning" class="whitespace-nowrap" :label="__('resale.correction.credit')" /></td>
                     <td class="text-sm"><span class="font-mono text-xs">{{ $entry['line']->voucherNumber }}</span> · {{ $entry['line']->voucherDate?->fdate() }} · {{ \Illuminate\Support\Str::limit($entry['line']->label(), 40) }}</td>
                     <td class="text-sm text-muted">{{ __('resale.board.surplus.' . $entry['reason']) }}</td>
                     <td class="text-right tabular-nums">−{{ $euro($entry['amount']) }}</td>
@@ -67,7 +67,7 @@
             @endforeach
             @foreach ($correction['bill'] as $entry)
                 <tr>
-                    <td class="align-top"><x-status-badge size="xs" tone="error" class="whitespace-nowrap" :label="__('resale.correction.bill')" /></td>
+                    <td class="align-top whitespace-nowrap"><x-status-badge size="xs" tone="error" class="whitespace-nowrap" :label="__('resale.correction.bill')" /></td>
                     <td class="text-sm">{{ $entry['subscription']->label }} · {{ $entry['period']->label() }}</td>
                     <td class="text-sm text-muted">{{ $entry['subscription']->holderLabel() }}</td>
                     <td class="text-right tabular-nums">{{ $entry['amount'] > 0.0 ? $euro($entry['amount']) : '—' }}</td>
@@ -75,7 +75,7 @@
             @endforeach
             @foreach ($correction['wrong'] as $entry)
                 <tr>
-                    <td class="align-top"><x-status-badge size="xs" tone="warning" class="whitespace-nowrap" :label="__('resale.correction.wrong')" /></td>
+                    <td class="align-top whitespace-nowrap"><x-status-badge size="xs" tone="warning" class="whitespace-nowrap" :label="__('resale.correction.wrong')" /></td>
                     <td class="text-sm">{{ $entry['period']->subscription->label }} · {{ $entry['period']->label() }}</td>
                     <td class="text-sm text-muted">{{ __('resale.deviation.kind.' . $entry['kind']) }}</td>
                     <td class="text-right tabular-nums">{{ ($entry['diff'] < 0 ? '−' : '') . $euro(abs($entry['diff'])) }}</td>

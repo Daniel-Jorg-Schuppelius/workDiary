@@ -485,12 +485,35 @@ class ResalePeriodController extends Controller {
     }
 
     public function linkDestroy(ResalePeriodLink $link): RedirectResponse {
+        $this->removeLink($link);
+
+        return back()->with('success', __('resale.link.flash.unlinked'));
+    }
+
+    /** Mehrere Bezüge in einem Schritt lösen (MVP-1784): die Prüffall-Liste lädt einmal statt je Bezug. */
+    public function linkBulkDestroy(Request $request): RedirectResponse {
+        $ids = [];
+        foreach ((array) $request->input('ids', []) as $sqid) {
+            $id = is_string($sqid) ? Sqid::decode(ResalePeriodLink::class, $sqid) : null;
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+        $links = $ids === [] ? collect() : ResalePeriodLink::query()->whereIn('id', $ids)->with('period')->get();
+        DB::transaction(function () use ($links): void {
+            foreach ($links as $link) {
+                $this->removeLink($link);
+            }
+        });
+
+        return back()->with('success', trans_choice('resale.link.flash.unlinked_many', $links->count(), ['count' => $links->count()]));
+    }
+
+    private function removeLink(ResalePeriodLink $link): void {
         $period = $link->period;
         $link->delete();
         $period->unsetRelation('links');
         $this->linker->settle($period, null, null, false);
         $period->audit('resale_period.link_removed', ['voucher_number' => $link->voucher_number, 'months' => $link->months, 'origin' => $link->origin->value, 'status_now' => $period->status->value]);
-
-        return back()->with('success', __('resale.link.flash.unlinked'));
     }
 }

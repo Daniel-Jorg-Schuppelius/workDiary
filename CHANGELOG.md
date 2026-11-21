@@ -10,6 +10,13 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Bedienung (`MVP-1783`): Beim Absenden eines Formulars zeigt die auslösende
+  Schaltfläche sofort ein Laufzeichen und nimmt keinen zweiten Klick an. Das
+  gilt app-weit für Formulare, die die Seite neu laden; Filter, Dialoge und
+  Bestätigungsabfragen sind ausgenommen.
+- Abos & Lizenzen (`MVP-1784`): In „Prüffälle an Bezügen“ (Lizenzkonto und
+  Arbeitsmappe) lassen sich mehrere Bezüge auswählen und in einem Schritt
+  lösen. Die Seite lädt danach einmal statt je Bezug.
 - Abos & Lizenzen (`MVP-1779`): Die Belegnummern im Raster „Lizenzjahre“ des
   Lizenzkontos öffnen den Beleg im Dialog, mit Positionen und Belegbild wie in
   der Arbeitsmappe.
@@ -212,6 +219,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Abos & Lizenzen (`MVP-1782`): Die Abzeichen in der Liste „Prüffälle an
+  Bezügen“ brechen nicht mehr um; „Zeitlich unpassend“ lief in der schmalen
+  Spalte über seinen Hintergrund hinaus.
 - Abos & Lizenzen (`MVP-1777`): Der Rückpfeil der Abo-Seite führt zurück auf
   die Seite des Registers, von der sie geöffnet wurde (Lizenzkonto,
   Arbeitsmappe, Perioden), auch nach einer Aktion auf der Abo-Seite. Bisher

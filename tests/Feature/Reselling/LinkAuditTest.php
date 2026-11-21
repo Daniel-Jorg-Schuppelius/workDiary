@@ -187,6 +187,27 @@ class LinkAuditTest extends TestCase {
         $this->assertSame('Preis von 2024', $cheapPeriod->fresh()?->deviation_note);
     }
 
+    public function test_selected_links_are_removed_in_one_step(): void {
+        $admin = $this->orgAdmin();
+        $contract = $this->contract('ex-sammel', 1, '2023-01-01', '2026-01-01');
+        [$first, $second, $third] = $contract->periods()->orderBy('starts_on')->get()->all();
+        $linker = app(PeriodLinker::class);
+        $a = $linker->attach($first, $this->line('RE/2023/0801', '2023-01-02', 12, '2023-01-01', '2023-12-31'), 12.0, null, $admin->id);
+        $b = $linker->attach($second, $this->line('RE/2024/0802', '2024-01-02', 12, '2024-01-01', '2024-12-31'), 12.0, null, $admin->id);
+        $keep = $linker->attach($third, $this->line('RE/2025/0803', '2025-01-02', 12, '2025-01-01', '2025-12-31'), 12.0, null, $admin->id);
+
+        $this->actingAs($admin)->from(route('finance.resale.show', $contract->sqid))
+            ->post(route('finance.resale.links.bulk-destroy'), ['ids' => [$a->sqid, $b->sqid, 'unbekannt']])
+            ->assertRedirect()->assertSessionHas('success', trans_choice('resale.link.flash.unlinked_many', 2, ['count' => 2]));
+
+        $this->assertSame([$keep->id], ResalePeriodLink::query()->pluck('id')->all());
+        $this->assertSame(PeriodStatus::Open, $first->fresh()?->status);
+        $this->assertSame(PeriodStatus::Billed, $third->fresh()?->status);
+        // Ohne Verwaltungsrecht gesperrt wie das einzelne Lösen.
+        $viewer = \App\Models\Platform\User::factory()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($viewer)->post(route('finance.resale.links.bulk-destroy'), ['ids' => [$keep->sqid]])->assertForbidden();
+    }
+
     public function test_fits_uses_service_period_or_invoice_date_window(): void {
         $contract = $this->contract('ent-2', 1, '2024-10-13', '2025-10-12');
         $period = $contract->periods()->firstOrFail();

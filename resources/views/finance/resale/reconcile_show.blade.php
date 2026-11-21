@@ -90,9 +90,14 @@
         @if ($findings !== [])
             {{-- Prüffälle an Bezügen (MVP-1749): überbuchte Positionen und Bezüge neben der Periode, mit dem Weg zur Korrektur. --}}
             <x-card :title="__('resale.account.section.findings')" :subtitle="__('resale.reconcile.findings_hint')" padding="p-0" class="mb-4" id="findings">
+                <div data-bulk-form class="contents">
+                @if ($canManage)
+                    @include('finance.resale._link_findings_bulk')
+                @endif
                 <x-table bare>
                     <x-slot:head>
                         <tr>
+                            <th class="w-8">@if ($canManage)<input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all aria-label="{{ __('Alle auswählen') }}">@endif</th>
                             <x-table.th>{{ __('resale.account.finding.kind') }}</x-table.th>
                             <x-table.th>{{ __('resale.account.finding.detail') }}</x-table.th>
                             <x-table.th class="text-right"></x-table.th>
@@ -100,6 +105,7 @@
                     </x-slot:head>
                     @include('finance.resale._link_findings', ['findings' => $findings, 'canManage' => $canManage])
                 </x-table>
+                </div>
             </x-card>
         @endif
 

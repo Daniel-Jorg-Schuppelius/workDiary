@@ -325,6 +325,9 @@ return [
             'waive' => 'Verzichten / strittig',
             'reopen' => 'Entscheidung zurücknehmen',
         ],
+        'bulk_selected' => ':n Bezüge ausgewählt',
+        'bulk_unlink' => 'Ausgewählte lösen',
+        'bulk_unlink_confirm' => 'Die ausgewählten Rechnungsbezüge lösen? Die Perioden werden wieder offen bzw. teilweise gedeckt.',
         'flash' => [
             'proposed' => 'Vorschlagslauf: :periods Perioden geprüft, :linked gedeckt, :partial teilweise, :links Bezüge; :lines_without_subscription Lizenzpositionen ohne Abo.',
             'confirmed' => 'Bezüge bestätigt.',
@@ -332,6 +335,7 @@ return [
             'reopened' => 'Periode wieder offen.',
             'linked' => 'Position :voucher zugeordnet.',
             'unlinked' => 'Bezug gelöst.',
+            'unlinked_many' => '{0} Kein Bezug gelöst.|{1} :count Bezug gelöst.|[2,*] :count Bezüge gelöst.',
         ],
         'error' => [
             'line_missing' => 'Rechnungsposition nicht gefunden.',

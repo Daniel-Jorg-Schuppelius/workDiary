@@ -6,7 +6,14 @@
         $isDeviation = in_array($finding['kind'], \App\Services\Reselling\Register\LinkAudit::DEVIATIONS, true);
     @endphp
     <tr class="hover">
-        <td class="align-top"><x-status-badge size="xs" :tone="$finding['kind'] === \App\Services\Reselling\Register\LinkAudit::OVERBOOKED ? 'error' : 'warning'" :label="__('resale.account.finding.' . $finding['kind'])" /></td>
+        {{-- Auswahl für „Ausgewählte lösen“ (MVP-1784): nur Prüffälle mit genau einem Bezug. --}}
+        <td class="w-8 align-top">
+            @if ($canManage && $finding['link'] !== null)
+                <input type="checkbox" class="checkbox checkbox-sm" data-bulk-checkbox name="ids[]" value="{{ $finding['link']->sqid }}" aria-label="{{ __('Auswählen') }}">
+            @endif
+        </td>
+        {{-- nowrap: daisyUI-Badges haben feste Höhe, ein umbrechendes Label läuft über den Hintergrund. --}}
+        <td class="align-top whitespace-nowrap"><x-status-badge size="xs" :tone="$finding['kind'] === \App\Services\Reselling\Register\LinkAudit::OVERBOOKED ? 'error' : 'warning'" :label="__('resale.account.finding.' . $finding['kind'])" /></td>
         <td class="text-sm">
             <span class="font-mono text-xs">{{ $line->voucherNumber }}</span> · {{ __('resale.link_ui.position', ['position' => $line->position]) }} · {{ \Illuminate\Support\Str::limit($line->label(), 40) }}
             @if ($finding['kind'] === \App\Services\Reselling\Register\LinkAudit::OVERBOOKED)

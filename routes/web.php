@@ -3361,6 +3361,8 @@ Route::middleware('auth')->group(function () {
                 Route::post('perioden/{period}/abweichung', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'deviationStore'])->name('periods.deviation.store');
                 Route::get('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkCreate'])->name('periods.link.create');
                 Route::post('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkStore'])->name('periods.link.store');
+                // Mehrere Bezüge auf einmal lösen (MVP-1784) — fester Pfad vor {link}.
+                Route::post('bezuege/loesen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkBulkDestroy'])->name('links.bulk-destroy');
                 Route::delete('bezuege/{link}', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkDestroy'])->name('links.destroy');
                 // Prüffall „zeitlich unpassend" (Feature 185): Bezug auf eine andere Periode desselben Abos verschieben.
                 Route::post('bezuege/{link}/verschieben', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkMove'])->name('links.move');
