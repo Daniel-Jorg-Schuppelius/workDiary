@@ -29,6 +29,8 @@ class VacationRevisionTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Feste Uhr: der Antrag liegt zehn Tage voraus und muss im Monat der Arbeitsliste bleiben (Datumsfalle ab dem 21.).
+        $this->travelTo('2026-11-05 10:00:00');
         $this->setUpOrganization();
         $this->approver = $this->orgAdmin();
         $this->employee = $this->orgUser();
