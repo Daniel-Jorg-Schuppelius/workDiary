@@ -193,6 +193,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Abos & Lizenzen (`MVP-1777`): Der Rückpfeil der Abo-Seite führt zurück auf
+  die Seite des Registers, von der sie geöffnet wurde (Lizenzkonto,
+  Arbeitsmappe, Perioden), auch nach einer Aktion auf der Abo-Seite. Bisher
+  ging er immer zur Abo-Liste.
 - Abos & Lizenzen (`MVP-1763`): Die Meldung nach einer Übergabe an das
   Buchhaltungsprogramm nennt den Nettobetrag nicht mehr mit doppeltem
   Währungszeichen („538,80 € €“).

@@ -23,7 +23,7 @@
 
 @section('content')
     <x-index-page :title="$subscription->label" :subtitle="$subscription->kind->label() . ' · ' . $subscription->provider->label()"
-                  back-route="finance.resale.subscriptions" :back-label="__('resale.action.back')">
+                  :back="$backUrl" :back-route="$backUrl === null ? 'finance.resale.subscriptions' : null" :back-label="__('resale.action.back')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="edit" tone="primary" size="sm" data-entry-modal-trigger

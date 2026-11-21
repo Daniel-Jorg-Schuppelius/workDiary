@@ -251,6 +251,22 @@ class SubscriptionChainTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.reconcile.correction', $this->customer))->assertOk();
     }
 
+    public function test_subscription_page_returns_to_the_register_page_it_was_opened_from(): void {
+        $admin = $this->orgAdmin();
+        $subscription = $this->subscription('2026-02-13', null);
+        $show = route('finance.resale.show', $subscription->sqid);
+        $account = route('finance.resale.accounts.show', app(\App\Services\Reselling\Register\LicenseAccounts::class)->keyFor($this->organization, $subscription));
+        $back = static fn(string $url): string => 'href="' . e($url) . '"';
+
+        // Aus dem Lizenzkonto geöffnet: zurück geht es dorthin, nicht zur Abo-Liste.
+        $this->actingAs($admin)->get($show, ['referer' => $account])->assertOk()->assertSee($back($account), false);
+        // Nach einer Aktion auf der Abo-Seite ist sie selbst der Referer: die Herkunft bleibt.
+        $this->actingAs($admin)->get($show, ['referer' => $show])->assertOk()->assertSee($back($account), false);
+        // Von außerhalb des Registers: wieder die Abo-Liste.
+        $this->actingAs($admin)->get($show, ['referer' => route('customers.show', $this->customer)])->assertOk()
+            ->assertDontSee($back($account), false)->assertSee($back(route('finance.resale.subscriptions')), false);
+    }
+
     public function test_board_marks_a_surplus_line_and_offers_to_ignore_it(): void {
         $admin = $this->orgAdmin();
         $this->subscription('2023-10-18', '2024-10-17');
