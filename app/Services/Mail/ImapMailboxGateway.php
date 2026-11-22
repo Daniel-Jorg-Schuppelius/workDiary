@@ -219,7 +219,9 @@ class ImapMailboxGateway implements MailboxGateway {
     }
 
     private function connect(EmailConnection $connection): Client {
-        $client = (new ClientManager())->make([
+        // Kopfzeilen über den eigenen Decoder: Der webklex-Standard löst kodierte
+        // Betreffzeilen und Namen ohne ext-imap nicht auf.
+        $client = (new ClientManager(['decoding' => ImapHeaderDecoder::DECODING]))->make([
             'host' => $connection->host,
             'port' => $connection->port,
             'encryption' => $connection->encryption === 'none' ? false : $connection->encryption,

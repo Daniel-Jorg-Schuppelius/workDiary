@@ -187,7 +187,8 @@ final class SettleFlatRateShortfallsCommand extends Command {
             ->where('customer_id', $shortfall->project->customer_id)
             ->where('status', TransferStatus::Transferred->value)
             ->where('channel', TransferChannel::Time->value)
-            ->where(static fn ($query) => $query->whereNull('period_from')->orWhere('period_from', '<=', $day))
+            // Obergrenze halboffen: SQLite vergleicht den `date`-Cast als 'Y-m-d 00:00:00' (siehe DateRange).
+            ->where(static fn ($query) => $query->whereNull('period_from')->orWhere('period_from', '<', DateRange::dayAfter($day)))
             ->where(static fn ($query) => $query->whereNull('period_to')->orWhere('period_to', '>=', $day))
             ->whereHas('items', static fn ($items) => $items->where('source_type', MorphMap::alias(TimeEntry::class))->whereIn('source_id', $workOfProject))
             ->orderBy('id')

@@ -63,8 +63,16 @@ function seedTemplate(): void {
 
 async function openForm(page: Page) {
     await page.goto("/form-submissions");
-    await page.locator("summary", { hasText: "Formular ausfüllen" }).first().click();
-    await page.getByRole("link", { name: TEMPLATE }).click();
+    // Mit nur einer aktiven Vorlage ersetzt action-menu.js das Menü „Formular
+    // ausfüllen“ durch den Link selbst (unwrapSingleActionMenus); erst bei
+    // mehreren steht der Link im Menü.
+    const link = page.getByRole("link", { name: TEMPLATE });
+    const menu = page.locator("summary", { hasText: "Formular ausfüllen" }).first();
+    await expect(link.or(menu)).toBeVisible();
+    if (!(await link.isVisible())) {
+        await menu.click();
+    }
+    await link.click();
     const dialog = page.locator(DIALOG);
     await expect(dialog.getByRole("heading", { name: `Formular ausfüllen: ${TEMPLATE}` })).toBeVisible();
     // daisyUI blendet die Box mit einer 0,3-s-Transition ein.
