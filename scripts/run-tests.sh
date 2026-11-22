@@ -32,7 +32,11 @@ PHP_BIN="$(resolve_php_bin . "${PHP_BIN:-}")"
 "$PHP_BIN" artisan config:clear --ansi >/dev/null
 
 export XDEBUG_MODE=off
-# Ein Worker behält je Test rund 0,3 MB; bei ~1700 Testdateien auf 8 Worker
-# erreichte der schwerste das memory_limit (1G) kurz vor Schluss (2026-10-22).
-# Neustart nach N Testdateien hält den Speicher je Worker begrenzt.
+# OPcache auch auf der Kommandozeile (tests/php.d/opcache.ini): ohne ihn
+# kompiliert jeder Test Routen, Konfiguration und Views neu, und ein Worker
+# behielt je Test rund 0,3 MB, bis das memory_limit (1G) riss. Ein leerer
+# Eintrag vor dem Doppelpunkt steht für die Scan-Verzeichnisse der
+# Installation; die Paratest-Worker erben die Variable.
+export PHP_INI_SCAN_DIR="${PHP_INI_SCAN_DIR:-}:$PWD/tests/php.d"
+# Der Neustart nach N Testdateien bleibt als Absicherung, falls OPcache fehlt.
 exec "$PHP_BIN" artisan test --parallel --processes="${TEST_PROCESSES:-8}" --max-batch-size="${TEST_MAX_BATCH:-100}" "$@"
