@@ -219,6 +219,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Mail-Dateien und IMAP-Postfach: Absendernamen und Betreffzeilen mit Umlauten
+  kommen an, gleich ob die PHP-Erweiterung imap geladen ist. In `.eml`-Dateien
+  fielen Umlaute in Namen weg („Büro“ wurde „Bro“), wenn die Erweiterung
+  geladen war, bei Kopfzeilen in rohem UTF-8 auch ohne sie. Das IMAP-Postfach
+  zeigte ohne die Erweiterung kodierte Betreffzeilen und Namen roh
+  (`=?UTF-8?Q?…?=`).
 - Abos & Lizenzen (`MVP-1782`): Die Abzeichen in der Liste „Prüffälle an
   Bezügen“ brechen nicht mehr um; „Zeitlich unpassend“ lief in der schmalen
   Spalte über seinen Hintergrund hinaus.
