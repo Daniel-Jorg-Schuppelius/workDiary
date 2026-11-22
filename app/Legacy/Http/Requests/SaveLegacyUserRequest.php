@@ -24,11 +24,15 @@ class SaveLegacyUserRequest extends FormRequest {
         /** @var LegacyUser|null $legacyUser */
         $legacyUser = $this->route('user');
 
+        // Die klassische Ansicht fragt das Passwort wie im Altportal zweimal ab.
+        $confirmation = $this->has('userpw_confirmation') ? ['confirmed'] : [];
+
         return [
             'uname' => ['required', 'string', 'max:100', 'not_regex:/[\x00-\x1F\x7F]/', Rule::unique('legacy.user', 'uname')->ignore($legacyUser?->id)],
-            'userpw' => $this->isMethod('PUT')
-                ? ['nullable', 'string', 'max:15', 'not_regex:/[\x00-\x1F\x7F]/']
-                : ['required', 'string', 'max:15', 'not_regex:/[\x00-\x1F\x7F]/'],
+            'userpw' => [
+                ...($this->isMethod('PUT') ? ['nullable'] : ['required']),
+                'string', 'max:15', 'not_regex:/[\x00-\x1F\x7F]/', ...$confirmation,
+            ],
             'email' => ['nullable', 'email', 'max:255'],
         ];
     }

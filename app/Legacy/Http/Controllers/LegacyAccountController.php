@@ -11,6 +11,7 @@
 namespace App\Legacy\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Legacy\Support\LegacyView;
 use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Hash};
@@ -18,7 +19,7 @@ use Illuminate\View\View;
 
 class LegacyAccountController extends Controller {
     public function editPassword(Request $request): View {
-        return view('legacy.account._password_dialog', [
+        return view(LegacyView::pick($request, 'legacy.account._password_dialog', 'legacy.classic.account.password'), [
             'isDialog' => true,
         ]);
     }

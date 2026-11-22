@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\{ManagesLegacyDutyCrud, RequiresLegacyAdmin};
 use App\Legacy\Http\Requests\SaveLegacyDutyRequest;
 use App\Legacy\Models\LegacyOnCall;
+use App\Legacy\Support\LegacyView;
 use App\Models\Diary\OnCallShift;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
@@ -29,8 +30,9 @@ class LegacyOnCallController extends Controller {
     public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.oncall._form_dialog', [
+        return view(LegacyView::pick($request, 'legacy.oncall._form_dialog', 'legacy.classic.diary.duty-form'), [
             ...$this->legacyDutyFormData(null, false),
+            'kind' => 'oncall',
             'isDialog' => true,
         ]);
     }
@@ -44,14 +46,21 @@ class LegacyOnCallController extends Controller {
     }
 
     public function edit(LegacyOnCall $oncall): View|RedirectResponse {
+        $request = request();
         $this->ensureAdmin();
 
         if ($redirect = $this->redirectToWeekIfMigrated(OnCallShift::class, (int) $oncall->id)) {
             return $redirect;
         }
 
-        return view('legacy.oncall._form_dialog', [
+        // Löschen fragt im Altportal auf einer eigenen Seite nach.
+        if (LegacyView::isClassic($request) && $request->boolean('delete')) {
+            return view('legacy.classic.diary.duty-delete', ['item' => $oncall->load('mitarbeiter:id,uname'), 'kind' => 'oncall']);
+        }
+
+        return view(LegacyView::pick($request, 'legacy.oncall._form_dialog', 'legacy.classic.diary.duty-form'), [
             ...$this->legacyDutyFormData($oncall, true),
+            'kind' => 'oncall',
             'isDialog' => true,
         ]);
     }

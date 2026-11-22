@@ -14,24 +14,33 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Http\Requests\SaveLegacyUserRequest;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall, LegacyUser};
+use App\Legacy\Support\LegacyView;
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 
 class LegacyUserAdminController extends Controller {
     use RequiresLegacyAdmin;
 
-    public function index(): View {
-        $this->ensureAdmin();
+    private const array SORTS = ['id' => 'id', 'uname' => 'uname'];
 
-        return view('legacy.users.index', [
-            'users' => LegacyUser::query()->where('id', '>', 3)->orderBy('uname')->get(['id', 'uname', 'email']),
+    public function index(Request $request): View {
+        $this->ensureAdmin();
+        $classic = LegacyView::isClassic($request);
+        // Das Altportal ordnet nach ID, die neue Ansicht nach Namen.
+        [$sort, $dir] = SortableQuery::resolve($request, self::SORTS, $classic ? 'id' : 'uname', 'asc');
+
+        return view($classic ? 'legacy.classic.users.index' : 'legacy.users.index', [
+            'users' => LegacyUser::query()->where('id', '>', 3)->orderBy(self::SORTS[$sort], $dir)->get(['id', 'uname', 'email']),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 
     public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.users._form_dialog', [
+        return view(LegacyView::pick($request, 'legacy.users._form_dialog', 'legacy.classic.users.form'), [
             'legacyUser' => null,
             'isEdit' => false,
             'isDialog' => true,
@@ -46,12 +55,17 @@ class LegacyUserAdminController extends Controller {
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter angelegt.');
     }
 
-    public function edit(LegacyUser $user): View {
+    public function edit(Request $request, LegacyUser $user): View {
         $this->ensureAdmin();
 
         $this->ensureMutableLegacyUser($user);
 
-        return view('legacy.users._form_dialog', [
+        // Löschen fragt im Altportal auf einer eigenen Seite nach, mit Grund, falls noch Daten hängen.
+        if (LegacyView::isClassic($request) && $request->boolean('delete')) {
+            return view('legacy.classic.users.delete', ['legacyUser' => $user, 'blockedBy' => $this->dependencyKind($user)]);
+        }
+
+        return view(LegacyView::pick($request, 'legacy.users._form_dialog', 'legacy.classic.users.form'), [
             'legacyUser' => $user,
             'isEdit' => true,
             'isDialog' => true,
@@ -74,7 +88,7 @@ class LegacyUserAdminController extends Controller {
 
         $this->ensureMutableLegacyUser($user);
 
-        if ($this->hasLegacyDependencies($user)) {
+        if ($this->dependencyKind($user) !== null) {
             return back()->with('error', 'Mitarbeiter kann nicht geloescht werden: es sind noch Legacy-Daten vorhanden.');
         }
 
@@ -87,9 +101,13 @@ class LegacyUserAdminController extends Controller {
         abort_if((int) $user->id <= 3, 403);
     }
 
-    private function hasLegacyDependencies(LegacyUser $user): bool {
-        return LegacyDiaryEntry::query()->where('user', $user->id)->exists()
-            || LegacyOnCall::query()->where('user', $user->id)->exists()
-            || LegacyNotdienst::query()->where('user', $user->id)->exists();
+    /** Welche Altdaten das Löschen verhindern: orders, oncall, notdienst oder nichts. */
+    private function dependencyKind(LegacyUser $user): ?string {
+        return match (true) {
+            LegacyDiaryEntry::query()->where('user', $user->id)->exists() => 'orders',
+            LegacyOnCall::query()->where('user', $user->id)->exists() => 'oncall',
+            LegacyNotdienst::query()->where('user', $user->id)->exists() => 'notdienst',
+            default => null,
+        };
     }
 }

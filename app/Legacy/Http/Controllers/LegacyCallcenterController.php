@@ -13,7 +13,7 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Requests\LegacyCallcenterLoginRequest;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall};
-use App\Legacy\Support\{LegacyClock, LegacyRoleResolver};
+use App\Legacy\Support\{LegacyClock, LegacyRoleResolver, LegacyView};
 use App\Models\Platform\User;
 use App\Services\Calendar\HolidayService;
 use Carbon\Carbon;
@@ -27,8 +27,8 @@ class LegacyCallcenterController extends Controller {
 
     public function __construct(private readonly HolidayService $holidayService) {}
 
-    public function showLoginForm(): View {
-        return view('legacy.callcenter.login');
+    public function showLoginForm(Request $request): View {
+        return view(LegacyView::pick($request, 'legacy.callcenter.login', 'legacy.classic.callcenter.login'));
     }
 
     public function login(LegacyCallcenterLoginRequest $request): RedirectResponse {
@@ -232,7 +232,7 @@ class LegacyCallcenterController extends Controller {
         // Nächste Feiertage (kommende 30 Tage), maximal 5
         $upcomingHolidays = $this->collectUpcomingHolidays($today, 30, 5);
 
-        return view('legacy.callcenter.notdienst', [
+        return view(LegacyView::pick($request, 'legacy.callcenter.notdienst', 'legacy.classic.callcenter.notdienst'), [
             'notdienstByDay' => $notdienstByDay,
             'bereitschaftByDay' => $bereitschaftByDay,
             'todayNotdienst' => $todayNotdienst,

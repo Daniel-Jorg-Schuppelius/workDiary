@@ -18,6 +18,7 @@
             <x-icon-btn icon="add" size="sm" :tone="$active === 'create' ? 'primary' : 'ghost'" :href="route('legacy.portal.orders.create')" show-label>{{ __('legacy_support.portal.new_order') }}</x-icon-btn>
             <x-icon-btn icon="lock" size="sm" :tone="$active === 'password' ? 'primary' : 'ghost'" :href="route('legacy.portal.password.edit')" show-label>{{ __('legacy_support.portal.change_password') }}</x-icon-btn>
         @endif
+        <x-icon-btn icon="history" size="sm" tone="ghost" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
     </nav>
 </div>
 

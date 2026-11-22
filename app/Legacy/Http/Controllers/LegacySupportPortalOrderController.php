@@ -13,7 +13,7 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\ResolvesLegacySupportCustomer;
 use App\Legacy\Models\{LegacySupportCustomer, LegacySupportMailSetting, LegacySupportOrder};
-use App\Legacy\Support\LegacyClock;
+use App\Legacy\Support\{LegacyClock, LegacyView};
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +24,9 @@ class LegacySupportPortalOrderController extends Controller {
     use ResolvesLegacySupportCustomer;
 
     private const int PER_PAGE = 25;
+
+    /** Das Altportal zeigte alle Aufträge des Kunden auf einer Seite. */
+    private const int CLASSIC_PER_PAGE = 1000;
 
     /** @var array<string, string> */
     private const array SORTS = [
@@ -47,9 +50,11 @@ class LegacySupportPortalOrderController extends Controller {
             $query->orderByDesc('datum');
         }
 
-        return view('legacy.support.portal.index', [
+        $perPage = LegacyView::isClassic($request) ? self::CLASSIC_PER_PAGE : self::PER_PAGE;
+
+        return view(LegacyView::pick($request, 'legacy.support.portal.index', 'legacy.classic.support.portal.index'), [
             'customer' => $customer,
-            'orders' => $query->orderByDesc('id')->paginate(self::PER_PAGE)->withQueryString(),
+            'orders' => $query->orderByDesc('id')->paginate($perPage)->withQueryString(),
             'sort' => $sort,
             'dir' => $dir,
             'writeEnabled' => (bool) config('app.legacy_write_enabled'),
@@ -62,7 +67,7 @@ class LegacySupportPortalOrderController extends Controller {
         // Das Altportal prüfte die Zugehörigkeit nicht; fremde Nummern bleiben hier unsichtbar.
         $order = LegacySupportOrder::query()->where('kunde', $customer->id)->findOrFail((int) $order);
 
-        return view('legacy.support.portal.show', ['customer' => $customer, 'order' => $order]);
+        return view(LegacyView::pick($request, 'legacy.support.portal.show', 'legacy.classic.support.portal.show'), ['customer' => $customer, 'order' => $order]);
     }
 
     public function create(Request $request): View|RedirectResponse {
@@ -70,7 +75,7 @@ class LegacySupportPortalOrderController extends Controller {
             return redirect()->route('legacy.portal.orders.index');
         }
 
-        return view('legacy.support.portal.create', ['customer' => $this->supportCustomer($request)]);
+        return view(LegacyView::pick($request, 'legacy.support.portal.create', 'legacy.classic.support.portal.create'), ['customer' => $this->supportCustomer($request)]);
     }
 
     public function store(Request $request): RedirectResponse {

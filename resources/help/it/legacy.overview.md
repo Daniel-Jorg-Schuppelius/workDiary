@@ -1,8 +1,9 @@
 ---
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
-version: 5
+version: 7
 keywords:
+    - visualizzazione classica
     - vecchio sistema
     - dati storici
     - migrazione dati
@@ -119,3 +120,29 @@ disattivato, il portale è in sola lettura.
 
 **Autorizzazione:** portale assistenza e clienti del portale sono aperti agli
 amministratori del vecchio sistema e alla gestione della piattaforma.
+
+## Visualizzazione classica
+
+Chi è abituato alle maschere dei vecchi portali passa al loro aspetto con
+**Visualizzazione classica** – per diario, call center e portale assistenza
+insieme:
+
+- **Diario** mostra la settimana come prima: l'ufficio vede per ogni giorno tutti
+  i collaboratori con le ore dalle 7 alle 21, e un clic su un nome crea una voce;
+  i collaboratori vedono la propria settimana. Reperibilità e servizio di
+  emergenza colorano le colonne, il colore accanto all'ordine indica lo stato.
+- **Panoramica** chiede prima il periodo (da oggi o fino a oggi) e lo stato e
+  poi mostra l'elenco.
+- Una voce ha data e ora in campi separati. I collaboratori **rispondono** (il
+  che segnala un problema) oppure impostano **letto** ed **evaso**.
+- **Collaboratori**, **Reperibilità**, **Servizio di emergenza**, **Archivio**,
+  **Elimina** e **Password** seguono le vecchie maschere; **Elimina** sposta
+  nell'archivio le voci più vecchie o tutte le voci di un collaboratore.
+- Il **call center** mostra il piano del servizio di emergenza da ieri fino a
+  cinque giorni dopo, con oggi in giallo.
+- Il **portale assistenza** ha lo sfondo giallo, le vecchie tabelle, i menu e
+  le caselle di stato e l'appuntamento in quattro campi.
+
+Dati e permessi restano gli stessi; **Nuova visualizzazione** torna indietro. La
+scelta vale per il browser, la gestione stabilisce l'impostazione predefinita.
+Ferie ed elenco dell'archivio esistono solo nella nuova visualizzazione.

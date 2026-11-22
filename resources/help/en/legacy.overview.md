@@ -1,8 +1,9 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 5
+version: 7
 keywords:
+    - classic view
     - old system
     - previous system
     - legacy data
@@ -127,3 +128,28 @@ read-only.
 
 **Permission:** Support portal and portal customers are open to legacy
 administrators and platform operations.
+
+## Classic view
+
+Anyone used to the screens of the old portals switches to their look via
+**Classic view** – for the diary, the call centre and the support portal at once:
+
+- **Diary** shows the week as before: the office sees all employees for each day
+  with the hours from 7 am to 9 pm, and a click on a name creates an entry;
+  employees see their own week. Standby and emergency service colour the columns,
+  and the colour next to the order shows the status.
+- **Overview** first asks for the period (from today or until today) and the
+  status and then shows the list.
+- An entry has date and time in separate fields. Employees **answer** (which
+  reports a problem) or set **read** and **done**.
+- **Employees**, **Standby**, **Emergency service**, **Archive**, **Delete** and
+  **Password** follow the old screens; **Delete** moves older entries or all
+  entries of one employee to the archive.
+- The **call centre** shows the emergency service plan from yesterday to five
+  days ahead, with today in yellow.
+- The **support portal** has the yellow background, the old tables, menus and
+  status boxes and the appointment in four fields.
+
+Data and permissions are the same; **New view** switches back. The choice applies
+to the browser; operations sets the default. Vacation and the archive list exist
+only in the new view.

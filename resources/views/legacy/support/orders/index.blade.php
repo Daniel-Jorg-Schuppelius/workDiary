@@ -44,6 +44,7 @@
             @endif
             <x-icon-btn icon="badge" size="sm" :href="route('legacy.support.customers.index')" show-label>{{ __('legacy_support.nav.customers') }}</x-icon-btn>
             <x-icon-btn icon="inventory_2" size="sm" :href="route('legacy.support.archive.index')" show-label>{{ __('legacy_support.nav.archive') }}</x-icon-btn>
+            <x-icon-btn icon="history" size="sm" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
         </x-slot:actions>
 
         @unless ($writeEnabled)

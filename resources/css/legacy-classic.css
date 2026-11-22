@@ -1,0 +1,368 @@
+/*
+ * Created on   : Sun Nov 22 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : legacy-classic.css
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * Klassische Ansicht des Legacy-Bereichs: Farben, Schrift und Tabellen der
+ * Altportale (Support kp.css, Tagebuch tb.css). Bewusst ohne Tailwind — dessen
+ * Grundgerüst würde Überschriften und Tabellen zurücksetzen.
+ */
+
+body.kp-classic {
+    margin: 0;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #000;
+    background-color: #ffffbb;
+}
+
+.kp-page {
+    padding: 8px 12px 24px;
+    text-align: center;
+}
+
+.kp-classic h1 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #67674f;
+    text-align: center;
+}
+
+.kp-classic h2 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #67674f;
+}
+
+.kp-classic a,
+.kp-classic .kp-linkbutton {
+    color: #004c7e;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.kp-classic a:hover,
+.kp-classic .kp-linkbutton:hover {
+    color: #000;
+    background: #fbba6d;
+}
+
+.kp-classic a:focus-visible,
+.kp-classic button:focus-visible,
+.kp-classic input:focus-visible,
+.kp-classic select:focus-visible,
+.kp-classic textarea:focus-visible {
+    outline: 2px solid #004c7e;
+    outline-offset: 1px;
+}
+
+.kp-classic input,
+.kp-classic select,
+.kp-classic textarea {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    background-color: #d0edff;
+    border: 1px solid #67674f;
+}
+
+.kp-classic textarea {
+    width: 100%;
+    min-width: 18em;
+    box-sizing: border-box;
+}
+
+.kp-classic input.kp-short {
+    width: 3.2em;
+}
+
+.kp-classic input.kp-year {
+    width: 4.2em;
+}
+
+.kp-classic button,
+.kp-classic input[type="submit"] {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #000;
+    background-color: #e8e8e8;
+    border: 2px outset #dfdfdf;
+    padding: 1px 8px;
+    cursor: pointer;
+}
+
+.kp-classic .kp-linkbutton {
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+/* Tabellen: zentriert wie unter <center> im Altportal, auf schmalen Schirmen scrollbar. */
+.kp-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.kp-classic table {
+    margin: 0 auto;
+    border-collapse: separate;
+    border-spacing: 2px;
+    text-align: left;
+}
+
+.kp-classic table.kp-wide {
+    width: 100%;
+}
+
+.kp-classic table.kp-medium {
+    width: 70%;
+    min-width: 32em;
+}
+
+.kp-classic table.eintrag,
+.kp-classic table.hmenue {
+    background-color: #fff;
+    border-collapse: collapse;
+}
+
+.kp-classic table.hmenue td {
+    padding: 2px 4px;
+}
+
+.kp-classic table.kp-list tbody tr:nth-child(odd) {
+    background-color: #d6fabc;
+}
+
+.kp-classic td {
+    font-size: 12px;
+    color: #67674f;
+    padding: 1px;
+    vertical-align: top;
+}
+
+.kp-classic td.kp-center {
+    text-align: center;
+}
+
+.kp-classic td.kp-icon {
+    width: 15px;
+    text-align: center;
+}
+
+.kp-classic td.kp-label {
+    white-space: nowrap;
+}
+
+.kp-classic th {
+    font-size: 14px;
+    font-weight: bold;
+    color: #67674f;
+    text-align: center;
+    border: 1px solid #67674f;
+}
+
+.kp-classic .kp-overdue-text {
+    color: #f00;
+    font-weight: bold;
+}
+
+.kp-classic .kp-msg {
+    margin: 6px auto;
+    font-weight: bold;
+    color: #004c7e;
+}
+
+.kp-classic .kp-msg--error {
+    color: #c00;
+}
+
+.kp-classic .kp-legend {
+    margin: 4px auto 8px;
+    color: #67674f;
+}
+
+.kp-classic .kp-legend span {
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+/* Statuskästchen und Symbole: 13 px mit eingelassenem Rand wie die GIFs des Altportals. */
+.kp-box {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    box-sizing: border-box;
+    vertical-align: middle;
+    border: 1px solid;
+    border-color: #7f7f7f #fff #fff #7f7f7f;
+    box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #dfdfdf;
+    background-color: #fff;
+}
+
+.kp-box--new { background-color: #ff515d; }
+.kp-box--seen { background-color: #fff200; }
+.kp-box--scheduled { background-color: #00f; }
+.kp-box--done { background-color: #0f0; }
+.kp-box--archived { background-color: #9a9a9a; }
+
+.kp-box--overdue {
+    background-color: #f00;
+    animation: kp-blink 1s steps(2, start) infinite;
+}
+
+@keyframes kp-blink {
+    to { background-color: #fff; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kp-box--overdue { animation: none; }
+}
+
+/* Symbole der Auftragsliste, nachgezeichnet nach den Bildchen des Altportals. */
+.kp-box--view {
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M1.5 6.5C3 4 4.6 3 6.5 3s3.5 1 5 3.5C10 9 8.4 10 6.5 10S3 9 1.5 6.5z' fill='%23f6e7b0' stroke='%23000' stroke-width='.9'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.8' fill='%23004c7e'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+.kp-box--edit {
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M3 10.2l.8-2.8 5-5 2 2-5 5z' fill='%23f0dd03' stroke='%23000' stroke-width='.8'/%3E%3Cpath d='M3 10.2l.8-2.8 2 2z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+.kp-box--delete {
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M3.2 3.2l6.6 6.6M9.8 3.2l-6.6 6.6' stroke='%23f00' stroke-width='2.2'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+.kp-box--appointment {
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M3.2 3.2l6.6 6.6M9.8 3.2l-6.6 6.6' stroke='%23f304a7' stroke-width='2.2'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+.kp-box--customer {
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Crect width='13' height='13' fill='%23004865'/%3E%3Cpath d='M5.4 2h2.2l-.4 5.8H5.8z M5.5 8.8h2v2h-2z' fill='%23ffeb00'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+/* E-Mail-Schalter der Auftragsübersicht: Umschlag auf grün (an) bzw. rot (aus). */
+.kp-mail {
+    display: inline-block;
+    width: 30px;
+    height: 20px;
+    vertical-align: middle;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20'%3E%3Crect x='5' y='3.5' width='20' height='13' fill='%23f8e8c8' stroke='%23c87830'/%3E%3Cpath d='M5 3.5l10 7.5 10-7.5' fill='none' stroke='%23c87830'/%3E%3C/svg%3E");
+    background-size: 100% 100%;
+}
+
+.kp-mail--on { background-color: #6bf35a; }
+.kp-mail--off { background-color: #ff2a12; }
+
+.kp-pager {
+    margin: 8px auto;
+}
+
+.kp-footer {
+    padding: 8px 12px 16px;
+    text-align: center;
+    font-size: 11px;
+    color: #67674f;
+}
+
+.kp-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.kp-classic a.kp-normal {
+    font-weight: normal;
+}
+
+.kp-classic .kp-pre {
+    white-space: pre-wrap;
+}
+
+/* Online-Tagebuch und Notdienstplan (tb.css): Zellen mit Rahmen, Kopf- und Zustandsfarben. */
+.tb td {
+    color: #004c7e;
+    border: 1px solid #67674f;
+    vertical-align: middle;
+}
+
+.tb table.eintrag {
+    border-spacing: 0;
+}
+
+.tb td.ohne,
+.tb td.rechts {
+    border: 0;
+    background-color: #ffffbb;
+}
+
+.tb td.rechts { text-align: right; }
+.tb td.mitte { text-align: center; }
+.tb td.grau { background-color: #eeffee; text-align: center; }
+.tb td.fett { font-weight: bold; }
+
+.tb td.ro, .tb td.rob, .tb td.ron, .tb td.rog, .tb td.rogb, .tb td.rogn { border-right-style: none; }
+.tb td.lo, .tb td.lob, .tb td.lon, .tb td.log, .tb td.logb, .tb td.logn,
+.tb td.neu, .tb td.off, .tb td.work, .tb td.ok { border-left-style: none; width: 10px; }
+
+.tb td.rob, .tb td.lob { background-color: #ddeeff; }
+.tb td.ron, .tb td.lon { background-color: #ffe0cc; }
+.tb td.rog, .tb td.log { background-color: #eeffee; }
+.tb td.rogb, .tb td.logb { background-color: #c0e0ff; }
+.tb td.rogn, .tb td.logn { background-color: #ffccaa; }
+
+.tb td.neu { background-color: #f00; }
+.tb td.off { background-color: #ff0; }
+.tb td.work { background-color: #0f0; }
+.tb td.ok { background-color: #99aa99; }
+
+.tb td.bereit { background-color: #ddeeff; }
+.tb td.notdnst { background-color: #ffccaa; }
+.tb td.option-edit { background-color: #ddff88; text-align: center; }
+.tb td.option-delete { background-color: #ffe0e0; text-align: center; }
+
+.tb td.tb-slot {
+    min-width: 80px;
+    max-width: 120px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.tb th.kopf { background-color: #333399; color: #fff; }
+.tb th.kheute { background-color: #339933; color: #fff; }
+.tb th.kso { background-color: #cc0000; color: #fff; }
+.tb th.ksa { background-color: #993333; color: #fff; }
+.tb th.mit, .tb th.mitb, .tb th.mitn { color: #000; font-weight: normal; }
+.tb th.mit { background-color: #ddeeff; }
+.tb th.mitb { background-color: #c0e0ff; }
+.tb th.mitn { background-color: #ffccaa; }
+.tb th.tb-today { background-color: #ffff33; }
+
+.tb th.kopf a, .tb th.kheute a, .tb th.kso a, .tb th.ksa a { color: #fff; }
+
+/* Legende: Beschriftungen ohne Rahmen, die Farbkästchen behalten Rahmen und Farbe. */
+.tb .tb-legend td:not([class]) { border: 0; background-color: #ffffbb; }
+
+.tb input.rad { background-color: #ffffbb; border: 0; }
+
+.tb table.hmenue {
+    border-collapse: separate;
+    border-spacing: 5px 10px;
+    background-color: transparent;
+}
+
+.tb table.hmenue td { background-color: #fff; }

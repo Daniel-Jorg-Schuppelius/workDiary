@@ -40,6 +40,9 @@
                 ])->values()->all()" />
             </div>{{-- badge+tabs --}}
             <div class="flex items-center gap-2">
+                @unless ($tab === 'urlaub')
+                    <x-icon-btn icon="history" size="sm" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
+                @endunless
                 @if ($tab === 'auftraege')
                     @if ($legacyUserId > 0)
                         <x-icon-btn icon="add" tone="outline" size="sm"

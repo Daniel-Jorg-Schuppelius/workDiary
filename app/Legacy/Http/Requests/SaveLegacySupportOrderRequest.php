@@ -19,8 +19,23 @@ use Illuminate\Validation\Rule;
 class SaveLegacySupportOrderRequest extends FormRequest {
     private const string SINGLE_LINE = 'not_regex:/[\x00-\x1F\x7F]/';
 
+    /**
+     * Termin der klassischen Ansicht wie im Altportal in vier Feldern: Jahr, Monat, Tag, Stunde.
+     *
+     * @var list<string>
+     */
+    private const array CLASSIC_APPOINTMENT_PARTS = ['tj', 'tm', 'tt', 'th'];
+
     protected function prepareForValidation(): void {
         $this->merge(['kunde' => Sqid::decodeOrNumeric(LegacySupportCustomer::class, $this->input('kunde'))]);
+
+        if ($this->has('tj')) {
+            $parts = array_map(fn(string $key): string => trim((string) $this->input($key, '')), self::CLASSIC_APPOINTMENT_PARTS);
+            // Alle leer: kein Termin; unvollständig oder unzulässig: die date-Regel meldet es.
+            $this->merge(['termin' => implode('', $parts) === ''
+                ? null
+                : sprintf('%s-%s-%s %s:00', $parts[0], str_pad($parts[1], 2, '0', STR_PAD_LEFT), str_pad($parts[2], 2, '0', STR_PAD_LEFT), str_pad($parts[3], 2, '0', STR_PAD_LEFT))]);
+        }
     }
 
     public function authorize(): bool {

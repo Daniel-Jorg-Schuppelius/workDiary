@@ -14,29 +14,55 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Http\Requests\SaveLegacySupportCustomerRequest;
 use App\Legacy\Models\LegacySupportCustomer;
-use Illuminate\Http\RedirectResponse;
+use App\Legacy\Support\LegacyView;
+use App\Support\SortableQuery;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 
 /** Kundenverwaltung des Support-Portals (Zugänge der Kunden in `kp_user`). */
 class LegacySupportCustomerController extends Controller {
     use RequiresLegacyAdmin;
 
-    public function index(): View {
-        $this->ensureAdmin();
+    /** @var array<string, string> */
+    private const array SORTS = ['kunde' => 'kunde', 'usern' => 'usern'];
 
-        return view('legacy.support.customers.index', [
+    public function index(Request $request): View {
+        $this->ensureAdmin();
+        [$sort, $dir] = SortableQuery::resolve($request, self::SORTS, 'kunde', 'asc');
+
+        return view(LegacyView::pick($request, 'legacy.support.customers.index', 'legacy.classic.support.customers.index'), [
             'customers' => LegacySupportCustomer::query()->customers()
                 ->withCount(['orders', 'archivedOrders'])
-                ->orderBy('kunde')
+                ->orderBy(self::SORTS[$sort], $dir)
                 ->get(['id', 'kunde', 'usern']),
+            'sort' => $sort,
+            'dir' => $dir,
             'writeEnabled' => (bool) config('app.legacy_write_enabled'),
         ]);
     }
 
-    public function create(): View {
+    /** Nur klassisch: „ansehen" und die Rückfrage vor dem Löschen sind im Altportal eigene Seiten. */
+    public function show(Request $request, LegacySupportCustomer $customer): View|RedirectResponse {
+        $this->ensureAdmin();
+        $this->ensureCustomerAccount($customer);
+
+        if (! LegacyView::isClassic($request)) {
+            return redirect()->toList('legacy.support.customers.index');
+        }
+
+        $customer->loadCount(['orders', 'archivedOrders']);
+
+        return view('legacy.classic.support.customers.show', [
+            'customer' => $customer,
+            'confirmDelete' => $request->boolean('delete'),
+            'writeEnabled' => (bool) config('app.legacy_write_enabled'),
+        ]);
+    }
+
+    public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.support.customers._form_dialog', ['customer' => null, 'isEdit' => false]);
+        return view(LegacyView::pick($request, 'legacy.support.customers._form_dialog', 'legacy.classic.support.customers.form'), ['customer' => null, 'isEdit' => false]);
     }
 
     public function store(SaveLegacySupportCustomerRequest $request): RedirectResponse {
@@ -49,15 +75,15 @@ class LegacySupportCustomerController extends Controller {
             'passw' => (string) $data['passw'],
         ]);
 
-        return redirect()->route('legacy.support.customers.index')
+        return redirect()->toList('legacy.support.customers.index')
             ->with('success', __('legacy_support.flash.customer_created', ['name' => $data['kunde']]));
     }
 
-    public function edit(LegacySupportCustomer $customer): View {
+    public function edit(Request $request, LegacySupportCustomer $customer): View {
         $this->ensureAdmin();
         $this->ensureCustomerAccount($customer);
 
-        return view('legacy.support.customers._form_dialog', ['customer' => $customer, 'isEdit' => true]);
+        return view(LegacyView::pick($request, 'legacy.support.customers._form_dialog', 'legacy.classic.support.customers.form'), ['customer' => $customer, 'isEdit' => true]);
     }
 
     public function update(SaveLegacySupportCustomerRequest $request, LegacySupportCustomer $customer): RedirectResponse {
@@ -71,7 +97,7 @@ class LegacySupportCustomerController extends Controller {
         }
         $customer->save();
 
-        return redirect()->route('legacy.support.customers.index')
+        return redirect()->toList('legacy.support.customers.index')
             ->with('success', __('legacy_support.flash.customer_updated', ['name' => $customer->kunde]));
     }
 
@@ -81,13 +107,14 @@ class LegacySupportCustomerController extends Controller {
 
         // Das Altportal löschte ohne Prüfung; laufende Aufträge verloren damit ihren Kunden.
         if ($customer->orders()->exists()) {
-            return back()->with('error', __('legacy_support.flash.customer_has_orders', ['name' => $customer->kunde]));
+            return redirect()->toList('legacy.support.customers.index')
+                ->with('error', __('legacy_support.flash.customer_has_orders', ['name' => $customer->kunde]));
         }
 
         $name = $customer->kunde;
         $customer->delete();
 
-        return redirect()->route('legacy.support.customers.index')
+        return redirect()->toList('legacy.support.customers.index')
             ->with('success', __('legacy_support.flash.customer_deleted', ['name' => $name]));
     }
 

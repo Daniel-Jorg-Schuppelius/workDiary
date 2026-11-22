@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\{ListsLegacySupportOrders, RequiresLegacyAdmin};
 use App\Legacy\Models\LegacySupportArchivedOrder;
 use App\Legacy\Services\LegacySupportArchiveService;
-use App\Legacy\Support\LegacyClock;
+use App\Legacy\Support\{LegacyClock, LegacyView};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -26,6 +26,9 @@ class LegacySupportArchiveController extends Controller {
 
     private const int PER_PAGE = 50;
 
+    /** Das Altportal zeigte ein ganzes Jahr auf einer Seite. */
+    private const int CLASSIC_PER_PAGE = 1000;
+
     public function index(Request $request, LegacySupportArchiveService $archive): View {
         $this->ensureAdmin();
 
@@ -36,9 +39,11 @@ class LegacySupportArchiveController extends Controller {
         // Wie im Altportal: archiviert wird bis zum Beginn des laufenden Monats.
         $cutoff = LegacyClock::now()->startOfMonth();
 
-        return view('legacy.support.archive.index', [
+        $perPage = LegacyView::isClassic($request) ? self::CLASSIC_PER_PAGE : self::PER_PAGE;
+
+        return view(LegacyView::pick($request, 'legacy.support.archive.index', 'legacy.classic.support.archive.index'), [
             ...$list,
-            'orders' => $query->paginate(self::PER_PAGE)->withQueryString(),
+            'orders' => $query->paginate($perPage)->withQueryString(),
             'sort' => $sort,
             'dir' => $dir,
             'customers' => $this->supportCustomersForSelect(),
@@ -48,14 +53,31 @@ class LegacySupportArchiveController extends Controller {
         ]);
     }
 
-    public function show(LegacySupportArchivedOrder $order): View {
+    public function show(Request $request, LegacySupportArchivedOrder $order): View {
         $this->ensureAdmin();
         $order->load('customer:id,kunde');
 
-        return view('legacy.support.orders._show_dialog', [
+        return view(LegacyView::pick($request, 'legacy.support.orders._show_dialog', 'legacy.classic.support.orders.show'), [
             'order' => $order,
             'archived' => true,
             'writeEnabled' => false,
+        ]);
+    }
+
+    /** Nur klassisch: die Archivierung ist im Altportal ein eigener Menüpunkt („Löschen"). */
+    public function prepare(Request $request, LegacySupportArchiveService $archive): View|RedirectResponse {
+        $this->ensureAdmin();
+
+        if (! LegacyView::isClassic($request)) {
+            return redirect()->toList('legacy.support.archive.index');
+        }
+
+        $cutoff = LegacyClock::now()->startOfMonth();
+
+        return view('legacy.classic.support.archive.prepare', [
+            'cutoff' => $cutoff,
+            'eligibleCount' => $archive->eligibleCount($cutoff),
+            'writeEnabled' => (bool) config('app.legacy_write_enabled'),
         ]);
     }
 
@@ -65,7 +87,7 @@ class LegacySupportArchiveController extends Controller {
 
         $moved = $archive->archiveBefore(Carbon::parse((string) $data['before'])->startOfDay());
 
-        return redirect()->route('legacy.support.archive.index')
+        return redirect()->toList('legacy.support.archive.index')
             ->with('success', trans_choice('legacy_support.flash.archived', $moved, ['count' => $moved]));
     }
 }

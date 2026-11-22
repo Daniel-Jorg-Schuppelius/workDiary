@@ -15,7 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Models\{LegacyArchiveDiaryEntry, LegacyArchiveNotdienst, LegacyArchiveOnCall, LegacyUser};
 use App\Legacy\Services\{LegacyArchiveService, LegacyWeekCalendarService};
-use App\Legacy\Support\LegacyRoleResolver;
+use App\Legacy\Support\{LegacyRoleResolver, LegacyView};
 use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
 use App\Services\Calendar\HolidayService;
@@ -82,7 +82,7 @@ class LegacyArchiveController extends Controller {
             'notdienstByUserDay' => $notdienstByUserDay,
         ] = $calendar->buildWeekMaps($allEntries, $oncalls, $notdiensts);
 
-        return view('legacy.archive.week', [
+        return view(LegacyView::pick($request, 'legacy.archive.week', 'legacy.classic.archive.week'), [
             'users' => $users,
             'monday' => $monday,
             'sunday' => $sunday,
@@ -271,16 +271,29 @@ class LegacyArchiveController extends Controller {
         ]);
     }
 
-    public function show(LegacyArchiveDiaryEntry $entry): View|Response {
+    public function show(Request $request, LegacyArchiveDiaryEntry $entry): View|Response {
         // Dieselbe Grenze wie in der Liste: fortlaufende IDs dürfen nichts Fremdes öffnen (idor-legacy-1/-3).
         abort_unless(self::mayViewEntry((int) $entry->user), 404);
         $entry->load('mitarbeiter:id,uname');
 
-        if (request()->boolean('dialog')) {
+        if ($request->boolean('dialog')) {
             return response(view('legacy.archive._show_dialog', ['entry' => $entry]));
         }
 
-        return view('legacy.archive.show', ['entry' => $entry]);
+        return view(LegacyView::pick($request, 'legacy.archive.show', 'legacy.classic.archive.show'), ['entry' => $entry]);
+    }
+
+    /** „Löschen von Aufträgen" des Altportals; die neue Ansicht archiviert aus der Archivliste. */
+    public function prepare(Request $request): View|RedirectResponse {
+        $this->ensureAdmin();
+        if (! LegacyView::isClassic($request)) {
+            return redirect()->toList('legacy.archive.index');
+        }
+
+        return view('legacy.classic.archive.prepare', [
+            'users' => $this->legacyUsersForSelect(),
+            'writeEnabled' => (bool) config('app.legacy_write_enabled'),
+        ]);
     }
 
     /**
@@ -330,14 +343,17 @@ class LegacyArchiveController extends Controller {
         }
         $request->merge(['user' => $targetUser]);
 
+        // 0 = alles eines Mitarbeiters, nur mit Mitarbeiter (klassische Ansicht wie im Altportal).
         $data = $request->validate([
-            'months' => ['required', 'integer', 'in:3,6,9,12'],
-            'user' => ['nullable', 'integer', 'min:4', 'exists:legacy.user,id'],
+            'months' => ['required', 'integer', 'in:0,3,6,9,12'],
+            'user' => ['nullable', 'required_if:months,0', 'integer', 'min:4', 'exists:legacy.user,id'],
         ]);
 
-        $result = $service->archiveOlderThanMonths((int) $data['months'], isset($data['user']) ? (int) $data['user'] : null);
+        $result = (int) $data['months'] === 0
+            ? $service->archiveAllOfUser((int) $data['user'])
+            : $service->archiveOlderThanMonths((int) $data['months'], isset($data['user']) ? (int) $data['user'] : null);
 
-        return redirect()->route('legacy.archive.index')->with(
+        return redirect()->route(LegacyView::isClassic($request) ? 'legacy.archive.prepare' : 'legacy.archive.index')->with(
             'success',
             'Archivierung abgeschlossen: ' . $result['total'] . ' Datensaetze verschoben (Auftraege ' . $result['diary'] . ', Bereitschaft ' . $result['oncall'] . ', Notdienst ' . $result['notdienst'] . ').'
         );

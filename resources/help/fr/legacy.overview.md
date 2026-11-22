@@ -1,8 +1,9 @@
 ---
 title: "Ancien système (legacy)"
 topic: legacy.overview
-version: 5
+version: 7
 keywords:
+    - affichage classique
     - ancienne application
     - anciennes données
     - migration des données
@@ -119,3 +120,30 @@ l'ancien système est désactivé, le portail est en lecture seule.
 
 **Autorisation :** le portail support et les clients du portail sont ouverts aux
 administrateurs de l'ancien système et à l'exploitation de la plateforme.
+
+## Affichage classique
+
+Qui est habitué aux écrans des anciens portails passe à leur aspect via
+**Affichage classique** – pour le journal, le centre d'appels et le portail
+support à la fois :
+
+- **Journal** affiche la semaine comme avant : le bureau voit pour chaque jour
+  tous les employés avec les heures de 7 h à 21 h, et un clic sur un nom crée
+  une entrée ; les employés voient leur propre semaine. L'astreinte et le service
+  d'urgence colorent les colonnes, la couleur à côté de l'ordre indique le statut.
+- **Aperçu** demande d'abord la période (à partir d'aujourd'hui ou jusqu'à
+  aujourd'hui) et le statut, puis affiche la liste.
+- Une entrée a la date et l'heure dans des champs séparés. Les employés
+  **répondent** (ce qui signale un problème) ou indiquent **lu** et **terminé**.
+- **Employés**, **Astreinte**, **Service d'urgence**, **Archives**, **Supprimer**
+  et **Mot de passe** suivent les anciens écrans ; **Supprimer** déplace les
+  entrées anciennes ou toutes les entrées d'un employé vers les archives.
+- Le **centre d'appels** affiche le planning du service d'urgence d'hier à dans
+  cinq jours, avec aujourd'hui en jaune.
+- Le **portail support** a le fond jaune, les anciens tableaux, menus et cases
+  de statut et le rendez-vous en quatre champs.
+
+Les données et les droits restent les mêmes ; **Nouvel affichage** revient en
+arrière. Le choix vaut pour le navigateur, l'exploitation fixe la valeur par
+défaut. Les congés et la liste des archives n'existent que dans le nouvel
+affichage.

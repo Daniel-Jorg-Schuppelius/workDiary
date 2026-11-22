@@ -23,6 +23,14 @@ class SaveLegacyDutyRequest extends FormRequest {
         }
 
         $this->merge(['user' => $userId]);
+
+        // Klassische Ansicht: Datum in Tag, Monat und Jahr getrennt wie im Altportal.
+        foreach (['von', 'bis'] as $field) {
+            if ($this->has($field . '_day')) {
+                $parts = array_map(fn(string $part) => trim((string) $this->input($field . '_' . $part, '')), ['year', 'month', 'day']);
+                $this->merge([$field => implode('', $parts) === '' ? null : sprintf('%s-%s-%s', $parts[0], str_pad($parts[1], 2, '0', STR_PAD_LEFT), str_pad($parts[2], 2, '0', STR_PAD_LEFT))]);
+            }
+        }
     }
 
     public function authorize(): bool {

@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\{ListsLegacySupportOrders, RequiresLegacyAdmin};
 use App\Legacy\Http\Requests\SaveLegacySupportOrderRequest;
 use App\Legacy\Models\{LegacySupportCustomer, LegacySupportMailSetting, LegacySupportOrder, LegacyUser};
-use App\Legacy\Support\{LegacyClock, LegacyRoleResolver};
+use App\Legacy\Support\{LegacyClock, LegacyRoleResolver, LegacyView};
 use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -32,6 +32,12 @@ class LegacySupportOrderController extends Controller {
     use RequiresLegacyAdmin;
 
     private const int PER_PAGE = 50;
+
+    /** Das Altportal zeigte ein ganzes Jahr auf einer Seite. */
+    private const int CLASSIC_PER_PAGE = 1000;
+
+    /** Teilmasken der Bearbeitung im Altportal: Eintragung, Termin ändern/Löschen, Kundenauswahl. */
+    private const array CLASSIC_FORMS = ['entry', 'appointment', 'customer'];
 
     public function index(Request $request): View {
         $this->ensureAdmin();
@@ -59,9 +65,11 @@ class LegacySupportOrderController extends Controller {
 
         [$sort, $dir] = $this->applySupportOrderSort($request, $query);
 
-        return view('legacy.support.orders.index', [
+        $perPage = LegacyView::isClassic($request) ? self::CLASSIC_PER_PAGE : self::PER_PAGE;
+
+        return view(LegacyView::pick($request, 'legacy.support.orders.index', 'legacy.classic.support.orders.index'), [
             ...$list,
-            'orders' => $query->paginate(self::PER_PAGE)->withQueryString(),
+            'orders' => $query->paginate($perPage)->withQueryString(),
             'counts' => $counts,
             'statusFilter' => $statusFilter,
             'sort' => $sort,
@@ -75,9 +83,10 @@ class LegacySupportOrderController extends Controller {
     public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.support.orders._form_dialog', [
+        return view(LegacyView::pick($request, 'legacy.support.orders._form_dialog', 'legacy.classic.support.orders.form'), [
             'order' => null,
             'isEdit' => false,
+            'form' => 'entry',
             'customers' => $this->supportCustomersForSelect(),
             'selectedCustomer' => (string) $request->query('customer', ''),
             'orderer' => $this->officeOrderer(),
@@ -104,22 +113,22 @@ class LegacySupportOrderController extends Controller {
             'status' => LegacySupportOrder::STATUS_NEW,
         ]);
 
-        return redirect()->route('legacy.support.orders.index')
+        return redirect()->toList('legacy.support.orders.index')
             ->with('success', __('legacy_support.flash.order_created', ['number' => $order->id]));
     }
 
-    public function show(LegacySupportOrder $order): View {
+    public function show(Request $request, LegacySupportOrder $order): View {
         $this->ensureAdmin();
         $order->load('customer:id,kunde');
 
-        return view('legacy.support.orders._show_dialog', [
+        return view(LegacyView::pick($request, 'legacy.support.orders._show_dialog', 'legacy.classic.support.orders.show'), [
             'order' => $order,
             'archived' => false,
             'writeEnabled' => (bool) config('app.legacy_write_enabled'),
         ]);
     }
 
-    public function edit(LegacySupportOrder $order): View {
+    public function edit(Request $request, LegacySupportOrder $order): View {
         $this->ensureAdmin();
         $order->load('customer:id,kunde');
 
@@ -128,9 +137,12 @@ class LegacySupportOrderController extends Controller {
             $mechanics[] = $order->wer;
         }
 
-        return view('legacy.support.orders._form_dialog', [
+        $form = (string) $request->query('form', 'entry');
+
+        return view(LegacyView::pick($request, 'legacy.support.orders._form_dialog', 'legacy.classic.support.orders.form'), [
             'order' => $order,
             'isEdit' => true,
+            'form' => in_array($form, self::CLASSIC_FORMS, true) ? $form : 'entry',
             'customers' => $this->supportCustomersForSelect(),
             'selectedCustomer' => Sqid::encode(LegacySupportCustomer::class, $order->kunde),
             'orderer' => $order->kname,
@@ -169,7 +181,7 @@ class LegacySupportOrderController extends Controller {
             'status' => $status,
         ]);
 
-        return redirect()->route('legacy.support.orders.index')
+        return redirect()->toList('legacy.support.orders.index')
             ->with('success', __('legacy_support.flash.order_updated', ['number' => $order->id]));
     }
 
@@ -179,7 +191,7 @@ class LegacySupportOrderController extends Controller {
         $number = $order->id;
         $order->delete();
 
-        return redirect()->route('legacy.support.orders.index')
+        return redirect()->toList('legacy.support.orders.index')
             ->with('success', __('legacy_support.flash.order_deleted', ['number' => $number]));
     }
 

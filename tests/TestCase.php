@@ -67,6 +67,9 @@ abstract class TestCase extends BaseTestCase {
         // (siehe SecurityHeaders, CspNonceTest) weiterhin ein Nonce tragen.
         \Illuminate\Support\Facades\Vite::useCspNonce();
 
+        // Legacy-Seiten in der neuen Ansicht; die klassische (Vorgabe im Betrieb) prüfen eigene Tests.
+        config(['app.legacy_view' => \App\Legacy\Support\LegacyView::MODERN]);
+
         // Verhindert, dass DatabaseHealth-Marker zwischen Tests (oder zwischen
         // Tests und der Dev-Umgebung) durchsickern. Tests, die absichtlich
         // PDOExceptions ausl\u00f6sen (z. B. DatabaseUnavailableTest), w\u00fcrden

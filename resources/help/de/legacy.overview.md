@@ -1,8 +1,9 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 5
+version: 7
 keywords:
+    - Klassische Ansicht
     - altes System
     - Vorgängersystem
     - Altdaten
@@ -132,3 +133,28 @@ Portal nur lesbar.
 
 **Berechtigung:** Support-Portal und Portalkunden öffnen Altsystem-Administratoren
 und der Plattformbetrieb.
+
+## Klassische Ansicht
+
+Wer die Masken der alten Portale gewohnt ist, schaltet über **Klassische Ansicht**
+auf deren Aussehen um – für Tagebuch, Callcenter und Support-Portal zugleich:
+
+- **Tagebuch** zeigt die Woche wie früher: Das Büro sieht je Tag alle Mitarbeiter
+  mit den Stunden von 7 bis 21 Uhr, ein Klick auf einen Namen legt einen Eintrag
+  an; Mitarbeiter sehen ihre eigene Woche. Bereitschaft und Notdienst färben die
+  Spalten, die Farbe neben dem Auftrag zeigt den Status.
+- **Überblick** fragt zuerst nach dem Zeitraum (ab heute oder bis heute) und dem
+  Status und zeigt dann die Liste.
+- Ein Eintrag hat Datum und Uhrzeit in getrennten Feldern. Mitarbeiter
+  **antworten** (das meldet ein Problem) oder setzen **gelesen** und **erledigt**.
+- **Mitarbeiter**, **Bereitschaft**, **Notdienst**, **Archiv**, **Löschen** und
+  **Passwort** folgen den alten Masken; **Löschen** verschiebt ältere Einträge
+  oder alle Einträge eines Mitarbeiters ins Archiv.
+- Das **Callcenter** zeigt den Notdienstplan von gestern bis in fünf Tagen, den
+  heutigen Tag gelb.
+- Das **Support-Portal** hat den gelben Grund, die alten Tabellen, Menüs und
+  Statuskästchen und den Termin in vier Feldern.
+
+Daten und Rechte sind dieselben; **Neue Ansicht** wechselt zurück. Die Wahl gilt
+für den Browser, die Vorgabe legt der Betrieb fest. Urlaub und die Archivliste
+gibt es nur in der neuen Ansicht.

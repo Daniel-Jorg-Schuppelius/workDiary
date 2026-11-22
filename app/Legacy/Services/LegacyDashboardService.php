@@ -54,9 +54,10 @@ class LegacyDashboardService {
     ];
 
     /**
+     * @param  int|null  $perPage  Seitengröße aller Listen; ohne Angabe die der neuen Ansicht.
      * @return array<string,mixed>
      */
-    public function buildIndexData(Request $request, User $currentUser): array {
+    public function buildIndexData(Request $request, User $currentUser, ?int $perPage = null): array {
         $tab = $this->resolveTab((string) $request->query('tab', 'auftraege'));
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($currentUser);
         $isAdmin = LegacyRoleResolver::isAdmin($currentUser);
@@ -98,7 +99,7 @@ class LegacyDashboardService {
             'canFilterMine' => $legacyUserId > 0,
             'legacyUserId' => $legacyUserId,
             'tabCounts' => $tabCounts,
-            'entries' => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
+            'entries' => $diaryQuery->paginate($perPage ?? 20, ['*'], 'dpage')->withQueryString(),
             'diaryCounts' => $diaryCounts,
             'filters' => $request->only(
                 'status',
@@ -122,9 +123,9 @@ class LegacyDashboardService {
                 : collect(),
             'sort' => $tabSort,
             'dir' => $tabDir,
-            'oncallItems' => $oncallQuery->paginate(30, ['*'], 'opage')->withQueryString(),
+            'oncallItems' => $oncallQuery->paginate($perPage ?? 30, ['*'], 'opage')->withQueryString(),
             'oncallCounts' => $oncallCounts,
-            'notdienstItems' => $notdienstQuery->paginate(30, ['*'], 'npage')->withQueryString(),
+            'notdienstItems' => $notdienstQuery->paginate($perPage ?? 30, ['*'], 'npage')->withQueryString(),
             'notdienstCounts' => $notdienstCounts,
         ];
     }
@@ -189,6 +190,13 @@ class LegacyDashboardService {
         }
         if ($request->filled('to')) {
             $query->whereDate('bis', '<=', $request->to);
+        }
+        // Überblick der klassischen Ansicht: Beginn ab heute (1) oder bis heute (2) wie im Altportal.
+        $zeitpunkt = (string) $request->query('zeitpunkt', '');
+        if ($zeitpunkt === '1') {
+            $query->where('von', '>=', LegacyClock::today());
+        } elseif ($zeitpunkt === '2') {
+            $query->where('von', '<', LegacyClock::today()->addDay());
         }
         $authUser = $request->user();
         $authLegacyUserId = $authUser !== null ? (int) ($authUser->legacy_user_id ?? 0) : 0;

@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\{ManagesLegacyDutyCrud, RequiresLegacyAdmin};
 use App\Legacy\Http\Requests\SaveLegacyDutyRequest;
 use App\Legacy\Models\LegacyNotdienst;
+use App\Legacy\Support\LegacyView;
 use App\Models\Diary\EmergencyAssignment;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
@@ -29,8 +30,9 @@ class LegacyNotdienstController extends Controller {
     public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.notdienst._form_dialog', [
+        return view(LegacyView::pick($request, 'legacy.notdienst._form_dialog', 'legacy.classic.diary.duty-form'), [
             ...$this->legacyDutyFormData(null, false),
+            'kind' => 'notdienst',
             'isDialog' => true,
         ]);
     }
@@ -44,14 +46,21 @@ class LegacyNotdienstController extends Controller {
     }
 
     public function edit(LegacyNotdienst $notdienst): View|RedirectResponse {
+        $request = request();
         $this->ensureAdmin();
 
         if ($redirect = $this->redirectToWeekIfMigrated(EmergencyAssignment::class, (int) $notdienst->id)) {
             return $redirect;
         }
 
-        return view('legacy.notdienst._form_dialog', [
+        // Löschen fragt im Altportal auf einer eigenen Seite nach.
+        if (LegacyView::isClassic($request) && $request->boolean('delete')) {
+            return view('legacy.classic.diary.duty-delete', ['item' => $notdienst->load('mitarbeiter:id,uname'), 'kind' => 'notdienst']);
+        }
+
+        return view(LegacyView::pick($request, 'legacy.notdienst._form_dialog', 'legacy.classic.diary.duty-form'), [
             ...$this->legacyDutyFormData($notdienst, true),
+            'kind' => 'notdienst',
             'isDialog' => true,
         ]);
     }

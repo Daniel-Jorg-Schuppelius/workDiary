@@ -13,6 +13,7 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Models\LegacySupportMailSetting;
+use App\Legacy\Support\LegacyView;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 
@@ -20,8 +21,12 @@ use Illuminate\View\View;
 class LegacySupportMailSettingController extends Controller {
     use RequiresLegacyAdmin;
 
-    public function edit(): View {
+    public function edit(Request $request): View|RedirectResponse {
         $this->ensureAdmin();
+        // Die klassische Ansicht schaltet direkt in der Auftragsübersicht; der Dialog gehört zur neuen.
+        if (LegacyView::isClassic($request)) {
+            return redirect()->toList('legacy.support.orders.index');
+        }
 
         return view('legacy.support.mail._form_dialog', ['setting' => LegacySupportMailSetting::current()]);
     }
@@ -40,7 +45,7 @@ class LegacySupportMailSettingController extends Controller {
         $setting->schalt = $enabled ? LegacySupportMailSetting::SWITCH_ON : LegacySupportMailSetting::SWITCH_OFF;
         $setting->save();
 
-        return redirect()->route('legacy.support.orders.index')
+        return redirect()->toList('legacy.support.orders.index')
             ->with('success', $enabled ? __('legacy_support.flash.mail_on') : __('legacy_support.flash.mail_off'));
     }
 }

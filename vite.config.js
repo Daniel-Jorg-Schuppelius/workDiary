@@ -35,6 +35,8 @@ export default defineConfig(({ mode }) => {
                     "resources/js/signature.js",
                     "resources/js/kiosk.js",
                     "resources/js/checkin.js",
+                    "resources/css/legacy-classic.css",
+                    "resources/js/legacy-classic.js",
                 ],
                 refresh: true,
             }),

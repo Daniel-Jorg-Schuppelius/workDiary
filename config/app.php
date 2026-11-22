@@ -218,6 +218,14 @@ return [
 
     'legacy_write_enabled' => (bool) env('LEGACY_WRITE_ENABLED', false),
 
+    // Legacy-Bereich (Tagebuch, Callcenter, Support-Portal): Vorgabe der Darstellung
+    // (classic = Aussehen der Altportale, modern = App-Oberfläche); jeder Browser kann umschalten.
+    'legacy_view' => env('LEGACY_VIEW', 'classic'),
+    // Überschrift der Kundenanmeldung, etwa „Kundenportal der Firma …"; leer = „Kundenportal".
+    'legacy_support_title' => env('LEGACY_SUPPORT_TITLE'),
+    // Zeile unter „Notdienstplan" in der klassischen Callcenter-Anmeldung, etwa „der Firma …".
+    'legacy_callcenter_subtitle' => env('LEGACY_CALLCENTER_SUBTITLE'),
+
     /*
     |--------------------------------------------------------------------------
     | Arbeitszeiten

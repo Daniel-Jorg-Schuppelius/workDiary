@@ -17,8 +17,20 @@ use Illuminate\Support\Facades\DB;
 class LegacyArchiveService {
     /** @return array<string, mixed> */
     public function archiveOlderThanMonths(int $months, ?int $legacyUserId = null): array {
-        $cutoff = LegacyClock::now()->subMonths($months)->startOfDay();
+        return ['months' => $months, ...$this->archive(LegacyClock::now()->subMonths($months)->startOfDay(), $legacyUserId)];
+    }
 
+    /**
+     * Alles eines Mitarbeiters ins Archiv, auch Künftiges — wie „Löschen aller Aufträge eines Mitarbeiters" im Altportal.
+     *
+     * @return array<string, mixed>
+     */
+    public function archiveAllOfUser(int $legacyUserId): array {
+        return ['months' => null, ...$this->archive(null, $legacyUserId)];
+    }
+
+    /** @return array<string, mixed> */
+    private function archive(?Carbon $cutoff, ?int $legacyUserId): array {
         $movedDiary = $this->moveRows(
             sourceTable: 'tagebuch',
             archiveTable: 'a_tagebuch',
@@ -44,8 +56,7 @@ class LegacyArchiveService {
         );
 
         return [
-            'months' => $months,
-            'cutoff' => $cutoff->toDateString(),
+            'cutoff' => $cutoff?->toDateString(),
             'diary' => $movedDiary,
             'oncall' => $movedOnCall,
             'notdienst' => $movedNotdienst,
@@ -53,12 +64,12 @@ class LegacyArchiveService {
         ];
     }
 
-    private function moveRows(string $sourceTable, string $archiveTable, string $dateColumn, Carbon $cutoff, ?int $legacyUserId): int {
+    private function moveRows(string $sourceTable, string $archiveTable, string $dateColumn, ?Carbon $cutoff, ?int $legacyUserId): int {
         $connection = DB::connection('legacy');
 
         $query = $connection
             ->table($sourceTable)
-            ->where($dateColumn, '<', $cutoff->toDateString())
+            ->when($cutoff !== null, fn($q) => $q->where($dateColumn, '<', $cutoff?->toDateString()))
             ->orderBy('id');
 
         if ($legacyUserId !== null) {

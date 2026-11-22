@@ -10,6 +10,24 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Legacy-Bereich: klassische Ansicht im Aussehen der Altportale für den ganzen
+  Bereich. Das Support-Portal hat für Kunden und Büro den gelben Grund, die
+  alten Tabellen, Menüs und Statuskästchen, den Termin in vier Feldern und
+  Teilmasken für Termin und Kundenauswahl. Das Online-Tagebuch zeigt die
+  Chefsicht je Tag und Mitarbeiter und die Wochenübersicht der Mitarbeiter, dazu
+  Eintrag mit getrenntem Datum und Uhrzeit, Antwort mit „gelesen“ und
+  „erledigt“, Überblick nach Zeitraum und Status sowie Bereitschaft, Notdienst
+  (Datum in Tag, Monat, Jahr), Mitarbeiter mit Passwort-Wiederholung, Archiv,
+  Löschen und Passwort. Der Notdienstplan des Callcenters reicht von gestern bis
+  in fünf Tagen. Routen, Prüfungen und Daten sind dieselben wie in der neuen
+  Ansicht; ein Schalter je Browser gilt für den ganzen Bereich. Vorgabe über
+  `LEGACY_VIEW` (`classic`, sonst `modern`), Überschriften der Anmeldungen über
+  `LEGACY_SUPPORT_TITLE` und `LEGACY_CALLCENTER_SUBTITLE`. Nach dem Speichern
+  kehren die Listen mit Jahr, Woche und Sortierung zurück. Urlaub und die
+  Archivliste bleiben in der neuen Ansicht.
+- Legacy-Tagebuch: „Löschen“ kann wie im Altportal alle Einträge, Bereitschafts-
+  und Notdienste eines Mitarbeiters ins Archiv verschieben, auch künftige
+  (Archivlauf mit 0 Monaten und Mitarbeiter).
 - Bedienung (`MVP-1783`): Beim Absenden eines Formulars zeigt die auslösende
   Schaltfläche sofort ein Laufzeichen und nimmt keinen zweiten Klick an. Das
   gilt app-weit für Formulare, die die Seite neu laden; Filter, Dialoge und
@@ -185,6 +203,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Geändert
 
+- Legacy-Tagebuch: Der E-Mail-Hinweis eines Eintrags geht wie im Altsystem nur
+  an den Mitarbeiter, wenn jemand anderes den Eintrag speichert; die eigene
+  Antwort löst keinen Hinweis an sich selbst mehr aus.
 - Abos & Lizenzen (`MVP-1781`): Die Liste der Lizenzkonten führt jeden Halter
   einmal. Seine Anbieterkonten stehen in der Spalte „Anbieter“ untereinander
   und führen auf den jeweiligen Reiter; Verträge, Lizenzen, offene Perioden
@@ -219,6 +240,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Legacy-Tagebuch: Das Häkchen „E-Mail-Hinweis senden“ wurde beim Speichern
+  verworfen, der Hinweis an den Mitarbeiter ging nie hinaus. Es wird jetzt
+  gespeichert und löst den Hinweis aus.
 - Abos & Lizenzen (`MVP-1782`): Die Abzeichen in der Liste „Prüffälle an
   Bezügen“ brechen nicht mehr um; „Zeitlich unpassend“ lief in der schmalen
   Spalte über seinen Hintergrund hinaus.
@@ -517,6 +541,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinweise zum Update
 
+- Legacy-Bereich: Ohne `LEGACY_VIEW` zeigen Tagebuch, Callcenter und
+  Support-Portal nach dem Update die klassische Ansicht im Aussehen der
+  Altportale. Wer die bisherige App-Oberfläche als Vorgabe behalten will, setzt
+  `LEGACY_VIEW=modern`; jeder Browser kann weiter umschalten. Die Überschrift der
+  Kundenanmeldung kommt aus `LEGACY_SUPPORT_TITLE`, die Zeile unter
+  „Notdienstplan“ aus `LEGACY_CALLCENTER_SUBTITLE` (jeweils etwa der Firmenname).
 - Abos & Lizenzen (`MVP-1747`): Die Migration `add_is_direct_billing_to_resale_periods`
   läuft mit dem Deploy; danach ist nichts von Hand zu tun.
 - Der manuelle Lagereingang (Formular und Scan) ist jetzt bewertet

@@ -1,8 +1,9 @@
 ---
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
-version: 5
+version: 7
 keywords:
+    - vista clásica
     - sistema antiguo
     - datos antiguos
     - migración de datos
@@ -118,3 +119,29 @@ está desactivado, el portal es de solo lectura.
 
 **Permiso:** el portal de soporte y los clientes del portal están abiertos a los
 administradores del sistema antiguo y a la operación de la plataforma.
+
+## Vista clásica
+
+Quien esté acostumbrado a las pantallas de los portales antiguos cambia a su
+aspecto con **Vista clásica** – para el diario, el centro de llamadas y el portal
+de soporte a la vez:
+
+- **Diario** muestra la semana como antes: la oficina ve para cada día a todos
+  los empleados con las horas de 7 a 21, y un clic en un nombre crea una
+  entrada; los empleados ven su propia semana. La guardia y el servicio de
+  urgencia colorean las columnas, el color junto a la orden indica el estado.
+- **Resumen** pregunta primero por el periodo (desde hoy o hasta hoy) y el estado
+  y luego muestra la lista.
+- Una entrada tiene fecha y hora en campos separados. Los empleados **responden**
+  (lo que comunica un problema) o marcan **leído** y **hecho**.
+- **Empleados**, **Guardia**, **Servicio de urgencia**, **Archivo**, **Eliminar**
+  y **Contraseña** siguen las pantallas antiguas; **Eliminar** mueve al archivo
+  las entradas antiguas o todas las entradas de un empleado.
+- El **centro de llamadas** muestra el plan del servicio de urgencia desde ayer
+  hasta dentro de cinco días, con hoy en amarillo.
+- El **portal de soporte** tiene el fondo amarillo, las tablas, menús y casillas
+  de estado antiguos y la cita en cuatro campos.
+
+Los datos y permisos son los mismos; **Vista nueva** vuelve atrás. La elección
+vale para el navegador; la operación fija el valor predeterminado. Las vacaciones
+y la lista del archivo solo existen en la vista nueva.

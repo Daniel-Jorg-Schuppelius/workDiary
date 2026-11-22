@@ -15,6 +15,7 @@ use App\Legacy\Http\Concerns\ResolvesLegacySupportCustomer;
 use App\Legacy\Http\Middleware\EnsureLegacySupportCustomer;
 use App\Legacy\Http\Requests\LegacySupportPortalLoginRequest;
 use App\Legacy\Models\LegacySupportCustomer;
+use App\Legacy\Support\LegacyView;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -34,7 +35,7 @@ class LegacySupportPortalAuthController extends Controller {
             return redirect()->route('legacy.portal.orders.index');
         }
 
-        return view('legacy.support.portal.login');
+        return view(LegacyView::pick($request, 'legacy.support.portal.login', 'legacy.classic.support.portal.login'));
     }
 
     public function login(LegacySupportPortalLoginRequest $request): RedirectResponse {
@@ -88,7 +89,7 @@ class LegacySupportPortalAuthController extends Controller {
             return redirect()->route('legacy.portal.orders.index');
         }
 
-        return view('legacy.support.portal.password', ['customer' => $this->supportCustomer($request)]);
+        return view(LegacyView::pick($request, 'legacy.support.portal.password', 'legacy.classic.support.portal.password'), ['customer' => $this->supportCustomer($request)]);
     }
 
     public function updatePassword(Request $request): RedirectResponse {

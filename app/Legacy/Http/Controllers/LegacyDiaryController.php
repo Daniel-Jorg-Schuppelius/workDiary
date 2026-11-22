@@ -15,7 +15,7 @@ use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Http\Requests\SaveLegacyDiaryEntryRequest;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall, LegacyUser};
 use App\Legacy\Services\{LegacyDashboardService, LegacyWeekCalendarService};
-use App\Legacy\Support\{LegacyClock, LegacyRoleResolver};
+use App\Legacy\Support\{LegacyClock, LegacyRoleResolver, LegacyView};
 use App\Models\Platform\User;
 use App\Services\Calendar\HolidayService;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
@@ -25,14 +25,30 @@ use Illuminate\View\View;
 class LegacyDiaryController extends Controller {
     use RequiresLegacyAdmin;
 
+    /** Die klassische Ansicht blättert nicht wie das Altportal; die Grenze schützt nur vor Riesenseiten. */
+    private const int CLASSIC_PER_PAGE = 500;
+
     public function index(Request $request, LegacyDashboardService $dashboard): View {
         /** @var User $currentUser */
         $currentUser = Auth::user();
+        $classic = LegacyView::isClassic($request);
 
-        $data = $dashboard->buildIndexData($request, $currentUser);
+        // Das Altportal zeigt Aufträge und Dienste neueste zuerst.
+        if ($classic && ! $request->filled('sort')) {
+            $request->query->add(['sort' => 'von', 'dir' => 'desc']);
+        }
+
+        $data = $dashboard->buildIndexData($request, $currentUser, $classic ? self::CLASSIC_PER_PAGE : null);
         $data['users'] = $this->legacyUsersForSelect();
 
-        return view('legacy.diary.index', $data);
+        // Urlaub kennt das Altportal nicht; der Reiter bleibt in der neuen Ansicht.
+        $view = match (true) {
+            ! $classic, $data['tab'] === 'urlaub' => 'legacy.diary.index',
+            $data['tab'] === 'auftraege' => 'legacy.classic.diary.index',
+            default => 'legacy.classic.diary.duties',
+        };
+
+        return view($view, $data);
     }
 
     public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View {
@@ -74,7 +90,7 @@ class LegacyDiaryController extends Controller {
             'notdienstByUserDay' => $notdienstByUserDay,
         ] = $calendar->buildWeekMaps($allEntries, $oncalls, $notdiensts);
 
-        return view('legacy.diary.week', [
+        return view(LegacyView::pick($request, 'legacy.diary.week', 'legacy.classic.diary.week'), [
             'users' => $users,
             'monday' => $monday,
             'sunday' => $sunday,
@@ -90,13 +106,13 @@ class LegacyDiaryController extends Controller {
         ]);
     }
 
-    public function create(): View|Response {
+    public function create(Request $request): View|Response {
         // Ein Eintrag gehört einem Altsystem-Nutzer; ohne verknüpftes Legacy-Konto ließe er sich nicht speichern.
         abort_if(LegacyRoleResolver::resolveLegacyUserId(Auth::user()) <= 0, 403, __('Kein Legacy-Benutzerkonto verknüpft. Bitte wenden Sie sich an die Verwaltung.'));
 
         $data = $this->formData(null, false);
 
-        return response(view('legacy.diary._form_dialog', $data));
+        return response(view(LegacyView::pick($request, 'legacy.diary._form_dialog', 'legacy.classic.diary.form'), $data));
     }
 
     public function store(SaveLegacyDiaryEntryRequest $request): RedirectResponse|JsonResponse {
@@ -121,9 +137,9 @@ class LegacyDiaryController extends Controller {
             ? (int) ($data['user'] ?? $legacyUserId)
             : $legacyUserId;
 
-        $entry = LegacyDiaryEntry::query()->create($this->entryPayload($data, $entryUserId, $request));
+        $entry = LegacyDiaryEntry::query()->create($this->entryPayload($data, $entryUserId));
 
-        $this->sendLegacySmsMail($entry);
+        $this->sendLegacySmsMail($entry, $legacyUserId);
 
         if ($request->hasHeader('X-Entry-Dialog')) {
             return response()->json(['redirect' => route('legacy.diary.index')]);
@@ -132,25 +148,27 @@ class LegacyDiaryController extends Controller {
         return redirect()->route('legacy.diary.show', $entry)->with('success', __('Legacy-Eintrag gespeichert.'));
     }
 
-    public function show(LegacyDiaryEntry $entry): View|Response {
+    public function show(Request $request, LegacyDiaryEntry $entry): View|Response {
         abort_unless(LegacyArchiveController::mayViewEntry((int) $entry->user), 404);
         $entry->load('author:id,uname');
 
-        if (request()->boolean('dialog')) {
+        if ($request->boolean('dialog')) {
             return response(view('legacy.diary._show_dialog', ['entry' => $entry]));
         }
 
-        return view('legacy.diary.show', [
+        return view(LegacyView::pick($request, 'legacy.diary.show', 'legacy.classic.diary.show'), [
             'entry' => $entry,
+            'isAdmin' => LegacyRoleResolver::isAdmin(Auth::user()),
+            'isOwn' => (int) $entry->user === LegacyRoleResolver::resolveLegacyUserId(Auth::user()),
         ]);
     }
 
-    public function edit(LegacyDiaryEntry $entry): View|Response {
+    public function edit(Request $request, LegacyDiaryEntry $entry): View|Response {
         $this->ensureCanModify($entry);
 
         $data = $this->formData($entry, true);
 
-        return response(view('legacy.diary._form_dialog', $data));
+        return response(view(LegacyView::pick($request, 'legacy.diary._form_dialog', 'legacy.classic.diary.form'), $data));
     }
 
     public function update(SaveLegacyDiaryEntryRequest $request, LegacyDiaryEntry $entry): RedirectResponse|JsonResponse {
@@ -166,9 +184,9 @@ class LegacyDiaryController extends Controller {
             ? (int) ($data['user'] ?? $entry->user)
             : $legacyUserId;
 
-        $entry->update($this->entryPayload($data, $entryUserId, $request));
+        $entry->update($this->entryPayload($data, $entryUserId));
 
-        $this->sendLegacySmsMail($entry->fresh(['author']));
+        $this->sendLegacySmsMail($entry->fresh(['author']), $legacyUserId);
 
         if ($request->hasHeader('X-Entry-Dialog')) {
             return response()->json(['redirect' => route('legacy.diary.index')]);
@@ -177,12 +195,12 @@ class LegacyDiaryController extends Controller {
         return redirect()->route('legacy.diary.show', $entry)->with('success', __('Legacy-Eintrag aktualisiert.'));
     }
 
-    public function destroy(LegacyDiaryEntry $entry): RedirectResponse {
+    public function destroy(Request $request, LegacyDiaryEntry $entry): RedirectResponse {
         $this->ensureCanModify($entry);
 
         $entry->delete();
 
-        return redirect()->route('legacy.diary.index')->with('success', __('Legacy-Eintrag gelöscht.'));
+        return $this->backToDiary($request)->with('success', __('Legacy-Eintrag gelöscht.'));
     }
 
     public function bulk(Request $request): RedirectResponse {
@@ -212,7 +230,7 @@ class LegacyDiaryController extends Controller {
                 $entry->delete();
             }
 
-            return redirect()->route('legacy.diary.index')
+            return $this->backToDiary($request)
                 ->with('success', __(':count Legacy-Einträge gelöscht.', ['count' => $entries->count()]));
         }
 
@@ -229,8 +247,15 @@ class LegacyDiaryController extends Controller {
             $entry->update(['gelesen' => $gelesen, 'aktuell' => LegacyClock::now()]);
         }
 
-        return redirect()->route('legacy.diary.index')
+        return $this->backToDiary($request)
             ->with('success', __(':count Legacy-Einträge aktualisiert.', ['count' => $entries->count()]));
+    }
+
+    /** Die klassische Ansicht kehrt wie das Altportal ins Tagebuch der zuletzt gezeigten Woche zurück. */
+    private function backToDiary(Request $request): RedirectResponse {
+        return LegacyView::isClassic($request)
+            ? redirect()->toList('legacy.diary.week')
+            : redirect()->route('legacy.diary.index');
     }
 
     private function ensureCanModify(LegacyDiaryEntry $entry): void {
@@ -248,7 +273,7 @@ class LegacyDiaryController extends Controller {
     /** @param array<string, mixed> $data
      * @return array<string, mixed>
      */
-    private function entryPayload(array $data, int $entryUserId, Request $request): array {
+    private function entryPayload(array $data, int $entryUserId): array {
         return [
             'aktuell' => LegacyClock::now(),
             'user' => $entryUserId,
@@ -257,7 +282,8 @@ class LegacyDiaryController extends Controller {
             'inhalt' => $data['inhalt'],
             'antwort' => $data['antwort'] ?? null,
             'gelesen' => (int) $data['gelesen'],
-            'sms' => $request->boolean('sms') ? 'j' : '',
+            // Das Häkchen sendet „j“ wie im Altsystem; boolean() kennt diesen Wert nicht.
+            'sms' => ($data['sms'] ?? null) === 'j' ? 'j' : '',
         ];
     }
 
@@ -273,8 +299,9 @@ class LegacyDiaryController extends Controller {
         ];
     }
 
-    private function sendLegacySmsMail(?LegacyDiaryEntry $entry): void {
-        if (! $entry || (string) $entry->sms !== 'j') {
+    private function sendLegacySmsMail(?LegacyDiaryEntry $entry, int $actorLegacyUserId): void {
+        // Wie im Altsystem geht der Hinweis an den Mitarbeiter, wenn jemand anderes speichert — nie für die eigene Antwort.
+        if (! $entry || (string) $entry->sms !== 'j' || (int) $entry->user === $actorLegacyUserId) {
             return;
         }
 

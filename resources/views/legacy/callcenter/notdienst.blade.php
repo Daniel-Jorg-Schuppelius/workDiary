@@ -41,6 +41,7 @@
                             :href="route('legacy.callcenter.notdienst')"
                             show-label>{{ __('Aktuelle Woche') }}</x-icon-btn>
             @endif
+            <x-icon-btn icon="history" size="sm" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
             <span class="ml-auto text-xs text-muted">
                 {{ __('Stand') }}: {{ $today->isoFormat('dddd, DD.MM.YYYY') }}
             </span>

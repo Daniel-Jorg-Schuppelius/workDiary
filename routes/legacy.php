@@ -10,7 +10,8 @@
 
 declare(strict_types=1);
 
-use App\Legacy\Http\Controllers\{LegacyAccountController, LegacyArchiveController, LegacyCallcenterController, LegacyDiaryController, LegacyMigrationController, LegacyNotdienstController, LegacyOnCallController, LegacySupportArchiveController, LegacySupportCustomerController, LegacySupportMailSettingController, LegacySupportOrderController, LegacySupportPortalAuthController, LegacySupportPortalOrderController, LegacyUserAdminController};
+use App\Legacy\Http\Controllers\{LegacyAccountController, LegacyArchiveController, LegacyCallcenterController, LegacyDiaryController, LegacyMigrationController, LegacyNotdienstController, LegacyOnCallController, LegacySupportArchiveController, LegacySupportCustomerController, LegacySupportMailSettingController, LegacySupportOrderController, LegacySupportPortalAuthController, LegacySupportPortalOrderController, LegacyUserAdminController, LegacyViewController};
+use App\Legacy\Support\LegacyView;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,6 +43,11 @@ Route::prefix('legacy/callcenter')->name('legacy.callcenter.')->group(function (
         ->middleware('legacy.callcenter.auth')
         ->name('notdienst');
 });
+
+// Legacy-Bereich: klassische oder neue Darstellung, je Browser (Tagebuch, Callcenter, Support-Portal).
+Route::get('legacy/view/{mode}', [LegacyViewController::class, 'switch'])
+    ->whereIn('mode', LegacyView::MODES)
+    ->name('legacy.view');
 
 // Support-Portal, Kundenseite: eigene Anmeldung gegen kp_user, ohne Konto im neuen System.
 Route::prefix('legacy/support-portal')->name('legacy.portal.')->group(function (): void {
@@ -82,6 +88,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('legacy/overview', fn() => redirect()->route('legacy.callcenter.notdienst'))->name('legacy.overview.index');
         Route::get('legacy/archive', [LegacyArchiveController::class, 'index'])->name('legacy.archive.index');
         Route::get('legacy/archive/week', [LegacyArchiveController::class, 'week'])->name('legacy.archive.week');
+        Route::get('legacy/archive/prepare', [LegacyArchiveController::class, 'prepare'])->name('legacy.archive.prepare');
         Route::get('legacy/archive/{entry}', [LegacyArchiveController::class, 'show'])
             ->whereNumber('entry')
             ->name('legacy.archive.show');
@@ -92,7 +99,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('order')
             ->name('legacy.support.orders.show');
         Route::get('legacy/support/customers', [LegacySupportCustomerController::class, 'index'])->name('legacy.support.customers.index');
+        Route::get('legacy/support/customers/{customer}', [LegacySupportCustomerController::class, 'show'])
+            ->whereNumber('customer')
+            ->name('legacy.support.customers.show');
         Route::get('legacy/support/archive', [LegacySupportArchiveController::class, 'index'])->name('legacy.support.archive.index');
+        Route::get('legacy/support/archive/prepare', [LegacySupportArchiveController::class, 'prepare'])->name('legacy.support.archive.prepare');
         Route::get('legacy/support/archive/{order}', [LegacySupportArchiveController::class, 'show'])
             ->whereNumber('order')
             ->name('legacy.support.archive.show');
