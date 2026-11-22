@@ -14,11 +14,11 @@ namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, SharesImmutableDateCasts};
 use App\Models\Platform\{Organization, User};
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\LicenseMonths;
-use App\Support\{CarbonFmt, Tz};
+use App\Support\{CarbonFmt, Formats, Tz};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -57,6 +57,7 @@ class ResalePeriod extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
+    use SharesImmutableDateCasts;
 
     protected $table = 'resale_periods';
 
@@ -158,9 +159,18 @@ class ResalePeriod extends Model {
         return Money::sum($amounts, $this->currency, 2);
     }
 
+    /** @var array{0: string, 1: int}|null Zeitraum (Rohwerte) und seine Länge in Monaten */
+    private ?array $termMonths = null;
+
     /** Länge der Periode in Monaten (Intervall des Abos: 12 oder 1). */
     public function termMonths(): int {
-        return max(1, LicenseMonths::monthsBetween($this->starts_on, $this->ends_on));
+        // Je Zeitraum einmal gerechnet: Abgleich und Prüfungen fragen je Periode vielfach danach.
+        $range = (string) ($this->attributes['starts_on'] ?? '') . '|' . (string) ($this->attributes['ends_on'] ?? '');
+        if ($this->termMonths === null || $this->termMonths[0] !== $range) {
+            $this->termMonths = [$range, max(1, LicenseMonths::monthsBetween($this->starts_on, $this->ends_on))];
+        }
+
+        return $this->termMonths[1];
     }
 
     /** Benötigte Lizenzmonate: Menge × Periodenlänge. */
@@ -327,7 +337,12 @@ class ResalePeriod extends Model {
 
     /** Zeitraum im Anzeigeformat der Organisation (Belegtexte bleiben bei festem `d.m.Y`). */
     public function label(): string {
-        return (string) CarbonFmt::period($this->starts_on, $this->ends_on);
+        // Je Zeitraum, Format und Sprache einmal formatiert: Listen und die Verbrauchsrechnung fragen je
+        // Bezug danach, und jeder Zugriff auf die Datumsspalten baut sonst ein neues Datumsobjekt.
+        static $labels = [];
+        $key = (string) ($this->attributes['starts_on'] ?? '') . '|' . (string) ($this->attributes['ends_on'] ?? '') . '|' . Formats::date() . '|' . app()->getLocale();
+
+        return $labels[$key] ??= (string) CarbonFmt::period($this->starts_on, $this->ends_on);
     }
 
     /**

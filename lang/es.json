@@ -10683,6 +10683,7 @@
     "Projektnummer im Belegtext": "Número de proyecto en el texto del documento",
     "Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.": "Reconocida desde PDF o imagen sin datos de factura electrónica: compruebe todos los valores con el original.",
     "PDF/Bild (erkannt)": "PDF/imagen (reconocida)",
+    "PHP-Laufzeit": "Entorno PHP",
     ":created Rechnungen erfasst, :duplicates Dubletten, :failed nicht lesbar oder abgewiesen.": ":created facturas registradas, :duplicates duplicados, :failed ilegibles o rechazadas.",
     "Die Datei ist keine lesbare Rechnung (XRechnung, ZUGFeRD oder PDF/Bild mit erkennbarer Nummer und Summe).": "El archivo no es una factura legible (XRechnung, ZUGFeRD o PDF/imagen con número e importe reconocibles).",
     "Rechnung :number aus PDF bzw. Bild erkannt — bitte die Werte prüfen.": "Factura :number reconocida desde PDF o imagen: compruebe los valores.",

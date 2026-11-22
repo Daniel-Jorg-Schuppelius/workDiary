@@ -11,10 +11,12 @@
 namespace Tests\Feature\Flextime;
 
 use App\Enums\Project\ProjectStatus;
-use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
+use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\Time\{TimeEntry, WorkSchedule};
+use App\Models\Time\{Attendance, TimeEntry, WorkSchedule};
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -95,5 +97,74 @@ class FlexCalculatorTest extends TestCase {
         $m = $calc->monthlyBalance($this->user, 2030, 3);
         $this->assertSame(480, $m['days']['2030-03-04']['actual']);
         $this->assertGreaterThan(0, $m['target']);
+    }
+
+    /** Das Zeitraum-Vorladen muss je Tag dasselbe liefern wie die Einzelabfragen. */
+    public function test_batched_window_matches_single_day_queries(): void {
+        $org = $this->organization->id;
+        $uid = $this->user->id;
+        WorkSchedule::query()->where('user_id', $uid)->firstOrFail()->update(['valid_to' => '2030-03-15']);
+        WorkSchedule::create([
+            'organization_id' => $org, 'user_id' => $uid, 'weekly_minutes' => 1800, 'daily_target_minutes' => 360,
+            'working_days' => [1, 2, 3, 4, 5], 'frame_start' => '06:00', 'frame_end' => '20:00', 'core_start' => '09:00',
+            'core_end' => '15:00', 'break_after_minutes' => 360, 'break_minutes' => 30, 'valid_from' => '2030-03-16',
+        ]);
+        $vacation = fn (string $from, string $to, VacationStatus $status) => Vacation::create([
+            'organization_id' => $org, 'user_id' => $uid, 'start_date' => $from, 'end_date' => $to,
+            'type' => VacationType::Vacation->value, 'status' => $status->value,
+        ]);
+        $vacation('2030-02-27', '2030-03-01', VacationStatus::Approved);
+        $vacation('2030-03-11', '2030-03-12', VacationStatus::Approved);
+        $vacation('2030-03-13', '2030-03-13', VacationStatus::Pending);
+        SickLeave::factory()->create(['organization_id' => $org, 'user_id' => $uid, 'start_date' => '2030-03-20', 'end_date' => '2030-03-21']);
+        SickLeave::factory()->create(['organization_id' => $org, 'user_id' => $uid, 'start_date' => '2030-03-25', 'end_date' => '2030-03-25', 'cancelled_at' => now()]);
+        $attendance = Attendance::factory()->create([
+            'organization_id' => $org, 'user_id' => $uid, 'date' => '2030-03-05',
+            'started_at' => '2030-03-05 08:00:00', 'ended_at' => '2030-03-05 13:00:00',
+        ]);
+        $entry = fn (string $date, int $minutes, array $extra = []) => TimeEntry::create([
+            'organization_id' => $org, 'project_id' => $this->project->id, 'user_id' => $uid,
+            'date' => $date, 'minutes' => $minutes, 'kind' => TimeEntryKind::Work->value,
+        ] + $extra);
+        $entry('2030-03-05', 120, ['attendance_id' => $attendance->id]);
+        $entry('2030-03-05', 45);
+        $entry('2030-03-18', 200);
+        $entry('2030-03-18', 160);
+        $entry('2030-03-19', 30, ['activity_type' => TimeEntryActivityType::Break_->value]);
+        $entry('2030-03-31', 75);
+
+        $from = CarbonImmutable::parse('2030-03-01');
+        $to = CarbonImmutable::parse('2030-03-31');
+        $perDay = function (FlexCalculator $calc) use ($from, $to): array {
+            $days = [];
+            for ($day = $from; $day->lte($to); $day = $day->addDay()) {
+                $days[$day->toDateString()] = $calc->dailyBalance($this->user, $day);
+            }
+
+            return $days;
+        };
+
+        $single = $perDay(app(FlexCalculator::class));
+        $calc = app(FlexCalculator::class);
+        $batched = $calc->batched([$uid], $from, $to, fn (): array => $perDay($calc), withActuals: true);
+        $targetsOnly = $calc->batched([$uid], $from, $to, fn (): array => $perDay($calc));
+
+        $this->assertSame($single, $batched);
+        $this->assertSame($single, $targetsOnly);
+        $this->assertSame(0, $single['2030-03-01']['target']);
+        $this->assertSame(480, $single['2030-03-13']['target']);
+        $this->assertSame(0, $single['2030-03-20']['target']);
+        $this->assertSame(360, $single['2030-03-25']['target']);
+        $this->assertSame(345, $single['2030-03-05']['actual']);
+        $this->assertSame(360, $single['2030-03-18']['actual']);
+        $this->assertSame(0, $single['2030-03-19']['actual']);
+
+        $month = $calc->monthlyBalance($this->user, 2030, 3);
+        foreach ($single as $iso => $day) {
+            $this->assertSame($day['target'], $month['days'][$iso]['target'], $iso);
+            $this->assertSame($day['actual'], $month['days'][$iso]['actual'], $iso);
+        }
+        $this->assertTrue($month['days']['2030-03-11']['is_vacation']);
+        $this->assertFalse($month['days']['2030-03-13']['is_vacation']);
     }
 }

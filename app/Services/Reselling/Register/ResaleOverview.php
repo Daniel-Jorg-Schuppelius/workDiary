@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Cache;
  * dazu der Stand je Anbieter (letzter Import) und der letzte Vorschlagslauf.
  * Nur Zähler und Verweise; entschieden wird auf den Fachseiten.
  *
- * Die Zähler liegen 60 s im Cache je Organisation und Stichtag (nur Zahlen und
+ * Die Zähler liegen zehn Minuten im Cache je Organisation und Stichtag (nur Zahlen und
  * Beträge als Zeichenketten), weil jeder Aufruf der Zählerseite sonst vier
  * Volllasten über Abos und Perioden rechnet (Leistungsanalyse 2026-11-02,
  * perfc-07); der Org-Stempel verwirft sie bei jeder Registeränderung.
@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Cache;
  *
  * @phpstan-type Task array{group: string, key: string, tone: string, icon: string, title: string, detail: string|null, count: int, url: string, dialog: bool, manage: bool}
  * @phpstan-type ImportState array{provider: SubscriptionProvider, last: ResaleImport|null, age: int|null, stale: bool, retired: bool}
+ * @phpstan-type LinkFindingState array{mismatch: int, deviations: list<string>, lines: array<string, array{0: float, 1: bool}>}
  * @phpstan-type Counters array{active: int, open: int, open_amounts: list<array{amount: string, currency: string}>, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, allocation_conflicts: int, link_findings: array<string, int>, plan_findings: array<string, int>, unbilled_licenses: int, provider_prices: int, renewals: int, billing_start: array{count: int, customer_id: int|null}, chain: int, link_findings_customer: int|null, overbilled: float, deviating: float, plan_due: array{count: int, amount: float, customer_id: int|null}}
  */
 final class ResaleOverview {
@@ -54,11 +55,25 @@ final class ResaleOverview {
     /** Toleranz vor dem Periodenbeginn, in der die nächste Ausführung der Serienvorlage noch „für diese Periode“ zählt. */
     public const int PLAN_TOLERANCE_DAYS = 7;
 
+    /** Form des Prüffall-Stands je Abo; wechselt mit jeder Änderung an der Prüfung oder am Fingerabdruck. */
+    private const int FINDINGS_VERSION = 1;
+
+    /** Version der Zähler, die nur am Bestand hängen (Aufteilungskonflikte, Verlängerungen). */
+    private const int STOCK_VERSION = 1;
+
+    /** Der Fingerabdruck entwertet; die Frist räumt nur ab. */
+    private const int FINDINGS_TTL = 86400;
+
     /** Aufgabengruppen des Überblicks in Anzeigereihenfolge (Phase 163, MVP-1433). */
     public const array GROUPS = ['berechnen', 'zuordnen', 'plan', 'anbieter'];
 
-    /** Lebensdauer der Zähler im Cache (Sekunden). */
-    public const int CACHE_TTL = 60;
+    /**
+     * Lebensdauer der Zähler im Cache (Sekunden). Änderungen am Register und am Lexoffice-Spiegel
+     * verwerfen sie sofort über den Org-Stempel; die Frist gilt nur für Quellen ohne Stempel
+     * (lokale Rechnungen, Buchhaltungsspiegel). Das Dashboard liest die Zähler über den
+     * Arbeitsvorrat — bei 60 s rechnete fast jeder Aufruf der Startseite sie neu.
+     */
+    public const int CACHE_TTL = 600;
 
     public function __construct(
         private readonly LicenseAccountOverview $accounts,
@@ -198,9 +213,14 @@ final class ResaleOverview {
             ->whereNull('decided_at')
             ->whereHas('links', static fn(Builder $l) => $l->where('origin', LinkOrigin::Proposed->value))
             ->count();
-        $accountRows = $this->accounts->overview($organization, $reference);
-
         $findings = $this->linkFindings($organization);
+        // Vorlagenbefunde einmal prüfen: Zähler je Art und Fälligkeit lesen dieselbe Liste.
+        $planFindings = $this->plans->availableFor($organization) ? $this->planAudit->findings($organization, null, $reference) : null;
+        /** @var array<string, int> $planKinds */
+        $planKinds = [];
+        foreach ($planFindings ?? [] as $finding) {
+            $planKinds[$finding['kind']] = ($planKinds[$finding['kind']] ?? 0) + 1;
+        }
         // Euro-Sicht (Phase 187): zu viel berechnet und abweichend berechnet über alle Rechnungsempfänger.
         $reconcile = $this->reconciler->overview($organization, $reference);
 
@@ -215,17 +235,44 @@ final class ResaleOverview {
             'proposed' => $proposed,
             'unassigned' => ResaleSubscription::query()->awaitingHolder()->count(),
             'unlinked' => $this->mirror->unlinkedLines($organization, 1)['total'],
-            'allocation_conflicts' => (int) array_sum(array_column($accountRows, 'conflicts')),
+            'allocation_conflicts' => $this->allocationConflicts($organization, $reference),
             'link_findings' => $findings['counts'],
             'link_findings_customer' => $findings['customer_id'],
-            'plan_findings' => $this->plans->availableFor($organization) ? $this->planAudit->countByKind($organization) : [],
-            'plan_due' => $this->plans->availableFor($organization) ? $this->planAudit->dueSoon($organization, $reference) : ['count' => 0, 'amount' => 0.0, 'customer_id' => null],
+            'plan_findings' => $planKinds,
+            'plan_due' => $planFindings !== null ? $this->planAudit->dueSoon($organization, $reference, $planFindings) : ['count' => 0, 'amount' => 0.0, 'customer_id' => null],
             'unbilled_licenses' => $this->licenseLinks->unbilledCount($organization, $reference),
             'provider_prices' => $this->prices->providerDeviations()->count(),
             'billing_start' => $this->billingStart->overview(),
             'chain' => count($this->chain->worklist((int) $organization->id)),
-            'renewals' => (int) ($this->renewals->build($reference, $reference->addDays(self::RENEWAL_DAYS), $reference)['buckets'][self::RENEWAL_DAYS] ?? 0),
+            'renewals' => $this->renewalCount($organization, $reference),
         ];
+    }
+
+    /**
+     * Konten mit mehr aufgeteilten als vorhandenen Lizenzen. Hängt nur an Abos und Aufteilungen, nicht an
+     * Perioden und Bezügen — der Stand überlebt deshalb den Org-Stempel und gilt, solange deren Rohzeilen passen.
+     */
+    private function allocationConflicts(Organization $organization, CarbonImmutable $reference): int {
+        $organizationId = (int) $organization->id;
+
+        return (int) RegisterFingerprint::remember(
+            'resale:allocation-conflicts:' . self::STOCK_VERSION . ':' . $organizationId . ':' . $reference->toDateString(),
+            RegisterFingerprint::tables($organizationId, ['resale_subscriptions', 'resale_account_allocations']),
+            self::FINDINGS_TTL,
+            fn(): int => (int) array_sum(array_column($this->accounts->overview($organization, $reference), 'conflicts')),
+        );
+    }
+
+    /** Verlängerungen und Enden der nächsten {@see RENEWAL_DAYS} Tage: allein aus den Abos geplant, Stand wie {@see allocationConflicts()}. */
+    private function renewalCount(Organization $organization, CarbonImmutable $reference): int {
+        $organizationId = (int) $organization->id;
+
+        return (int) RegisterFingerprint::remember(
+            'resale:renewal-count:' . self::STOCK_VERSION . ':' . $organizationId . ':' . $reference->toDateString(),
+            RegisterFingerprint::tables($organizationId, ['resale_subscriptions']),
+            self::FINDINGS_TTL,
+            fn(): int => (int) ($this->renewals->build($reference, $reference->addDays(self::RENEWAL_DAYS), $reference)['buckets'][self::RENEWAL_DAYS] ?? 0),
+        );
     }
 
     /** Periode, deren Serienvorlage ihre Ausführung für sie noch vor sich hat (Toleranz vor dem Beginn): geplant, nicht offen. */
@@ -294,19 +341,129 @@ final class ResaleOverview {
      * @return array{counts: array<string, int>, customer_id: int|null}  Zahl je Art, erster betroffener Rechnungsempfänger
      */
     private function linkFindings(Organization $organization): array {
-        $ids = ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->replannable()->pluck('id');
-        if ($ids->isEmpty()) {
+        $organizationId = (int) $organization->id;
+        // Abos ohne Perioden, in fester Reihenfolge: sie bestimmt, welcher Empfänger als erster betroffen gilt.
+        $subscriptions = ResaleSubscription::withCatalogArticles(ResaleSubscription::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->replannable()
+            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
+            ->orderBy('id')
+            ->get());
+        if ($subscriptions->isEmpty()) {
             return ['counts' => [], 'customer_id' => null];
         }
-        $subscriptions = LinkAudit::loadedWithLinks($organization, $ids)->keyBy('id');
+        $states = $this->linkFindingStates($organization, $subscriptions);
+        $monthsByLine = RegisterFingerprint::rows($organizationId)['months_by_line'];
+
+        // Reihenfolge wie in LinkAudit::forSubscriptions(): erst überbuchte Positionen, dann zeitlich
+        // unpassende Bezüge, dann Abweichungen — jeweils in der Reihenfolge der Abos.
         $counts = [];
         $customerId = null;
-        foreach ((new LinkAudit)->forSubscriptions($organization, $subscriptions) as $finding) {
-            $counts[$finding['kind']] = ($counts[$finding['kind']] ?? 0) + 1;
-            $customerId ??= $subscriptions->get($finding['links'][0]->subscription_id ?? 0)?->billedTo()?->id;
+        $seen = [];
+        foreach ($subscriptions as $subscription) {
+            foreach ($states[(int) $subscription->id]['lines'] as $identity => [$available, $creditNote]) {
+                if ($creditNote || isset($seen[$identity])) {
+                    continue;
+                }
+                $seen[$identity] = true;
+                if (($monthsByLine[$identity] ?? 0.0) > $available + 0.001) {
+                    $counts[LinkAudit::OVERBOOKED] = ($counts[LinkAudit::OVERBOOKED] ?? 0) + 1;
+                    $customerId ??= $subscription->billedTo()?->id;
+                }
+            }
+        }
+        foreach ($subscriptions as $subscription) {
+            $mismatches = $states[(int) $subscription->id]['mismatch'];
+            if ($mismatches > 0) {
+                $counts[LinkAudit::MISMATCH] = ($counts[LinkAudit::MISMATCH] ?? 0) + $mismatches;
+                $customerId ??= $subscription->billedTo()?->id;
+            }
+        }
+        foreach ($subscriptions as $subscription) {
+            foreach ($states[(int) $subscription->id]['deviations'] as $kind) {
+                $counts[$kind] = ($counts[$kind] ?? 0) + 1;
+                $customerId ??= $subscription->billedTo()?->id;
+            }
         }
 
         return ['counts' => $counts, 'customer_id' => $customerId];
+    }
+
+    /**
+     * Prüffälle je Abo, über Requests hinweg im Cache und nur für die Abos neu geprüft, deren Eingaben
+     * sich geändert haben (Fingerabdruck über Abo, Perioden, Bezüge und die Positionen dahinter, wie
+     * {@see RecipientReconciler::recipientStates()}). Zeitlich unpassende Bezüge und Abweichungen hängen
+     * nur am Abo; die Überbuchung einer Position zählt über alle Bezüge der Organisation und entsteht
+     * deshalb beim Zusammenführen — je Abo liegen dafür nur die Lizenzmonate seiner Positionen bereit.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, ResaleSubscription>  $subscriptions
+     * @return array<int, LinkFindingState>
+     */
+    private function linkFindingStates(Organization $organization, \Illuminate\Database\Eloquent\Collection $subscriptions): array {
+        $organizationId = (int) $organization->id;
+        $register = RegisterFingerprint::rows($organizationId);
+        $lineIndex = RegisterFingerprint::linkedLines($this->mirror, $organization, fn() => $this->mirror->allLines($organization));
+        $lineHashes = [];
+        $key = 'resale:link-findings:' . self::FINDINGS_VERSION . ':' . $organizationId;
+        $cached = Cache::get($key);
+        $cached = is_array($cached) ? $cached : [];
+        /** @var array<int, LinkFindingState> $states */
+        $states = [];
+        $fingerprints = [];
+        /** @var \Illuminate\Database\Eloquent\Collection<int, ResaleSubscription> $dirty */
+        $dirty = new \Illuminate\Database\Eloquent\Collection;
+        foreach ($subscriptions as $subscription) {
+            $id = (int) $subscription->id;
+            $article = $subscription->catalogArticle();
+            $parts = [RegisterFingerprint::model($subscription) . '|' . ($article !== null ? $article->key . ':' . $article->name : ''), ...($register['periods'][$id] ?? []), ...($register['links'][$id] ?? [])];
+            foreach (array_keys($register['lines'][$id] ?? []) as $identity) {
+                $parts[] = $identity . '=' . ($lineHashes[$identity] ??= isset($lineIndex[$identity]) ? RegisterFingerprint::line($lineIndex[$identity]) : '-');
+            }
+            $fingerprints[$id] = RegisterFingerprint::hash($parts);
+            $entry = $cached[$id] ?? null;
+            if (is_array($entry) && ($entry['fingerprint'] ?? null) === $fingerprints[$id] && is_array($entry['state'] ?? null) && isset($entry['state']['mismatch'], $entry['state']['deviations'], $entry['state']['lines']) && is_array($entry['state']['deviations']) && is_array($entry['state']['lines'])) {
+                /** @var LinkFindingState $state */
+                $state = $entry['state'];
+                $states[$id] = $state;
+            } else {
+                $dirty->push($subscription);
+            }
+        }
+        if ($dirty->isEmpty()) {
+            return $states;
+        }
+
+        $dirty->load('periods.links');
+        $audit = new LinkAudit;
+        foreach ($dirty as $subscription) {
+            $id = (int) $subscription->id;
+            $state = ['mismatch' => 0, 'deviations' => [], 'lines' => []];
+            // Positionen in der Reihenfolge der Bezüge (Periode, dann Bezug) — wie die Prüfung sie durchläuft.
+            foreach ($subscription->periods as $period) {
+                foreach ($period->links as $link) {
+                    $identity = $link->mirrorIdentity();
+                    if (isset($lineIndex[$identity]) && ! isset($state['lines'][$identity])) {
+                        $state['lines'][$identity] = [LicenseMonths::ofLine($lineIndex[$identity]), $lineIndex[$identity]->isCreditNote];
+                    }
+                }
+            }
+            foreach ($audit->forSubscriptions($organization, [$subscription]) as $finding) {
+                if ($finding['kind'] === LinkAudit::MISMATCH) {
+                    $state['mismatch']++;
+                } elseif (in_array($finding['kind'], LinkAudit::DEVIATIONS, true)) {
+                    $state['deviations'][] = $finding['kind'];
+                }
+            }
+            $states[$id] = $state;
+        }
+
+        $store = [];
+        foreach ($states as $id => $state) {
+            $store[$id] = ['fingerprint' => $fingerprints[$id], 'state' => $state];
+        }
+        Cache::put($key, $store, self::FINDINGS_TTL);
+
+        return $states;
     }
 
     /**

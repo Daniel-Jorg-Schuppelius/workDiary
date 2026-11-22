@@ -14,7 +14,7 @@ namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\{BillingFrequency, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, SharesImmutableDateCasts};
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\DomainProjection;
@@ -78,6 +78,7 @@ class ResaleSubscription extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
+    use SharesImmutableDateCasts;
 
     private ?CatalogArticle $catalogArticle = null;
 
@@ -699,7 +700,7 @@ class ResaleSubscription extends Model {
      * Verträge desselben Produkts mit verschiedenen Mengen und Startdaten.
      */
     public function identityLabel(): string {
-        return '×' . $this->quantity . ' · ' . $this->provider->label() . ' ' . __('resale.field.since_short', ['date' => $this->starts_on->format('d.m.Y')]);
+        return '×' . $this->quantity . ' · ' . $this->provider->label() . ' ' . __('resale.field.since_short', ['date' => $this->starts_on->rawFormat('d.m.Y')]);
     }
 
     /** Ist der Halter geklärt? Ein Abo ohne Halter und ohne eigenen Bestand wartet auf Zuordnung. */

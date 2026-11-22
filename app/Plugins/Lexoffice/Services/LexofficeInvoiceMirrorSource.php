@@ -22,10 +22,11 @@ use App\Services\Reselling\Plan\PlanTemplate;
 use App\Services\Reselling\Register\{LicenseArticleClassifier, LicenseMonths, ResaleRequestMemo};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{Gate, Route};
+use Illuminate\Support\Facades\{Cache, DB, Gate, Route};
 
 /**
  * Lexoffice-Belegspiegel als Quelle des Reselling-Registers (Feature 152,
@@ -45,6 +46,18 @@ use Illuminate\Support\Facades\{Gate, Route};
  */
 final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
     public const string KEY = 'lexoffice';
+
+    /** Form der Cache-Zeilen; wechselt mit jeder Änderung an {@see toCacheRow()} oder an der Umrechnung. */
+    private const int CACHE_VERSION = 1;
+
+    /** Die Signatur entwertet; die Frist räumt nur ungenutzte Einträge ab. */
+    private const int CACHE_TTL = 3600;
+
+    /** So lange muss der Spiegel unverändert sein, bevor er in den Cache geht. */
+    private const int CACHE_QUIET_SECONDS = 2;
+
+    /** Darüber bleibt der Spiegel ohne Cache (Wertgröße im Datenbank-Cache). */
+    private const int CACHE_MAX_LINES = 20000;
 
     /**
      * Leseseite je Request: die Quelle lebt im Singleton-Spiegel, der
@@ -74,8 +87,187 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
 
     public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null, bool $licenceOnly = true): Collection {
         $map = $this->contactMap($organization);
+        if ($recipientCustomerIds === null && $from === null && $to === null && ! $licenceOnly) {
+            return $this->allLines($organization, $map);
+        }
 
         return $this->map($organization, $this->reader()->for($organization, $this->contacts($map, $recipientCustomerIds), $from, $to, $licenceOnly), $map);
+    }
+
+    /**
+     * Alle Positionen gültiger Rechnungen der Organisation — die Ladung, die fast jede Seite des
+     * Registers braucht. Umgerechnet liegen sie über Requests hinweg im Cache, unter einer Signatur
+     * des Spiegelbestands (Anzahl, letzte Änderung, höchste ID von Positionen, Belegen, Artikeln und
+     * Einstufungen): ändert sich etwas, auch per Massen-Update oder in einem anderen Prozess, passt
+     * die Signatur nicht mehr und es wird neu gelesen. Nicht im Cache: was vom
+     * Nutzer oder von anderen Tabellen abhängt (Vorschau-Recht, Kundenname, Kontaktzuordnung).
+     *
+     * @return Collection<int, MirrorLine>
+     */
+    private function allLines(Organization $organization, LexofficeContactMap $map): Collection {
+        $key = 'resale:lexoffice-mirror-lines:' . self::CACHE_VERSION . ':' . $organization->id;
+        [$signature, $changedAt] = $this->signature($organization);
+        $cached = Cache::get($key);
+        $rows = is_array($cached) && ($cached['signature'] ?? null) === $signature && is_array($cached['rows'] ?? null) ? $cached['rows'] : null;
+        if ($rows === null) {
+            $models = $this->reader()->for($organization, null, null, null, false);
+            $lines = $this->map($organization, $models, $map);
+            // Die Signatur misst in Sekunden: läuft gerade ein Sync, könnte eine zweite Änderung derselben
+            // Sekunde unbemerkt bleiben — erst ablegen, wenn der Spiegel kurz ruht. Ein Stempel deutlich in der
+            // Zukunft (Ortszeit per SQL geschrieben) ist kein laufender Sync und sperrt den Cache nicht.
+            $quiet = $changedAt === null || $changedAt < now()->subSeconds(self::CACHE_QUIET_SECONDS)->format('Y-m-d H:i:s') || $changedAt > now()->addMinute()->format('Y-m-d H:i:s');
+            if ($quiet && $lines->count() <= self::CACHE_MAX_LINES) {
+                $rows = [];
+                $sqids = [];
+                $models = $models->values();
+                foreach ($lines->values() as $index => $line) {
+                    $voucher = $models->get($index)?->voucher;
+                    if ($voucher === null) {
+                        return $lines;
+                    }
+                    $sqid = $sqids[(int) $voucher->id] ??= Sqid::encode(LexofficeVoucher::class, (int) $voucher->id);
+                    $rows[] = [...self::toCacheRow($line, $voucher->customer_id !== null ? (int) $voucher->customer_id : null, self::recipientName($voucher, null, [])), $sqid];
+                }
+                try {
+                    Cache::put($key, ['signature' => $signature, 'rows' => $rows], self::CACHE_TTL);
+                } catch (\Throwable) {
+                    // Zu groß für den Cache-Speicher: weiter ohne Cache, jede Seite rechnet wie bisher.
+                }
+            }
+
+            return $lines;
+        }
+
+        return $this->fromCacheRows($organization, $rows, $map);
+    }
+
+    /**
+     * Bestandssignatur des Spiegels (eine Abfrage mit zwölf Aggregaten) und der Zeitpunkt der letzten Änderung.
+     * Bewusst ohne den Org-Stempel des Registers: ein Bezug ändert den Spiegel nicht.
+     *
+     * @return array{0: string, 1: string|null}
+     */
+    private function signature(Organization $organization): array {
+        $columns = [];
+        $bindings = [];
+        foreach (['lexoffice_voucher_lines', 'lexoffice_vouchers', 'lexoffice_articles', 'resale_article_classifications'] as $i => $table) {
+            foreach (['c' => 'COUNT(*)', 'u' => 'MAX(updated_at)', 'm' => 'MAX(id)'] as $alias => $aggregate) {
+                $columns[] = sprintf('(SELECT %s FROM %s WHERE organization_id = ?) AS %s%d', $aggregate, $table, $alias, $i);
+                $bindings[] = $organization->id;
+            }
+        }
+        $row = (array) DB::selectOne('SELECT ' . implode(', ', $columns), $bindings);
+        $changedAt = null;
+        foreach ($row as $alias => $value) {
+            if (str_starts_with((string) $alias, 'u') && $value !== null && ($changedAt === null || (string) $value > $changedAt)) {
+                $changedAt = substr((string) $value, 0, 19);
+            }
+        }
+
+        return [implode('|', array_map(static fn(mixed $value): string => (string) $value, array_values($row))), $changedAt];
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    private static function toCacheRow(MirrorLine $line, ?int $voucherCustomerId, ?string $recipientFallback): array {
+        $date = static fn(?CarbonImmutable $value): ?string => $value?->format('Y-m-d H:i:s.u e');
+
+        return [
+            $line->morphClass, $line->morphId, $line->organizationId, $line->key, $line->voucherKey, $line->voucherNumber, $date($line->voucherDate),
+            $line->voucherStatus, $line->isCreditNote, $voucherCustomerId, $line->recipientKey, $recipientFallback, $line->articleKey, $line->articleName,
+            $line->articleIsLicence, $line->name, $line->description, $line->quantity, $line->unitName,
+            $line->unitNet->getAmount(), $line->unitNet->getScale(), $line->totalNet->getAmount(), $line->totalNet->getScale(), $line->currency->value,
+            $date($line->serviceFrom), $date($line->serviceTo), $line->voucherText, $line->voucherTextHint, $line->position, $line->permalink,
+            $line->voucherExternalId, $line->planKey,
+        ];
+    }
+
+    /**
+     * Spiegelzeilen aus dem Cache: Kundenzuordnung aus der Kontaktkarte, Kundenname und Vorschau-Recht
+     * frisch — der Rest wie beim Umrechnen abgelegt.
+     *
+     * @param  array<int, mixed>  $rows
+     * @return Collection<int, MirrorLine>
+     */
+    private function fromCacheRows(Organization $organization, array $rows, LexofficeContactMap $map): Collection {
+        $customers = [];
+        $customerIds = [];
+        foreach ($rows as $row) {
+            $recipientKey = (string) $row[10];
+            if (! array_key_exists($recipientKey, $customers)) {
+                $customers[$recipientKey] = $map->byContact(substr($recipientKey, strlen('contact:'))) ?? $row[9];
+            }
+            if ($customers[$recipientKey] !== null) {
+                $customerIds[(int) $customers[$recipientKey]] = true;
+            }
+        }
+        /** @var array<int, string> $names */
+        $names = $customerIds === [] ? [] : Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('id', array_keys($customerIds))->pluck('name', 'id')->all();
+        $canPreview = self::canPreview();
+        $dates = [];
+        $date = static function (?string $value) use (&$dates): ?CarbonImmutable {
+            if ($value === null) {
+                return null;
+            }
+            if (! isset($dates[$value])) {
+                [$day, $time, $zone] = explode(' ', $value, 3);
+                $dates[$value] = new CarbonImmutable($day . ' ' . $time, $zone);
+            }
+
+            return $dates[$value];
+        };
+
+        // Beträge und Vorschau-Links wiederholen sich über tausende Positionen: je Wert ein (unveränderliches) Objekt.
+        $amounts = [];
+        $money = static function (string $amount, CurrencyCode $currency, int $scale) use (&$amounts): Money {
+            return $amounts[$amount . '|' . $scale . '|' . $currency->value] ??= Money::of($amount, $currency, $scale);
+        };
+        $previews = [];
+
+        $lines = [];
+        foreach ($rows as $row) {
+            $voucherKey = (string) $row[4];
+            $customerId = $customers[(string) $row[10]] !== null ? (int) $customers[(string) $row[10]] : null;
+            $name = $customerId !== null ? ($names[$customerId] ?? null) : null;
+            $currency = CurrencyCode::from((string) $row[23]);
+            $lines[] = new MirrorLine(
+                sourceKey: self::KEY,
+                morphClass: (string) $row[0],
+                morphId: (int) $row[1],
+                organizationId: (int) $row[2],
+                key: (string) $row[3],
+                voucherKey: $voucherKey,
+                voucherExternalId: $row[30],
+                planKey: $row[31],
+                voucherNumber: $row[5],
+                voucherDate: $date($row[6]),
+                voucherStatus: (string) $row[7],
+                isCreditNote: (bool) $row[8],
+                recipientCustomerId: $customerId,
+                recipientKey: (string) $row[10],
+                recipientName: $name ?? $row[11],
+                articleKey: $row[12],
+                articleName: $row[13],
+                articleIsLicence: (bool) $row[14],
+                name: (string) $row[15],
+                description: $row[16],
+                quantity: (float) $row[17],
+                unitName: $row[18],
+                unitNet: $money((string) $row[19], $currency, (int) $row[20]),
+                totalNet: $money((string) $row[21], $currency, (int) $row[22]),
+                currency: $currency,
+                serviceFrom: $date($row[24]),
+                serviceTo: $date($row[25]),
+                voucherText: $row[26],
+                voucherTextHint: $row[27],
+                position: (int) $row[28],
+                permalink: $row[29],
+                previewUrl: $canPreview ? ($previews[(string) $row[32]] ??= self::previewUrlOf((string) $row[32])) : null,
+            );
+        }
+
+        return collect($lines);
     }
 
     public function voidedLines(Organization $organization, ?array $recipientCustomerIds): Collection {
@@ -242,11 +434,11 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
             'external_id' => (string) $voucher->external_id,
             'plan_key' => $voucher->recurring_template_id !== null ? PlanTemplate::keyOf(LexofficeRecurringPlanSource::KEY, (string) $voucher->recurring_template_id) : null,
             'number' => $voucher->voucher_number,
-            'date' => self::date($voucher->voucher_date),
+            'date' => self::dateOf($voucher, 'voucher_date'),
             'status' => self::status($voucher),
             'credit_note' => (string) $voucher->voucher_type === 'creditnote',
-            'service_from' => self::date($voucher->service_starts_on),
-            'service_to' => self::date($voucher->service_ends_on),
+            'service_from' => self::dateOf($voucher, 'service_starts_on'),
+            'service_to' => self::dateOf($voucher, 'service_ends_on'),
             'text' => $voucher->voucher_text,
             'text_hint' => $voucher->voucherTextHint(),
             'permalink' => $voucher->lexofficePermalink(),
@@ -397,12 +589,36 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         return $value instanceof \DateTimeInterface ? CarbonImmutable::instance($value) : null;
     }
 
+    /**
+     * Datumsspalte des Belegs als unveränderliches Datum. Tausende Belege teilen sich
+     * wenige Tage; je Rohwert wird einmal umgerechnet (unveränderlich, also teilbar).
+     */
+    private static function dateOf(LexofficeVoucher $voucher, string $column): ?CarbonImmutable {
+        /** @var array<string, CarbonImmutable> $dates */
+        static $dates = [];
+        $raw = $voucher->getAttributes()[$column] ?? null;
+        if (! is_string($raw)) {
+            return self::date($voucher->getAttribute($column));
+        }
+        $key = $raw . '|' . date_default_timezone_get();
+
+        return $dates[$key] ??= self::date($voucher->getAttribute($column));
+    }
+
     private static function canPreview(): bool {
         return Gate::allows(Permission::VoucherViewAny->value) && Route::has('lexoffice.vouchers.preview');
     }
 
     private static function previewUrl(int $voucherId): string {
-        return route('lexoffice.vouchers.preview', Sqid::encode(LexofficeVoucher::class, $voucherId));
+        return self::previewUrlOf(Sqid::encode(LexofficeVoucher::class, $voucherId));
+    }
+
+    /** Vorschau-Adresse zum Sqid eines Belegs: die Route einmal je Prozess und Wurzel-URL, je Beleg nur der Schlüssel. */
+    private static function previewUrlOf(string $voucherSqid): string {
+        static $templates = [];
+        $template = $templates[url('/')] ??= route('lexoffice.vouchers.preview', '__VOUCHER__');
+
+        return str_replace('__VOUCHER__', $voucherSqid, $template);
     }
 
     public function bookedNet(Organization $organization, string $voucherNumber): ?Money {

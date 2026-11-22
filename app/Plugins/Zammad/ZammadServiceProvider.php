@@ -41,9 +41,9 @@ class ZammadServiceProvider extends PluginServiceProviderBase {
     protected function bootPlugin(): void {
         // Status-Rückkanal (2. Stufe): erledigte, mit einem Ticket verknüpfte
         // Aufgabe → Outbox → Zammad. Import erzeugt Aufgaben nur, daher kein Echo.
-        Task::observe(ZammadTaskObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Task::class, ZammadTaskObserver::class);
         // Zeit-Rückkanal (Rang 23): erfasste Zeit einer verknüpften Aufgabe → Outbox.
-        TimeEntry::observe(ZammadTimeEntryObserver::class);
+        \App\Support\Database\DeferredObservers::observe(TimeEntry::class, ZammadTimeEntryObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ZammadOutboxDispatcher());
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\ZammadTicketImporter::class);
     }

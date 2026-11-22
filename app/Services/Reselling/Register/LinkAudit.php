@@ -16,7 +16,6 @@ use App\Enums\Reselling\PeriodStatus;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
-use Illuminate\Support\Collection;
 
 /**
  * Prüffälle an Rechnungsbezügen (Feature 185, MVP-1403): eine Position, die
@@ -212,13 +211,5 @@ final class LinkAudit {
         }
 
         return $best;
-    }
-
-    /**
-     * @param  iterable<int>  $ids
-     * @return Collection<int, ResaleSubscription>
-     */
-    public static function loadedWithLinks(Organization $organization, iterable $ids): Collection {
-        return ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('id', collect($ids)->all())->with(['periods.links'])->get();
     }
 }

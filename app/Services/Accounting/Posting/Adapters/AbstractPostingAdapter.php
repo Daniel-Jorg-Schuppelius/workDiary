@@ -18,7 +18,7 @@ use App\Models\Accounting\AccountingEntry;
 use App\Models\Finance\DatevBookingSource;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\ExchangeRateService;
-use App\Services\Accounting\Posting\{PostingProposalLine, PostingRuleResolver, PostingSourceAdapter};
+use App\Services\Accounting\Posting\{PostingInboxWindow, PostingProposalLine, PostingRuleResolver, PostingSourceAdapter};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -144,7 +144,7 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
      * eine zweite Wahrheit über denselben Vorgang.
      */
     protected function alreadyHandedOver(Model $source): bool {
-        return DatevBookingSource::query()
+        return app(PostingInboxWindow::class)->handedOver($source) ?? DatevBookingSource::query()
             ->where('source_type', $source->getMorphClass())
             ->where('source_id', $source->getKey())
             ->whereHas('batch', fn ($query) => $query->where('status', 'exported'))
@@ -231,7 +231,7 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
     }
 
     protected function baseCurrency(Organization $organization): CurrencyCode {
-        $profile = AccountingProfile::query()->where('organization_id', $organization->id)->first();
+        $profile = app(PostingInboxWindow::class)->remember('profile|' . $organization->id, static fn () => AccountingProfile::query()->where('organization_id', $organization->id)->first());
 
         return $profile instanceof AccountingProfile ? $profile->base_currency : CurrencyCode::Euro;
     }

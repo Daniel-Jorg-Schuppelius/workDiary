@@ -267,6 +267,10 @@ class IntegrationInboxController extends Controller {
                 ->orderBy($labelColumn ?? $model->getKeyName())
                 ->limit(self::ASSIGN_TARGET_LIMIT + 1)
                 ->get();
+            if ($model instanceof \App\Models\Project\Project) {
+                // Der Routenschlüssel eines Projekts braucht den Kunden-Slug: einmal laden statt je Projekt.
+                $rows->loadMissing('customer:id,slug');
+            }
             if ($rows->count() > self::ASSIGN_TARGET_LIMIT) {
                 $truncated[$type] = true;
                 $rows = $rows->take(self::ASSIGN_TARGET_LIMIT);

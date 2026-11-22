@@ -30,10 +30,11 @@ final class QualificationMatchRule implements ComplianceRule {
             return [];
         }
 
-        $reqs = CoverageRequirement::query()
+        $window = app(\App\Services\Compliance\ShiftCheckWindow::class);
+        $reqs = $window->remember('requirements:' . $shift->duty_plan_id . ':' . $shift->shift_type_id, static fn() => CoverageRequirement::query()
             ->forPlan($shift->duty_plan_id)
             ->where('shift_type_id', $shift->shift_type_id)
-            ->get()
+            ->get())
             ->filter(fn(CoverageRequirement $r) => $r->appliesToDate($shift->date))
             ->sortByDesc(fn(CoverageRequirement $r) => $r->priority());
 
@@ -42,13 +43,16 @@ final class QualificationMatchRule implements ComplianceRule {
             return [];
         }
 
-        /** @var User|null $user */
-        $user = User::query()->find($shift->user_id);
-        if (! $user) {
+        /** @var list<int|string>|null $userQualIds */
+        $userQualIds = $window->remember('qualifications:' . $shift->user_id, static function () use ($shift): ?array {
+            /** @var User|null $user */
+            $user = User::query()->find($shift->user_id);
+
+            return $user?->qualifications()->pluck('qualifications.id')->all();
+        });
+        if ($userQualIds === null) {
             return [];
         }
-
-        $userQualIds = $user->qualifications()->pluck('qualifications.id')->all();
         $missing = array_values(array_diff(
             array_map('intval', $top->required_qualification_ids),
             array_map('intval', $userQualIds),

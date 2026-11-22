@@ -69,6 +69,23 @@
             </select>
         </x-filter-bar>
 
+        {{-- Was in jeder Zeile gleich aussieht, einmal rendern statt je Empfänger: ein Blade-Baustein kostet rund 0,15 ms. --}}
+        @php ob_start(); @endphp
+        <x-status-badge tone="success" size="xs" class="ml-1" :label="__('resale.reconcile.worklist.done')" />
+        @php
+            $doneBadge = new \Illuminate\Support\HtmlString(trim(ob_get_clean()));
+            ob_start();
+        @endphp
+        <x-status-badge tone="warning" size="xs" outline class="ml-1" title="{{ __('resale.reconcile.no_customer_hint') }}">{{ __('resale.reconcile.no_customer') }}</x-status-badge>
+        @php
+            $noCustomerBadge = new \Illuminate\Support\HtmlString(trim(ob_get_clean()));
+            ob_start();
+        @endphp
+        <x-icon-btn icon="compare_arrows" size="xs" tone="ghost" href="__HREF__" :title="__('resale.reconcile.action.open')" />
+        @php
+            $openButton = trim(ob_get_clean());
+        @endphp
+
         <x-table scroll="flex" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
@@ -88,16 +105,19 @@
                 </tr>
             </x-slot:head>
             @forelse ($rows as $row)
+                @php
+                    $workspaceUrl = $row['customer'] !== null ? route('finance.resale.reconcile.show', $row['customer']) : null;
+                @endphp
                 <tr class="hover">
                     <td>
-                        @if ($row['customer'] !== null)
-                            <a href="{{ route('finance.resale.reconcile.show', $row['customer']) }}" class="link link-hover font-medium">{{ $row['name'] }}</a>
+                        @if ($workspaceUrl !== null)
+                            <a href="{{ $workspaceUrl }}" class="link link-hover font-medium">{{ $row['name'] }}</a>
                         @else
                             {{ $row['name'] }}
-                            <x-status-badge tone="warning" size="xs" outline class="ml-1" title="{{ __('resale.reconcile.no_customer_hint') }}">{{ __('resale.reconcile.no_customer') }}</x-status-badge>
+                            {{ $noCustomerBadge }}
                         @endif
                         @if ($row['done'] && $row['customer'] !== null)
-                            <x-status-badge tone="success" size="xs" class="ml-1" :label="__('resale.reconcile.worklist.done')" />
+                            {{ $doneBadge }}
                         @endif
                         @if ($row['subscriptions'] === 0 && $row['lines'] > 0)
                             <span class="block text-xs text-muted">{{ trans_choice('resale.reconcile.lines_without_subscription', $row['lines'], ['count' => $row['lines']]) }}</span>
@@ -108,15 +128,15 @@
                     <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['open'] > 0])>{{ $row['open'] }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['partial'] > 0])>{{ $row['partial'] }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-info' => $row['proposed'] > 0])>{{ $row['proposed'] }}</span></td>
-                    <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['free'] > 0.001])><x-resale.licence-months :value="$row['free']" /></span></td>
-                    <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['missing'] > 0.001])><x-resale.licence-months :value="$row['missing']" /></span></td>
-                    <td class="text-right tabular-nums"><span @class(['text-info font-medium' => $row['surplus'] > 0.001])><x-resale.licence-months :value="$row['surplus']" /></span></td>
+                    <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['free'] > 0.001])><span>{{ $compact::compact($row['free']) }}</span></span></td>
+                    <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['missing'] > 0.001])><span>{{ $compact::compact($row['missing']) }}</span></span></td>
+                    <td class="text-right tabular-nums"><span @class(['text-info font-medium' => $row['surplus'] > 0.001])><span>{{ $compact::compact($row['surplus']) }}</span></span></td>
                     <td class="text-right tabular-nums" data-sort-value="{{ $row['overbilled'] }}"><span @class(['text-warning font-medium' => $row['overbilled'] > 0.001])>{{ $row['overbilled'] > 0.001 ? $euro($row['overbilled']) : '—' }}</span></td>
                     <td class="text-right tabular-nums" data-sort-value="{{ $row['deviating'] }}"><span @class(['text-warning font-medium' => $row['deviating'] > 0.001])>{{ $row['deviating'] > 0.001 ? $euro($row['deviating']) : '—' }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['findings'] > 0])>{{ $row['findings'] }}</span></td>
                     <td class="text-right">
-                        @if ($row['customer'] !== null)
-                            <x-icon-btn icon="compare_arrows" size="xs" tone="ghost" :href="route('finance.resale.reconcile.show', $row['customer'])" :title="__('resale.reconcile.action.open')" />
+                        @if ($workspaceUrl !== null)
+                            {{ new \Illuminate\Support\HtmlString(str_replace('__HREF__', e($workspaceUrl), $openButton)) }}
                         @endif
                     </td>
                 </tr>

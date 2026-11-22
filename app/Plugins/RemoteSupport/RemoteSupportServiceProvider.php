@@ -34,7 +34,7 @@ class RemoteSupportServiceProvider extends PluginServiceProviderBase {
     protected function bootPlugin(): void {
         // Tätigkeitsrecherche: Suchquelle und Indexpflege der Sitzungen (MVP-1045).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Search\Indexing\Sources\SearchSource::class, \App\Plugins\RemoteSupport\Search\RemoteSessionSource::class);
-        \App\Plugins\RemoteSupport\Models\RemotePendingSession::observe(\App\Observers\SearchIndexObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Plugins\RemoteSupport\Models\RemotePendingSession::class, \App\Observers\SearchIndexObserver::class);
         // Aufbewahrung übernommener und verworfener Sitzungen (perf-11).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Retention\Contracts\RetentionPolicyProvider::class, \App\Plugins\RemoteSupport\Retention\RemoteSupportRetentionPolicies::class);
         // Erweiterungspunkt des Moduls (MVP-1045): CSV-Import der Sitzungen.

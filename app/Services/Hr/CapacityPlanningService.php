@@ -61,12 +61,16 @@ final class CapacityPlanningService {
         for ($w = 0; $w < $weeks; $w++) {
             $from = $start->addWeeks($w);
             $to = $from->addDays(6);
-            $capacity = 0;
-            foreach ($members as $member) {
-                for ($d = 0; $d < 7; $d++) {
-                    $capacity += $this->flex->targetMinutes($member, $from->addDays($d));
+            $capacity = $this->flex->batched(array_values(array_map(intval(...), $ids)), $from, $to, function () use ($members, $from): int {
+                $capacity = 0;
+                foreach ($members as $member) {
+                    for ($d = 0; $d < 7; $d++) {
+                        $capacity += $this->flex->targetMinutes($member, $from->addDays($d));
+                    }
                 }
-            }
+
+                return $capacity;
+            });
             $demand = 0;
             if ($ids !== []) {
                 $query = DiaryEntry::query()->whereIn('assigned_user_id', $ids);

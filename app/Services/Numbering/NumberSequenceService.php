@@ -66,18 +66,21 @@ class NumberSequenceService {
         $format = $this->resolveFormat($orgId, $scope);
         $period = $format->reset_per_year ? $when->format('Y') : null;
 
-        /** @var NumberSequence|null $sequence */
-        $sequence = NumberSequence::query()
-            ->where('organization_id', $orgId)
-            ->where('scope', $scope->value)
-            ->where(function ($q) use ($period): void {
-                if ($period === null) {
-                    $q->whereNull('period');
-                } else {
-                    $q->where('period', $period);
-                }
-            })
-            ->first();
+        $sequence = app(NumberFormatWindow::class)->sequence($orgId, $scope, $period);
+        if ($sequence === false) {
+            /** @var NumberSequence|null $sequence */
+            $sequence = NumberSequence::query()
+                ->where('organization_id', $orgId)
+                ->where('scope', $scope->value)
+                ->where(function ($q) use ($period): void {
+                    if ($period === null) {
+                        $q->whereNull('period');
+                    } else {
+                        $q->where('period', $period);
+                    }
+                })
+                ->first();
+        }
 
         $current = $sequence !== null ? (int) $sequence->last_value : (int) $format->starts_at;
 
@@ -104,11 +107,14 @@ class NumberSequenceService {
     }
 
     public function resolveFormat(int $orgId, NumberScope $scope): NumberFormat {
-        /** @var NumberFormat|null $format */
-        $format = NumberFormat::query()
-            ->where('organization_id', $orgId)
-            ->where('scope', $scope->value)
-            ->first();
+        $format = app(NumberFormatWindow::class)->format($orgId, $scope);
+        if ($format === false) {
+            /** @var NumberFormat|null $format */
+            $format = NumberFormat::query()
+                ->where('organization_id', $orgId)
+                ->where('scope', $scope->value)
+                ->first();
+        }
 
         if ($format !== null) {
             return $format;

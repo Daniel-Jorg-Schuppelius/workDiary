@@ -70,6 +70,8 @@ final class ProductRelink {
         $before = $period->status->value;
         $vouchers = array_values(array_unique($links->map(static fn(ResalePeriodLink $link): string => (string) $link->voucher_number)->all()));
         ResalePeriodLink::query()->whereKey($links->modelKeys())->delete();
+        // Löschen per Abfrage feuert kein Modell-Ereignis: Registerstand selbst weiterzählen.
+        ResaleCacheStamp::bump((int) $period->organization_id);
         $period->unsetRelation('links');
         $this->linker->settle($period, null, null, false);
         $period->audit(self::AUDIT, ['vouchers' => $vouchers, 'links' => $links->count(), 'status_before' => $before, 'status_now' => $period->status->value]);

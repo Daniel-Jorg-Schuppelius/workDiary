@@ -124,15 +124,22 @@ class ScheduleController extends Controller {
      */
     private function computeComplianceByShift(Collection $shifts, ShiftComplianceService $compliance, ?Organization $org): array {
         $complianceByShift = [];
-        foreach ($shifts as $s) {
-            $report = $compliance->check($s, $org);
-            if (! $report->hasViolations()) {
-                continue;
+        // Nachbarschichten und Urlaube des Zeitraums einmal laden statt je Schicht und Regel.
+        $window = app(\App\Services\Compliance\ShiftCheckWindow::class);
+        $window->open($shifts);
+        try {
+            foreach ($shifts as $s) {
+                $report = $compliance->check($s, $org);
+                if (! $report->hasViolations()) {
+                    continue;
+                }
+                $complianceByShift[(int) $s->id] = [
+                    'severity' => $report->hasErrors() ? 'error' : 'warning',
+                    'messages' => array_map(fn($v) => $v->message, $report->violations),
+                ];
             }
-            $complianceByShift[(int) $s->id] = [
-                'severity' => $report->hasErrors() ? 'error' : 'warning',
-                'messages' => array_map(fn($v) => $v->message, $report->violations),
-            ];
+        } finally {
+            $window->close();
         }
 
         return $complianceByShift;

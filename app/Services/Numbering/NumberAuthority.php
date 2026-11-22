@@ -59,10 +59,13 @@ class NumberAuthority {
             return self::SOURCE_LOCAL;
         }
 
-        $source = (string) NumberFormat::query()
-            ->where('organization_id', $orgId)
-            ->where('scope', $scope->value)
-            ->value('source');
+        $format = app(NumberFormatWindow::class)->format($orgId, $scope);
+        $source = $format === false
+            ? (string) NumberFormat::query()
+                ->where('organization_id', $orgId)
+                ->where('scope', $scope->value)
+                ->value('source')
+            : (string) $format?->source;
 
         return $source === '' ? self::SOURCE_LOCAL : $source;
     }

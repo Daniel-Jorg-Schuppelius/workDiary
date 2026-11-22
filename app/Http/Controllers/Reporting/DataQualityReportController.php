@@ -48,7 +48,7 @@ class DataQualityReportController extends Controller {
         $filters = $this->standardFilters($request, $filterFields, $from, $to);
 
         $entriesQuery = DiaryEntry::query()
-            ->with(['entryType', 'customer:id,name'])
+            ->with(['entryType', 'customer:id,name', 'classifications'])
             ->where('is_archived', false)
             ->overlappingDateRange($from->toDateString(), $to->toDateString())
             ->orderByDesc('start_at')

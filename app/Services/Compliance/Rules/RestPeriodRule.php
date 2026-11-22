@@ -33,7 +33,7 @@ final class RestPeriodRule implements ComplianceRule {
         [$start, $end] = $iv;
         $minRest = (int) $settings['min_rest_hours'];
 
-        $candidates = ScheduledShift::query()
+        $candidates = app(\App\Services\Compliance\ShiftCheckWindow::class)->shifts($shift, $start->copy()->subDays(2)->toDateString(), $end->copy()->addDays(2)->toDateString()) ?? ScheduledShift::query()
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', [

@@ -76,7 +76,7 @@ class MaintenanceWindow extends Model {
     ];
 
     protected static function booted(): void {
-        $flush = static fn() => Cache::forget(self::CACHE_KEY);
+        $flush = static fn() => Cache::memo()->forget(self::CACHE_KEY);
         static::saved($flush);
         static::deleted($flush);
     }
@@ -103,7 +103,7 @@ class MaintenanceWindow extends Model {
      */
     public static function openWindows(): Collection {
         try {
-            $rows = Cache::get(self::CACHE_KEY);
+            $rows = Cache::memo()->get(self::CACHE_KEY);
             if (! is_array($rows)) {
                 $rows = self::query()
                     ->whereIn('status', MaintenanceWindowStatus::open())
@@ -112,7 +112,7 @@ class MaintenanceWindow extends Model {
                     ->get()
                     ->map(static fn (self $window): array => $window->getAttributes())
                     ->all();
-                Cache::put(self::CACHE_KEY, $rows, 60);
+                Cache::memo()->put(self::CACHE_KEY, $rows, 60);
             }
 
             /** @var list<array<string, mixed>> $rows */

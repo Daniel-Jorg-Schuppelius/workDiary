@@ -39,6 +39,7 @@
         'security' => __('Sicherheit'),
         'terminals' => __('Stempelterminals'),
         'ocr' => __('Texterkennung (OCR)'),
+        'runtime' => __('PHP-Laufzeit'),
     ];
     $sectionIcons = [
         'version' => 'info',
@@ -54,6 +55,7 @@
         'security' => 'security',
         'terminals' => 'point_of_sale',
         'ocr' => 'document_scanner',
+        'runtime' => 'memory',
     ];
 @endphp
 

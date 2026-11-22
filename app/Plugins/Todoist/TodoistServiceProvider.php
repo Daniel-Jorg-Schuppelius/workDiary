@@ -44,7 +44,7 @@ class TodoistServiceProvider extends PluginServiceProviderBase {
         \Illuminate\Support\Facades\RateLimiter::for('todoist-webhook', fn (\Illuminate\Http\Request $request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by('twh:' . $request->ip()));
         // Ablaufprüfung der Verbindungen (MVP-1044).
         $this->app->make(\App\Services\Operations\Expiry\ExpiryScanner::class)->extend(new \App\Plugins\Todoist\Services\TodoistExpiryProbe);
-        Task::observe(TodoistTaskObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Task::class, TodoistTaskObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TodoistOutboxDispatcher());
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\TodoistImportService::class);
     }

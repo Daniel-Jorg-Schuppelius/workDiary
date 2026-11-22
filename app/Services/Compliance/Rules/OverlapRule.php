@@ -32,7 +32,7 @@ final class OverlapRule implements ComplianceRule {
         }
         [$start, $end] = $iv;
 
-        $candidates = ScheduledShift::query()
+        $candidates = app(\App\Services\Compliance\ShiftCheckWindow::class)->shifts($shift, $start->copy()->subDay()->toDateString(), $end->copy()->addDay()->toDateString()) ?? ScheduledShift::query()
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', DateRange::days($start->copy()->subDay(), $end->copy()->addDay()))

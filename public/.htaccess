@@ -28,3 +28,12 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Gebaute Assets tragen den Inhalts-Hash im Dateinamen (Vite): ein Jahr
+# gültig und unveränderlich, der Browser fragt nicht mehr nach. Ohne diese
+# Kopfzeile rät er die Frische aus Last-Modified und prüft nach einem Deploy
+# bei fast jedem Seitenaufruf jede Datei neu. Fehlende Dateien landen beim
+# Front-Controller (anderer Pfad) und bekommen die Kopfzeile nicht.
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable" "expr=%{REQUEST_URI} =~ m#/build/assets/[^/]+$#"
+</IfModule>

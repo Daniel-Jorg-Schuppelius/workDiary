@@ -279,7 +279,8 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
                 'number' => (string) $source->number,
                 // Über die ID statt die Relation: eine Rechnung ohne Kunde ist
                 // Altbestand, kein Grund für einen leeren Buchungstext.
-                'customer' => (string) (Customer::query()->whereKey($source->customer_id)->value('name') ?? '—'),
+                // Die Kandidatenliste lädt den Kunden vor; sonst eine Abfrage.
+                'customer' => (string) (($source->relationLoaded('customer') ? $source->getRelationValue('customer')?->name : Customer::query()->whereKey($source->customer_id)->value('name')) ?? '—'),
             ]),
             lines: $fx['lines'],
             blockers: array_values(array_unique($blockers)),

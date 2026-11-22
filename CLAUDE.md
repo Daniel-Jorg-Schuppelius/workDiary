@@ -566,6 +566,17 @@ Jede Klassenkonstante nennt ihren Typ (PHP 8.3): `private const string X = …`,
 Eloquents `UPDATED_AT = null` als `?string`. Gate `TypedClassConstantRuleTest`
 (app, database, scripts, tests).
 
+## Start jeder Anfrage: kein Modell hochfahren (Phase 188)
+
+Was ein Provider beim Booten tut, zahlt jede Anfrage. Beobachter meldet
+`\App\Support\Database\DeferredObservers::observe(Modell::class, Beobachter::class)`
+an, nie `Modell::observe()` — das erzeugt eine Instanz und fährt das Modell hoch
+(Gate `DeferredObserverRuleTest`). Auch `(new Modell)->getMorphClass()` beim
+Anmelden einer Quelle fährt hoch: solche Indizes erst beim ersten Gebrauch
+aufbauen (`InvoiceMirror::morphIndex()`). Dienste, die sich etwas „je Request“
+merken, sind `scoped`, nicht `singleton` — im Queue-Worker bliebe der Stand des
+ersten Auftrags stehen (`BrandingService`, `ThemeService`).
+
 ## Controller-Bausteine statt Helfer-Kopien (Phase 161)
 
 Angemeldeter Nutzer: `$this->authUser()` (Basis-Controller); Portal-Nutzer:

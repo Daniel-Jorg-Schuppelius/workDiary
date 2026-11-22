@@ -84,6 +84,7 @@ class AppServiceProvider extends ServiceProvider {
         // Warten auf die Sperre (Befund 2026-10-19, siehe MariaDbSnapshotIsolation).
         $this->app->bind('db.connector.mysql', \App\Support\Database\MySqlConnector::class);
         $this->app->bind('db.connector.mariadb', \App\Support\Database\MariaDbConnector::class);
+        $this->app->singleton(\App\Support\Database\DeferredObservers::class);
 
         // Wortboxen und Seitenbilder (Phase 151): Toolkit im Betrieb, Fälschung in Tests.
         $this->app->bind(\App\Services\Invoicing\Recognition\Contracts\WordBoxSource::class, \App\Services\Invoicing\Recognition\ToolkitWordBoxSource::class);
@@ -214,13 +215,13 @@ class AppServiceProvider extends ServiceProvider {
             ], app(\App\Plugins\Support\PluginHttpFactory::class));
         });
 
-        // BrandingService cached die Organisation pro Request → einmalig
-        // pro Container-Lifecycle resolven.
-        $this->app->singleton(BrandingService::class);
+        // BrandingService merkt Organisation und Logos je Anfrage bzw. Queue-Auftrag (scoped): als
+        // Singleton bliebe im Worker die Organisation des ersten Auftrags für alle weiteren stehen.
+        $this->app->scoped(BrandingService::class);
 
-        // ThemeService nutzt denselben Request-Cache (über BrandingService)
+        // ThemeService nutzt denselben Merker (über BrandingService)
         // und hält die validierten Org-Custom-Themes vor.
-        $this->app->singleton(\App\Services\UI\ThemeService::class);
+        $this->app->scoped(\App\Services\UI\ThemeService::class);
 
         // Sqid-Encoder als Singleton: hält pro Modell-Klasse einen Sqids-
         // Instanz-Cache mit deterministisch permutiertem Alphabet vor.
@@ -282,6 +283,18 @@ class AppServiceProvider extends ServiceProvider {
         // Request-Memo des Registers (Leistungsanalyse 2026-11-02, perfc-01/04/05/11): Spiegelzeilen,
         // Serienvorlagen, Kontaktkarte und Lizenzkonten je Request bzw. Job einmal — nie im Singleton.
         $this->app->scoped(\App\Services\Reselling\Register\ResaleRequestMemo::class);
+        // Plugin-Einstellungen je Organisation in einer Abfrage statt einer je Plugin.
+        $this->app->scoped(\App\Plugins\Support\PluginSettingsMemo::class);
+        // Sperrstand von Monat und Tag je Person; Zeitlisten prüfen ihn je Zeile.
+        $this->app->scoped(\App\Services\TimeApproval\ClosureLockMemo::class);
+        // Aufgelöste Datums- und Zeitformate; jede Datumszelle fragt danach.
+        $this->app->scoped(\App\Support\FormatsMemo::class);
+        // Nachbarschichten und Urlaube für die Prüfung eines ganzen Schichtplans.
+        $this->app->scoped(\App\Services\Compliance\ShiftCheckWindow::class);
+        // Formate und Zählerstände für die Übersicht „Nummernkreise“.
+        $this->app->scoped(\App\Services\Numbering\NumberFormatWindow::class);
+        // Regeln, Übergabestand und Vorauszahlungen für die Liste des Buchungs-Eingangs.
+        $this->app->scoped(\App\Services\Accounting\Posting\PostingInboxWindow::class);
 
         // Belegspiegel des Reselling-Registers (Feature 152, Review 2026-09-10):
         // Singleton mit der lokalen Rechnungsquelle; die Lexoffice-Quelle
@@ -598,25 +611,29 @@ class AppServiceProvider extends ServiceProvider {
         // Stichtags-Rekonstruktion (Nachtrag 046b): jede Bewertungsänderung
         // (SoA-Aussage, Norm-Konformitätsstatus) erzeugt einen append-only
         // Snapshot — Model-Events, damit auch Service-Updates erfasst werden.
-        \App\Models\Isms\IsmsApplicabilityStatement::observe(\App\Observers\IsmsAssessmentSnapshotObserver::class);
-        \App\Models\Isms\IsmsNormStatus::observe(\App\Observers\IsmsAssessmentSnapshotObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Isms\IsmsApplicabilityStatement::class, \App\Observers\IsmsAssessmentSnapshotObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Isms\IsmsNormStatus::class, \App\Observers\IsmsAssessmentSnapshotObserver::class);
 
         // Task→Board-Sync (Feature 064, P3): Statuswechsel außerhalb des Boards
         // → AgileBoardService::syncColumnFromTask (B4 aus dem Provider gezogen).
-        Task::observe(\App\Observers\TaskObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Task::class, \App\Observers\TaskObserver::class);
         // F14: Fachlogik aus den Model-Hooks in Observer (TimeEntry-saving
         // lebt im bestehenden TimeEntryObserver, s. u.).
-        \App\Models\Time\Attendance::observe(\App\Observers\AttendanceObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Time\Attendance::class, \App\Observers\AttendanceObserver::class);
         // Vereinstermine (MVP-843): Serienvorkommen erben Details des Masters.
-        \App\Models\Calendar\Event::observe(\App\Observers\EventOccurrenceObserver::class);
-        \App\Models\Invoicing\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Calendar\Event::class, \App\Observers\EventOccurrenceObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Invoicing\InvoiceItem::class, \App\Observers\InvoiceItemObserver::class);
         // Reselling-Caches (Leistungsanalyse 2026-11-02): jede Änderung am Register stempelt die Organisation.
         foreach ([
             \App\Models\Reselling\ResaleSubscription::class, \App\Models\Reselling\ResalePeriod::class, \App\Models\Reselling\ResalePeriodLink::class,
             \App\Models\Reselling\ResalePlanLink::class, \App\Models\Reselling\ResaleIgnoredLine::class, \App\Models\Reselling\ResaleAccountAllocation::class,
             \App\Models\Reselling\ResaleLicenseAssignment::class,
+            // Selten geschriebene Stammdaten des Registers, von denen Überblickszähler abhängen — mit ihnen
+            // entwertet der Stempel sofort, und die Zähler dürfen länger im Cache liegen (Phase 188).
+            \App\Models\Reselling\ResaleArticleClassification::class, \App\Models\Reselling\ResaleImport::class, \App\Models\Reselling\ResaleProviderSupplier::class,
+            \App\Models\Reselling\CompanyMapping::class, \App\Models\Reselling\ResaleLicenseBatch::class, \App\Models\Reselling\ResaleLicenseProduct::class,
         ] as $resaleModel) {
-            $resaleModel::observe(\App\Observers\ResaleCacheStampObserver::class);
+            \App\Support\Database\DeferredObservers::observe($resaleModel, \App\Observers\ResaleCacheStampObserver::class);
         }
 
         // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/
@@ -646,42 +663,42 @@ class AppServiceProvider extends ServiceProvider {
         EventFacade::subscribe(AuthEventSubscriber::class);
         EventFacade::subscribe(\App\Listeners\PluginEventSubscriber::class);
 
-        Comment::observe(CommentObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Comment::class, CommentObserver::class);
         // Feature 107 W10: VK-Preisverlauf für den DATPREIS-Export „seit Datum".
         // F8/E6: contact_* führend — Projektion in die Inline-Spalten.
-        \App\Models\Contacts\ContactAddress::observe(\App\Observers\ContactDetailsProjectionObserver::class);
-        \App\Models\Contacts\ContactBankAccount::observe(\App\Observers\ContactDetailsProjectionObserver::class);
-        \App\Models\Article\Article::observe(\App\Observers\ArticleSalePriceObserver::class);
-        \App\Models\Article\ArticleVariant::observe(\App\Observers\ArticleVariantSalePriceObserver::class);
-        Attachment::observe(AttachmentObserver::class);
-        Customer::observe(CustomerObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Contacts\ContactAddress::class, \App\Observers\ContactDetailsProjectionObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Contacts\ContactBankAccount::class, \App\Observers\ContactDetailsProjectionObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Article\Article::class, \App\Observers\ArticleSalePriceObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Article\ArticleVariant::class, \App\Observers\ArticleVariantSalePriceObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Attachment::class, AttachmentObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Customer::class, CustomerObserver::class);
         // Aufgehobene Zahlungszuordnung → Gegenbuchung im lokalen Hauptbuch
         // (Feature 125, MVP-674). Ohne aktivierte Buchhaltung passiert nichts.
-        \App\Models\Finance\PaymentAllocation::observe(\App\Observers\PaymentAllocationAccountingObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Finance\PaymentAllocation::class, \App\Observers\PaymentAllocationAccountingObserver::class);
         // Supplier/ForeignCustomer: Audit-Logging via Auditable-Trait, kein Observer mehr (A1).
-        EmergencyAssignment::observe(EmergencyAssignmentObserver::class);
-        DiaryEntry::observe(DiaryEntryObserver::class);
-        Tag::observe(TagObserver::class);
-        User::observe(UserObserver::class);
-        TimeEntry::observe(TimeEntryObserver::class);
+        \App\Support\Database\DeferredObservers::observe(EmergencyAssignment::class, EmergencyAssignmentObserver::class);
+        \App\Support\Database\DeferredObservers::observe(DiaryEntry::class, DiaryEntryObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Tag::class, TagObserver::class);
+        \App\Support\Database\DeferredObservers::observe(User::class, UserObserver::class);
+        \App\Support\Database\DeferredObservers::observe(TimeEntry::class, TimeEntryObserver::class);
         // Rückrichtung der Zeit-Plugins: ein Observer für alle Quellen, statt je
         // Plugin einer — jeder würde sonst dieselbe Referenz-Abfrage fahren.
-        TimeEntry::observe(\App\Plugins\Support\TimeWritebackObserver::class);
+        \App\Support\Database\DeferredObservers::observe(TimeEntry::class, \App\Plugins\Support\TimeWritebackObserver::class);
         // Git-Issue-Status-Rückrichtung (Audit 2026-08, Welle 1.4): Statuswechsel
         // an Issue-verknüpften Aufgaben → Outbox (GitHub/GitLab, opt-in).
-        \App\Models\Project\Task::observe(\App\Plugins\Support\GitIssueImport\GitIssueWritebackObserver::class);
-        Timesheet::observe(TimesheetObserver::class);
-        MaterialUsage::observe(MaterialUsageObserver::class);
-        Organization::observe(OrganizationObserver::class);
-        Project::observe(ProjectObserver::class);
-        Protocol::observe(ProtocolObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Project\Task::class, \App\Plugins\Support\GitIssueImport\GitIssueWritebackObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Timesheet::class, TimesheetObserver::class);
+        \App\Support\Database\DeferredObservers::observe(MaterialUsage::class, MaterialUsageObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Organization::class, OrganizationObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Project::class, ProjectObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Protocol::class, ProtocolObserver::class);
         // Tätigkeitsrecherche (Feature 153): Quellen und Kind-Modelle indizieren
         // nach Commit; Stammdaten-Umbenennungen ziehen per Job nach.
         foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicket\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\Knowledge\KnowledgeArticle::class, Comment::class, \App\Models\Learning\LearningCourse::class, \App\Models\Document\Document::class] as $searchable) {
-            $searchable::observe(\App\Observers\SearchIndexObserver::class);
+            \App\Support\Database\DeferredObservers::observe($searchable, \App\Observers\SearchIndexObserver::class);
         }
         foreach ([Project::class, \App\Models\Customer\ForeignCustomer::class, Customer::class] as $searchContext) {
-            $searchContext::observe(\App\Observers\SearchContextObserver::class);
+            \App\Support\Database\DeferredObservers::observe($searchContext, \App\Observers\SearchContextObserver::class);
         }
 
         Gate::policy(\App\Models\Ideas\IdeaMap::class, \App\Policies\Knowledge\IdeaMapPolicy::class);

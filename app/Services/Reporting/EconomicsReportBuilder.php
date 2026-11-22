@@ -22,6 +22,7 @@ use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Feature 014 (Nachkalkulation & Wirtschaftlichkeit): Berechnet die
@@ -123,20 +124,18 @@ class EconomicsReportBuilder {
             ->keyBy('id');
         $customerNames = $customers->map(static fn(Customer $c): string => (string) $c->name);
 
-        return array_values($projects
-            ->map(function (Project $project) use ($fromDate, $toDate, $customerNames, $customers): array {
-                $time = $this->timeAggregate(
-                    TimeEntry::query()
-                        ->where('project_id', $project->id)
-                        ->whereBetween('date', [$fromDate, $toDate])
-                );
+        $pool = $this->pool($fromDate, $toDate, array_values(array_map(intval(...), $projects->modelKeys())));
 
-                $material = $this->materialAggregate($fromDate, $toDate, projectId: (int) $project->id);
-                $expense = $this->expenseAggregate($fromDate, $toDate, projectId: (int) $project->id);
+        return array_values($projects
+            ->map(function (Project $project) use ($fromDate, $toDate, $customerNames, $customers, $pool): array {
+                $time = $this->timeAggregate($pool['time'][(int) $project->id] ?? []);
+
+                $material = self::pooledMaterial($pool, [(int) $project->id]);
+                $expense = self::pooledExpense($pool, projectId: (int) $project->id);
                 $travel = $this->travelAggregate(
                     $fromDate,
                     $toDate,
-                    projectId: (int) $project->id,
+                    self::pooledTravelCost($pool, projectId: (int) $project->id),
                     customer: $customers->get($project->customer_id),
                     project: $project,
                 );
@@ -220,31 +219,33 @@ class EconomicsReportBuilder {
             ->get(['id', 'customer_id', 'time_budget', 'budget'])
             ->groupBy(static fn(Project $p): int => (int) $p->customer_id);
 
+        $pool = $this->pool($fromDate, $toDate, array_values($projectsByCustomer->flatten(1)->map(static fn(Project $p): int => (int) $p->id)->all()));
+
         return array_values($customers
-            ->map(function (Customer $customer) use ($fromDate, $toDate, $projectsByCustomer, $projectId): array {
+            ->map(function (Customer $customer) use ($fromDate, $toDate, $projectsByCustomer, $projectId, $pool): array {
                 /** @var \Illuminate\Support\Collection<int, Project> $customerProjects */
                 $customerProjects = $projectsByCustomer->get((int) $customer->id, collect());
 
                 $projectIds = array_values($customerProjects->pluck('id')->map(static fn($v): int => (int) $v)->all());
 
-                $time = $this->timeAggregate(
-                    TimeEntry::query()
-                        ->whereBetween('date', [$fromDate, $toDate])
-                        ->when($projectIds !== [], fn($q) => $q->whereIn('project_id', $projectIds), fn($q) => $q->whereRaw('1=0'))
-                );
+                $entries = [];
+                foreach ($projectIds as $id) {
+                    array_push($entries, ...($pool['time'][$id] ?? []));
+                }
+                $time = $this->timeAggregate($entries);
 
-                $material = $this->materialAggregate($fromDate, $toDate, projectIds: $projectIds);
+                $material = self::pooledMaterial($pool, $projectIds);
                 if ($projectId !== null) {
                     // Projektfilter: strikt projektgebundene Aggregate — Spesen/
                     // Fahrten, die nur am Kunden hängen, zählen hier nicht mit.
                     $projectModel = $customerProjects->firstWhere('id', $projectId);
-                    $expense = $this->expenseAggregate($fromDate, $toDate, projectIds: $projectIds);
+                    $expense = self::pooledExpense($pool, projectIds: $projectIds);
                     $travel = $projectModel instanceof Project
-                        ? $this->travelAggregate($fromDate, $toDate, projectId: $projectId, customer: $customer, project: $projectModel)
+                        ? $this->travelAggregate($fromDate, $toDate, self::pooledTravelCost($pool, projectId: $projectId), customer: $customer, project: $projectModel)
                         : ['revenue' => 0.0, 'cost' => 0.0];
                 } else {
-                    $expense = $this->expenseAggregate($fromDate, $toDate, customerId: (int) $customer->id, projectIds: $projectIds);
-                    $travel = $this->travelAggregate($fromDate, $toDate, customerId: (int) $customer->id, customer: $customer, projectIds: $projectIds);
+                    $expense = self::pooledExpense($pool, customerId: (int) $customer->id, projectIds: $projectIds);
+                    $travel = $this->travelAggregate($fromDate, $toDate, self::pooledTravelCost($pool, customerId: (int) $customer->id, projectIds: $projectIds), customer: $customer);
                 }
 
                 $planMinutes = $customerProjects->sum(static fn(Project $p): int => (int) $p->time_budget);
@@ -270,19 +271,16 @@ class EconomicsReportBuilder {
     }
 
     /**
-     * Aggregiert eine TimeEntry-Query zu Minuten, Erlös und internen Kosten.
+     * Aggregiert Zeiteinträge zu Minuten, Erlös und internen Kosten.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>  $query
+     * @param  iterable<TimeEntry>  $entries
      * @return array{
      *   billableMinutes:int, nonBillableMinutes:int, totalMinutes:int,
      *   revenue:float, cost:float, costRateMissing:bool,
      *   reworkMinutes:int, goodwillMinutes:int, reworkCost:float, goodwillCost:float
      * }
      */
-    private function timeAggregate($query): array {
-        /** @var Collection<int, TimeEntry> $entries */
-        $entries = $query->get(['minutes', 'billable', 'rate', 'internal_rate', 'rework_reason_classification_id', 'goodwill_reason_classification_id']);
-
+    private function timeAggregate(iterable $entries): array {
         $billableMinutes = 0;
         $nonBillableMinutes = 0;
         $revenue = 0.0;
@@ -334,30 +332,161 @@ class EconomicsReportBuilder {
     }
 
     /**
-     * Material-Erlös (billed=true) und Direktaufwand (alle) je Projektbezug.
-     * Projektbezug läuft über das Timesheet.
+     * Rohdaten des Zeitraums in vier Abfragen statt je Projekt und Kunde: Zeiteinträge und
+     * Materialsummen je Projekt, Spesen- und Fahrtsummen je Anker (Projekt, Kunde).
      *
+     * @param  list<int>  $projectIds
+     * @return array{
+     *   time: array<int, list<TimeEntry>>,
+     *   material: array<int, array{revenue: float, cost: float}>,
+     *   expense: list<array{project: int|null, customer: int|null, billable: bool, sum: float}>,
+     *   travel: list<array{project: int|null, customer: int|null, sum: float}>
+     * }
+     */
+    private function pool(string $from, string $to, array $projectIds): array {
+        $nullableInt = static fn(mixed $value): ?int => $value === null ? null : (int) $value;
+
+        $time = [];
+        $material = [];
+        if ($projectIds !== []) {
+            $entries = TimeEntry::query()
+                ->whereBetween('date', [$from, $to])
+                ->whereIn('project_id', $projectIds)
+                ->get(['project_id', 'minutes', 'billable', 'rate', 'internal_rate', 'rework_reason_classification_id', 'goodwill_reason_classification_id']);
+            foreach ($entries as $entry) {
+                $time[(int) $entry->project_id][] = $entry;
+            }
+
+            // Material hängt am Stundenzettel, der Projektbezug läuft über ihn.
+            $timesheets = Timesheet::query()
+                ->whereBetween('work_date', [$from, $to])
+                ->whereIn('project_id', $projectIds)
+                ->pluck('project_id', 'id');
+            if ($timesheets->isNotEmpty()) {
+                $usages = MaterialUsage::query()
+                    ->whereIn('timesheet_id', $timesheets->keys()->all())
+                    ->groupBy('timesheet_id', 'billed')
+                    ->toBase()
+                    ->get(['timesheet_id', 'billed', DB::raw('SUM(line_total_net) AS total')]);
+                foreach ($usages as $usage) {
+                    $project = (int) $timesheets[$usage->timesheet_id];
+                    $material[$project] ??= ['revenue' => 0.0, 'cost' => 0.0];
+                    $material[$project]['cost'] += (float) $usage->total;
+                    if ((bool) $usage->billed) {
+                        $material[$project]['revenue'] += (float) $usage->total;
+                    }
+                }
+            }
+        }
+
+        $expense = [];
+        $rows = Expense::query()
+            ->whereBetween('date', [$from, $to])
+            ->whereIn('status', self::settledExpenseStatuses())
+            ->groupBy('project_id', 'customer_id', 'billable')
+            ->toBase()
+            ->get(['project_id', 'customer_id', 'billable', DB::raw('SUM(amount_net) AS total')]);
+        foreach ($rows as $row) {
+            $expense[] = ['project' => $nullableInt($row->project_id), 'customer' => $nullableInt($row->customer_id), 'billable' => (bool) $row->billable, 'sum' => (float) $row->total];
+        }
+
+        $travel = [];
+        $rows = TravelLog::query()
+            ->whereBetween('date', [$from, $to])
+            ->where('reimbursable', true)
+            ->groupBy('project_id', 'customer_id')
+            ->toBase()
+            ->get(['project_id', 'customer_id', DB::raw('SUM(reimbursement_total) AS total')]);
+        foreach ($rows as $row) {
+            $travel[] = ['project' => $nullableInt($row->project_id), 'customer' => $nullableInt($row->customer_id), 'sum' => (float) $row->total];
+        }
+
+        return ['time' => $time, 'material' => $material, 'expense' => $expense, 'travel' => $travel];
+    }
+
+    /**
+     * Material-Erlös (berechnet) und Direktaufwand (alle) der Projekte.
+     *
+     * @param  array{material: array<int, array{revenue: float, cost: float}>}  $pool
+     * @param  list<int>  $projectIds
+     * @return array{revenue:float, cost:float}
+     */
+    private static function pooledMaterial(array $pool, array $projectIds): array {
+        $revenue = 0.0;
+        $cost = 0.0;
+        foreach ($projectIds as $id) {
+            $revenue += $pool['material'][$id]['revenue'] ?? 0.0;
+            $cost += $pool['material'][$id]['cost'] ?? 0.0;
+        }
+
+        return ['revenue' => round($revenue, 2), 'cost' => round($cost, 2)];
+    }
+
+    /**
+     * Spesen aus dem Vorrat mit denselben Ankerregeln wie {@see expenseAggregate()}.
+     *
+     * @param  array{expense: list<array{project: int|null, customer: int|null, billable: bool, sum: float}>}  $pool
      * @param  list<int>|null  $projectIds
      * @return array{revenue:float, cost:float}
      */
-    private function materialAggregate(string $from, string $to, ?int $projectId = null, ?array $projectIds = null): array {
-        $timesheetIds = Timesheet::query()
-            ->whereBetween('work_date', [$from, $to])
-            ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
-            ->when($projectIds !== null, fn($q) => $projectIds === [] ? $q->whereRaw('1=0') : $q->whereIn('project_id', $projectIds))
-            ->pluck('id')
-            ->all();
-
-        if ($timesheetIds === []) {
-            return ['revenue' => 0.0, 'cost' => 0.0];
+    private static function pooledExpense(array $pool, ?int $projectId = null, ?int $customerId = null, ?array $projectIds = null): array {
+        $revenue = 0.0;
+        $cost = 0.0;
+        foreach ($pool['expense'] as $row) {
+            if (! self::anchored($row, $projectId, $customerId, $projectIds)) {
+                continue;
+            }
+            $cost += $row['sum'];
+            if ($row['billable']) {
+                $revenue += $row['sum'];
+            }
         }
 
-        $base = MaterialUsage::query()->whereIn('timesheet_id', $timesheetIds);
-
-        $revenue = (float) $base->clone()->where('billed', true)->sum('line_total_net');
-        $cost = (float) $base->clone()->sum('line_total_net');
-
         return ['revenue' => round($revenue, 2), 'cost' => round($cost, 2)];
+    }
+
+    /**
+     * Erstattungsaufwand der Fahrten aus dem Vorrat: Projekt-Anker, sonst Kunde oder dessen Projekte.
+     *
+     * @param  array{travel: list<array{project: int|null, customer: int|null, sum: float}>}  $pool
+     * @param  list<int>|null  $projectIds
+     */
+    private static function pooledTravelCost(array $pool, ?int $projectId = null, ?int $customerId = null, ?array $projectIds = null): float {
+        $cost = 0.0;
+        foreach ($pool['travel'] as $row) {
+            // Fahrten kennen keinen reinen Projektlisten-Filter: ohne Projekt und Kunde zählt alles.
+            if (self::anchored($row, $projectId, $customerId, $projectId === null && $customerId === null ? null : $projectIds)) {
+                $cost += $row['sum'];
+            }
+        }
+
+        return $cost;
+    }
+
+    /**
+     * Trifft der Anker der Zeile den Filter? Ein Projekt gewinnt; mit Kunde zählt der Kunde oder eines
+     * seiner Projekte; nur mit Projektliste eines daraus (leer = nichts); ohne Filter alles.
+     *
+     * @param  array{project: int|null, customer: int|null}  $row
+     * @param  list<int>|null  $projectIds
+     */
+    private static function anchored(array $row, ?int $projectId, ?int $customerId, ?array $projectIds): bool {
+        if ($projectId !== null) {
+            return $row['project'] === $projectId;
+        }
+        if ($customerId !== null) {
+            return $row['customer'] === $customerId || ($row['project'] !== null && $projectIds !== null && in_array($row['project'], $projectIds, true));
+        }
+        if ($projectIds !== null) {
+            return $row['project'] !== null && in_array($row['project'], $projectIds, true);
+        }
+
+        return true;
+    }
+
+    /** @return list<string> Spesen, die als Aufwand zählen: freigegeben, erstattet, fakturiert. */
+    private static function settledExpenseStatuses(): array {
+        return [ExpenseStatus::Approved->value, ExpenseStatus::Reimbursed->value, ExpenseStatus::Invoiced->value];
     }
 
     /**
@@ -374,15 +503,9 @@ class EconomicsReportBuilder {
         ?int $customerId = null,
         ?array $projectIds = null
     ): array {
-        $settled = [
-            ExpenseStatus::Approved->value,
-            ExpenseStatus::Reimbursed->value,
-            ExpenseStatus::Invoiced->value,
-        ];
-
         $base = Expense::query()
             ->whereBetween('date', [$from, $to])
-            ->whereIn('status', $settled);
+            ->whereIn('status', self::settledExpenseStatuses());
 
         if ($projectId !== null) {
             $base->where('project_id', $projectId);
@@ -412,31 +535,10 @@ class EconomicsReportBuilder {
      * Material-Logik „abrechenbar = Erlös". Kunden ohne aktivierte
      * Anfahrt-Konditionen tragen 0 Erlös.
      *
-     * @param  list<int>|null  $projectIds
+     * @param  float  $cost  Erstattungsaufwand aus {@see pooledTravelCost()}
      * @return array{revenue:float, cost:float}
      */
-    private function travelAggregate(
-        string $from,
-        string $to,
-        ?int $projectId = null,
-        ?int $customerId = null,
-        ?Customer $customer = null,
-        ?Project $project = null,
-        ?array $projectIds = null,
-    ): array {
-        $base = TravelLog::query()->whereBetween('date', [$from, $to]);
-        if ($projectId !== null) {
-            $base->where('project_id', $projectId);
-        } elseif ($customerId !== null) {
-            $base->where(function ($q) use ($customerId, $projectIds): void {
-                $q->where('customer_id', $customerId);
-                if ($projectIds !== null && $projectIds !== []) {
-                    $q->orWhereIn('project_id', $projectIds);
-                }
-            });
-        }
-        $cost = (float) $base->where('reimbursable', true)->sum('reimbursement_total');
-
+    private function travelAggregate(string $from, string $to, float $cost, ?Customer $customer = null, ?Project $project = null): array {
         $revenue = 0.0;
         if ($customer instanceof Customer) {
             $revenue = (float) $this->travelCharges

@@ -14,7 +14,7 @@ namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\LinkOrigin;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, SharesImmutableDateCasts};
 use App\Models\Platform\{Organization, User};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use Carbon\CarbonImmutable;
@@ -54,6 +54,7 @@ class ResalePeriodLink extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
+    use SharesImmutableDateCasts;
 
     protected $table = 'resale_period_links';
 

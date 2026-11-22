@@ -71,11 +71,11 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
 
         // Live-Export nach Microsoft To Do (Folgeausbau, Todoist-Muster):
         // Observer enqueued nur — die Übertragung läuft über die Outbox.
-        Task::observe(MsgraphTodoTaskObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Task::class, MsgraphTodoTaskObserver::class);
 
         // Feature-103-Delta: Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub
         // (Opt-in je Org, Plugin-Einstellung oof_enabled).
-        \App\Models\Absence\Vacation::observe(\App\Plugins\Msgraph\Observers\MsgraphVacationObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Absence\Vacation::class, \App\Plugins\Msgraph\Observers\MsgraphVacationObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MsgraphOutboxDispatcher());
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\MsgraphTodoSyncService::class);
     }

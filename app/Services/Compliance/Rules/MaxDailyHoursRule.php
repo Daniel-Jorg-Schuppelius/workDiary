@@ -35,7 +35,7 @@ final class MaxDailyHoursRule implements ComplianceRule {
         $dateStr = $shift->date->format('Y-m-d');
 
         // Gesamtstunden des Mitarbeiters an diesem Kalendertag (ohne abgesagte).
-        $sameDay = ScheduledShift::query()
+        $sameDay = app(\App\Services\Compliance\ShiftCheckWindow::class)->shifts($shift, $dateStr, $dateStr) ?? ScheduledShift::query()
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereDate('date', $dateStr)

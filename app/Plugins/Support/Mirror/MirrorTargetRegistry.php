@@ -35,9 +35,9 @@ class MirrorTargetRegistry {
         $this->targets[$target->pluginId()] = $target;
 
         if (! $this->observersAttached) {
-            Document::observe(MirrorDocumentObserver::class);
-            Invoice::observe(MirrorInvoiceObserver::class);
-            Protocol::observe(MirrorProtocolObserver::class);
+            \App\Support\Database\DeferredObservers::observe(Document::class, MirrorDocumentObserver::class);
+            \App\Support\Database\DeferredObservers::observe(Invoice::class, MirrorInvoiceObserver::class);
+            \App\Support\Database\DeferredObservers::observe(Protocol::class, MirrorProtocolObserver::class);
             $this->observersAttached = true;
         }
     }

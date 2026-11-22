@@ -37,12 +37,13 @@ final class LicenseAccounts {
 
     /** @return Collection<int, ResaleSubscription> */
     public function subscriptions(Organization $organization): Collection {
-        return $this->memo->remember($this->memoPrefix($organization) . ':subscriptions', static fn(): Collection => ResaleSubscription::query()->withoutGlobalScopes()
+        // Katalogartikel gleich gebündelt auflösen: Produktnamen fragen sonst je Abo einzeln nach.
+        return $this->memo->remember($this->memoPrefix($organization) . ':subscriptions', static fn(): Collection => ResaleSubscription::withCatalogArticles(ResaleSubscription::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
             ->with(ResaleSubscription::providerBillingRelations())
             ->orderBy('starts_on')
-            ->get());
+            ->get()));
     }
 
     /**

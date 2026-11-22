@@ -187,13 +187,18 @@ final class AccountingVoucherRevenueSource implements ExternalRevenueSource {
                     ->whereColumn('external_references.external_id', 'accounting_vouchers.external_id')
                     ->where('external_references.referenceable_type', (new Invoice)->getMorphClass());
             })
+            // Zwei Prüfungen statt einer mit ODER: jede nutzt ihren Index (Nummer bzw. Fremdnummer je Organisation).
             ->whereNotExists(static function ($query): void {
                 $query->selectRaw('1')
                     ->from('invoices')
                     ->whereColumn('invoices.organization_id', 'accounting_vouchers.organization_id')
-                    ->where(static fn ($w) => $w
-                        ->whereColumn('invoices.number', 'accounting_vouchers.voucher_number')
-                        ->orWhereColumn('invoices.external_number', 'accounting_vouchers.voucher_number'));
+                    ->whereColumn('invoices.number', 'accounting_vouchers.voucher_number');
+            })
+            ->whereNotExists(static function ($query): void {
+                $query->selectRaw('1')
+                    ->from('invoices')
+                    ->whereColumn('invoices.organization_id', 'accounting_vouchers.organization_id')
+                    ->whereColumn('invoices.external_number', 'accounting_vouchers.voucher_number');
             });
     }
 }

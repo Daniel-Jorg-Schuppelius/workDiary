@@ -39,7 +39,7 @@ class GitlabServiceProvider extends PluginServiceProviderBase {
             ->register(new Services\GitlabIssueWritebackDispatcher);
 
         // Zeit-Rückkanal (MVP-1513), Opt-in `time_writeback`.
-        \App\Models\Time\TimeEntry::observe(Observers\GitlabTimeEntryObserver::class);
+        \App\Support\Database\DeferredObservers::observe(\App\Models\Time\TimeEntry::class, Observers\GitlabTimeEntryObserver::class);
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\GitlabIssueImporter::class);
     }
 }

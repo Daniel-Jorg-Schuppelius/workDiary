@@ -38,7 +38,7 @@ final class MaxWeeklyHoursRule implements ComplianceRule {
         $weekStart = $date->startOfWeek();
         $weekEnd = $date->endOfWeek();
 
-        $weekShifts = ScheduledShift::query()
+        $weekShifts = app(\App\Services\Compliance\ShiftCheckWindow::class)->shifts($shift, $weekStart->toDateString(), $weekEnd->toDateString()) ?? ScheduledShift::query()
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', DateRange::days($weekStart, $weekEnd))

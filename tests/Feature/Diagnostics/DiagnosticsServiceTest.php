@@ -94,7 +94,7 @@ class DiagnosticsServiceTest extends TestCase {
         $report = $service->collect();
 
         $codes = array_map(static fn($s) => $s->code, $report->sections);
-        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr'], $codes);
+        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr', 'runtime'], $codes);
         $this->assertSame(DiagnosticStatus::Critical, $report->overallStatus());
     }
 
@@ -283,5 +283,15 @@ class DiagnosticsServiceTest extends TestCase {
         $section = $service->checkBackup();
 
         $this->assertSame(DiagnosticStatus::Ok, $section->status);
+    }
+
+    public function test_runtime_section_reports_opcache_state_without_failing_on_cli(): void {
+        $section = app(DiagnosticsService::class)->checkRuntime();
+
+        $this->assertSame('runtime', $section->code);
+        $this->assertSame(PHP_SAPI, $section->metrics['php.sapi']);
+        $this->assertArrayHasKey('opcache.enabled', $section->metrics);
+        $this->assertArrayHasKey('php.memory_limit', $section->metrics);
+        $this->assertNotSame(DiagnosticStatus::Unknown, $section->status);
     }
 }

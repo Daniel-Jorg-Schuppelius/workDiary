@@ -29,7 +29,7 @@ final class ConsecutiveDaysRule implements ComplianceRule {
         $date = CarbonImmutable::parse($shift->date->format('Y-m-d'));
 
         // Alle Schichten des Mitarbeiters in einem +/- 14-Tage-Fenster.
-        $rows = ScheduledShift::query()
+        $rows = app(\App\Services\Compliance\ShiftCheckWindow::class)->shifts($shift, $date->subDays(14)->toDateString(), $date->addDays(14)->toDateString()) ?? ScheduledShift::query()
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', DateRange::days($date->subDays(14), $date->addDays(14)))

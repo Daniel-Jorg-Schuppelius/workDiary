@@ -52,6 +52,12 @@ class MonthClosure extends Model {
     // Prüfpaket-ZIP (Rang 40) hängt als Attachment (meta_type=audit_bundle).
     use HasAttachments;
 
+    protected static function booted(): void {
+        $flush = static fn () => app(\App\Services\TimeApproval\ClosureLockMemo::class)->flush();
+        static::saved($flush);
+        static::deleted($flush);
+    }
+
     protected $fillable = [
         'organization_id',
         'user_id',

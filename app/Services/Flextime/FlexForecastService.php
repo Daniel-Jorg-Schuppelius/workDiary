@@ -60,10 +60,14 @@ final class FlexForecastService {
             $monthStart = $cursor;
             $monthEnd = $cursor->endOfMonth();
 
-            $target = 0;
-            for ($day = $monthStart; $day->lessThanOrEqualTo($monthEnd); $day = $day->addDay()) {
-                $target += $this->calculator->targetMinutes($user, $day);
-            }
+            $target = $this->calculator->batched([(int) $user->getKey()], $monthStart, $monthEnd, function () use ($user, $monthStart, $monthEnd): int {
+                $target = 0;
+                for ($day = $monthStart; $day->lessThanOrEqualTo($monthEnd); $day = $day->addDay()) {
+                    $target += $this->calculator->targetMinutes($user, $day);
+                }
+
+                return $target;
+            });
 
             [$planned, $hasShifts] = $this->plannedMinutes($user, $monthStart, $monthEnd);
 

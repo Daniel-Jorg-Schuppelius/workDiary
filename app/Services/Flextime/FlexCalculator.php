@@ -13,14 +13,153 @@ namespace App\Services\Flextime;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\User;
-use App\Models\Time\{Attendance, FlexBalance, TimeEntry};
+use App\Models\Time\{Attendance, FlexBalance, TimeEntry, WorkSchedule};
 use App\Services\Calendar\HolidayService;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use Illuminate\Support\Facades\DB;
 
 class FlexCalculator {
+    /**
+     * Vorgeladene Tagesfakten für {@see batched()}; außerhalb des Fensters fragt jede Methode wie bisher je Tag.
+     *
+     * @var array{from: string, to: string, users: array<int, true>, vacation: array<int, array<string, true>>, sick: array<int, array<string, true>>, schedules: array<int, list<WorkSchedule>>, attendances: array<int, array<string, list<Attendance>>>|null, entries: array<int, array<string, int>>|null}|null
+     */
+    private ?array $window = null;
+
     public function __construct(protected WorkScheduleResolver $resolver, protected HolidayService $holidays) {}
+
+    /**
+     * Führt `$run` mit vorgeladenen Abwesenheiten und Arbeitszeitmodellen aus
+     * (je eine Abfrage für den Zeitraum statt je Nutzer und Tag); mit
+     * `$withActuals` auch Stempelzeiten und Zeiteinträge. Die Regeln sind die
+     * der Einzelabfragen. Das Fenster gilt nur während `$run` — wer darin
+     * Abwesenheiten oder Zeiten schreibt, rechnet danach außerhalb neu.
+     *
+     * @template T
+     *
+     * @param  list<int>  $userIds
+     * @param  \Closure(): T  $run
+     * @return T
+     */
+    public function batched(array $userIds, CarbonInterface $from, CarbonInterface $to, \Closure $run, bool $withActuals = false): mixed {
+        if ($this->window !== null || $userIds === []) {
+            return $run();
+        }
+        $this->window = $this->loadWindow($userIds, $from->toDateString(), $to->toDateString(), $withActuals);
+        try {
+            return $run();
+        } finally {
+            $this->window = null;
+        }
+    }
+
+    /**
+     * @param  list<int>  $userIds
+     * @return array{from: string, to: string, users: array<int, true>, vacation: array<int, array<string, true>>, sick: array<int, array<string, true>>, schedules: array<int, list<WorkSchedule>>, attendances: array<int, array<string, list<Attendance>>>|null, entries: array<int, array<string, int>>|null}
+     */
+    private function loadWindow(array $userIds, string $from, string $to, bool $withActuals): array {
+        $first = CarbonImmutable::parse($from);
+        $last = CarbonImmutable::parse($to);
+
+        /** @param iterable<Vacation|SickLeave> $rows */
+        $expand = static function (iterable $rows) use ($first, $last): array {
+            $days = [];
+            foreach ($rows as $row) {
+                if ($row->start_date === null || $row->end_date === null) {
+                    continue;
+                }
+                $start = CarbonImmutable::parse($row->start_date->toDateString())->max($first);
+                $end = CarbonImmutable::parse($row->end_date->toDateString())->min($last);
+                for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+                    $days[(int) $row->user_id][$day->toDateString()] = true;
+                }
+            }
+
+            return $days;
+        };
+
+        $schedules = [];
+        $rows = WorkSchedule::query()
+            ->whereIn('user_id', $userIds)
+            ->where('valid_from', '<', DateRange::dayAfter($last))
+            ->where(static fn ($q) => $q->whereNull('valid_to')->orWhere('valid_to', '>=', $from))
+            ->orderByDesc('valid_from')
+            ->get();
+        foreach ($rows as $schedule) {
+            $schedules[(int) $schedule->user_id][] = $schedule;
+        }
+
+        $attendances = null;
+        $entries = null;
+        if ($withActuals) {
+            $attendances = [];
+            $rows = Attendance::query()
+                ->whereIn('user_id', $userIds)
+                ->whereBetween('date', DateRange::days($from, $to))
+                ->get(['user_id', 'date', 'started_at', 'ended_at', 'duration_minutes', 'break_minutes_auto', 'break_minutes_manual']);
+            foreach ($rows as $attendance) {
+                $attendances[(int) $attendance->user_id][$attendance->date?->toDateString() ?? ''][] = $attendance;
+            }
+
+            $entries = [];
+            $sums = TimeEntry::query()
+                ->whereIn('user_id', $userIds)
+                ->whereBetween('date', DateRange::days($from, $to))
+                ->whereNull('attendance_id')
+                ->countedAsWork()
+                ->groupBy('user_id', 'date')
+                ->toBase()
+                ->get(['user_id', 'date', DB::raw('sum(`minutes`) as total')]);
+            foreach ($sums as $sum) {
+                $iso = substr((string) $sum->date, 0, 10);
+                $entries[(int) $sum->user_id][$iso] = ($entries[(int) $sum->user_id][$iso] ?? 0) + (int) $sum->total;
+            }
+        }
+
+        return [
+            'from' => $from,
+            'to' => $to,
+            'users' => array_fill_keys(array_map('intval', $userIds), true),
+            'vacation' => $expand(Vacation::query()
+                ->whereIn('user_id', $userIds)
+                ->where('status', VacationStatus::Approved)
+                ->where('start_date', '<', DateRange::dayAfter($last))
+                ->where('end_date', '>=', $from)
+                ->get(['user_id', 'start_date', 'end_date'])),
+            'sick' => $expand(SickLeave::query()
+                ->whereIn('user_id', $userIds)
+                ->whereNull('cancelled_at')
+                ->where('start_date', '<', DateRange::dayAfter($last))
+                ->where('end_date', '>=', $from)
+                ->get(['user_id', 'start_date', 'end_date'])),
+            'schedules' => $schedules,
+            'attendances' => $attendances,
+            'entries' => $entries,
+        ];
+    }
+
+    private function inWindow(User $user, string $iso): bool {
+        return $this->window !== null
+            && isset($this->window['users'][(int) $user->id])
+            && $iso >= $this->window['from']
+            && $iso <= $this->window['to'];
+    }
+
+    private function scheduleFor(User $user, CarbonInterface $day): WorkSchedule {
+        $iso = $day->toDateString();
+        if (! $this->inWindow($user, $iso)) {
+            return $this->resolver->for($user, $day);
+        }
+        foreach ($this->window['schedules'][(int) $user->id] ?? [] as $schedule) {
+            if ($schedule->valid_from->toDateString() <= $iso && ($schedule->valid_to === null || $schedule->valid_to->toDateString() >= $iso)) {
+                return $schedule;
+            }
+        }
+
+        return $this->resolver->fallback($user, $day);
+    }
 
     /**
      * Tagessoll in Minuten (0 wenn Feiertag, Wochenende, Urlaub oder Krankheit —
@@ -30,9 +169,7 @@ class FlexCalculator {
         if ($this->isHoliday($day) || $this->isVacation($user, $day) || $this->isSick($user, $day)) {
             return 0;
         }
-        $schedule = $this->resolver->for($user, $day);
-
-        return $schedule->targetMinutesForWeekday($day->dayOfWeekIso);
+        return $this->scheduleFor($user, $day)->targetMinutesForWeekday($day->dayOfWeekIso);
     }
 
     /**
@@ -84,6 +221,12 @@ class FlexCalculator {
 
         // 2. Zusätzlich manuelle TimeEntries OHNE Attendance-Bezug; an eine Attendance gehängte würden doppelt
         //    zählen und werden ausgeschlossen.
+        $iso = $day->toDateString();
+        $entries = $this->inWindow($user, $iso) ? ($this->window['entries'] ?? null) : null;
+        if ($entries !== null) {
+            return $attendanceMinutes + ($entries[(int) $user->id][$iso] ?? 0);
+        }
+
         $entryMinutes = (int) TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereDate('date', $day->toDateString())
@@ -100,10 +243,14 @@ class FlexCalculator {
      * bereits eingetragenen Pausenminuten.
      */
     public function attendanceMinutes(User $user, CarbonInterface $day): int {
-        $rows = Attendance::query()
-            ->where('user_id', $user->id)
-            ->whereDate('date', $day->toDateString())
-            ->get(['started_at', 'ended_at', 'duration_minutes', 'break_minutes_auto', 'break_minutes_manual']);
+        $iso = $day->toDateString();
+        $preloaded = $this->inWindow($user, $iso) ? ($this->window['attendances'] ?? null) : null;
+        $rows = $preloaded !== null
+            ? ($preloaded[(int) $user->id][$iso] ?? [])
+            : Attendance::query()
+                ->where('user_id', $user->id)
+                ->whereDate('date', $iso)
+                ->get(['started_at', 'ended_at', 'duration_minutes', 'break_minutes_auto', 'break_minutes_manual']);
 
         $sum = 0;
         $now = CarbonImmutable::now();
@@ -154,21 +301,23 @@ class FlexCalculator {
         $actual = 0;
         $days = [];
 
-        for ($day = $start; $day->lte($end); $day = $day->addDay()) {
-            $iso = $day->toDateString();
-            $holidayName = $holidayMap[$iso] ?? null;
-            $isHoliday = $holidayName !== null;
-            $isVacation = $this->isVacation($user, $day);
+        $this->batched([(int) $user->id], $start, $end, function () use ($user, $start, $end, $holidayMap, &$target, &$actual, &$days): void {
+            for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+                $iso = $day->toDateString();
+                $holidayName = $holidayMap[$iso] ?? null;
+                $isHoliday = $holidayName !== null;
+                $isVacation = $this->isVacation($user, $day);
 
-            $b = $this->dailyBalance($user, $day);
-            $b['is_holiday'] = $isHoliday;
-            $b['is_vacation'] = $isVacation;
-            $b['holiday_name'] = $holidayName;
+                $b = $this->dailyBalance($user, $day);
+                $b['is_holiday'] = $isHoliday;
+                $b['is_vacation'] = $isVacation;
+                $b['holiday_name'] = $holidayName;
 
-            $target += $b['target'];
-            $actual += $b['actual'];
-            $days[$iso] = $b;
-        }
+                $target += $b['target'];
+                $actual += $b['actual'];
+                $days[$iso] = $b;
+            }
+        }, withActuals: true);
 
         return [
             'target' => $target,
@@ -293,6 +442,11 @@ class FlexCalculator {
     }
 
     protected function isSick(User $user, CarbonInterface $day): bool {
+        $iso = $day->toDateString();
+        if ($this->inWindow($user, $iso)) {
+            return isset($this->window['sick'][(int) $user->id][$iso]);
+        }
+
         return SickLeave::query()
             ->where('user_id', $user->id)
             ->whereNull('cancelled_at')
@@ -302,6 +456,11 @@ class FlexCalculator {
     }
 
     protected function isVacation(User $user, CarbonInterface $day): bool {
+        $iso = $day->toDateString();
+        if ($this->inWindow($user, $iso)) {
+            return isset($this->window['vacation'][(int) $user->id][$iso]);
+        }
+
         return Vacation::query()
             ->where('user_id', $user->id)
             ->where('status', VacationStatus::Approved)

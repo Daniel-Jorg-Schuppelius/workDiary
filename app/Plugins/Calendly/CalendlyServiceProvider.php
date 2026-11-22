@@ -29,7 +29,7 @@ class CalendlyServiceProvider extends PluginServiceProviderBase {
     protected function bootPlugin(): void {
         // Outbound-Cancel-Sync (P5): app-seitiger Storno eines bestätigten
         // Calendly-Termins wird best effort gegen Calendly abgeglichen.
-        DiaryEntry::observe(CalendlyDiaryEntryObserver::class);
+        \App\Support\Database\DeferredObservers::observe(DiaryEntry::class, CalendlyDiaryEntryObserver::class);
 
         $this->commands([
             CalendlyBackfillCommand::class,

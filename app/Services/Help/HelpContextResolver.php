@@ -78,11 +78,12 @@ class HelpContextResolver {
         if ($topic === null) {
             return null;
         }
-        if ($this->topics->topicVisibleFor($topic, $user)) {
+        $access = $this->topics->pageAccess($topic, $user);
+        if ($access['visible']) {
             return $topic;
         }
 
-        if ($routeOrRequest instanceof Request && $user !== null && $this->topics->isReadableForPage($topic)) {
+        if ($routeOrRequest instanceof Request && $user !== null && $access['readable']) {
             $this->pageAccess->mark($routeOrRequest, $topic);
 
             return $topic;

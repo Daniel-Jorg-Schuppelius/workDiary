@@ -103,6 +103,10 @@ class WorkBalanceCalculator {
     }
 
     public function range(User $user, CarbonInterface $from, CarbonInterface $to): PeriodBalance {
+        return $this->flex->batched([(int) $user->id], $from, $to, fn (): PeriodBalance => $this->rangeOf($user, $from, $to));
+    }
+
+    private function rangeOf(User $user, CarbonInterface $from, CarbonInterface $to): PeriodBalance {
         $days = [];
         $totalTarget = 0;
         $totalAttendance = 0;

@@ -10,7 +10,7 @@
 
 namespace App\Support;
 
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Support\Facades\Auth;
@@ -35,12 +35,12 @@ final class Formats {
 
     /** PHP-Datumsformat für die Anzeige (z. B. "d.m.Y"). */
     public static function date(): string {
-        return self::resolve('date_format', self::dateOptions(), self::DATE_FALLBACK);
+        return self::resolve('date_format', self::DATE_FALLBACK);
     }
 
     /** PHP-Uhrzeitformat für die Anzeige (z. B. "H:i"). */
     public static function time(): string {
-        return self::resolve('time_format', self::timeOptions(), self::TIME_FALLBACK);
+        return self::resolve('time_format', self::TIME_FALLBACK);
     }
 
     /** Kombiniertes Datum-+-Uhrzeit-Format. */
@@ -90,12 +90,45 @@ final class Formats {
         return $value !== null && in_array($value, self::timeOptions(), true);
     }
 
+    /** Aufgelöstes Format; gemerkt je Request unter dem Zustand, von dem es abhängt. */
+    private static function resolve(string $key, string $fallback): string {
+        $user = Auth::user();
+        // Der Schlüssel trägt den Zustand, von dem das Ergebnis abhängt (Rohwerte von Nutzer- und
+        // Organisationseinstellung, Config-Vorgabe); Systemeinstellungen entwerten beim Speichern.
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $memo = app(FormatsMemo::class);
+        $userAttributes = $user instanceof User ? $user->getAttributes() : [];
+        $organizationAttributes = $organization instanceof Organization ? $organization->getAttributes() : [];
+        $parts = [
+            $userAttributes['id'] ?? null,
+            $userAttributes['preferences'] ?? null,
+            $organizationAttributes['id'] ?? null,
+            $organizationAttributes['settings'] ?? null,
+            config("personalization.$key"),
+        ];
+        // Derselbe Zustand wie beim letzten Aufruf (der Regelfall je Tabellenzelle): ohne Schlüssel zu bauen.
+        if (($memo->last[$key][0] ?? null) === $parts) {
+            return $memo->last[$key][1];
+        }
+        $state = $key
+            . '|' . ($user instanceof User ? $parts[0] . ':' . self::raw($parts[1]) : '')
+            . '|' . ($organization instanceof Organization ? $parts[2] . ':' . self::raw($parts[3]) : '')
+            . '|' . self::raw($parts[4]);
+        $format = $memo->formats[$state] ??= self::resolveFresh($user, $key, $key === 'date_format' ? self::dateOptions() : self::timeOptions(), $fallback);
+        $memo->last[$key] = [$parts, $format];
+
+        return $format;
+    }
+
+    private static function raw(mixed $value): string {
+        return is_string($value) ? $value : (is_scalar($value) ? (string) $value : '');
+    }
+
     /**
      * @param  list<string>  $allowed
      */
-    private static function resolve(string $key, array $allowed, string $fallback): string {
+    private static function resolveFresh(mixed $user, string $key, array $allowed, string $fallback): string {
         // 1) User-Preference
-        $user = Auth::user();
         if ($user instanceof User) {
             $pref = (array) ($user->preferences ?? []);
             $value = $pref[$key] ?? null;

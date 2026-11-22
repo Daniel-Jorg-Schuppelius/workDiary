@@ -214,13 +214,18 @@ class LexofficeRevenueSource implements ExternalRevenueSource {
                     ->where('external_references.referenceable_type', (new Invoice)->getMorphClass())
                     ->whereColumn('external_references.external_id', 'lexoffice_vouchers.external_id');
             })
+            // Zwei Prüfungen statt einer mit ODER: jede nutzt ihren Index (Nummer bzw. Fremdnummer je Organisation).
             ->whereNotExists(static function ($query): void {
                 $query->selectRaw('1')
                     ->from('invoices')
                     ->whereColumn('invoices.organization_id', 'lexoffice_vouchers.organization_id')
-                    ->where(static fn ($w) => $w
-                        ->whereColumn('invoices.number', 'lexoffice_vouchers.voucher_number')
-                        ->orWhereColumn('invoices.external_number', 'lexoffice_vouchers.voucher_number'));
+                    ->whereColumn('invoices.number', 'lexoffice_vouchers.voucher_number');
+            })
+            ->whereNotExists(static function ($query): void {
+                $query->selectRaw('1')
+                    ->from('invoices')
+                    ->whereColumn('invoices.organization_id', 'lexoffice_vouchers.organization_id')
+                    ->whereColumn('invoices.external_number', 'lexoffice_vouchers.voucher_number');
             });
     }
 

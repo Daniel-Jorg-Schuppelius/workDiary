@@ -83,8 +83,8 @@ class OrganizationLoginPolicy extends Model {
     ];
 
     protected static function booted(): void {
-        static::saved(static fn (self $policy) => Cache::forget(self::cacheKey((int) $policy->organization_id)));
-        static::deleted(static fn (self $policy) => Cache::forget(self::cacheKey((int) $policy->organization_id)));
+        static::saved(static fn (self $policy) => Cache::memo()->forget(self::cacheKey((int) $policy->organization_id)));
+        static::deleted(static fn (self $policy) => Cache::memo()->forget(self::cacheKey((int) $policy->organization_id)));
     }
 
     public static function cacheKey(int $organizationId): string {
@@ -97,11 +97,12 @@ class OrganizationLoginPolicy extends Model {
      */
     public static function forOrganization(int $organizationId): ?self {
         $key = self::cacheKey($organizationId);
-        $row = Cache::get($key);
+        // Zwei Middleware fragen die Richtlinie je Anfrage; der Cache liegt in der Datenbank.
+        $row = Cache::memo()->get($key);
         if (! is_array($row)) {
             $policy = self::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->first();
             $row = $policy instanceof self ? $policy->getAttributes() : [];
-            Cache::put($key, $row, self::CACHE_SECONDS);
+            Cache::memo()->put($key, $row, self::CACHE_SECONDS);
         }
 
         if ($row === [] || ! isset($row['organization_id'])) {

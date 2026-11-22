@@ -51,6 +51,7 @@ class PluginSetting extends Model {
     protected static function booted(): void {
         // Plugin ein-/ausgeschaltet oder umkonfiguriert: Menü-Cache aller Nutzer entwerten (perf-13).
         $bump = static function (): void {
+            app(\App\Plugins\Support\PluginSettingsMemo::class)->flush();
             try {
                 \App\Services\Navigation\NavigationRegistry::bumpGlobalStamp();
             } catch (\Throwable) {

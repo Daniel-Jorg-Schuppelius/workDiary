@@ -23,6 +23,11 @@ use Illuminate\Support\Collection;
  * Kundennummer) des Kopfes — des letzten Nachfolgers in der Kette.
  */
 final class LicenseAccountGroup {
+    /** @var array<int, ResaleSubscription>|null */
+    private ?array $contracts = null;
+
+    private ResaleSubscription|false|null $mainHolder = false;
+
     /**
      * @param  Collection<int, ResaleSubscription>  $subscriptions  Verträge, Vorgänger und Abtretungen
      */
@@ -39,8 +44,9 @@ final class LicenseAccountGroup {
      * @return Collection<int, ResaleSubscription>
      */
     public function contracts(): Collection {
-        return $this->subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->parent_id === null)
-            ->sortBy([['starts_on', 'desc'], ['id', 'desc']])->values();
+        // Gemerkt: Sortierungen und Namen der Kontenliste fragen je Vergleich danach.
+        return new Collection($this->contracts ??= $this->subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->parent_id === null)
+            ->sortBy([['starts_on', 'desc'], ['id', 'desc']])->values()->all());
     }
 
     /**
@@ -112,6 +118,14 @@ final class LicenseAccountGroup {
 
     /** Vertrag des häufigsten Halters (bei Gleichstand der neueste Vertrag). */
     private function mainHolderContract(): ?ResaleSubscription {
+        if ($this->mainHolder === false) {
+            $this->mainHolder = $this->resolveMainHolderContract();
+        }
+
+        return $this->mainHolder;
+    }
+
+    private function resolveMainHolderContract(): ?ResaleSubscription {
         $counts = [];
         $samples = [];
         foreach ($this->contracts() as $contract) {

@@ -92,6 +92,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Correlation-ID für alle Requests (041-P0, MVP-053): vor allem
         // anderen, damit auch Fehler in frühen Middlewares eine ID tragen.
+        $middleware->prepend(\App\Http\Middleware\MeasureRequest::class);
         $middleware->prepend(AssignRequestId::class);
 
         // Muss zuerst laufen, damit DB-Ausfälle in StartSession (SESSION_DRIVER=database)

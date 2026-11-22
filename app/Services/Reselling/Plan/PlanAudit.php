@@ -305,15 +305,16 @@ final class PlanAudit {
     /**
      * Befunde an Vorlagen, die in den nächsten {@see DUE_DAYS} Tagen ausführen: was vor dem Lauf zu prüfen ist.
      *
+     * @param  list<Finding>|null  $findings  schon gerechnete Befunde über alle Abos zum selben Stichtag
      * @return array{count: int, amount: float, customer_id: int|null}
      */
-    public function dueSoon(Organization $organization, ?CarbonImmutable $reference = null): array {
+    public function dueSoon(Organization $organization, ?CarbonImmutable $reference = null, ?array $findings = null): array {
         $reference ??= ResalePeriod::today();
         $until = $reference->addDays(self::DUE_DAYS);
         $result = ['count' => 0, 'amount' => 0.0, 'customer_id' => null];
         /** @var array<string, true> $seen Vorlagenposition zählt mit ihrem Betrag nur einmal */
         $seen = [];
-        foreach ($this->findings($organization, null, $reference) as $finding) {
+        foreach ($findings ?? $this->findings($organization, null, $reference) as $finding) {
             $due = $finding['due'];
             if ($finding['template'] === null || $due === null || $due->lessThan($reference) || $due->greaterThan($until)) {
                 continue;

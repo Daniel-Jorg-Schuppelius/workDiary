@@ -26,12 +26,15 @@ final class VacationConflictRule implements ComplianceRule {
     public function check(ScheduledShift $shift, array $settings): array {
         $dateStr = $shift->date->format('Y-m-d');
 
-        $vacation = Vacation::query()
-            ->where('user_id', $shift->user_id)
-            ->whereIn('status', [VacationStatus::Approved, VacationStatus::Pending])
-            ->where('start_date', '<=', $dateStr)
-            ->where('end_date', '>=', $dateStr)
-            ->first();
+        $vacation = app(\App\Services\Compliance\ShiftCheckWindow::class)->vacation($shift);
+        if ($vacation === false) {
+            $vacation = Vacation::query()
+                ->where('user_id', $shift->user_id)
+                ->whereIn('status', [VacationStatus::Approved, VacationStatus::Pending])
+                ->where('start_date', '<=', $dateStr)
+                ->where('end_date', '>=', $dateStr)
+                ->first();
+        }
 
         if (! $vacation) {
             return [];

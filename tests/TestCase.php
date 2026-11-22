@@ -100,6 +100,24 @@ abstract class TestCase extends BaseTestCase {
      * Login-Ereignis, die `reauth`-Schranke (Audit 2026-09-17, authflow-1)
      * würde sonst jede geschützte Aktion abweisen.
      */
+    /**
+     * Jeder Test-Request beginnt wie in Produktion ohne die Stände der
+     * Request-Merker. Laravel verwirft scoped gebundene Instanzen nur je echtem
+     * Request oder Job; im Test liefe sonst der Stand des vorigen Requests
+     * weiter (etwa Plugin-Einstellungen, die der Test dazwischen per Abfrage ändert).
+     */
+    public function call($method, $uri, $parameters = [], $cookies = [], $files = [], $server = [], $content = null) {
+        foreach ([
+            \App\Plugins\Support\PluginSettingsMemo::class,
+            \App\Services\TimeApproval\ClosureLockMemo::class,
+            'cache.__memoized:' . config('cache.default'),
+        ] as $memo) {
+            $this->app->forgetInstance($memo);
+        }
+
+        return parent::call($method, $uri, $parameters, $cookies, $files, $server, $content);
+    }
+
     protected function withRecentAuthentication(): static {
         $this->withSession([\App\Support\Auth\RecentAuthentication::SESSION_KEY => time()]);
 

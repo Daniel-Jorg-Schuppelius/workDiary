@@ -38,17 +38,17 @@ class HelpTopicResolver {
         return $this->firstInChain($topic, $preferredLocale, fn(HelpTopic $row): bool => $this->modulesEnabled($row));
     }
 
-    /** @param \Closure(HelpTopic): bool $visible */
     /**
-     * Sichtbarkeit ohne den Text zu laden (Leistungsanalyse 2026-11-02, perf-10):
-     * das Layout fragt je Seite nur, ob es ein Thema gibt — nicht, was darin steht.
+     * Beide Fragen des Layouts aus einer Abfrage, ohne den Text zu laden (Leistungsanalyse 2026-11-02,
+     * perf-10): Darf der Nutzer das Thema über die Zielgruppe sehen, und ist es über den Seitenzugriff lesbar?
+     *
+     * @return array{visible: bool, readable: bool}
      */
-    public function topicVisibleFor(string $topic, ?User $user = null, ?string $preferredLocale = null): bool {
-        return $this->firstInChain($topic, $preferredLocale, fn(HelpTopic $row): bool => $this->isVisibleFor($row, $user), self::LIGHT_COLUMNS) !== null;
-    }
+    public function pageAccess(string $topic, ?User $user): array {
+        $candidates = $this->candidates($topic, $this->localeFallbackChain(null), self::LIGHT_COLUMNS);
+        $visible = $this->firstOf($candidates, null, fn(HelpTopic $row): bool => $this->isVisibleFor($row, $user)) !== null;
 
-    public function isReadableForPage(string $topic, ?string $preferredLocale = null): bool {
-        return $this->firstInChain($topic, $preferredLocale, fn(HelpTopic $row): bool => $this->modulesEnabled($row), self::LIGHT_COLUMNS) !== null;
+        return ['visible' => $visible, 'readable' => $visible || $this->firstOf($candidates, null, fn(HelpTopic $row): bool => $this->modulesEnabled($row)) !== null];
     }
 
     /**
@@ -56,15 +56,28 @@ class HelpTopicResolver {
      * @param  list<string>  $columns
      */
     private function firstInChain(string $topic, ?string $preferredLocale, \Closure $visible, array $columns = ['*']): ?HelpTopic {
-        $locales = $this->localeFallbackChain($preferredLocale);
+        return $this->firstOf($this->candidates($topic, $this->localeFallbackChain($preferredLocale), $columns), $preferredLocale, $visible);
+    }
 
-        $candidates = HelpTopic::query()
+    /**
+     * @param  list<string>  $locales
+     * @param  list<string>  $columns
+     * @return \Illuminate\Support\Collection<array-key, HelpTopic>
+     */
+    private function candidates(string $topic, array $locales, array $columns): \Illuminate\Support\Collection {
+        return HelpTopic::query()
             ->where('topic', $topic)
             ->whereIn('locale', $locales)
             ->get($columns)
             ->keyBy('locale');
+    }
 
-        foreach ($locales as $locale) {
+    /**
+     * @param  \Illuminate\Support\Collection<array-key, HelpTopic>  $candidates
+     * @param  \Closure(HelpTopic): bool  $visible
+     */
+    private function firstOf(\Illuminate\Support\Collection $candidates, ?string $preferredLocale, \Closure $visible): ?HelpTopic {
+        foreach ($this->localeFallbackChain($preferredLocale) as $locale) {
             /** @var HelpTopic|null $row */
             $row = $candidates->get($locale);
             if ($row !== null && $visible($row)) {

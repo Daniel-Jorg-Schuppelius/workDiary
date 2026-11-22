@@ -34,8 +34,9 @@ class NotificationRuleController extends Controller {
         Gate::authorize('viewAny', NotificationRule::class);
         $organizationId = $this->currentOrganizationId();
 
+        $stored = NotificationRule::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->get()->keyBy(fn (NotificationRule $rule): string => (string) $rule->getRawOriginal('event'));
         $rules = collect(NotificationEvent::cases())
-            ->map(fn(NotificationEvent $event): NotificationRule => NotificationRule::resolveFor($organizationId, $event));
+            ->map(fn(NotificationEvent $event): NotificationRule => $stored->get($event->value) ?? NotificationRule::defaultFor($organizationId, $event));
 
         return view('admin.notification-rules.index', [
             'rules' => $rules,

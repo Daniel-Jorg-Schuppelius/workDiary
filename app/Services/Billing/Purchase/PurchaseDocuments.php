@@ -29,12 +29,29 @@ final class PurchaseDocuments {
     /** @var array<string, PurchaseDocumentSource> Quellschlüssel → Quelle */
     private array $sources = [];
 
-    /** @var array<string, PurchaseDocumentSource> Morph-Typ → Quelle */
-    private array $byMorph = [];
+    /** @var array<string, PurchaseDocumentSource>|null Morph-Typ → Quelle, siehe {@see morphIndex()} */
+    private ?array $byMorph = null;
 
     public function register(PurchaseDocumentSource $source): void {
         $this->sources[$source->key()] = $source;
-        $this->byMorph[$source->morphClass()] = $source;
+        $this->byMorph = null;
+    }
+
+    /**
+     * Erst beim ersten Gebrauch: der Morph-Typ einer Quelle fährt ihr Modell hoch, und die Quellen
+     * melden sich beim Start jeder Anfrage an.
+     *
+     * @return array<string, PurchaseDocumentSource>
+     */
+    private function morphIndex(): array {
+        if ($this->byMorph === null) {
+            $this->byMorph = [];
+            foreach ($this->sources as $source) {
+                $this->byMorph[$source->morphClass()] = $source;
+            }
+        }
+
+        return $this->byMorph;
     }
 
     /** @return list<PurchaseDocumentSource> */
@@ -47,7 +64,7 @@ final class PurchaseDocuments {
     }
 
     public function sourceFor(string $morphClass): ?PurchaseDocumentSource {
-        return $this->byMorph[$morphClass] ?? null;
+        return $this->morphIndex()[$morphClass] ?? null;
     }
 
     /**
@@ -113,13 +130,13 @@ final class PurchaseDocuments {
         foreach ($entries as $entry) {
             $all[] = $entry;
             [$morphClass, $id] = $entry->documentReference();
-            if ($morphClass !== null && $id !== null && isset($this->byMorph[$morphClass])) {
+            if ($morphClass !== null && $id !== null && isset($this->morphIndex()[$morphClass])) {
                 $ids[$morphClass][] = $id;
             }
         }
         $documents = [];
         foreach ($ids as $morphClass => $morphIds) {
-            foreach ($this->byMorph[$morphClass]->byMorphIds($organization, array_values(array_unique($morphIds))) as $document) {
+            foreach ($this->morphIndex()[$morphClass]->byMorphIds($organization, array_values(array_unique($morphIds))) as $document) {
                 $documents[$document->identity()] = $document;
             }
         }

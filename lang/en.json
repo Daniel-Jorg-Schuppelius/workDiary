@@ -10683,6 +10683,7 @@
     "Projektnummer im Belegtext": "Project number in the document text",
     "Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.": "Recognised from PDF or image without e-invoice data — check all values against the original.",
     "PDF/Bild (erkannt)": "PDF/image (recognised)",
+    "PHP-Laufzeit": "PHP runtime",
     ":created Rechnungen erfasst, :duplicates Dubletten, :failed nicht lesbar oder abgewiesen.": ":created invoices recorded, :duplicates duplicates, :failed unreadable or rejected.",
     "Die Datei ist keine lesbare Rechnung (XRechnung, ZUGFeRD oder PDF/Bild mit erkennbarer Nummer und Summe).": "The file is not a readable invoice (XRechnung, ZUGFeRD or PDF/image with a recognisable number and total).",
     "Rechnung :number aus PDF bzw. Bild erkannt — bitte die Werte prüfen.": "Invoice :number recognised from PDF or image — please check the values.",

@@ -26336,6 +26336,18 @@ CREATE INDEX "pts_external_reference_idx" on "project_time_shortfalls"(
 CREATE INDEX "crr_stock_delivery_idx" on "claim_rma_returns"(
   "stock_delivery_id"
 );
+CREATE INDEX "invoices_org_external_number_idx" on "invoices"(
+  "organization_id",
+  "external_number"
+);
+CREATE INDEX "lex_voucher_org_number_idx" on "lexoffice_vouchers"(
+  "organization_id",
+  "voucher_number"
+);
+CREATE INDEX "acc_voucher_org_number_idx" on "accounting_vouchers"(
+  "organization_id",
+  "voucher_number"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -27482,3 +27494,4 @@ INSERT INTO migrations VALUES(1142,'2027_04_25_100100_add_external_reference_to_
 INSERT INTO migrations VALUES(1143,'2027_04_26_120000_add_stock_delivery_to_claim_rma_returns',1);
 INSERT INTO migrations VALUES(1144,'2027_04_27_100000_add_is_direct_billing_to_resale_periods',2);
 INSERT INTO migrations VALUES(1145,'2027_04_28_100000_add_deviation_note_to_resale_periods',3);
+INSERT INTO migrations VALUES(1146,'2027_04_29_100000_add_mirror_number_indexes',4);

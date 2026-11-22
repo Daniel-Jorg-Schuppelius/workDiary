@@ -91,7 +91,7 @@ class DayCloseService {
     public function find(User $user, CarbonImmutable $day): ?DayClosure {
         /** @var DayClosure|null $closure */
         $closure = DayClosure::query()
-            ->where('organization_id', $user->organization_id)
+            ->when($user->organization_id !== null, static fn ($q) => $q->where('organization_id', $user->organization_id))
             ->where('user_id', $user->id)
             ->whereDate('day', $day->toDateString())
             ->first();
@@ -497,9 +497,14 @@ class DayCloseService {
         if ($this->isMonthLocked($user, $day)) {
             return 'month';
         }
-        $closure = $this->find($user, $day);
+        $key = sprintf('day|%s|%d|%s', $user->organization_id ?? '', $user->id, $day->toDateString());
+        $closed = app(ClosureLockMemo::class)->remember($key, function () use ($user, $day): bool {
+            $closure = $this->find($user, $day);
 
-        return $closure instanceof DayClosure && ! $closure->isOpen() ? 'day' : null;
+            return $closure instanceof DayClosure && ! $closure->isOpen();
+        });
+
+        return $closed ? 'day' : null;
     }
 
     // ── intern ─────────────────────────────────────────────────────────
@@ -544,13 +549,15 @@ class DayCloseService {
 
     /** Gleitzeit-Saldo vom Monatsersten bis einschließlich des Tages (§2.5). */
     private function monthBalanceToDate(User $user, CarbonImmutable $day): int {
-        $balance = 0;
-        for ($d = $day->startOfMonth(); $d->lte($day); $d = $d->addDay()) {
-            $b = $this->flex->dailyBalance($user, $d);
-            $balance += (int) $b['balance'];
-        }
+        return $this->flex->batched([(int) $user->id], $day->startOfMonth(), $day, function () use ($user, $day): int {
+            $balance = 0;
+            for ($d = $day->startOfMonth(); $d->lte($day); $d = $d->addDay()) {
+                $b = $this->flex->dailyBalance($user, $d);
+                $balance += (int) $b['balance'];
+            }
 
-        return $balance;
+            return $balance;
+        }, withActuals: true);
     }
 
     /**

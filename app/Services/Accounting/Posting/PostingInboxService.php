@@ -63,6 +63,18 @@ class PostingInboxService {
         ?PostingSourceKind $kind = null,
         bool $includePosted = false,
     ): Collection {
+        // Regeln, Profil, Buchungsstand, Übergabestand und Vorauszahlungen je Liste statt je Vorgang laden.
+        $window = app(PostingInboxWindow::class);
+        $window->open();
+        try {
+            return $this->collectItems($window, $organization, $from, $to, $kind, $includePosted);
+        } finally {
+            $window->close();
+        }
+    }
+
+    /** @return Collection<int, array<string, mixed>> */
+    private function collectItems(PostingInboxWindow $window, Organization $organization, CarbonImmutable $from, CarbonImmutable $to, ?PostingSourceKind $kind, bool $includePosted): Collection {
         $items = collect();
 
         foreach ($this->registry->all() as $adapter) {
@@ -70,9 +82,12 @@ class PostingInboxService {
                 continue;
             }
 
-            foreach ($adapter->candidates($organization, $from, $to) as $source) {
+            $sources = collect($adapter->candidates($organization, $from, $to));
+            $window->prime($organization, $sources);
+            $entries = $this->journal->activeEntriesForSources($organization, array_values($sources->map(static fn ($source): string => $adapter->sourceKey($source))->all()));
+            foreach ($sources as $source) {
                 $sourceKey = $adapter->sourceKey($source);
-                $entry = $this->journal->activeEntryForSource($organization, $sourceKey);
+                $entry = $entries[$sourceKey] ?? null;
 
                 $changed = $entry?->status->isPosted() === true && $adapter->changedSincePosting($source, $entry);
                 if ($entry?->status->isPosted() === true && ! $includePosted && ! $changed) {

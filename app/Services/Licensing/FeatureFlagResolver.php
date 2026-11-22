@@ -12,7 +12,7 @@ namespace App\Services\Licensing;
 
 use App\Models\Platform\{LicenseFlagOverride, Organization};
 use App\Modules\ModuleRegistry;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 /**
  * Löst Feature-Flags auf (MVP-047 §4 / Folge zu MVP-047).
@@ -187,10 +187,6 @@ class FeatureFlagResolver {
      * @return array<int, string>
      */
     private function disabledFlags(): array {
-        if (! Schema::hasTable('license_flag_overrides')) {
-            return [];
-        }
-
         $orgId = null;
         if (app()->bound('currentOrganization')) {
             $org = app('currentOrganization');
@@ -199,14 +195,19 @@ class FeatureFlagResolver {
             }
         }
 
-        return LicenseFlagOverride::query()
-            ->where(function ($q) use ($orgId): void {
-                $q->whereNull('organization_id');
-                if ($orgId !== null) {
-                    $q->orWhere('organization_id', $orgId);
-                }
-            })
-            ->pluck('flag')
-            ->all();
+        try {
+            return LicenseFlagOverride::query()
+                ->where(function ($q) use ($orgId): void {
+                    $q->whereNull('organization_id');
+                    if ($orgId !== null) {
+                        $q->orWhere('organization_id', $orgId);
+                    }
+                })
+                ->pluck('flag')
+                ->all();
+        } catch (QueryException) {
+            // Tabelle fehlt (Konsole vor der Migration): keine Sperren. Die Prüfung vorab kostete jede Anfrage eine Abfrage.
+            return [];
+        }
     }
 }

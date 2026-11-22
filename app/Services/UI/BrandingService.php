@@ -29,6 +29,9 @@ class BrandingService {
 
     private bool $resolved = false;
 
+    /** @var array<string, Attachment|null> Logo je Variante (`light`, `dark`), gelesen je Anfrage einmal */
+    private array $logos = [];
+
     public function currentOrganization(): ?Organization {
         if ($this->resolved) {
             return $this->cached;
@@ -48,6 +51,12 @@ class BrandingService {
         $orgId = $user->organization_id ?? null;
         if ($orgId === null) {
             return $this->cached = null;
+        }
+
+        // Die Middleware hat die Organisation des Nutzers meist schon gebunden — nicht noch einmal laden.
+        $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        if ($bound instanceof Organization && (int) $bound->id === (int) $orgId) {
+            return $this->cached = $bound;
         }
 
         return $this->cached = Organization::query()->find($orgId);
@@ -135,9 +144,11 @@ class BrandingService {
             return null;
         }
 
-        return $variant === 'dark'
-            ? ($org->logoDark() ?? $org->logo())
-            : ($org->logo() ?? $org->logoDark());
+        // Layout, Logo-Baustein und Theme fragen je Seite beide Varianten mehrfach: je Variante eine Abfrage.
+        $light = fn(): ?Attachment => array_key_exists('light', $this->logos) ? $this->logos['light'] : ($this->logos['light'] = $org->logo());
+        $dark = fn(): ?Attachment => array_key_exists('dark', $this->logos) ? $this->logos['dark'] : ($this->logos['dark'] = $org->logoDark());
+
+        return $variant === 'dark' ? ($dark() ?? $light()) : ($light() ?? $dark());
     }
 
     /**

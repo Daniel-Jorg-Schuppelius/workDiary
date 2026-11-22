@@ -33,6 +33,12 @@ final class ModuleExtensions {
     /** @var array<string, bool> "<Organisation>|<Lizenzcode oder plugin:ID>" → aktiv */
     private array $memo = [];
 
+    /** @var array<int, array<string, true>> verfügbare Lizenzcodes je Organisation */
+    private array $available = [];
+
+    /** @var array<int, ?Organization> */
+    private array $organizations = [];
+
     public function __construct(
         private readonly ModuleRegistry $modules,
         private readonly ModuleStatusResolver $status,
@@ -71,11 +77,13 @@ final class ModuleExtensions {
             return true;
         }
 
-        return $this->remember($organization, $license, fn (Organization $org): bool => $this->status->isActiveFor($org, $license));
+        return $this->remember($organization, $license, fn (Organization $org): bool => isset(($this->available[(int) $org->id] ??= $this->status->availableCodesFor($org))[$license]));
     }
 
     public function flush(): void {
         $this->memo = [];
+        $this->available = [];
+        $this->organizations = [];
     }
 
     /** @param  callable(Organization): bool  $resolve */
@@ -86,7 +94,9 @@ final class ModuleExtensions {
         }
 
         return $this->memo[$id . '|' . $key] ??= (function () use ($organization, $id, $resolve): bool {
-            $org = $organization instanceof Organization ? $organization : Organization::query()->withoutGlobalScopes()->find($id);
+            $org = $organization instanceof Organization
+                ? $organization
+                : (array_key_exists($id, $this->organizations) ? $this->organizations[$id] : $this->organizations[$id] = Organization::query()->withoutGlobalScopes()->find($id));
 
             return $org instanceof Organization && $resolve($org);
         })();

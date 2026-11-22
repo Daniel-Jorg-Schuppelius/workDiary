@@ -893,6 +893,7 @@ CREATE TABLE `accounting_vouchers` (
   KEY `acc_voucher_org_plugin_chg_idx` (`organization_id`,`plugin_id`,`source_changed_at`),
   KEY `accounting_vouchers_sales_user_id_foreign` (`sales_user_id`),
   KEY `accounting_vouchers_sales_agent_id_foreign` (`sales_agent_id`),
+  KEY `acc_voucher_org_number_idx` (`organization_id`,`voucher_number`),
   CONSTRAINT `accounting_vouchers_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `accounting_vouchers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `accounting_vouchers_sales_agent_id_foreign` FOREIGN KEY (`sales_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
@@ -13772,6 +13773,7 @@ CREATE TABLE `invoices` (
   KEY `invoices_sales_user_id_foreign` (`sales_user_id`),
   KEY `invoices_boq_fk` (`bill_of_quantity_id`),
   KEY `invoices_sales_agent_fk` (`sales_agent_id`),
+  KEY `invoices_org_external_number_idx` (`organization_id`,`external_number`),
   CONSTRAINT `inv_approved_by_fk` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `inv_quote_fk` FOREIGN KEY (`quote_id`) REFERENCES `quotes` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoices_boq_fk` FOREIGN KEY (`bill_of_quantity_id`) REFERENCES `bill_of_quantities` (`id`) ON DELETE SET NULL,
@@ -17049,6 +17051,7 @@ CREATE TABLE `lexoffice_vouchers` (
   KEY `lexoffice_vouchers_sales_user_id_foreign` (`sales_user_id`),
   KEY `lexoffice_vouchers_sales_agent_id_foreign` (`sales_agent_id`),
   KEY `lex_voucher_org_rec_tpl_idx` (`organization_id`,`recurring_template_id`),
+  KEY `lex_voucher_org_number_idx` (`organization_id`,`voucher_number`),
   CONSTRAINT `lexoffice_vouchers_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `lexoffice_vouchers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `lexoffice_vouchers_sales_agent_id_foreign` FOREIGN KEY (`sales_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
@@ -29834,3 +29837,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1142,'2027_04_25_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1143,'2027_04_26_120000_add_stock_delivery_to_claim_rma_returns',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1144,'2027_04_27_100000_add_is_direct_billing_to_resale_periods',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1145,'2027_04_28_100000_add_deviation_note_to_resale_periods',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1146,'2027_04_29_100000_add_mirror_number_indexes',4);

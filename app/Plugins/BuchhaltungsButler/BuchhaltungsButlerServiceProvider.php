@@ -29,7 +29,7 @@ class BuchhaltungsButlerServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
-        Invoice::observe(BhbInvoiceObserver::class);
+        \App\Support\Database\DeferredObservers::observe(Invoice::class, BhbInvoiceObserver::class);
         app(IntegrationOutboxDispatcherResolver::class)->register(new BhbOutboxDispatcher());
     }
 }

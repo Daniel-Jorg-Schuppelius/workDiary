@@ -246,7 +246,8 @@ final class InventorySettingsTest extends TestCase {
         $this->assertSame('JTL-4711', $created->fresh()->number);
 
         // Ist das Programm für die Organisation aus, führt wieder workDiary.
-        \App\Models\Platform\PluginSetting::query()->where('plugin_id', 'jtl_wawi')->update(['enabled' => false]);
+        // Über das Modell: Ändern per Abfrage feuert kein Ereignis, der Request-Merker der Plugin-Einstellungen bliebe stehen.
+        \App\Models\Platform\PluginSetting::query()->where('plugin_id', 'jtl_wawi')->firstOrFail()->update(['enabled' => false]);
         $this->assertNull(app(\App\Services\Numbering\NumberAuthority::class)->articleNumbersLockedBy($this->organization));
     }
 }

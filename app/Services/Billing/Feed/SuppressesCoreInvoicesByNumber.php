@@ -26,17 +26,17 @@ use Illuminate\Support\Facades\DB;
 trait SuppressesCoreInvoicesByNumber {
     /** @param  (Closure(Builder): void)|null  $constrain */
     private function suppressByMirroredNumber(Builder $invoices, string $table, string $numberColumn, ?Closure $constrain = null): void {
-        $invoices->whereNotExists(static function (Builder $sub) use ($table, $numberColumn, $constrain): void {
-            $sub->select(DB::raw(1))
-                ->from($table)
-                ->whereColumn($table . '.organization_id', 'invoices.organization_id')
-                ->where(static function (Builder $q) use ($table, $numberColumn): void {
-                    $q->whereColumn($table . '.' . $numberColumn, 'invoices.number')
-                        ->orWhereColumn($table . '.' . $numberColumn, 'invoices.external_number');
-                });
-            if ($constrain !== null) {
-                $constrain($sub);
-            }
-        });
+        // Je Nummernspalte eine Prüfung statt einer mit ODER: jede nutzt den Index (Organisation, Belegnummer).
+        foreach (['invoices.number', 'invoices.external_number'] as $invoiceColumn) {
+            $invoices->whereNotExists(static function (Builder $sub) use ($table, $numberColumn, $invoiceColumn, $constrain): void {
+                $sub->select(DB::raw(1))
+                    ->from($table)
+                    ->whereColumn($table . '.organization_id', 'invoices.organization_id')
+                    ->whereColumn($table . '.' . $numberColumn, $invoiceColumn);
+                if ($constrain !== null) {
+                    $constrain($sub);
+                }
+            });
+        }
     }
 }

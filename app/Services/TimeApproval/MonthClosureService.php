@@ -352,15 +352,20 @@ class MonthClosureService {
      * konsumiert, um Direkt-Apply gegen gesperrte Monate zu verhindern.
      */
     public function isPeriodLockedForUser(User $user, CarbonImmutable $day): bool {
-        /** @var MonthClosure|null $closure */
-        $closure = MonthClosure::query()
-            ->where('organization_id', $user->organization_id)
-            ->where('user_id', $user->id)
-            ->where('period_year', (int) $day->year)
-            ->where('period_month', (int) $day->month)
-            ->first();
+        $key = sprintf('month|%s|%d|%d|%d', $user->organization_id ?? '', $user->id, $day->year, $day->month);
 
-        return $closure instanceof MonthClosure && $closure->status->isLocked();
+        return app(ClosureLockMemo::class)->remember($key, static function () use ($user, $day): bool {
+            /** @var MonthClosure|null $closure */
+            // Listen laden den Besitzer oft nur mit id und name; ohne Organisation fände der Filter nie eine Sperre.
+            $closure = MonthClosure::query()
+                ->when($user->organization_id !== null, static fn ($q) => $q->where('organization_id', $user->organization_id))
+                ->where('user_id', $user->id)
+                ->where('period_year', (int) $day->year)
+                ->where('period_month', (int) $day->month)
+                ->first();
+
+            return $closure instanceof MonthClosure && $closure->status->isLocked();
+        });
     }
 
     // ── intern ─────────────────────────────────────────────────────────

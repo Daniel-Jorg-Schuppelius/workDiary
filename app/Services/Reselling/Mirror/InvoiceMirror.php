@@ -16,7 +16,7 @@ use App\Enums\Reselling\SubscriptionKind;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleLicenseAssignment, ResalePeriod, ResalePeriodLink};
-use App\Services\Reselling\Register\LinkProposer;
+use App\Services\Reselling\Register\{LinkProposer, ResaleRequestMemo};
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,12 +35,29 @@ final class InvoiceMirror {
     /** @var array<string, InvoiceMirrorSource> Quellschlüssel → Quelle */
     private array $sources = [];
 
-    /** @var array<string, InvoiceMirrorSource> Morph-Typ → Quelle */
-    private array $byMorph = [];
+    /** @var array<string, InvoiceMirrorSource>|null Morph-Typ → Quelle, siehe {@see morphIndex()} */
+    private ?array $byMorph = null;
 
     public function register(InvoiceMirrorSource $source): void {
         $this->sources[$source->key()] = $source;
-        $this->byMorph[$source->morphClass()] = $source;
+        $this->byMorph = null;
+    }
+
+    /**
+     * Erst beim ersten Gebrauch: der Morph-Typ einer Quelle fährt ihr Modell hoch, und die Quellen
+     * melden sich beim Start jeder Anfrage an.
+     *
+     * @return array<string, InvoiceMirrorSource>
+     */
+    private function morphIndex(): array {
+        if ($this->byMorph === null) {
+            $this->byMorph = [];
+            foreach ($this->sources as $source) {
+                $this->byMorph[$source->morphClass()] = $source;
+            }
+        }
+
+        return $this->byMorph;
     }
 
     /** @return list<InvoiceMirrorSource> */
@@ -53,12 +70,12 @@ final class InvoiceMirror {
     }
 
     public function sourceFor(string $morphClass): ?InvoiceMirrorSource {
-        return $this->byMorph[$morphClass] ?? null;
+        return $this->morphIndex()[$morphClass] ?? null;
     }
 
     /** @return list<string> */
     public function morphClasses(): array {
-        return array_keys($this->byMorph);
+        return array_keys($this->morphIndex());
     }
 
     /**
@@ -72,6 +89,16 @@ final class InvoiceMirror {
         }
 
         return $lines->values();
+    }
+
+    /**
+     * Alle Positionen gültiger Rechnungen der Organisation (ohne Lizenzfilter), je Request einmal geladen —
+     * Abgleich, Prüffälle und Einzelabrufe teilen diese Ladung.
+     *
+     * @return Collection<int, MirrorLine>
+     */
+    public function allLines(Organization $organization): Collection {
+        return app(ResaleRequestMemo::class)->remember('mirror-lines:all:' . $organization->id, fn(): Collection => $this->linesFor($organization, null, licenceOnly: false));
     }
 
     /**
@@ -147,6 +174,32 @@ final class InvoiceMirror {
         $source = $this->sourceFor($morphClass);
 
         return $source === null || $ids === [] ? collect() : $source->linesByIds($organization, $ids);
+    }
+
+    /**
+     * Positionen zu Kennungen (`<Morph-Typ>:<ID>`), gebündelt je Quelle — auch solche, die in der
+     * Gesamtladung gültiger Rechnungen fehlen (stornierter Beleg hinter einem alten Bezug).
+     *
+     * @param  list<string>  $identities
+     * @return array<string, MirrorLine> Kennung → Position
+     */
+    public function linesByIdentity(Organization $organization, array $identities): array {
+        /** @var array<string, list<int>> $ids */
+        $ids = [];
+        foreach ($identities as $identity) {
+            $at = strrpos($identity, ':');
+            if ($at !== false && isset($this->morphIndex()[substr($identity, 0, $at)])) {
+                $ids[substr($identity, 0, $at)][] = (int) substr($identity, $at + 1);
+            }
+        }
+        $lines = [];
+        foreach ($ids as $morphClass => $morphIds) {
+            foreach ($this->morphIndex()[$morphClass]->linesByIds($organization, array_values(array_unique($morphIds))) as $line) {
+                $lines[$line->identity()] = $line;
+            }
+        }
+
+        return $lines;
     }
 
     /** Beleg einer Quelle über ihren Schlüssel (Belegansicht hinter einem Bezug, Nachbesserung 2026-10-27). */
@@ -275,14 +328,45 @@ final class InvoiceMirror {
         $all = [];
         foreach ($links as $link) {
             $all[] = $link;
-            if ($link->linkable_type !== null && $link->linkable_id !== null && isset($this->byMorph[$link->linkable_type])) {
+            if ($link->linkable_type !== null && $link->linkable_id !== null && isset($this->morphIndex()[$link->linkable_type])) {
                 $ids[$link->linkable_type][] = (int) $link->linkable_id;
             }
         }
+        // Je Request jede Position nur einmal laden und umrechnen: aus der Gesamtladung der
+        // Organisation, wenn sie schon vorliegt, sonst aus früheren Abrufen (Schlüssel unter
+        // `mirror-lines`, die Spiegel-Syncs verwerfen sie mit).
+        $memo = app(ResaleRequestMemo::class);
+        $orgId = (int) $organization->id;
+        /** @var \ArrayObject<string, MirrorLine> $fetched */
+        $fetched = $memo->remember('mirror-lines:byid:' . $orgId, static fn(): \ArrayObject => new \ArrayObject);
+        /** @var array<string, MirrorLine> $loaded */
+        $loaded = ! $memo->has('mirror-lines:all:' . $orgId) ? [] : $memo->remember('mirror-lines:index:' . $orgId, static function () use ($memo, $orgId): array {
+            /** @var Collection<int, MirrorLine> $all */
+            $all = $memo->remember('mirror-lines:all:' . $orgId, static fn(): Collection => new Collection);
+            $index = [];
+            foreach ($all as $line) {
+                $index[$line->identity()] = $line;
+            }
+
+            return $index;
+        });
         $lines = [];
         foreach ($ids as $morphClass => $morphIds) {
-            foreach ($this->byMorph[$morphClass]->linesByIds($organization, array_values(array_unique($morphIds))) as $line) {
-                $lines[$line->identity()] = $line;
+            $missing = [];
+            foreach (array_unique($morphIds) as $morphId) {
+                $identity = MirrorLine::identityOf($morphClass, $morphId);
+                $line = $loaded[$identity] ?? $fetched[$identity] ?? null;
+                if ($line !== null) {
+                    $lines[$identity] = $line;
+                } else {
+                    $missing[] = $morphId;
+                }
+            }
+            if ($missing === []) {
+                continue;
+            }
+            foreach ($this->morphIndex()[$morphClass]->linesByIds($organization, $missing) as $line) {
+                $lines[$line->identity()] = $fetched[$line->identity()] = $line;
             }
         }
         foreach ($all as $link) {

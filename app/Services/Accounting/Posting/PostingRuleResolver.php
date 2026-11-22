@@ -34,13 +34,17 @@ class PostingRuleResolver {
         array $context,
         CarbonImmutable $on,
     ): ?AccountingPostingRule {
-        $candidates = AccountingPostingRule::query()
-            ->where('organization_id', $organization->id)
-            ->where('source_kind', $kind->value)
-            ->where('role', $role->value)
-            ->validOn($on)
-            ->with(['account', 'taxCode'])
-            ->get()
+        // Im Buchungs-Eingang fragt jeder Vorgang dieselben Regeln: je Art, Rolle und Tag einmal laden.
+        $candidates = app(PostingInboxWindow::class)->remember(
+            implode('|', ['rules', $organization->id, $kind->value, $role->value, $on->toDateString()]),
+            static fn () => AccountingPostingRule::query()
+                ->where('organization_id', $organization->id)
+                ->where('source_kind', $kind->value)
+                ->where('role', $role->value)
+                ->validOn($on)
+                ->with(['account', 'taxCode'])
+                ->get(),
+        )
             ->filter(fn (AccountingPostingRule $rule): bool => $rule->matches($context))
             ->filter(fn (AccountingPostingRule $rule): bool => $rule->account?->is_active === true);
 

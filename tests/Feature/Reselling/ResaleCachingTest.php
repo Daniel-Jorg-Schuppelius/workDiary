@@ -15,12 +15,12 @@ namespace Tests\Feature\Reselling;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Reselling\{ResalePlanLink, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriodLink, ResalePlanLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\PlanAudit;
-use App\Services\Reselling\Register\{LicenseAccounts, PeriodLinker, PeriodPlanner, RecipientReconciler, ResaleCacheStamp, ResaleOverview, ResaleRequestMemo};
+use App\Services\Reselling\Register\{LicenseAccounts, LinkAudit, PeriodLinker, PeriodPlanner, RecipientReconciler, ResaleCacheStamp, ResaleOverview, ResaleRequestMemo};
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -298,5 +298,295 @@ class ResaleCachingTest extends TestCase {
         $this->resetQueries();
         $this->assertCount(3, $accounts->subscriptions($this->organization));
         $this->assertSame(1, $this->queriesMatching('/^select \* from [`"]resale_subscriptions[`"]/i'));
+    }
+
+    /** MVP-1796: Der umgerechnete Spiegel liegt über Requests hinweg im Cache und folgt jedem Bestandswechsel. */
+    public function test_mirror_lines_come_from_the_cache_until_the_mirror_changes(): void {
+        $admin = $this->orgAdmin();
+        $this->actingAs($admin);
+        $data = $this->workspace();
+        $mirror = app(InvoiceMirror::class);
+        $load = function () use ($mirror): array {
+            $this->newRequest();
+            $this->resetQueries();
+            $lines = [];
+            foreach ($mirror->linesFor($this->organization, null, licenceOnly: false) as $line) {
+                $row = get_object_vars($line);
+                foreach ($row as $field => $value) {
+                    $row[$field] = match (true) {
+                        $value instanceof \DateTimeInterface => $value::class . '|' . $value->format('Y-m-d H:i:s.u e'),
+                        $value instanceof \CommonToolkit\ValueObjects\Money => $value->getAmount() . '|' . $value->getCurrency()->value . '|' . $value->getScale(),
+                        $value instanceof \BackedEnum => $value->value,
+                        default => $value,
+                    };
+                }
+                $lines[$line->identity()] = $row;
+            }
+            ksort($lines);
+
+            return $lines;
+        };
+
+        // Ein eben geänderter Spiegel geht noch nicht in den Cache (die Signatur misst in Sekunden).
+        $load();
+        $load();
+        $this->assertSame(1, $this->organizationWideMirrorLoads());
+        $this->travel(5)->seconds();
+        $fresh = $load();
+        $this->assertSame(1, $this->organizationWideMirrorLoads());
+        $this->assertCount(3, $fresh);
+
+        // Zweiter Request: dieselben Zeilen, ohne die Positionen neu zu lesen.
+        $cached = $load();
+        $this->assertSame(0, $this->mirrorLoads());
+        $this->assertSame($fresh, $cached);
+
+        // Der Kundenname steht nicht im Cache.
+        $data['customer']->update(['name' => 'Nordlicht Systems AG']);
+        $renamed = $load();
+        $this->assertSame(0, $this->mirrorLoads());
+        $this->assertContains('Nordlicht Systems AG', array_column($renamed, 'recipientName'));
+        $this->assertSame(array_column($fresh, 'previewUrl'), array_column($renamed, 'previewUrl'));
+
+        // Änderung über das Modell und Änderung per Abfrage (ohne Ereignis) lesen beide neu.
+        LexofficeVoucherLine::query()->where('organization_id', $this->organization->id)->orderBy('id')->firstOrFail()->update(['name' => 'Exchange Online (Plan 2)']);
+        $this->assertContains('Exchange Online (Plan 2)', array_column($load(), 'name'));
+        $this->assertSame(1, $this->organizationWideMirrorLoads());
+        $this->travel(5)->seconds();
+        $load();
+        $this->assertContains('Exchange Online (Plan 2)', array_column($load(), 'name'));
+        $this->assertSame(0, $this->mirrorLoads());
+        LexofficeVoucher::query()->withoutGlobalScopes()->where('voucher_number', 'RE/2024/9001')->update(['voucher_number' => 'RE/2024/9001-K']);
+        $this->assertContains('RE/2024/9001-K', array_column($load(), 'voucherNumber'));
+        $this->assertSame(1, $this->organizationWideMirrorLoads());
+        $this->travel(5)->seconds();
+        $load();
+        DB::table('lexoffice_voucher_lines')->where('name', 'Exchange Online (Plan 2)')->delete();
+        $this->assertCount(2, $load());
+
+        // Ein Bezug ändert das Register, nicht den Spiegel: der Cache bleibt.
+        $this->travel(5)->seconds();
+        $load();
+        ResaleCacheStamp::bump((int) $this->organization->id);
+        $load();
+        $this->assertSame(0, $this->mirrorLoads());
+
+        // Ein Stempel in der Zukunft (per SQL in Ortszeit geschrieben) sperrt den Cache nicht.
+        DB::table('lexoffice_voucher_lines')->where('organization_id', $this->organization->id)->limit(1)->update(['updated_at' => now()->addHour()]);
+        $load();
+        $this->assertSame(1, $this->organizationWideMirrorLoads());
+        $load();
+        $this->assertSame(0, $this->mirrorLoads());
+    }
+
+    /** MVP-1797: Nach einer Änderung rechnet nur der betroffene Empfänger neu — mit demselben Ergebnis wie eine volle Rechnung. */
+    public function test_overview_recomputes_only_the_changed_recipient_and_matches_a_full_run(): void {
+        $this->actingAs($this->orgAdmin());
+        $data = $this->workspace();
+        $third = $this->customerWithContact('Hafenkontor Süd GmbH', 'c-hafenkontor');
+        $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $third->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-02-01', 'quantity' => 2]);
+        $this->voucher('c-hafenkontor', 'RE/2025/9010', '2025-02-03', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
+        $line = LexofficeVoucherLine::query()->whereHas('voucher', static fn($q) => $q->where('voucher_number', 'RE/2024/9001'))->firstOrFail();
+        $period = $data['licence']->periods()->orderBy('starts_on')->firstOrFail();
+        app(PeriodLinker::class)->attach($period, $line, 12, null, null);
+
+        $stateKey = 'resale:reconcile-recipients:1:' . $this->organization->id . ':2026-09-07';
+        $overview = function (): array {
+            $this->newRequest();
+            ResaleCacheStamp::bump((int) $this->organization->id);
+            $this->resetQueries();
+
+            return array_map(static fn(array $row): array => array_merge($row, ['customer' => $row['customer']?->id, 'open_amount' => $row['open_amount']?->getAmount()]), (new RecipientReconciler)->overview($this->organization));
+        };
+        $periodLoads = fn(): int => $this->queriesMatching('/^select \* from [`"]resale_periods[`"] where [`"]resale_periods[`"]\.[`"]subscription_id[`"] in/i');
+        $recomputed = function (array $before) use ($stateKey): array {
+            $changed = [];
+            foreach ((array) \Illuminate\Support\Facades\Cache::get($stateKey) as $recipient => $entry) {
+                if (($before[$recipient]['fingerprint'] ?? null) !== $entry['fingerprint']) {
+                    $changed[] = (int) $recipient;
+                }
+            }
+            sort($changed);
+
+            return $changed;
+        };
+        $full = function () use ($overview, $stateKey): array {
+            \Illuminate\Support\Facades\Cache::forget($stateKey);
+
+            return $overview();
+        };
+
+        $first = $overview();
+        $this->assertCount(3, $first);
+
+        // Nichts geändert: kein Empfänger lädt seine Perioden neu.
+        $this->assertSame($first, $overview());
+        $this->assertSame(0, $periodLoads());
+
+        // Bezug per Abfrage geändert (ohne Ereignis): nur der Empfänger der Periode rechnet neu.
+        $states = (array) \Illuminate\Support\Facades\Cache::get($stateKey);
+        DB::table('resale_period_links')->where('period_id', $period->id)->update(['months' => 6]);
+        $partial = $overview();
+        $this->assertSame([$data['customer']->id], $recomputed($states));
+        $this->assertNotSame($first, $partial);
+        $this->assertSame($full(), $partial);
+
+        // Position eines anderen Empfängers geändert: nur dieser rechnet neu.
+        $states = (array) \Illuminate\Support\Facades\Cache::get($stateKey);
+        LexofficeVoucherLine::query()->whereHas('voucher', static fn($q) => $q->where('voucher_number', 'RE/2025/9010'))->firstOrFail()->update(['quantity' => 12, 'total_net' => '47.40']);
+        $partial = $overview();
+        $this->assertSame([$third->id], $recomputed($states));
+        $this->assertSame($full(), $partial);
+
+        // Abo wechselt den Empfänger: beide Seiten rechnen neu, die dritte nicht.
+        $states = (array) \Illuminate\Support\Facades\Cache::get($stateKey);
+        $data['licence']->update(['customer_id' => $data['sister']->id]);
+        $partial = $overview();
+        $this->assertSame([$data['customer']->id, $data['sister']->id], $recomputed($states));
+        $this->assertSame($full(), $partial);
+    }
+
+    public function test_link_findings_are_rechecked_only_for_changed_subscriptions_and_match_a_full_check(): void {
+        $this->actingAs($this->orgAdmin());
+        $data = $this->workspace();
+        $third = $this->customerWithContact('Hafenkontor Süd GmbH', 'c-hafenkontor');
+        $other = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $third->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-02-01', 'quantity' => 2]);
+        $this->voucher('c-hafenkontor', 'RE/2025/9010', '2025-02-03', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
+        $lineOf = static fn(string $number): LexofficeVoucherLine => LexofficeVoucherLine::query()->whereHas('voucher', static fn($q) => $q->where('voucher_number', $number))->firstOrFail();
+        $link = fn(ResaleSubscription $subscription, int $periodIndex, LexofficeVoucherLine $line, string $number, string $date, float $months): ResalePeriodLink => ResalePeriodLink::query()->create([
+            'organization_id' => $this->organization->id, 'period_id' => $subscription->periods()->orderBy('starts_on')->get()[$periodIndex]->id, 'subscription_id' => $subscription->id,
+            'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id, 'voucher_number' => $number, 'voucher_date' => $date,
+            'quantity' => 1, 'months' => $months, 'currency' => 'EUR', 'origin' => 'manual', 'confirmed_at' => now(),
+        ]);
+        // Überbucht und zeitlich unpassend: die Zwölf-Monats-Position von 2024 trägt zwei Lizenzjahre.
+        $link($data['licence'], 0, $lineOf('RE/2024/9001'), 'RE/2024/9001', '2024-04-14', 12);
+        $second = $link($data['licence'], 2, $lineOf('RE/2024/9001'), 'RE/2024/9001', '2024-04-14', 12);
+        $link($other, 0, $lineOf('RE/2025/9010'), 'RE/2025/9010', '2025-02-03', 24);
+
+        $stateKey = 'resale:link-findings:1:' . $this->organization->id;
+        $findings = function (): array {
+            $this->newRequest();
+            ResaleCacheStamp::bump((int) $this->organization->id);
+            $this->resetQueries();
+            $overview = app(ResaleOverview::class);
+
+            return (new \ReflectionMethod($overview, 'linkFindings'))->invoke($overview, $this->organization);
+        };
+        $periodLoads = fn(): int => $this->queriesMatching('/^select \* from [`"]resale_periods[`"] where [`"]resale_periods[`"]\.[`"]subscription_id[`"] in/i');
+        $rechecked = function (array $before) use ($stateKey): array {
+            $changed = [];
+            foreach ((array) \Illuminate\Support\Facades\Cache::get($stateKey) as $subscription => $entry) {
+                if (($before[$subscription]['fingerprint'] ?? null) !== $entry['fingerprint']) {
+                    $changed[] = (int) $subscription;
+                }
+            }
+            sort($changed);
+
+            return $changed;
+        };
+        $full = function () use ($findings, $stateKey): array {
+            \Illuminate\Support\Facades\Cache::forget($stateKey);
+
+            return $findings();
+        };
+
+        $first = $findings();
+        $this->assertSame(1, $first['counts'][LinkAudit::OVERBOOKED] ?? 0);
+        $this->assertGreaterThan(0, $first['counts'][LinkAudit::MISMATCH] ?? 0);
+        $this->assertSame($data['customer']->id, $first['customer_id']);
+
+        // Nichts geändert: kein Abo lädt seine Perioden neu.
+        $this->assertSame($first, $findings());
+        $this->assertSame(0, $periodLoads());
+
+        // Bezug per Abfrage gelöscht (ohne Ereignis): nur sein Abo wird neu geprüft, die Überbuchung entfällt.
+        $states = (array) \Illuminate\Support\Facades\Cache::get($stateKey);
+        DB::table('resale_period_links')->where('id', $second->id)->delete();
+        $partial = $findings();
+        $this->assertSame([$data['licence']->id], $rechecked($states));
+        $this->assertSame(0, $partial['counts'][LinkAudit::OVERBOOKED] ?? 0);
+        $this->assertSame($full(), $partial);
+
+        // Position eines anderen Empfängers schrumpft: nur dessen Abo wird neu geprüft und ist jetzt überbucht.
+        $states = (array) \Illuminate\Support\Facades\Cache::get($stateKey);
+        $lineOf('RE/2025/9010')->update(['quantity' => 12, 'total_net' => '47.40']);
+        $partial = $findings();
+        $this->assertSame([$other->id], $rechecked($states));
+        $this->assertSame(1, $partial['counts'][LinkAudit::OVERBOOKED] ?? 0);
+        $this->assertSame($full(), $partial);
+
+        // Abo wechselt den Empfänger: nur dieses Abo wird neu geprüft.
+        $states = (array) \Illuminate\Support\Facades\Cache::get($stateKey);
+        $data['licence']->update(['customer_id' => $data['sister']->id]);
+        $partial = $findings();
+        $this->assertSame([$data['licence']->id], $rechecked($states));
+        $this->assertSame($full(), $partial);
+    }
+
+    public function test_stock_counters_survive_a_register_change_and_follow_subscriptions_and_allocations(): void {
+        $this->actingAs($this->orgAdmin());
+        $data = $this->workspace();
+        $keys = ['resale:allocation-conflicts:1:' . $this->organization->id . ':2026-09-07', 'resale:renewal-count:1:' . $this->organization->id . ':2026-09-07'];
+        $counters = function (): array {
+            $this->newRequest();
+            ResaleCacheStamp::bump((int) $this->organization->id);
+            $this->resetQueries();
+            $overview = app(ResaleOverview::class);
+            $all = (new \ReflectionMethod($overview, 'countersUncached'))->invoke($overview, $this->organization, \Carbon\CarbonImmutable::parse('2026-09-07'));
+
+            return ['conflicts' => $all['allocation_conflicts'], 'renewals' => $all['renewals']];
+        };
+        $full = function () use ($counters, $keys): array {
+            foreach ($keys as $key) {
+                \Illuminate\Support\Facades\Cache::forget($key);
+            }
+
+            return $counters();
+        };
+        $renewalPlans = fn(): int => $this->queriesMatching('/from [`"]resale_subscriptions[`"] where [`"]status[`"] in \(\?, \?\) and [`"]resale_subscriptions[`"]\.[`"]organization_id[`"] = \? order by [`"]label[`"] asc$/i');
+        $allocationLoads = fn(): int => $this->queriesMatching('/^select \* from [`"]resale_account_allocations[`"] where [`"]organization_id[`"] = \?$/i');
+
+        $this->assertSame(['conflicts' => 0, 'renewals' => 0], $counters());
+
+        // Ein Bezug ändert das Register, nicht den Bestand: beide Zähler bleiben stehen.
+        $line = LexofficeVoucherLine::query()->whereHas('voucher', static fn($q) => $q->where('voucher_number', 'RE/2024/9001'))->firstOrFail();
+        app(PeriodLinker::class)->attach($data['licence']->periods()->orderBy('starts_on')->firstOrFail(), $line, 12, null, null);
+        $this->assertSame(['conflicts' => 0, 'renewals' => 0], $counters());
+        $this->assertSame(0, $renewalPlans());
+        $this->assertSame(0, $allocationLoads());
+
+        // Beginn per Abfrage verschoben (ohne Ereignis): die Verlängerung fällt in die nächsten 60 Tage.
+        DB::table('resale_subscriptions')->where('id', $data['licence']->id)->update(['starts_on' => '2024-10-01']);
+        $partial = $counters();
+        $this->assertSame(1, $renewalPlans());
+        $this->assertSame(1, $partial['renewals']);
+        $this->assertSame($full(), $partial);
+
+        // Aufteilung per Abfrage über den Bestand hinaus: ein Konflikt.
+        $group = collect(app(\App\Services\Reselling\Register\LicenseAccounts::class)->groups($this->organization))->firstOrFail(static fn($g): bool => $g->contracts()->contains('id', $data['licence']->id));
+        DB::table('resale_account_allocations')->insert([
+            'organization_id' => $this->organization->id, 'provider' => $group->provider->value, 'provider_account' => $group->account, 'product_key' => $data['licence']->productKey(),
+            'product_label' => 'Exchange Online (Plan 1)', 'customer_id' => $data['customer']->id, 'is_own_holding' => false, 'quantity' => 99, 'valid_from' => '2024-04-10', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $partial = $counters();
+        $this->assertSame(1, $partial['conflicts']);
+        $this->assertSame($full(), $partial);
+    }
+
+    public function test_register_models_share_date_objects_and_remember_their_casts(): void {
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'company_name' => 'Hafenkontor Süd GmbH', 'starts_on' => '2024-04-10']);
+
+        // Derselbe Rohwert ergibt dasselbe (unveränderliche) Objekt — auch über zwei Modelle.
+        $subscription = $subscription->fresh();
+        $this->assertSame($subscription->starts_on, $subscription->fresh()->starts_on);
+        $this->assertSame('2024-04-10', $subscription->starts_on->toDateString());
+
+        // Die gemerkte Cast-Liste folgt einer späteren Änderung der Casts.
+        $this->assertSame('int', $subscription->getCasts()['id']);
+        $this->assertSame($subscription->getCasts(), $subscription->getCasts());
+        $this->assertIsInt($subscription->quantity);
+        $subscription->mergeCasts(['quantity' => 'string']);
+        $this->assertSame('string', $subscription->getCasts()['quantity']);
+        $this->assertSame('1', $subscription->quantity);
     }
 }

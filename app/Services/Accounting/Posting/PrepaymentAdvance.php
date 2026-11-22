@@ -125,7 +125,7 @@ final class PrepaymentAdvance {
      * @return list<Credit>
      */
     public function resolvedBy(Organization $organization, Invoice $invoice): array {
-        $payments = OnlinePayment::query()->withoutGlobalScopes()
+        $payments = app(PostingInboxWindow::class)->payments($invoice) ?? OnlinePayment::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('invoice_id', $invoice->id)
             ->whereNotNull('subject_type')

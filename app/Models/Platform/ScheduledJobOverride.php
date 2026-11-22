@@ -52,7 +52,7 @@ class ScheduledJobOverride extends Model {
     ];
 
     protected static function booted(): void {
-        $flush = static fn() => Cache::forget(self::CACHE_KEY);
+        $flush = static fn() => Cache::memo()->forget(self::CACHE_KEY);
         static::saved($flush);
         static::deleted($flush);
     }
@@ -67,7 +67,8 @@ class ScheduledJobOverride extends Model {
     public static function systemMap(): array {
         try {
             /** @var array<string, array{enabled: bool, cadence: array<string, mixed>|null, timezone: string|null, quiet_from: string|null, quiet_until: string|null, retry_attempts: int, retry_delay_minutes: int|null}> $map */
-            $map = Cache::rememberForever(self::CACHE_KEY, static function (): array {
+            // memo(): der Registrar liest die Karte je Job.
+            $map = Cache::memo()->rememberForever(self::CACHE_KEY, static function (): array {
                 return self::query()
                     ->whereNull('organization_id')
                     ->get()

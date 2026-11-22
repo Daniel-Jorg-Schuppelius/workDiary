@@ -159,7 +159,7 @@ class LinkAuditTest extends TestCase {
 
         $linker->attach($period, $domain, 12.0, null, $admin->id, 'Kulanz: Domain statt Postfach berechnet');
         $this->assertSame('Kulanz: Domain statt Postfach berechnet', $period->fresh()?->deviation_note);
-        $kinds = fn(): array => array_column((new LinkAudit)->forSubscriptions($this->organization, LinkAudit::loadedWithLinks($this->organization, [$contract->id])), 'kind');
+        $kinds = fn(): array => array_column((new LinkAudit)->forSubscriptions($this->organization, ResaleSubscription::query()->whereKey($contract->id)->with('periods.links')->get()), 'kind');
         $this->assertNotContains(LinkAudit::ARTICLE, $kinds(), 'begründet ist kein Prüffall');
 
         // Altbestand ohne Begründung: Prüffall, bis er begründet wird.

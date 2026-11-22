@@ -10,6 +10,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Betrieb (`MVP-1792`, `MVP-1793`): Anfragen ab 1,5 Sekunden stehen mit Route,
+  Zahl der Datenbankabfragen und Datenbankzeit im Log (`PERF_SLOW_REQUEST_MS`,
+  `0` schaltet ab; ohne URL-Parameter und ohne Nutzer). Die Diagnose zeigt im
+  neuen Abschnitt „PHP-Laufzeit“ den Füllstand des OPcache und warnt, bevor er
+  voll läuft. Die Anwendung braucht rund 320 MB; mit der PHP-Vorgabe von
+  128 MB übersetzt PHP einen Teil der Seiten bei jeder Anfrage neu. Empfohlene
+  Werte: `opcache.memory_consumption=512`, `opcache.interned_strings_buffer=128`,
+  `opcache.max_accelerated_files=30000`.
 - Legacy-Bereich: klassische Ansicht im Aussehen der Altportale für den ganzen
   Bereich. Das Support-Portal hat für Kunden und Büro den gelben Grund, die
   alten Tabellen, Menüs und Statuskästchen, den Termin in vier Feldern und
@@ -206,6 +214,65 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Legacy-Tagebuch: Der E-Mail-Hinweis eines Eintrags geht wie im Altsystem nur
   an den Mitarbeiter, wenn jemand anderes den Eintrag speichert; die eigene
   Antwort löst keinen Hinweis an sich selbst mehr aus.
+- Geschwindigkeit (`MVP-1785` bis `MVP-1791`): Jede Seite stellt rund 60
+  Datenbankabfragen weniger (Plugin-Einstellungen in einer Abfrage statt einer
+  je Plugin, Systemeinstellungen je Seite einmal statt je Datumszelle).
+  Gleitzeit, Auslastung, Leitungsbericht, Datenqualität, Projektseite,
+  Projektzeiten, Heute, Tagesabschluss und Monatsfreigabe laden ihre Daten
+  gebündelt statt je Zeile oder Tag (zuvor 200 bis 1 500 Abfragen je Aufruf).
+  Abos & Lizenzen: Überblick, Lizenzkonten und Arbeitsmappe rechnen den
+  Belegspiegel und den Verbrauch je Aufruf einmal statt mehrfach (Lizenzkonten
+  rund fünfmal, Arbeitsmappe doppelt so schnell). Die Zähler des Überblicks,
+  die auch das Dashboard über den Arbeitsvorrat liest, liegen zehn Minuten
+  statt einer im Cache; jede Änderung am Register oder am Lexoffice-Spiegel
+  verwirft sie weiterhin sofort. Gebaute Assets tragen eine Cache-Kopfzeile,
+  der Browser fragt sie nicht bei jedem Seitenaufruf neu an.
+- Geschwindigkeit (`MVP-1794`, `MVP-1795`): Die Erlösregel gleicht gespiegelte
+  Belege und lokale Rechnungen über Indizes ab (neue Migration
+  `2027_04_29_100000_add_mirror_number_indexes`); mit vielen lokalen Rechnungen
+  und vielen Fremdbelegen brauchten Menü-Abzeichen, Kundenwert,
+  Zahlungsverhalten, Provisionen, Produktumsatz und Belegkette zuvor Sekunden.
+  Wirtschaftlichkeitsbericht, Schichtplan, Buchungs-Eingang, Nummernkreise und
+  Integrations-Eingang laden ihre Daten gebündelt statt je Zeile; die
+  Ergebnisse sind unverändert.
+- Geschwindigkeit (`MVP-1796`): Der umgerechnete Lexoffice-Belegspiegel einer
+  Organisation liegt über Seitenaufrufe hinweg im Cache und wird neu gelesen,
+  sobald sich Positionen, Belege, Artikel oder Einstufungen ändern (auch per
+  Sync in einem anderen Prozess). Ein Bezug oder eine Entscheidung im Register
+  verwirft ihn nicht. Arbeitsmappe 1,6 s → 0,55 s, nach einer Änderung am
+  Register 1,2 s. Datumsspalten von Abo, Periode und Bezug teilen ihre
+  Datumsobjekte, und die Datumsanzeige der ganzen Anwendung formatiert Formate
+  ohne Monats- oder Wochentagsnamen direkt.
+- Geschwindigkeit (`MVP-1797`): Die Abgleichsübersicht führt den Stand je
+  Rechnungsempfänger. Nach einem Bezug, einer Entscheidung oder einer
+  geänderten Belegposition rechnet nur der betroffene Empfänger neu, nicht
+  mehr alle; das Ergebnis ist dasselbe wie bei einer vollen Rechnung.
+  Lizenzkonto direkt nach einer Änderung 1,05 s → 0,6 s, Arbeitsmappe
+  1,2 s → 0,95 s.
+- Geschwindigkeit (`MVP-1798`): Der Überblick führt die Prüffälle an Bezügen
+  je Abo. Nach einer Änderung prüft er nur das betroffene Abo neu
+  (0,3 s → 0,03 s), der Überblick steht danach in 0,9 s statt 1,5 s. Ein
+  Belegstempel in der Zukunft hält den Belegspiegel nicht mehr aus dem Cache.
+- Geschwindigkeit (`MVP-1799`): Die übrigen Zähler des Überblicks rechnen
+  nach einer Änderung nur noch, was die Änderung betrifft. Verlängerungen und
+  Aufteilungskonflikte bleiben stehen, solange sich Abos und Aufteilungen
+  nicht ändern; der Belegspiegel wird je Seite einmal statt zweimal gelesen.
+  Überblick nach einer Änderung 0,9 s → 0,6 s.
+- Geschwindigkeit (`MVP-1800`): Die Abgleichsübersicht rendert die Bausteine,
+  die in jeder Zeile gleich aussehen, einmal statt je Empfänger. Aufruf aus
+  dem Cache 0,23 s → 0,15 s, nach einer Änderung 0,48 s → 0,38 s. Abo,
+  Periode und Bezug merken ihre Cast-Liste; Rechenwege über diese Modelle
+  werden rund 10 % schneller.
+- Geschwindigkeit (`MVP-1801`): Jede Anfrage startet rund 11 ms schneller.
+  Beobachter melden sich erst an, wenn ihr Modell gebraucht wird; zuvor fuhr
+  der Start 57 Modelle hoch. Das Grundgerüst der Seite stellt neun Abfragen
+  weniger (Logo, Organisation, Hilfethema, Anmelderichtlinie, Menü-Stempel),
+  und Symbole entstehen ohne eigene View. Eine leichte Seite braucht rund
+  61 ms statt 80 ms.
+- Behoben (`MVP-1801`): Der Branding-Dienst merkte sich die Organisation für
+  die Lebensdauer des Prozesses. In einem Queue-Worker blieb so die
+  Organisation des ersten Auftrags für alle folgenden stehen; er gilt jetzt je
+  Anfrage und je Auftrag.
 - Abos & Lizenzen (`MVP-1781`): Die Liste der Lizenzkonten führt jeden Halter
   einmal. Seine Anbieterkonten stehen in der Spalte „Anbieter“ untereinander
   und führen auf den jeweiligen Reiter; Verträge, Lizenzen, offene Perioden
@@ -243,6 +310,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Legacy-Tagebuch: Das Häkchen „E-Mail-Hinweis senden“ wurde beim Speichern
   verworfen, der Hinweis an den Mitarbeiter ging nie hinaus. Es wird jetzt
   gespeichert und löst den Hinweis aus.
+- Zeiterfassung (`MVP-1788`): Zeitlisten (Projektseite, Projektzeiten) zeigten
+  Einträge aus einem freigegebenen Monat oder abgeschlossenen Tag als
+  bearbeitbar. Die Sperrprüfung fand den Abschluss nicht, wenn die Liste den
+  Besitzer nur mit Name geladen hatte. Das Speichern war weiterhin gesperrt.
 - Abos & Lizenzen (`MVP-1782`): Die Abzeichen in der Liste „Prüffälle an
   Bezügen“ brechen nicht mehr um; „Zeitlich unpassend“ lief in der schmalen
   Spalte über seinen Hintergrund hinaus.

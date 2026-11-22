@@ -53,8 +53,11 @@ class SystemSetting extends Model {
 
     protected static function booted(): void {
         $flush = static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::memo()->forget(self::CACHE_KEY);
             self::$sensitiveMemo = null;
+            $memo = app(\App\Support\FormatsMemo::class);
+            $memo->formats = [];
+            $memo->last = [];
         };
         static::saved($flush);
         static::deleted($flush);
@@ -85,7 +88,8 @@ class SystemSetting extends Model {
     public static function valueMap(): array {
         try {
             /** @var array{values: array<string, mixed>, sensitive: list<string>} $cached */
-            $cached = Cache::rememberForever(self::CACHE_KEY, static function (): array {
+            // memo(): Datumsformate lesen die Karte je Tabellenzelle; ohne Memo je Zelle ein Cache-Zugriff.
+            $cached = Cache::memo()->rememberForever(self::CACHE_KEY, static function (): array {
                 $values = [];
                 $sensitive = [];
 

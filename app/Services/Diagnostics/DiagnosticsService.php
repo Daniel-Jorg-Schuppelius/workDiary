@@ -30,7 +30,7 @@ use Throwable;
  * Fehlermeldung zurückgegeben, wenn ein Check unerwartet wirft.
  */
 class DiagnosticsService {
-    public const array SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr'];
+    public const array SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr', 'runtime'];
 
     /** OCR-Kette der Belegerkennung (MVP-1289): Programm → Aufgabe. */
     public const array OCR_TOOLS = [
@@ -87,11 +87,26 @@ class DiagnosticsService {
                 'security' => $this->checkSecurity(),
                 'terminals' => $this->checkTerminals(),
                 'ocr' => $this->checkOcr(),
+                'runtime' => $this->checkRuntime(),
                 default => DiagnosticSection::unknown($section, 'Unbekannter Diagnose-Abschnitt.'),
             };
         } catch (Throwable $e) {
             return DiagnosticSection::unknown($section, 'Check fehlgeschlagen: ' . $e->getMessage());
         }
+    }
+
+    /** PHP-Laufzeit: Füllstand des OPcache (aussagekräftig im Web-Betrieb, nicht auf der Kommandozeile). */
+    public function checkRuntime(): DiagnosticSection {
+        $status = function_exists('opcache_get_status') ? @opcache_get_status(false) : false;
+        $result = OpcacheHealth::evaluate(is_array($status) ? $status : null, PHP_SAPI);
+
+        return new DiagnosticSection(
+            code: 'runtime',
+            status: $result['status'],
+            metrics: $result['metrics'] + ['php.memory_limit' => (string) ini_get('memory_limit')],
+            messages: $result['messages'],
+            checkedAt: CarbonImmutable::now(),
+        );
     }
 
     public function checkVersion(): DiagnosticSection {

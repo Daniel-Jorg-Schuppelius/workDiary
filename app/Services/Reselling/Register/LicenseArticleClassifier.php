@@ -29,10 +29,14 @@ final class LicenseArticleClassifier {
     /** @var array<int, array<string, ResaleArticleRole>> Organisation → Katalogschlüssel → Einstufung */
     private array $roles = [];
 
+    /** @var array<string, bool> "<Organisation>|<Katalogschlüssel>|<Name>" → Abo-Produkt */
+    private array $licence = [];
+
     public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher()) {}
 
     public function flush(): void {
         $this->roles = [];
+        $this->licence = [];
         // Spiegelzeilen und Leseseiten im Request-Memo tragen die Einstufung je Zeile — mit ihr weg.
         app(ResaleRequestMemo::class)->forget();
     }
@@ -43,7 +47,8 @@ final class LicenseArticleClassifier {
             return false;
         }
 
-        return match ($this->roleOf($organizationId, $articleKey)) {
+        // Je Artikel einmal: der Belegspiegel fragt je Position.
+        return $this->licence[$organizationId . '|' . $articleKey . '|' . $name] ??= match ($this->roleOf($organizationId, $articleKey)) {
             ResaleArticleRole::Excluded => false,
             ResaleArticleRole::License => true,
             null => $this->matcher->looksLikeMicrosoftProduct((string) $name) || $this->matcher->looksLikeDomainProduct((string) $name),

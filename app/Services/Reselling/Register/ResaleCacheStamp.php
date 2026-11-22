@@ -16,18 +16,22 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Org-Stempel der Reselling-Caches (Leistungsanalyse 2026-11-02, perfc-01/05/07):
- * Überblick, Abgleich-Übersicht, Plan-Befunde und Belegtexte liegen 60 s im
- * Cache unter einem Schlüssel, der den Stempel trägt. Jede Änderung am Register
+ * Überblick, Abgleich-Übersicht, Plan-Befunde und Belegtexte liegen befristet im
+ * Cache (Plan-Befunde 60 s, Überblick und Abgleich zehn Minuten) unter einem
+ * Schlüssel, der den Stempel trägt. Jede Änderung am Register
  * (Bezug, Entscheidung, Import, Lauf, Vorlagen-Sync, Spiegel-Sync) zählt ihn
  * hoch — die alten Einträge laufen über ihre TTL aus. Nur Zahlen im Cache.
  */
 final class ResaleCacheStamp {
+    /** Je Request einmal gelesen (memo): jeder gestempelte Schlüssel fragt danach. */
     public static function current(int $organizationId): int {
-        return (int) Cache::get(self::stampKey($organizationId), 0);
+        return (int) Cache::memo()->get(self::stampKey($organizationId), 0);
     }
 
     public static function bump(int $organizationId): void {
-        Cache::forever(self::stampKey($organizationId), self::current($organizationId) + 1);
+        $key = self::stampKey($organizationId);
+        // Frisch lesen, nicht aus dem Memo: ein anderer Prozess kann inzwischen gezählt haben.
+        Cache::memo()->forever($key, (int) Cache::get($key, 0) + 1);
     }
 
     /**

@@ -25,7 +25,15 @@ final class CarbonFmt {
 
     /** Reines Datum im konfigurierten Format (ohne TZ-Umrechnung). */
     public static function fdate(CarbonInterface $dt): string {
-        return $dt->translatedFormat(Formats::date());
+        return self::format($dt, Formats::date());
+    }
+
+    /**
+     * Formate ohne Namen (Monat, Wochentag, am/pm) brauchen keine Übersetzung:
+     * direkt formatieren — jede Datumszelle der Anwendung läuft hier durch.
+     */
+    private static function format(CarbonInterface $dt, string $format): string {
+        return strpbrk($format, 'DlMFSaAN\\') === false ? $dt->rawFormat($format) : $dt->translatedFormat($format);
     }
 
     /** Leistungszeitraum „von – bis“ bzw. nur der Beginn; null ohne Beginn. */
@@ -43,11 +51,11 @@ final class CarbonFmt {
      * wo Tz::current() den Auslöser bzw. Queue-Kontext sähe — W4.2).
      */
     public static function fdatetime(CarbonInterface $dt, ?string $tz = null): string {
-        return $dt->copy()->setTimezone($tz ?? Tz::current())->translatedFormat(Formats::dateTime());
+        return self::format($dt->copy()->setTimezone($tz ?? Tz::current()), Formats::dateTime());
     }
 
     /** Uhrzeit in Anzeige-Zeitzone + konfiguriertem Format. */
     public static function ftime(CarbonInterface $dt): string {
-        return $dt->copy()->setTimezone(Tz::current())->translatedFormat(Formats::time());
+        return self::format($dt->copy()->setTimezone(Tz::current()), Formats::time());
     }
 }

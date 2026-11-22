@@ -48,11 +48,11 @@ class WorkScheduleResolver {
     }
 
     public function for(User $user, CarbonInterface $on): WorkSchedule {
-        $schedule = $user->workSchedule($on);
-        if ($schedule) {
-            return $schedule;
-        }
+        return $user->workSchedule($on) ?? $this->fallback($user, $on);
+    }
 
+    /** Vorgabemodell für einen Tag ohne eigenes Arbeitszeitmodell. */
+    public function fallback(User $user, CarbonInterface $on): WorkSchedule {
         $defaults = self::defaultsFor($user);
         $schedule = new WorkSchedule($defaults);
         $schedule->user_id = $user->id;

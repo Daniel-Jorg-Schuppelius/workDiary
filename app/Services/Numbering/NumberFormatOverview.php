@@ -48,6 +48,20 @@ class NumberFormatOverview {
      * @return list<array{scope: NumberScope, format: NumberFormat, persisted: bool, source: string, sourceOptions: array<string, string>|null, issuer: string, issuerNotes: list<string>, lockedBy: string|null, preview: string|null, details: list<string>}>
      */
     public function rows(Organization $organization): array {
+        // Formate und Zählerstände der Organisation einmal laden statt je Kreis mehrfach.
+        $window = app(NumberFormatWindow::class);
+        $window->open((int) $organization->id);
+        try {
+            return $this->buildRows($organization);
+        } finally {
+            $window->close();
+        }
+    }
+
+    /**
+     * @return list<array{scope: NumberScope, format: NumberFormat, persisted: bool, source: string, sourceOptions: array<string, string>|null, issuer: string, issuerNotes: list<string>, lockedBy: string|null, preview: string|null, details: list<string>}>
+     */
+    private function buildRows(Organization $organization): array {
         $program = $this->billingRoute->externalProgram($organization);
         $deviations = $this->billingRoute->deviations($organization);
         $locks = $this->locks($organization, $program, $deviations);

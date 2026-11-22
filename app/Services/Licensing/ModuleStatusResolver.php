@@ -80,6 +80,28 @@ class ModuleStatusResolver {
         return $status;
     }
 
+    /**
+     * Alle für die Organisation verfügbaren Module in einem Durchgang —
+     * Lizenz und Abschaltungen werden einmal gelesen statt je Modul.
+     *
+     * @return array<string, true>
+     */
+    public function availableCodesFor(Organization $organization): array {
+        $licensed = $this->licensedSources($organization);
+        $disabled = $this->customerDisabledFlags($organization);
+        $envOff = $this->systemBlockedFlags();
+
+        $available = [];
+        foreach (array_keys($licensed) as $code) {
+            [$status] = $this->classify($code, true, in_array($code, $disabled, true), in_array($code, $envOff, true));
+            if ($status->isAvailable()) {
+                $available[$code] = true;
+            }
+        }
+
+        return $available;
+    }
+
     /** Ist das Modul für die Organisation effektiv verfügbar (z. B. für Jobs)? */
     public function isActiveFor(Organization $organization, string $code): bool {
         return $this->statusFor($organization, $code)->isAvailable();

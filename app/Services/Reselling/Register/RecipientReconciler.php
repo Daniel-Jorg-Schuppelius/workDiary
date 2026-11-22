@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Cache;
  *
  * Der Belegspiegel der Organisation wird je Request einmal geladen
  * ({@see ResaleRequestMemo}) und in Lizenz- und Domainzeilen geteilt; die
- * Übersicht und die Belegtexte liegen 60 s im Cache unter dem Org-Stempel
+ * Übersicht und die Belegtexte liegen zehn Minuten im Cache unter dem Org-Stempel
  * ({@see ResaleCacheStamp}) — Leistungsanalyse 2026-11-02, perfc-01/03/09.
  *
  * @phpstan-type LineRow array{line: MirrorLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool, surplus: string|null, free_amount: float}
@@ -53,11 +53,12 @@ use Illuminate\Support\Facades\Cache;
  * @phpstan-type ProductRow array{key: string, label: string, term: int, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float, gap_since: CarbonImmutable|null}
  * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: Money|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int, free_lines: int, free_amount: float}
  * @phpstan-type CachedOverviewRow array{customer_id: int|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: array{amount: string, currency: string}|null, findings: int, done: bool, overbilled: float, deviating: float, deviations: int, free_lines: int, free_amount: float}
+ * @phpstan-type RecipientState array{open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, open_amount: array{amount: string, currency: string}|null, overbilled: float, free_lines: int, free_amount: float, deviating: float, deviations: int}
  * @phpstan-type VoucherText array{recipient: int, date: string|null, ends: string|null, text: string}
  */
 final class RecipientReconciler {
-    /** Lebensdauer der Übersicht und der Belegtexte im Cache (Sekunden); der Org-Stempel verwirft früher. */
-    public const int CACHE_TTL = 60;
+    /** Lebensdauer der Übersicht und der Belegtexte im Cache (Sekunden); der Org-Stempel verwirft früher ({@see ResaleOverview::CACHE_TTL}). */
+    public const int CACHE_TTL = 600;
 
     /** Freie Position in der Laufzeit eines gedeckten Lizenzjahrs: doppelt berechnet. */
     public const string SURPLUS_DUPLICATE = 'duplicate';
@@ -73,6 +74,12 @@ final class RecipientReconciler {
 
     /** Gründe, die als „zu viel berechnet“ in Euro zählen; die übrigen sind Klärfälle am Bestand. */
     public const array OVERBILLED = [self::SURPLUS_DUPLICATE, self::SURPLUS_AFTER_END];
+
+    /** Form des Stands je Empfänger; wechselt mit jeder Änderung an der Rechnung oder am Fingerabdruck. */
+    private const int STATE_VERSION = 1;
+
+    /** Der Fingerabdruck entwertet; die Frist räumt nur ab (der Schlüssel trägt den Stichtag). */
+    private const int STATE_TTL = 86400;
 
     /** Spielraum in Tagen, in dem Leistungszeitraum und Periode als gleich gelten. */
     private const int SAME_TERM_DAYS = 3;
@@ -93,22 +100,13 @@ final class RecipientReconciler {
     }
 
     /**
-     * Alle Positionen gültiger Rechnungen der Organisation (ohne Lizenzfilter), je Request einmal geladen.
-     *
-     * @return Collection<int, MirrorLine>
-     */
-    private function allLines(Organization $organization): Collection {
-        return $this->memo->remember('mirror-lines:all:' . $organization->id, fn(): Collection => $this->mirror->linesFor($organization, null, licenceOnly: false));
-    }
-
-    /**
      * Lizenzpositionen der Organisation — aus derselben Ladung, in PHP getrennt (die Quellen
      * entscheiden die Einstufung je Zeile, {@see MirrorLine::$articleIsLicence}).
      *
      * @return Collection<int, MirrorLine>
      */
     private function licenceLines(Organization $organization): Collection {
-        return $this->memo->remember('mirror-lines:licence:' . $organization->id, fn(): Collection => $this->allLines($organization)->filter(static fn(MirrorLine $line): bool => $line->articleIsLicence)->values());
+        return $this->memo->remember('mirror-lines:licence:' . $organization->id, fn(): Collection => $this->mirror->allLines($organization)->filter(static fn(MirrorLine $line): bool => $line->articleIsLicence)->values());
     }
 
     /** @return Collection<int, MirrorLine> */
@@ -118,7 +116,7 @@ final class RecipientReconciler {
 
     /**
      * Alle Rechnungsempfänger mit Abos oder Lizenzpositionen, Probleme zuerst.
-     * 60 s im Cache je Organisation und Stichtag (nur Arrays); Liste, „Nächster"
+     * Zehn Minuten im Cache je Organisation und Stichtag (nur Arrays); Liste, „Nächster"
      * und die Position in der Mappe teilen sich das Ergebnis.
      *
      * @return list<OverviewRow>
@@ -176,7 +174,8 @@ final class RecipientReconciler {
      * @return list<CachedOverviewRow>
      */
     private function overviewRows(Organization $organization, CarbonImmutable $reference): array {
-        $subscriptions = ResaleSubscription::withCatalogArticles($this->subscriptions($organization)->with('periods.links')->get());
+        // Abos ohne Perioden: die braucht nur, wer neu gerechnet wird (siehe recipientStates()).
+        $subscriptions = ResaleSubscription::withCatalogArticles($this->subscriptions($organization)->get());
         /** @var array<int, Collection<int, ResaleSubscription>> $byCustomer */
         $byCustomer = [];
         foreach ($subscriptions as $subscription) {
@@ -194,7 +193,6 @@ final class RecipientReconciler {
             $linesByRecipient[$key] ??= collect();
             $linesByRecipient[$key]->push($line);
         }
-        $linkedMonths = $this->linker->consumed($lines);
 
         $customerIds = array_values(array_unique(array_merge(array_keys($byCustomer), array_filter(array_keys($linesByRecipient), 'is_int'))));
         $customers = Customer::query()->whereIn('id', $customerIds)->get(['id', 'name'])->keyBy('id');
@@ -209,49 +207,36 @@ final class RecipientReconciler {
             }
         }
 
-        // Abweichende Bezüge je Empfänger (Phase 187, MVP-1769): Summe der Differenzen zum Soll.
-        /** @var array<int, array{amount: float, count: int}> $deviatingByRecipient */
-        $deviatingByRecipient = [];
-        $bySubscription = $subscriptions->keyBy('id');
-        foreach ((new LinkAudit($this->mirror, $this->linker))->forSubscriptions($organization, $subscriptions) as $finding) {
-            $recipientId = in_array($finding['kind'], LinkAudit::DEVIATIONS, true) ? $bySubscription->get($finding['period']->subscription_id ?? 0)?->billedTo()?->id : null;
-            if ($recipientId !== null) {
-                $deviatingByRecipient[$recipientId] ??= ['amount' => 0.0, 'count' => 0];
-                $deviatingByRecipient[$recipientId]['amount'] += abs($finding['diff']);
-                $deviatingByRecipient[$recipientId]['count']++;
-            }
-        }
+        $states = $this->recipientStates($organization, $reference, $byCustomer, $linesByRecipient);
 
         $rows = [];
         foreach (array_unique(array_merge(array_keys($byCustomer), array_keys($linesByRecipient))) as $key) {
             $customer = is_int($key) ? $customers->get($key) : null;
             $recipientLines = $linesByRecipient[$key] ?? collect();
-            $analysis = $this->analyze($byCustomer[$key] ?? collect(), $recipientLines, $linkedMonths, $reference);
+            $state = $states[$key];
             $firstLine = $recipientLines->first();
             $name = $customer !== null ? $customer->name : ($firstLine !== null ? (string) $firstLine->recipientName : '');
             $findings = is_int($key) ? ($findingsByRecipient[$key] ?? 0) : 0;
-            $deviating = is_int($key) ? ($deviatingByRecipient[$key] ?? ['amount' => 0.0, 'count' => 0]) : ['amount' => 0.0, 'count' => 0];
-            $openAmount = self::openAmount($byCustomer[$key] ?? collect(), $reference);
             $rows[] = [
                 'customer_id' => $customer?->id,
                 'name' => $name !== '' ? $name : '—',
                 'subscriptions' => ($byCustomer[$key] ?? collect())->count(),
-                'open' => $analysis['open'],
-                'partial' => $analysis['partial'],
-                'proposed' => $analysis['proposed'],
-                'free' => $analysis['free'],
-                'missing' => $analysis['missing'],
-                'surplus' => $analysis['surplus'],
+                'open' => $state['open'],
+                'partial' => $state['partial'],
+                'proposed' => $state['proposed'],
+                'free' => $state['free'],
+                'missing' => $state['missing'],
+                'surplus' => $state['surplus'],
                 'lines' => $recipientLines->count(),
-                'open_amount' => $openAmount !== null ? ['amount' => $openAmount->getAmount(), 'currency' => $openAmount->getCurrency()->value] : null,
+                'open_amount' => $state['open_amount'],
                 'findings' => $findings,
-                'overbilled' => $analysis['overbilled'],
-                'free_lines' => $analysis['free_lines'],
-                'free_amount' => $analysis['free_amount'],
-                'deviating' => round($deviating['amount'], 2),
-                'deviations' => $deviating['count'],
+                'overbilled' => $state['overbilled'],
+                'free_lines' => $state['free_lines'],
+                'free_amount' => $state['free_amount'],
+                'deviating' => $state['deviating'],
+                'deviations' => $state['deviations'],
                 // Fertig = keine fällige Periode ohne Entscheidung und kein Vorlagenbefund (Entscheidung des Inhabers 2026-10-31).
-                'done' => $analysis['open'] + $analysis['partial'] === 0 && $findings === 0,
+                'done' => $state['open'] + $state['partial'] === 0 && $findings === 0,
             ];
         }
         // Offener Betrag zuerst (Entscheidung 2026-10-31), dann offene Perioden, Befunde, freie Positionen, Name.
@@ -263,6 +248,134 @@ final class RecipientReconciler {
             ?: strcmp($a['name'], $b['name']));
 
         return $rows;
+    }
+
+    /**
+     * Stand je Empfänger (Bilanz, offener Betrag, Abweichungen) — über Requests hinweg im Cache und nur für
+     * die Empfänger neu gerechnet, deren Eingaben sich geändert haben. Jeder Stand trägt den Fingerabdruck
+     * seiner Eingaben: die Rohzeilen seiner Abos, Perioden und Bezüge, seine Lizenzpositionen samt der
+     * Bezüge darauf, die Positionen hinter seinen Bezügen und den Stichtag. Passt der Fingerabdruck, gilt
+     * der Stand; ein Ereignis oder Stempel ist dafür nicht nötig. Nach einem Bezug rechnet so nur der
+     * betroffene Empfänger neu statt alle.
+     *
+     * @param  array<int, Collection<int, ResaleSubscription>>  $byCustomer
+     * @param  array<int|string, Collection<int, MirrorLine>>  $linesByRecipient
+     * @return array<int|string, RecipientState>
+     */
+    private function recipientStates(Organization $organization, CarbonImmutable $reference, array $byCustomer, array $linesByRecipient): array {
+        $organizationId = (int) $organization->id;
+        $register = RegisterFingerprint::rows($organizationId);
+        $periodsBySubscription = $register['periods'];
+        $linksBySubscription = $register['links'];
+        $linksByLine = $register['links_by_line'];
+        $linkedLinesBySubscription = $register['lines'];
+        // Positionen hinter den Bezügen können fremden Empfängern gehören und keine Lizenzpositionen sein.
+        $lineIndex = RegisterFingerprint::linkedLines($this->mirror, $organization, fn() => $this->mirror->allLines($organization));
+        $lineHashes = [];
+        $hashOf = static function (string $identity) use (&$lineHashes, $lineIndex): string {
+            return $lineHashes[$identity] ??= isset($lineIndex[$identity]) ? RegisterFingerprint::line($lineIndex[$identity]) : '-';
+        };
+
+        $key = 'resale:reconcile-recipients:' . self::STATE_VERSION . ':' . $organizationId . ':' . $reference->toDateString();
+        $cached = Cache::get($key);
+        $cached = is_array($cached) ? $cached : [];
+        $states = [];
+        $fingerprints = [];
+        $dirty = [];
+        foreach (array_unique(array_merge(array_keys($byCustomer), array_keys($linesByRecipient))) as $recipient) {
+            $parts = [$reference->toDateString()];
+            foreach ($byCustomer[$recipient] ?? [] as $subscription) {
+                $id = (int) $subscription->id;
+                $article = $subscription->catalogArticle();
+                $parts[] = RegisterFingerprint::model($subscription) . '|' . ($article !== null ? $article->key . ':' . $article->name : '');
+                array_push($parts, ...($periodsBySubscription[$id] ?? []), ...($linksBySubscription[$id] ?? []));
+                foreach (array_keys($linkedLinesBySubscription[$id] ?? []) as $identity) {
+                    $parts[] = $identity . '=' . $hashOf($identity);
+                }
+            }
+            foreach ($linesByRecipient[$recipient] ?? [] as $line) {
+                $identity = $line->identity();
+                $parts[] = $identity . '=' . $hashOf($identity);
+                array_push($parts, ...($linksByLine[$identity] ?? []));
+            }
+            $fingerprints[$recipient] = RegisterFingerprint::hash($parts);
+            $entry = $cached[(string) $recipient] ?? null;
+            if (is_array($entry) && ($entry['fingerprint'] ?? null) === $fingerprints[$recipient] && self::isRecipientState($entry['state'] ?? null)) {
+                $states[$recipient] = $entry['state'];
+            } else {
+                $dirty[] = $recipient;
+            }
+        }
+        if ($dirty === []) {
+            return $states;
+        }
+
+        // Neu rechnen: Perioden und Bezüge nur der betroffenen Abos laden.
+        /** @var \Illuminate\Database\Eloquent\Collection<int, ResaleSubscription> $dirtySubscriptions */
+        $dirtySubscriptions = new \Illuminate\Database\Eloquent\Collection;
+        $dirtyLines = collect();
+        foreach ($dirty as $recipient) {
+            foreach ($byCustomer[$recipient] ?? [] as $subscription) {
+                $dirtySubscriptions->push($subscription);
+            }
+            $dirtyLines = $dirtyLines->concat($linesByRecipient[$recipient] ?? []);
+        }
+        $dirtySubscriptions->load('periods.links');
+        $linkedMonths = $this->linker->consumed($dirtyLines);
+        // Abweichende Bezüge je Empfänger (Phase 187, MVP-1769): Summe der Differenzen zum Soll.
+        /** @var array<int, array{amount: float, count: int}> $deviatingByRecipient */
+        $deviatingByRecipient = [];
+        $bySubscription = $dirtySubscriptions->keyBy('id');
+        foreach ((new LinkAudit($this->mirror, $this->linker))->forSubscriptions($organization, $dirtySubscriptions) as $finding) {
+            $recipientId = in_array($finding['kind'], LinkAudit::DEVIATIONS, true) ? $bySubscription->get($finding['period']->subscription_id ?? 0)?->billedTo()?->id : null;
+            if ($recipientId !== null) {
+                $deviatingByRecipient[$recipientId] ??= ['amount' => 0.0, 'count' => 0];
+                $deviatingByRecipient[$recipientId]['amount'] += abs($finding['diff']);
+                $deviatingByRecipient[$recipientId]['count']++;
+            }
+        }
+        foreach ($dirty as $recipient) {
+            $recipientSubscriptions = $byCustomer[$recipient] ?? collect();
+            $analysis = $this->analyze($recipientSubscriptions, $linesByRecipient[$recipient] ?? collect(), $linkedMonths, $reference);
+            $deviating = is_int($recipient) ? ($deviatingByRecipient[$recipient] ?? ['amount' => 0.0, 'count' => 0]) : ['amount' => 0.0, 'count' => 0];
+            $openAmount = self::openAmount($recipientSubscriptions, $reference);
+            $states[$recipient] = [
+                'open' => $analysis['open'],
+                'partial' => $analysis['partial'],
+                'proposed' => $analysis['proposed'],
+                'free' => $analysis['free'],
+                'missing' => $analysis['missing'],
+                'surplus' => $analysis['surplus'],
+                'open_amount' => $openAmount !== null ? ['amount' => $openAmount->getAmount(), 'currency' => $openAmount->getCurrency()->value] : null,
+                'overbilled' => $analysis['overbilled'],
+                'free_lines' => $analysis['free_lines'],
+                'free_amount' => $analysis['free_amount'],
+                'deviating' => round($deviating['amount'], 2),
+                'deviations' => $deviating['count'],
+            ];
+        }
+
+        $store = [];
+        foreach ($states as $recipient => $state) {
+            $store[(string) $recipient] = ['fingerprint' => $fingerprints[$recipient], 'state' => $state];
+        }
+        Cache::put($key, $store, self::STATE_TTL);
+
+        return $states;
+    }
+
+    /** Formprüfung eines Stands aus dem Cache. */
+    private static function isRecipientState(mixed $state): bool {
+        if (! is_array($state)) {
+            return false;
+        }
+        foreach (['open', 'partial', 'proposed', 'free', 'missing', 'surplus', 'overbilled', 'free_lines', 'free_amount', 'deviating', 'deviations'] as $field) {
+            if (! isset($state[$field]) || ! is_numeric($state[$field])) {
+                return false;
+            }
+        }
+
+        return array_key_exists('open_amount', $state);
     }
 
     /**
@@ -319,7 +432,7 @@ final class RecipientReconciler {
         // eigene, fremde (Rechnungen an Schwesterfirmen) —, die übrigen zählen nur, wenn sie eine Domain nennen.
         $lines = collect();
         $others = collect();
-        foreach ($this->allLines($organization) as $line) {
+        foreach ($this->mirror->allLines($organization) as $line) {
             if (! $line->articleIsLicence && ! self::mentionsAnyDomain($line, $domains)) {
                 continue;
             }
@@ -443,7 +556,7 @@ final class RecipientReconciler {
     /**
      * Umgekehrte Richtung für den Posteingang (Pilot 2026-11-01): je Firma ohne Halter die Rechnungsempfänger,
      * in deren Rechnungstexten sie steht — meist der Partner, der den Endkunden abrechnet. Meiste Belege zuerst.
-     * Die Belegtexte (je Beleg: Empfänger, Datum, Leistungsende, Text) liegen 60 s im Cache (perfc-09);
+     * Die Belegtexte (je Beleg: Empfänger, Datum, Leistungsende, Text) liegen zehn Minuten im Cache (perfc-09);
      * das Fenster ab `$from` (Belegdatum oder Leistungsende) greift auf dem Cache-Stand.
      *
      * @param  list<string>  $companies
@@ -491,7 +604,7 @@ final class RecipientReconciler {
 
     /**
      * Rechnungstexte je Beleg (Belegtext + Positionstexte) der Lizenzrechnungen mit bekanntem
-     * Empfänger — nur Skalare, 60 s je Organisation unter dem Org-Stempel.
+     * Empfänger — nur Skalare, zehn Minuten je Organisation unter dem Org-Stempel.
      *
      * @return array<string, VoucherText> Quelle:Beleg → Eintrag
      */

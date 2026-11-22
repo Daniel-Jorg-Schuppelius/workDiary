@@ -14,7 +14,7 @@ namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Exceptions\ResaleLinkDeviationException;
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Register\Concerns\LocksResalePeriods;
@@ -32,6 +32,9 @@ use Illuminate\Support\Facades\DB;
 final class PeriodLinker {
     use AssertsStatusTransition;
     use LocksResalePeriods;
+
+    /** Ab so vielen Positionen rechnet {@see consumed()} den Verbrauch der ganzen Organisation einmal je Request. */
+    private const int BULK_FROM = 200;
 
     private readonly InvoiceMirror $mirror;
 
@@ -64,17 +67,46 @@ final class PeriodLinker {
         if ($forUpdate) {
             $query->lockForUpdate();
         }
+
+        return self::tally($query->get());
+    }
+
+    /**
+     * @param  iterable<ResalePeriodLink>  $links
+     * @return array<int, array{months: float, periods: list<string>, targets: list<array{label: string, months: float}>}>
+     */
+    private static function tally(iterable $links): array {
         $consumed = [];
-        foreach ($query->get() as $link) {
+        /** @var array<int, string> $prefixes Abo → „Halter · Abo-Kennung · “, je Abo einmal gebildet */
+        $prefixes = [];
+        foreach ($links as $link) {
             $id = (int) $link->linkable_id;
             $consumed[$id] ??= ['months' => 0.0, 'periods' => [], 'targets' => []];
             $consumed[$id]['months'] += (float) $link->months;
-            $consumed[$id]['periods'][] = self::targetLabel($link);
+            $subscription = $link->subscription;
+            $label = ($subscription !== null ? ($prefixes[(int) $subscription->id] ??= self::targetPrefix($subscription)) : '') . $link->period->label();
+            $consumed[$id]['periods'][] = $label;
             // Je Ziel die Lizenzmonate aus dieser Position — eine 24-Monats-Position kann zwei Perioden je 12 decken.
-            $consumed[$id]['targets'][] = ['label' => self::targetLabel($link), 'months' => (float) $link->months];
+            $consumed[$id]['targets'][] = ['label' => $label, 'months' => (float) $link->months];
         }
 
         return $consumed;
+    }
+
+    /**
+     * Verbrauch aller Positionen eines Morph-Typs der Organisation, je Request und
+     * Registerstand einmal: Übersichten fragen ihn mehrfach für fast alle Positionen.
+     *
+     * @return array<int, array{months: float, periods: list<string>, targets: list<array{label: string, months: float}>}>
+     */
+    private function consumedOfOrganization(int $organizationId, string $morphClass): array {
+        $key = implode(':', ['links-consumed', $organizationId, ResaleCacheStamp::current($organizationId), $morphClass]);
+
+        return app(ResaleRequestMemo::class)->remember($key, static fn(): array => self::tally(ResalePeriodLink::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('linkable_type', $morphClass)
+            ->with(['period:id,starts_on,ends_on', 'subscription:id,label,quantity,provider,starts_on,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name'])
+            ->get()));
     }
 
     /**
@@ -86,12 +118,26 @@ final class PeriodLinker {
     public function consumed(iterable $lines, ?ResalePeriod $except = null): array {
         /** @var array<string, list<int>> $byMorph */
         $byMorph = [];
+        /** @var array<string, int> $organizations */
+        $organizations = [];
         foreach ($lines as $line) {
             $byMorph[$line->morphClass][] = $line->morphId;
+            $organizations[$line->morphClass] ??= $line->organizationId;
         }
         $consumed = [];
         foreach ($byMorph as $morphClass => $ids) {
-            foreach ($this->consumedMonths($morphClass, array_values(array_unique($ids)), $except) as $id => $entry) {
+            $ids = array_values(array_unique($ids));
+            if ($except === null && count($ids) >= self::BULK_FROM) {
+                $all = $this->consumedOfOrganization($organizations[$morphClass], $morphClass);
+                foreach ($ids as $id) {
+                    if (isset($all[$id])) {
+                        $consumed[MirrorLine::identityOf($morphClass, $id)] = $all[$id];
+                    }
+                }
+
+                continue;
+            }
+            foreach ($this->consumedMonths($morphClass, $ids, $except) as $id => $entry) {
                 $consumed[MirrorLine::identityOf($morphClass, $id)] = $entry;
             }
         }
@@ -102,9 +148,12 @@ final class PeriodLinker {
     /** Ziel eines Bezugs: „Halter · ×Menge · Anbieter ab Datum · Zeitraum". */
     public static function targetLabel(ResalePeriodLink $link): string {
         $subscription = $link->subscription;
-        $prefix = $subscription !== null ? $subscription->holderLabel() . ' · ' . $subscription->identityLabel() . ' · ' : '';
 
-        return $prefix . $link->period->label();
+        return ($subscription !== null ? self::targetPrefix($subscription) : '') . $link->period->label();
+    }
+
+    private static function targetPrefix(ResaleSubscription $subscription): string {
+        return $subscription->holderLabel() . ' · ' . $subscription->identityLabel() . ' · ';
     }
 
     /**
@@ -336,6 +385,8 @@ final class PeriodLinker {
             }
             $period->forceFill(['status' => PeriodStatus::Open, 'waived_reason' => null, 'decided_by_user_id' => null, 'decided_at' => null])->save();
             $period->links()->whereIn('origin', [LinkOrigin::Proposed->value, LinkOrigin::Auto->value])->delete();
+            // Löschen per Abfrage feuert kein Modell-Ereignis: Registerstand selbst weiterzählen.
+            ResaleCacheStamp::bump((int) $period->organization_id);
             $period->unsetRelation('links');
             $this->settle($period, null, null, false);
 

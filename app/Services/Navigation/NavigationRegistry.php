@@ -121,7 +121,11 @@ class NavigationRegistry {
      * Stempel aus Ausblendungen (je Nutzer) und Plugin-Zuständen (global).
      */
     public function menuCacheKey(User $user, bool $isLegacyMode, string $indexRoute, ?string $focusKey): string {
-        $permissionVersion = (int) Cache::get(\App\Support\Permissions\TeamScopedPermissionRegistrar::versionKey(), 1);
+        // Die Rechteprüfung der Anfrage hat die Version schon gelesen.
+        $registrar = app(\Spatie\Permission\PermissionRegistrar::class);
+        $permissionVersion = $registrar instanceof \App\Support\Permissions\TeamScopedPermissionRegistrar
+            ? $registrar->version()
+            : (int) Cache::get(\App\Support\Permissions\TeamScopedPermissionRegistrar::versionKey(), 1);
 
         return implode(':', [
             'nav-menu', 1, (int) $user->id, (int) (OrganizationContext::currentId() ?? 0), $isLegacyMode ? 'legacy' : 'new',
@@ -142,11 +146,11 @@ class NavigationRegistry {
     }
 
     private static function stamp(string $scope): int {
-        return (int) Cache::get('nav-menu:stamp:' . $scope, 0);
+        return (int) Cache::memo()->get('nav-menu:stamp:' . $scope, 0);
     }
 
     private static function bump(string $scope): void {
-        Cache::forever('nav-menu:stamp:' . $scope, self::stamp($scope) + 1);
+        Cache::memo()->forever('nav-menu:stamp:' . $scope, self::stamp($scope) + 1);
     }
 
     /**
