@@ -222,7 +222,14 @@ jobs:
           touch /dev/shm/workdiary-testing.sqlite
 
       - name: Run tests (shard ${{ matrix.shard }}/4)
+        env:
+          # OPcache auch auf der Kommandozeile (tests/php.d/opcache.ini): ohne
+          # ihn wuchs jeder Worker um rund 0,3 MB je Test bis zum memory_limit.
+          # Der leere Eintrag vor dem Doppelpunkt hält die Scan-Verzeichnisse
+          # von setup-php.
+          PHP_INI_SCAN_DIR: ":${{ github.workspace }}/tests/php.d"
         run: |
+          php -r 'if (! ini_get("opcache.enable_cli")) { fwrite(STDERR, "OPcache ist auf der Kommandozeile aus: tests/php.d/opcache.ini wurde nicht geladen (PHP_INI_SCAN_DIR).\n"); exit(1); }'
           php artisan config:clear --ansi
           XDEBUG_MODE=off php artisan test --parallel --recreate-databases --shard=${{ matrix.shard }}/4
 
@@ -306,7 +313,14 @@ jobs:
 
       - name: Run Finance suite (no skips allowed)
         if: steps.token.outputs.present == 'true'
+        env:
+          # OPcache auch auf der Kommandozeile (tests/php.d/opcache.ini): ohne
+          # ihn wuchs jeder Worker um rund 0,3 MB je Test bis zum memory_limit.
+          # Der leere Eintrag vor dem Doppelpunkt hält die Scan-Verzeichnisse
+          # von setup-php.
+          PHP_INI_SCAN_DIR: ":${{ github.workspace }}/tests/php.d"
         run: |
+          php -r 'if (! ini_get("opcache.enable_cli")) { fwrite(STDERR, "OPcache ist auf der Kommandozeile aus: tests/php.d/opcache.ini wurde nicht geladen (PHP_INI_SCAN_DIR).\n"); exit(1); }'
           php artisan config:clear --ansi
           XDEBUG_MODE=off php artisan test tests/Feature/Finance tests/Unit/Finance --log-junit "${{ runner.temp }}/junit-finance.xml"
           php scripts/check-junit-skips.php "${{ runner.temp }}/junit-finance.xml" --max=0

@@ -118,7 +118,15 @@ jobs:
       # Transaktion (Tests\Support\MigratedWithoutTransaction) und räumt selbst
       # auf — genau hier muss er nächtlich gegen eine echte MariaDB laufen.
       - name: Run risk-based subset on MariaDB
+        env:
+          # OPcache auch auf der Kommandozeile (tests/php.d/opcache.ini): ohne
+          # ihn wuchs der eine Prozess um rund 0,3 MB je Test und riss seit dem
+          # 13.11.2026 das memory_limit (1G) mitten in Finance.
+          # Der leere Eintrag vor dem Doppelpunkt hält die Scan-Verzeichnisse
+          # von setup-php.
+          PHP_INI_SCAN_DIR: ":${{ github.workspace }}/tests/php.d"
         run: |
+          php -r 'if (! ini_get("opcache.enable_cli")) { fwrite(STDERR, "OPcache ist auf der Kommandozeile aus: tests/php.d/opcache.ini wurde nicht geladen (PHP_INI_SCAN_DIR).\n"); exit(1); }'
           XDEBUG_MODE=off php artisan test \
             tests/Unit/Architecture \
             tests/Feature/Finance \
