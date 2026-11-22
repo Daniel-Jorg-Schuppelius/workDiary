@@ -106,6 +106,10 @@ test("Speichern im Folgedialog kehrt in die Mitarbeitermaske zurück und frischt
     await openFollowup(page);
     await dialog.locator("#break_after_minutes").fill("1");
     await dialog.getByRole("button", { name: "Speichern" }).click();
+    // Die 422-Antwort meldet den ersten Feldfehler als Hinweis über dem Dialog. Erst
+    // abwarten und schließen: Ein früher Klick auf „Abbrechen“ lief sonst gegen die
+    // Antwort um die Wette, und der Hinweis fing ihn ab.
+    await closeNotice(page, "Pause nach (Min.)");
     await expect(dialog.getByRole("heading", { name: "Arbeitszeit-Modell", exact: true })).toBeVisible();
     await dialog.getByRole("button", { name: "Abbrechen" }).click();
     await expect(dialog.getByRole("heading", { name: "Mitarbeiter bearbeiten" })).toBeVisible();
