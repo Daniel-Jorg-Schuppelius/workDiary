@@ -17,6 +17,7 @@ use App\Exceptions\MailFileUnreadableException;
 use App\Models\Attachments\Attachment;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Attachments\Mail\Dto\{MailFileMessage, MailFilePart};
+use App\Services\Mail\ImapHeaderDecoder;
 use CommonToolkit\Entities\Mail\{Attachment as ToolkitAttachment, Message as ToolkitMessage, Recipient};
 use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
 use CommonToolkit\Helper\Data\{DataUrlHelper, StringHelper};
@@ -32,7 +33,8 @@ use Webklex\PHPIMAP\{Address as ImapAddress, Attribute as ImapAttribute, Config 
  *
  * - `.msg` liest der `OutlookMessageParser` des common-toolkits direkt hier
  *   (ohne Dateinamen: die Meldungen des Toolkits landen im Fehlerprotokoll).
- * - `.eml` liest `webklex/php-imap` mit iconv-Dekodierung der Kopfzeilen.
+ * - `.eml` liest `webklex/php-imap` mit iconv-Dekodierung der Kopfzeilen,
+ *   unabhängig von `ext-imap` ({@see ImapHeaderDecoder}).
  *
  * Zwei Stufen:
  * - {@see precheck()} — billig und linear, beim Hochladen: Typ am Inhalt wurde
@@ -699,9 +701,15 @@ final class MailFileReader {
     private static function imapConfig(): ImapConfig {
         static $config = null;
 
+        // Ohne ext-imap, egal ob geladen: eigener Kopfzeilen-Decoder (sonst verliert ein
+        // Anzeigename mit ext-imap seine Umlaute) und der eigene, vorab gemessene
+        // Adressparser von webklex statt imap_rfc822_parse_headers() (rfc822 aus).
         return $config ??= ImapConfig::make([
-            'options' => ['fallback_date' => self::FALLBACK_DATE],
-            'decoding' => ['options' => ['header' => 'iconv', 'message' => 'iconv', 'attachment' => 'iconv']],
+            'options' => ['fallback_date' => self::FALLBACK_DATE, 'rfc822' => false],
+            'decoding' => [
+                'options' => ['header' => 'iconv', 'message' => 'iconv', 'attachment' => 'iconv'],
+                'decoder' => ImapHeaderDecoder::DECODING['decoder'],
+            ],
         ]);
     }
 }
