@@ -91,7 +91,7 @@
         "test": [
             "bash scripts/run-tests.sh"
         ],
-        "lint": "phpstan analyse --memory-limit=1G",
+        "lint": "phpstan analyse --memory-limit=2G",
         "lint:support": "phpstan analyse --configuration=phpstan-support.neon --memory-limit=1G",
         "format": "pint --test",
         "format:fix": "pint",
