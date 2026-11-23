@@ -327,7 +327,7 @@ class MsgraphMailClient implements GraphSubscriptionClient {
      *
      * @return list<string>
      */
-    public function folderPaths(?string $mailbox, int $maxDepth = 4, int $maxFolders = 500): array {
+    public function folderPaths(?string $mailbox, int $maxDepth = 12, int $maxFolders = 1500): array {
         $paths = [];
         $inboxId = $this->inboxId($mailbox);
         $walk = function (?string $parentId, string $prefix, int $depth) use (&$walk, &$paths, $mailbox, $maxDepth, $maxFolders, $inboxId): void {

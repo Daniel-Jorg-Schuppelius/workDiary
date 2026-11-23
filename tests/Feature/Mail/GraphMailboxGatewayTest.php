@@ -420,6 +420,26 @@ final class GraphMailboxGatewayTest extends TestCase {
         $this->actingAs($admin)->getJson(route('admin.mail.folders', ['transport' => 'imap']))->assertUnprocessable();
     }
 
+    public function test_folder_list_reaches_deeply_nested_folders(): void {
+        $this->graphMailConnection();
+        $mailbox = $this->mailbox();
+
+        $fakes = [];
+        for ($level = 1; $level <= 6; $level++) {
+            $fakes[self::GRAPH . '/me/mailFolders/f' . $level . '/childFolders*'] = FakePluginHttp::response([
+                'value' => [['id' => 'f' . ($level + 1), 'displayName' => 'E' . ($level + 1), 'childFolderCount' => $level < 6 ? 1 : 0]],
+            ]);
+        }
+        FakePluginHttp::fake($fakes + [
+            self::GRAPH . '/me/mailFolders/inbox*' => FakePluginHttp::response(['id' => 'f-inbox']),
+            self::GRAPH . '/me/mailFolders?*' => FakePluginHttp::response([
+                'value' => [['id' => 'f1', 'displayName' => 'E1', 'childFolderCount' => 1]],
+            ]),
+        ]);
+
+        $this->assertContains('E1/E2/E3/E4/E5/E6/E7', (new MsgraphMailboxGateway())->folders($mailbox));
+    }
+
     public function test_folder_endpoint_reports_an_unreachable_mailbox(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
