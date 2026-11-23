@@ -98,9 +98,10 @@ Microsoft 365.
   indicado en «Consultar desde», incluidos los que alguien ya ha leído. Cada
   correo se procesa una vez y después se marca como leído o se mueve a la
   carpeta de procesados, nunca se elimina.
-- **Carpetas:** Separe las subcarpetas con «/», p. ej. Bandeja de
-  entrada/Facturas. Tras el primer guardado, el diálogo propone las carpetas
-  del buzón. Si falta una carpeta, el aviso aparece en el buzón.
+- **Carpetas:** Con Microsoft 365 elige la carpeta en la lista del buzón; se
+  recarga al cambiar la dirección del buzón y la bandeja de entrada se llama
+  allí INBOX. Con IMAP la lista aparece tras el primer guardado; hasta entonces
+  separe las subcarpetas con «/», p. ej. INBOX/Facturas. Si falta una carpeta, el aviso aparece en el buzón.
 - **Un buzón, varias carpetas:** El mismo buzón puede registrarse varias
   veces, cada entrada con su propia carpeta y su propio uso; por ejemplo,
   info@ una vez para la bandeja de entrada y otra para la carpeta de facturas.

@@ -101,9 +101,11 @@ des boîtes Microsoft 365.
   sous « Relever à partir du », y compris ceux déjà lus. Chaque e-mail est
   traité une fois, puis marqué comme lu ou déplacé dans le dossier des e-mails
   traités, jamais supprimé.
-- **Dossiers :** Séparez les sous-dossiers par « / », p. ex. Boîte de
-  réception/Factures. Après le premier enregistrement, la boîte de dialogue
-  propose les dossiers de la boîte. S’il manque un dossier, le message
+- **Dossiers :** Avec Microsoft 365, vous choisissez le dossier dans la liste
+  de la boîte ; elle se recharge après modification de l’adresse, et la boîte
+  de réception s’y appelle INBOX. Avec IMAP, la liste apparaît après le premier
+  enregistrement ; d’ici là, séparez les sous-dossiers par « / », p. ex.
+  INBOX/Factures. S’il manque un dossier, le message
   apparaît sur la boîte.
 - **Une boîte, plusieurs dossiers :** La même boîte peut être saisie plusieurs
   fois, chaque entrée avec son propre dossier et son propre usage – p. ex.

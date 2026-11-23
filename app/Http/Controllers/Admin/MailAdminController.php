@@ -29,8 +29,8 @@ use App\Services\Mail\Contracts\MailboxTransport;
 use App\Services\Mail\{MailIntakeService, MailboxCursor, MailboxGateway, MailboxTransports, ParsedMessage};
 use App\Services\ServiceTicket\Mail\MailToServiceTicket;
 use App\Support\{ErrorText, SqidEncoder};
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Carbon;
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{Artisan, DB};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -81,6 +81,33 @@ class MailAdminController extends Controller {
         $connection->organization_id = $organization->id;
 
         return $this->formDialog($organization, $connection);
+    }
+
+    /** Ordner zur eingetragenen Postfachadresse, bevor sie gespeichert ist (IMAP braucht dafür Zugangsdaten). */
+    public function folders(Request $request): JsonResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'transport' => ['required', Rule::in(array_diff($this->transportKeys(), [EmailConnection::TRANSPORT_IMAP]))],
+            'mailbox_address' => ['nullable', 'email', 'max:190'],
+        ]);
+
+        $connection = new EmailConnection([
+            'transport' => (string) $data['transport'],
+            'mailbox_address' => filled($data['mailbox_address'] ?? null) ? mb_strtolower(trim((string) $data['mailbox_address'])) : null,
+        ]);
+        $connection->organization_id = $organization->id;
+
+        $unavailable = app(MailboxTransports::class)->get((string) $data['transport'])?->unavailableReason($organization);
+        [$folders, $error] = $unavailable === null ? $this->folderList($connection) : [[], $unavailable];
+
+        return response()->json([
+            'folders' => $folders,
+            'message' => $error === null
+                ? __('mail.field.folder_hint_select')
+                : __('mail.field.folder_hint_unavailable', ['error' => Str::limit($error, 160)]),
+        ]);
     }
 
     public function edit(EmailConnection $connection): View {
@@ -379,15 +406,9 @@ class MailAdminController extends Controller {
         $unavailable = $transport?->unavailableReason($organization);
 
         // Ordnerauswahl (E8): bei M365 sofort, bei IMAP erst mit gespeicherten Zugangsdaten.
-        $folders = [];
-        $foldersError = null;
-        if ($unavailable === null && ($transport !== null || $connection->exists)) {
-            try {
-                $folders = app(MailboxGateway::class)->folders($connection);
-            } catch (Throwable $e) {
-                $foldersError = ErrorText::for($e);
-            }
-        }
+        [$folders, $foldersError] = $unavailable === null && ($transport !== null || $connection->exists)
+            ? $this->folderList($connection)
+            : [[], null];
 
         return view('admin.mail._form_dialog', [
             'connection' => $connection,
@@ -396,6 +417,15 @@ class MailAdminController extends Controller {
             'folders' => $folders,
             'foldersError' => $foldersError,
         ]);
+    }
+
+    /** @return array{0: list<string>, 1: ?string} Ordnerpfade und Fehlertext */
+    private function folderList(EmailConnection $connection): array {
+        try {
+            return [app(MailboxGateway::class)->folders($connection), null];
+        } catch (Throwable $e) {
+            return [[], ErrorText::for($e)];
+        }
     }
 
     /**

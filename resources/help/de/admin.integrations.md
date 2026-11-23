@@ -97,8 +97,10 @@ Microsoft-365-Postfächer.
   Mails, die schon jemand gelesen hat. Jede Mail wird einmal verarbeitet und
   danach als gelesen markiert bzw. in den Verarbeitet-Ordner verschoben, nie
   gelöscht.
-- **Ordner:** Unterordner trennen Sie mit „/“, etwa Posteingang/Rechnungen.
-  Nach dem ersten Speichern schlägt der Dialog die Ordner des Postfachs vor.
+- **Ordner:** Bei Microsoft 365 wählen Sie den Ordner aus der Liste des
+  Postfachs; nach einer geänderten Postfachadresse lädt sie neu, der
+  Posteingang heißt dort INBOX. Bei IMAP erscheint die Liste nach dem ersten
+  Speichern, bis dahin trennen Sie Unterordner mit „/“, etwa INBOX/Rechnungen.
   Fehlt ein Ordner, steht die Meldung am Postfach.
 - **Ein Postfach, mehrere Ordner:** Dasselbe Postfach darf mehrfach
   eingetragen sein, jeder Eintrag mit eigenem Ordner und eigenem Zweck – etwa

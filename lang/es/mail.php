@@ -57,8 +57,9 @@ return [
         'password_keep' => 'Déjelo vacío para conservar la contraseña guardada.',
         'fetch_since' => 'Consultar desde',
         'fetch_since_hint' => 'Los correos recibidos antes de este día no se consultan. Una fecha anterior recupera correos más antiguos.',
-        'folder_hint_list' => 'Las sugerencias proceden del buzón; separe las subcarpetas con «/», p. ej. Bandeja de entrada/Facturas.',
         'folder_hint_error' => 'No se pudo cargar la lista de carpetas (:error). Introduzca la carpeta manualmente y separe las subcarpetas con «/».',
+        'folder_hint_select' => 'Carpetas del buzón; la lista se recarga al cambiar la dirección del buzón.',
+        'folder_hint_unavailable' => 'No se pudo cargar la lista de carpetas (:error). Compruebe la dirección del buzón y el acceso.',
         'folder_hint_free' => 'Tras el primer guardado, el diálogo propone las carpetas del buzón. Separe las subcarpetas con «/», p. ej. INBOX/Facturas.',
         'einvoice_intake' => 'Buzón de facturas: pasar las facturas de los adjuntos a las facturas recibidas',
         'einvoice_intake_hint' => 'Cada archivo PDF, XML o de imagen de un correo se convierte en una factura recibida. Elija preferiblemente una carpeta propia en la que una regla clasifique las facturas.',
@@ -73,6 +74,7 @@ return [
         'folder' => 'Carpeta',
         'processed_folder' => 'Carpeta de destino (procesados)',
         'processed_folder_placeholder' => 'opcional, p. ej. Procesados',
+        'processed_folder_none' => 'no mover',
         'active' => 'Activo',
     ],
 

@@ -369,6 +369,67 @@ final class GraphMailboxGatewayTest extends TestCase {
         $this->assertNull($connection->username);
     }
 
+    public function test_dialog_offers_the_folders_as_a_select_with_a_stable_inbox_name(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $this->graphMailConnection();
+
+        FakePluginHttp::fake([
+            self::GRAPH . '/me/mailFolders/f-inbox/childFolders*' => FakePluginHttp::response([
+                'value' => [['id' => 'f-invoices', 'displayName' => 'Rechnungen', 'childFolderCount' => 0]],
+            ]),
+            self::GRAPH . '/me/mailFolders/inbox*' => FakePluginHttp::response(['id' => 'f-inbox']),
+            self::GRAPH . '/me/mailFolders?*' => FakePluginHttp::response([
+                'value' => [
+                    ['id' => 'f-archive', 'displayName' => 'Archiv', 'childFolderCount' => 0],
+                    ['id' => 'f-inbox', 'displayName' => 'Posteingang', 'childFolderCount' => 1],
+                ],
+            ]),
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.mail.connection.create', ['transport' => MsgraphPlugin::MAIL_TRANSPORT]))
+            ->assertOk()
+            ->assertSee('<option value="INBOX" selected', false)
+            ->assertSee('<option value="INBOX/Rechnungen"', false)
+            ->assertSee('<option value="Archiv"', false)
+            ->assertDontSee('value="Posteingang"', false)
+            ->assertSee('data-mail-folder-source="' . e(route('admin.mail.folders', ['transport' => MsgraphPlugin::MAIL_TRANSPORT])) . '"', false);
+    }
+
+    public function test_folder_endpoint_lists_the_folders_of_the_entered_mailbox(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $this->graphMailConnection('Mail.ReadWrite Mail.ReadWrite.Shared');
+
+        FakePluginHttp::fake([
+            self::GRAPH . '/users/rechnungen%40firma.de/mailFolders/inbox*' => FakePluginHttp::response(['id' => 'f-inbox']),
+            self::GRAPH . '/users/rechnungen%40firma.de/mailFolders?*' => FakePluginHttp::response([
+                'value' => [
+                    ['id' => 'f-inbox', 'displayName' => 'Posteingang', 'childFolderCount' => 0],
+                    ['id' => 'f-done', 'displayName' => 'Erledigt', 'childFolderCount' => 0],
+                ],
+            ]),
+        ]);
+
+        $this->actingAs($admin)->getJson(route('admin.mail.folders', ['transport' => MsgraphPlugin::MAIL_TRANSPORT, 'mailbox_address' => 'Rechnungen@firma.de']))
+            ->assertOk()
+            ->assertJsonPath('folders', ['INBOX', 'Erledigt'])
+            ->assertJsonPath('message', __('mail.field.folder_hint_select'));
+
+        // IMAP braucht Zugangsdaten, die erst der gespeicherte Datensatz hat.
+        $this->actingAs($admin)->getJson(route('admin.mail.folders', ['transport' => 'imap']))->assertUnprocessable();
+    }
+
+    public function test_folder_endpoint_reports_an_unreachable_mailbox(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+
+        $this->actingAs($admin)->getJson(route('admin.mail.folders', ['transport' => MsgraphPlugin::MAIL_TRANSPORT]))
+            ->assertOk()
+            ->assertJsonPath('folders', [])
+            ->assertJsonPath('message', __('mail.field.folder_hint_unavailable', ['error' => __('msgraph::mail.flash.msgraph_connection_required')]));
+    }
+
     private function parsed(string $graphId): ParsedMessage {
         return new ParsedMessage(
             messageId: '<' . $graphId . '@firma.example>',

@@ -91,8 +91,10 @@ Under Administration → Email intake you connect IMAP mailboxes and Microsoft
 - **Fetching by position:** Mails are fetched from the day set under “Fetch
   from”, including mails someone has already read. Each mail is processed once
   and then flagged as read or moved to the processed folder, never deleted.
-- **Folders:** Separate subfolders with “/”, for example Inbox/Invoices. After
-  the first save, the dialog suggests the mailbox folders. If a folder is
+- **Folders:** With Microsoft 365 you pick the folder from the mailbox list;
+  it reloads after the mailbox address changes, and the inbox is called INBOX
+  there. With IMAP the list appears after the first save; until then separate
+  subfolders with “/”, for example INBOX/Invoices. If a folder is
   missing, the message appears at the mailbox.
 - **One mailbox, several folders:** The same mailbox may be entered several
   times, each entry with its own folder and purpose – for example info@ once

@@ -12,6 +12,11 @@
     /** @var \App\Services\Mail\Contracts\MailboxTransport|null $transport */
     $isEdit = $connection->exists;
     $imap = $connection->usesImap();
+    // Auswahlliste statt Vorschlagsfeld: ein datalist filtert nach dem eingetragenen Wert und verbirgt die übrigen Ordner.
+    $folderSelect = ! $imap || $folders !== [];
+    $folderValue = (string) old('folder', $connection->folder ?: 'INBOX');
+    $processedValue = (string) old('processed_folder', $connection->processed_folder);
+    $folderChoices = static fn (string $current): array => $current === '' || in_array($current, $folders, true) ? $folders : [$current, ...$folders];
 @endphp
 <x-modal
     :title="$isEdit ? __('mail.title_edit') : __('mail.add_heading')"
@@ -51,24 +56,36 @@
                            :required="! $isEdit" :hint="$isEdit ? __('mail.field.password_keep') : null" />
         @else
             <x-input-field name="mailbox_address" type="email" :label="__('mail.field.mailbox_address')" :value="old('mailbox_address', $connection->mailbox_address)"
-                           maxlength="190" :hint="__('mail.field.mailbox_address_hint')" span="2" />
+                           maxlength="190" :hint="__('mail.field.mailbox_address_hint')" span="2"
+                           :data-mail-folder-source="route('admin.mail.folders', ['transport' => $connection->transport])" />
         @endif
     </x-form-group>
 
     <x-form-group :legend="__('mail.group.folders')" icon="folder" tone="primary" cols="2">
-        <x-input-field name="folder" :label="__('mail.field.folder')" :value="old('folder', $connection->folder ?: 'INBOX')" list="mail-folder-options" required maxlength="190" />
-        <x-input-field name="processed_folder" :label="__('mail.field.processed_folder')" :value="old('processed_folder', $connection->processed_folder)"
-                       list="mail-folder-options" :placeholder="__('mail.field.processed_folder_placeholder')" maxlength="190" />
+        @if ($folderSelect)
+            <x-select-field name="folder" :label="__('mail.field.folder')" required data-mail-folder-list>
+                @foreach ($folderChoices($folderValue) as $path)
+                    <option value="{{ $path }}" @selected($path === $folderValue)>{{ $path }}</option>
+                @endforeach
+            </x-select-field>
+            <x-select-field name="processed_folder" :label="__('mail.field.processed_folder')" data-mail-folder-list>
+                <option value="">{{ __('mail.field.processed_folder_none') }}</option>
+                @foreach ($folderChoices($processedValue) as $path)
+                    <option value="{{ $path }}" @selected($path === $processedValue)>{{ $path }}</option>
+                @endforeach
+            </x-select-field>
+        @else
+            <x-input-field name="folder" :label="__('mail.field.folder')" :value="$folderValue" required maxlength="190" />
+            <x-input-field name="processed_folder" :label="__('mail.field.processed_folder')" :value="$processedValue"
+                           :placeholder="__('mail.field.processed_folder_placeholder')" maxlength="190" />
+        @endif
         <x-input-field name="fetch_since" type="date" :label="__('mail.field.fetch_since')" :value="old('fetch_since', $connection->fetch_since?->toDateString())"
                        :max="now()->toDateString()" :hint="__('mail.field.fetch_since_hint')" span="2" />
-        <datalist id="mail-folder-options">
-            @foreach ($folders as $path)
-                <option value="{{ $path }}"></option>
-            @endforeach
-        </datalist>
-        <p class="text-xs text-muted md:col-span-2">
-            @if ($folders !== [])
-                {{ __('mail.field.folder_hint_list') }}
+        <p class="text-xs text-muted md:col-span-2" data-mail-folder-status>
+            @if ($foldersError && $folderSelect)
+                {{ __('mail.field.folder_hint_unavailable', ['error' => \Illuminate\Support\Str::limit($foldersError, 160)]) }}
+            @elseif ($folderSelect)
+                {{ __('mail.field.folder_hint_select') }}
             @elseif ($foldersError)
                 {{ __('mail.field.folder_hint_error', ['error' => \Illuminate\Support\Str::limit($foldersError, 160)]) }}
             @else

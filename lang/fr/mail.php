@@ -57,8 +57,9 @@ return [
         'password_keep' => 'Laissez vide pour conserver le mot de passe enregistré.',
         'fetch_since' => 'Relever à partir du',
         'fetch_since_hint' => 'Les e-mails reçus avant ce jour ne sont pas relevés. Une date antérieure récupère des e-mails plus anciens.',
-        'folder_hint_list' => 'Les suggestions proviennent de la boîte ; séparez les sous-dossiers par « / », p. ex. Boîte de réception/Factures.',
         'folder_hint_error' => 'La liste des dossiers n’a pas pu être chargée (:error). Saisissez le dossier manuellement et séparez les sous-dossiers par « / ».',
+        'folder_hint_select' => 'Dossiers de la boîte aux lettres ; la liste se recharge après modification de l’adresse.',
+        'folder_hint_unavailable' => 'La liste des dossiers n’a pas pu être chargée (:error). Vérifiez l’adresse de la boîte et l’accès.',
         'folder_hint_free' => 'Après le premier enregistrement, la boîte de dialogue propose les dossiers de la boîte. Séparez les sous-dossiers par « / », p. ex. INBOX/Factures.',
         'einvoice_intake' => 'Boîte de factures : reprendre les factures des pièces jointes dans les factures entrantes',
         'einvoice_intake_hint' => 'Chaque fichier PDF, XML ou image d’un e-mail devient une facture entrante. Choisissez de préférence un dossier dédié dans lequel une règle classe les factures.',
@@ -73,6 +74,7 @@ return [
         'folder' => 'Dossier',
         'processed_folder' => 'Dossier cible (traité)',
         'processed_folder_placeholder' => 'facultatif, p. ex. Traité',
+        'processed_folder_none' => 'ne pas déplacer',
         'active' => 'Actif',
     ],
 

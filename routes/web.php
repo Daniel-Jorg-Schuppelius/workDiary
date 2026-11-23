@@ -2104,6 +2104,7 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/mail', [\App\Http\Controllers\Admin\MailAdminController::class, 'index'])->name('admin.mail.index');
         Route::post('admin/mail/connection', [\App\Http\Controllers\Admin\MailAdminController::class, 'store'])->name('admin.mail.connection.store');
         // Postfach-Dialoge, Nachholen und Aktivieren (MVP-1143); feste Route vor den Parameter-Routen.
+        Route::get('admin/mail/folders', [\App\Http\Controllers\Admin\MailAdminController::class, 'folders'])->name('admin.mail.folders');
         Route::get('admin/mail/connections/create', [\App\Http\Controllers\Admin\MailAdminController::class, 'create'])->name('admin.mail.connection.create');
         Route::get('admin/mail/connections/{connection}/edit', [\App\Http\Controllers\Admin\MailAdminController::class, 'edit'])->name('admin.mail.connection.edit');
         Route::put('admin/mail/connections/{connection}', [\App\Http\Controllers\Admin\MailAdminController::class, 'update'])->name('admin.mail.connection.update');

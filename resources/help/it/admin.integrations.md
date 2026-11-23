@@ -99,9 +99,10 @@ In Amministrazione → Ricezione e-mail collega caselle IMAP e caselle Microsoft
   giorno indicato in «Recupera dal», anche quelle già lette. Ogni e-mail viene
   elaborata una volta e poi contrassegnata come letta o spostata nella
   cartella delle elaborate, mai eliminata.
-- **Cartelle:** separi le sottocartelle con «/», ad es. Posta in
-  arrivo/Fatture. Dopo il primo salvataggio, la finestra propone le cartelle
-  della casella. Se manca una cartella, l’avviso compare sulla casella.
+- **Cartelle:** con Microsoft 365 sceglie la cartella dall’elenco della
+  casella; si ricarica dopo la modifica dell’indirizzo e la posta in arrivo vi
+  si chiama INBOX. Con IMAP l’elenco compare dopo il primo salvataggio; fino ad
+  allora separi le sottocartelle con «/», ad es. INBOX/Fatture. Se manca una cartella, l’avviso compare sulla casella.
 - **Una casella, più cartelle:** la stessa casella può essere inserita più
   volte, ogni voce con la propria cartella e il proprio scopo – ad es. info@
   una volta per la posta in arrivo e una volta per la cartella delle fatture.

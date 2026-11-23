@@ -57,8 +57,9 @@ return [
         'password_keep' => 'Leave empty to keep the stored password.',
         'fetch_since' => 'Fetch from',
         'fetch_since_hint' => 'Mails received before this day are not fetched. An earlier date fetches older mails.',
-        'folder_hint_list' => 'Suggestions come from the mailbox; separate subfolders with “/”, e.g. Inbox/Invoices.',
         'folder_hint_error' => 'The folder list could not be loaded (:error). Enter the folder manually and separate subfolders with “/”.',
+        'folder_hint_select' => 'Folders of the mailbox; the list reloads after the mailbox address changes.',
+        'folder_hint_unavailable' => 'The folder list could not be loaded (:error). Check the mailbox address and access.',
         'folder_hint_free' => 'After the first save, the dialog suggests the mailbox folders. Separate subfolders with “/”, e.g. INBOX/Invoices.',
         'einvoice_intake' => 'Invoice mailbox: take invoices from the attachments into incoming invoices',
         'einvoice_intake_hint' => 'Every PDF, XML or image file of a mail becomes an incoming invoice. Ideally choose a dedicated folder into which a rule sorts the invoices.',
@@ -73,6 +74,7 @@ return [
         'folder' => 'Folder',
         'processed_folder' => 'Target folder (processed)',
         'processed_folder_placeholder' => 'optional, e.g. Processed',
+        'processed_folder_none' => 'do not move',
         'active' => 'Active',
     ],
 

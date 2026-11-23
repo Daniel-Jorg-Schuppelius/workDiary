@@ -57,8 +57,9 @@ return [
         'password_keep' => 'Leer lassen, um das gespeicherte Passwort zu behalten.',
         'fetch_since' => 'Abruf ab',
         'fetch_since_hint' => 'Mails, die vor diesem Tag eingegangen sind, werden nicht abgerufen. Ein früheres Datum holt ältere Mails nach.',
-        'folder_hint_list' => 'Vorschläge kommen aus dem Postfach; Unterordner mit „/“ trennen, z. B. Posteingang/Rechnungen.',
         'folder_hint_error' => 'Die Ordnerliste ließ sich nicht laden (:error). Ordner von Hand eintragen, Unterordner mit „/“ trennen.',
+        'folder_hint_select' => 'Ordner des Postfachs; nach einer geänderten Postfachadresse lädt die Liste neu.',
+        'folder_hint_unavailable' => 'Die Ordnerliste ließ sich nicht laden (:error). Postfachadresse und Zugriff prüfen.',
         'folder_hint_free' => 'Nach dem ersten Speichern schlägt der Dialog die Ordner des Postfachs vor. Unterordner mit „/“ trennen, z. B. INBOX/Rechnungen.',
         'einvoice_intake' => 'Rechnungspostfach: Rechnungen aus den Anhängen in den Rechnungseingang übernehmen',
         'einvoice_intake_hint' => 'Jede PDF-, XML- oder Bilddatei einer Mail wird ein Eingang. Am besten einen eigenen Ordner wählen, in den eine Regel die Rechnungen sortiert.',
@@ -73,6 +74,7 @@ return [
         'folder' => 'Ordner',
         'processed_folder' => 'Zielordner (verarbeitet)',
         'processed_folder_placeholder' => 'optional, z. B. Verarbeitet',
+        'processed_folder_none' => 'nicht verschieben',
         'active' => 'Aktiv',
     ],
 

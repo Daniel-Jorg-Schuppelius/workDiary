@@ -12,6 +12,7 @@
 // bindet initDynamicFields() in app.js diese Bausteine nach jedem Laden.
 
 import { __ } from "./i18n.js";
+import { getJson } from "./lib/http.js";
 import { isValidIban } from "./lib/iban.js";
 import { suggestPassword } from "./lib/password.js";
 
@@ -305,6 +306,46 @@ function initIbanCheck(root) {
     });
 }
 
+/**
+ * Postfach-Dialog: Ordnerauswahl zur eingetragenen Postfachadresse nachladen.
+ * @param {ParentNode} root
+ */
+function initMailFolderSource(root) {
+    /** @type {NodeListOf<HTMLInputElement>} */ (root.querySelectorAll("input[data-mail-folder-source]")).forEach((input) => {
+        if (input.dataset.mailFolderBound === "1") return;
+        input.dataset.mailFolderBound = "1";
+
+        const scope = input.closest("form") || root;
+        let loaded = input.value.trim();
+
+        input.addEventListener("change", async () => {
+            const address = input.value.trim();
+            if (address === loaded || !input.checkValidity()) return;
+
+            const url = new URL(/** @type {string} */ (input.dataset.mailFolderSource), window.location.origin);
+            url.searchParams.set("mailbox_address", address);
+            try {
+                const response = await getJson(url.pathname + url.search);
+                if (!response.ok || !response.data || input.value.trim() !== address) return;
+                const payload = /** @type {{ folders: string[], message: string }} */ (response.data);
+                loaded = address;
+
+                /** @type {NodeListOf<HTMLSelectElement>} */ (scope.querySelectorAll("select[data-mail-folder-list]")).forEach((select) => {
+                    const current = select.value;
+                    const empty = select.querySelector('option[value=""]');
+                    const paths = current === "" || payload.folders.includes(current) ? payload.folders : [current, ...payload.folders];
+                    select.replaceChildren(...(empty ? [empty] : []), ...paths.map((path) => new Option(path, path)));
+                    select.value = current;
+                });
+                const status = scope.querySelector("[data-mail-folder-status]");
+                if (status) status.textContent = payload.message;
+            } catch (_error) {
+                // Die bisherige Liste bleibt stehen; beim Speichern prüft der Server den Ordner.
+            }
+        });
+    });
+}
+
 /** @param {ParentNode} root */
 export function initDialogForms(root) {
     if (!root) return;
@@ -312,4 +353,5 @@ export function initDialogForms(root) {
     initRequirementPresets(root);
     initPasswordSuggest(root);
     initIbanCheck(root);
+    initMailFolderSource(root);
 }

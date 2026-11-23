@@ -57,8 +57,9 @@ return [
         'password_keep' => 'Lasci vuoto per mantenere la password salvata.',
         'fetch_since' => 'Recupera dal',
         'fetch_since_hint' => 'Le e-mail ricevute prima di questo giorno non vengono recuperate. Una data precedente recupera e-mail più vecchie.',
-        'folder_hint_list' => 'I suggerimenti provengono dalla casella; separi le sottocartelle con «/», ad es. Posta in arrivo/Fatture.',
         'folder_hint_error' => 'Impossibile caricare l’elenco delle cartelle (:error). Inserisca la cartella manualmente e separi le sottocartelle con «/».',
+        'folder_hint_select' => 'Cartelle della casella; l’elenco si ricarica dopo la modifica dell’indirizzo.',
+        'folder_hint_unavailable' => 'Impossibile caricare l’elenco delle cartelle (:error). Verifichi l’indirizzo della casella e l’accesso.',
         'folder_hint_free' => 'Dopo il primo salvataggio, la finestra propone le cartelle della casella. Separi le sottocartelle con «/», ad es. INBOX/Fatture.',
         'einvoice_intake' => 'Casella fatture: acquisire le fatture dagli allegati tra le fatture in entrata',
         'einvoice_intake_hint' => 'Ogni file PDF, XML o immagine di un’e-mail diventa una fattura in entrata. Scelga preferibilmente una cartella dedicata in cui una regola smisti le fatture.',
@@ -73,6 +74,7 @@ return [
         'folder' => 'Cartella',
         'processed_folder' => 'Cartella di destinazione (elaborate)',
         'processed_folder_placeholder' => 'facoltativa, ad es. Elaborate',
+        'processed_folder_none' => 'non spostare',
         'active' => 'Attivo',
     ],
 

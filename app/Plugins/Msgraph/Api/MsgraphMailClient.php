@@ -329,12 +329,15 @@ class MsgraphMailClient implements GraphSubscriptionClient {
      */
     public function folderPaths(?string $mailbox, int $maxDepth = 4, int $maxFolders = 500): array {
         $paths = [];
-        $walk = function (?string $parentId, string $prefix, int $depth) use (&$walk, &$paths, $mailbox, $maxDepth, $maxFolders): void {
+        $inboxId = $this->inboxId($mailbox);
+        $walk = function (?string $parentId, string $prefix, int $depth) use (&$walk, &$paths, $mailbox, $maxDepth, $maxFolders, $inboxId): void {
             foreach ($this->childFolders($mailbox, $parentId) as $folder) {
                 if (count($paths) >= $maxFolders) {
                     return;
                 }
-                $path = $prefix === '' ? $folder['name'] : $prefix . '/' . $folder['name'];
+                // Der Posteingang heißt je Sprache anders; `INBOX` löst folderId() immer auf.
+                $name = $parentId === null && $folder['id'] === $inboxId ? 'INBOX' : $folder['name'];
+                $path = $prefix === '' ? $name : $prefix . '/' . $name;
                 $paths[] = $path;
                 if ($folder['children'] > 0 && $depth < $maxDepth) {
                     $walk($folder['id'], $path, $depth + 1);
@@ -344,6 +347,13 @@ class MsgraphMailClient implements GraphSubscriptionClient {
         $walk(null, '', 1);
 
         return $paths;
+    }
+
+    private function inboxId(?string $mailbox): ?string {
+        $response = $this->api->getResponse($this->mailboxBase($mailbox) . '/mailFolders/inbox', ['$select' => 'id']);
+        $id = $response->successful() ? (string) $response->json('id', '') : '';
+
+        return $id === '' ? null : $id;
     }
 
     /**
