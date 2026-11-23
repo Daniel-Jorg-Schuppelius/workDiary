@@ -16,4 +16,4 @@
         default => 'seen',
     };
 @endphp
-@include('legacy.classic.support._box', ['kind' => $statusKind, 'label' => $order->customerStatusLabel()])
+<span class="kp-status">@include('legacy.classic.support._box', ['kind' => $statusKind]){{ $order->customerStatusLabel() }}</span>

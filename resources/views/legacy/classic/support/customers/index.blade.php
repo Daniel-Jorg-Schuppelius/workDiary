@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Kundenverwaltung im Aussehen des Altportals (admin/muser.php). Erwartet: $customers, $sort, $dir, $writeEnabled --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_support.nav.customers'))
 
 @section('content')
@@ -18,7 +18,7 @@
     @if ($writeEnabled)
         <p><a href="{{ route('legacy.support.customers.create') }}">{{ __('legacy_support.classic.customers.new_user') }}</a></p>
     @else
-        <p class="kp-msg">{{ __('legacy_support.read_only') }}</p>
+        <p class="kp-alert">{{ __('legacy_support.read_only') }}</p>
     @endif
 
     <div class="kp-scroll">

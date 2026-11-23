@@ -12,8 +12,11 @@
  */
 
 return [
-    'switch_to_modern' => 'New view',
-    'switch_to_classic' => 'Classic view',
+    'switch' => [
+        'label' => 'Display of the old system',
+        'classic' => 'Classic',
+        'modern' => 'New',
+    ],
     'page' => 'Page :current of :last',
     'diary_title' => 'Online diary',
     'overview_title' => 'Online diary, overview',
@@ -81,8 +84,6 @@ return [
         'until' => 'until:',
         'from_time' => 'from, time',
         'until_time' => 'until, time',
-        'from_parts' => 'from: day[2] month[2] year[4]',
-        'until_parts' => 'until: day[2] month[2] year[4]',
         'information' => 'Information:',
         'answer' => 'Answer:',
         'notify' => 'send notice',
@@ -92,11 +93,6 @@ return [
         'password' => 'Password:',
         'repeat' => 'Repeat:',
         'email' => 'E-mail address:',
-    ],
-    'date_part' => [
-        'day' => 'Day',
-        'month' => 'Month',
-        'year' => 'Year',
     ],
     'action' => [
         'change' => 'change',

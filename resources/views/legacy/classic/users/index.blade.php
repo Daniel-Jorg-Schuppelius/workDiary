@@ -11,7 +11,7 @@
     $writeEnabled = (bool) config('app.legacy_write_enabled');
     $sortParams = ['route' => 'legacy.users.index', 'sort' => $sort, 'dir' => $dir];
 @endphp
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.users.title'))
 @section('bodyClass', 'tb')
 

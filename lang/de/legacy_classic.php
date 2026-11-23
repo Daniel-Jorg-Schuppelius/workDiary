@@ -12,8 +12,11 @@
  */
 
 return [
-    'switch_to_modern' => 'Neue Ansicht',
-    'switch_to_classic' => 'Klassische Ansicht',
+    'switch' => [
+        'label' => 'Darstellung des Altsystems',
+        'classic' => 'Klassisch',
+        'modern' => 'Neu',
+    ],
     'page' => 'Seite :current von :last',
     'diary_title' => 'Online-Tagebuch',
     'overview_title' => 'Online-Tagebuch, Überblick',
@@ -81,8 +84,6 @@ return [
         'until' => 'bis:',
         'from_time' => 'von, Uhrzeit',
         'until_time' => 'bis, Uhrzeit',
-        'from_parts' => 'von: Tag[2] Monat[2] Jahr[4]',
-        'until_parts' => 'bis: Tag[2] Monat[2] Jahr[4]',
         'information' => 'Information:',
         'answer' => 'Antwort:',
         'notify' => 'sende Hinweis',
@@ -92,11 +93,6 @@ return [
         'password' => 'Passwort:',
         'repeat' => 'Wiederholung:',
         'email' => 'E-Mailadresse:',
-    ],
-    'date_part' => [
-        'day' => 'Tag',
-        'month' => 'Monat',
-        'year' => 'Jahr',
     ],
     'action' => [
         'change' => 'ändern',

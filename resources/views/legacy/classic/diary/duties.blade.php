@@ -14,7 +14,7 @@
     $canEdit = $canManageDuties && (bool) config('app.legacy_write_enabled');
     $sortParams = ['route' => 'legacy.diary.index', 'routeParams' => ['tab' => $tab], 'sort' => $sort, 'dir' => $dir];
 @endphp
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.duty.' . $kind . '.title'))
 @section('bodyClass', 'tb')
 

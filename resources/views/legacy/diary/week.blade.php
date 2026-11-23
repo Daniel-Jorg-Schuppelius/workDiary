@@ -52,7 +52,6 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-3 md:flex-nowrap md:shrink-0">
-        <x-icon-btn icon="history" size="sm" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
         {{-- Cross-Link --}}
         @if (\App\Legacy\Support\LegacyRoleResolver::canManage(Auth::user()))
             <a href="{{ route('legacy.archive.week', ['week_date' => $selectedWeek ?? $monday->format('o-\\WW')]) }}" class="btn btn-sm btn-ghost">{{ __('Archivwoche') }}</a>

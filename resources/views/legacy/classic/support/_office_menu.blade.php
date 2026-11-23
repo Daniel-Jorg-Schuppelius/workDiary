@@ -9,22 +9,13 @@
 {{-- Menü der Bürokonten wie im Altportal (admin/menue.php); die Listen behalten Jahr und Sortierung. --}}
 @php
     $writeEnabled = (bool) config('app.legacy_write_enabled');
-    $menu = array_filter([
-        ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.orders.index'), 'label' => __('legacy_support.classic.menu.orders')],
-        $writeEnabled ? ['href' => route('legacy.support.orders.create'), 'label' => __('legacy_support.classic.menu.create')] : null,
-        ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.customers.index'), 'label' => __('legacy_support.classic.menu.customers'), 'title' => __('legacy_support.classic.menu.customers_title')],
-        ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.archive.index'), 'label' => __('legacy_support.classic.menu.archive')],
-        $writeEnabled ? ['href' => route('legacy.support.archive.prepare'), 'label' => __('legacy_support.classic.menu.archiving'), 'title' => __('legacy_support.classic.menu.archiving_title')] : null,
+    $menu = array_values(array_filter([
+        ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.orders.index'), 'label' => __('legacy_support.classic.menu.orders'), 'active' => request()->routeIs('legacy.support.orders.index', 'legacy.support.orders.show', 'legacy.support.orders.edit')],
+        $writeEnabled ? ['href' => route('legacy.support.orders.create'), 'label' => __('legacy_support.classic.menu.create'), 'active' => request()->routeIs('legacy.support.orders.create')] : null,
+        ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.customers.index'), 'label' => __('legacy_support.classic.menu.customers'), 'title' => __('legacy_support.classic.menu.customers_title'), 'active' => request()->routeIs('legacy.support.customers.*')],
+        ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.archive.index'), 'label' => __('legacy_support.classic.menu.archive'), 'active' => request()->routeIs('legacy.support.archive.index', 'legacy.support.archive.show')],
+        $writeEnabled ? ['href' => route('legacy.support.archive.prepare'), 'label' => __('legacy_support.classic.menu.archiving'), 'title' => __('legacy_support.classic.menu.archiving_title'), 'active' => request()->routeIs('legacy.support.archive.prepare')] : null,
         ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.diary.week'), 'label' => __('legacy_classic.menu.diary')],
-        ['href' => route('home'), 'label' => __('legacy_support.classic.menu.app', ['app' => config('app.name', 'WorkDiary')])],
-    ]);
+    ]));
 @endphp
-<nav aria-label="{{ __('legacy_support.classic.portal') }}">
-    <table class="hmenue">
-        <tr>
-            @foreach ($menu as $item)
-                <td><a href="{{ $item['href'] }}" @isset($item['title']) title="{{ $item['title'] }}" @endisset>&nbsp;{{ $item['label'] }}&nbsp;</a></td>
-            @endforeach
-        </tr>
-    </table>
-</nav>
+@include('legacy.classic._menu', ['label' => __('legacy_support.classic.portal'), 'rows' => [$menu]])

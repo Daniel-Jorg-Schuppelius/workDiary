@@ -6,8 +6,8 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Eintragen und Ändern wie im Altportal (tbedit.php): Büro mit Mitarbeiter, Zeitraum und Hinweis, Mitarbeiter antwortet. Erwartet: $entry, $isEdit, $isAdmin, $users --}}
-@extends('legacy.classic.layout')
+{{-- Eintragen und Ändern wie im Altportal (tbedit.php): Büro mit Mitarbeiter, Zeitraum (Datumswähler) und Hinweis, Mitarbeiter antwortet. Erwartet: $entry, $isEdit, $isAdmin, $users --}}
+@extends('legacy.classic.shell')
 @section('title', $isEdit ? __('legacy_classic.entry_edit_title') : __('legacy_classic.entry_new_title'))
 @section('bodyClass', 'tb')
 
@@ -31,8 +31,8 @@
             @csrf
             @method('PUT')
             <table class="kp-msg">
-                <tr><td class="ohne">{{ __('legacy_classic.label.from') }}</td><td class="ohne">{{ $entry->von?->format($dateFormat) }}</td><td class="ohne">{{ $entry->von?->format($timeFormat) }}</td><td class="ohne">{{ __('legacy_classic.oclock') }}</td></tr>
-                <tr><td class="ohne">{{ __('legacy_classic.label.until') }}</td><td class="ohne">{{ $entry->bis?->format($dateFormat) }}</td><td class="ohne">{{ $entry->bis?->format($timeFormat) }}</td><td class="ohne">{{ __('legacy_classic.oclock') }}</td></tr>
+                <tr><td class="ohne">{{ __('legacy_classic.label.from') }}</td><td class="ohne">{{ $entry->von?->format(\App\Support\Formats::date()) }}</td><td class="ohne">{{ $entry->von?->format($timeFormat) }}</td><td class="ohne">{{ __('legacy_classic.oclock') }}</td></tr>
+                <tr><td class="ohne">{{ __('legacy_classic.label.until') }}</td><td class="ohne">{{ $entry->bis?->format(\App\Support\Formats::date()) }}</td><td class="ohne">{{ $entry->bis?->format($timeFormat) }}</td><td class="ohne">{{ __('legacy_classic.oclock') }}</td></tr>
                 <tr><td class="ohne" colspan="4">{{ __('legacy_classic.label.information') }}<br><span class="kp-pre">{{ $entry->inhalt }}</span></td></tr>
                 <tr>
                     <td class="ohne" colspan="4">
@@ -73,14 +73,14 @@
                 @endif
                 <tr>
                     <td class="ohne"><label for="tb-von-date">{{ __('legacy_classic.label.from') }}</label></td>
-                    <td class="ohne"><input id="tb-von-date" type="text" name="von_date" maxlength="10" size="9" value="{{ old('von_date', ($entry?->von ?? $day)->format($dateFormat)) }}"></td>
-                    <td class="ohne"><input type="text" name="von_time" maxlength="5" size="4" aria-label="{{ __('legacy_classic.label.from_time') }}" value="{{ old('von_time', $entry?->von?->format($timeFormat) ?? '07:00') }}"></td>
+                    <td class="ohne"><input id="tb-von-date" type="date" name="von_date" value="{{ old('von_date', ($entry?->von ?? $day)->format($dateFormat)) }}"></td>
+                    <td class="ohne"><input type="time" name="von_time" aria-label="{{ __('legacy_classic.label.from_time') }}" value="{{ old('von_time', $entry?->von?->format($timeFormat) ?? '07:00') }}"></td>
                     <td class="ohne">{{ __('legacy_classic.oclock') }}</td>
                 </tr>
                 <tr>
                     <td class="ohne"><label for="tb-bis-date">{{ __('legacy_classic.label.until') }}</label></td>
-                    <td class="ohne"><input id="tb-bis-date" type="text" name="bis_date" maxlength="10" size="9" value="{{ old('bis_date', ($entry?->bis ?? $day)->format($dateFormat)) }}"></td>
-                    <td class="ohne"><input type="text" name="bis_time" maxlength="5" size="4" aria-label="{{ __('legacy_classic.label.until_time') }}" value="{{ old('bis_time', $entry?->bis?->format($timeFormat) ?? '17:00') }}"></td>
+                    <td class="ohne"><input id="tb-bis-date" type="date" name="bis_date" value="{{ old('bis_date', ($entry?->bis ?? $day)->format($dateFormat)) }}"></td>
+                    <td class="ohne"><input type="time" name="bis_time" aria-label="{{ __('legacy_classic.label.until_time') }}" value="{{ old('bis_time', $entry?->bis?->format($timeFormat) ?? '17:00') }}"></td>
                     <td class="ohne">{{ __('legacy_classic.oclock') }}</td>
                 </tr>
                 <tr>
@@ -108,7 +108,7 @@
                 @csrf
                 @method('DELETE')
                 <label><input type="checkbox" name="confirm" value="1" required> {{ __('legacy_classic.delete_entry') }}</label>
-                <button type="submit">{{ __('legacy_classic.action.delete') }}</button>
+                <button type="submit" class="kp-danger">{{ __('legacy_classic.action.delete') }}</button>
             </form>
         @endif
     @endif

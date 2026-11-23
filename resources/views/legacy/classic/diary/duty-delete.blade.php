@@ -10,7 +10,7 @@
 @php
     $tab = $kind === 'oncall' ? 'bereitschaft' : 'notdienst';
 @endphp
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.duty.' . $kind . '.title'))
 @section('bodyClass', 'tb')
 
@@ -22,8 +22,7 @@
     <form method="POST" action="{{ route('legacy.' . $kind . '.destroy', $item) }}" class="kp-msg">
         @csrf
         @method('DELETE')
-        &raquo; <button type="submit" class="kp-linkbutton">{{ __('legacy_classic.yes') }}</button> &laquo;
-        &nbsp; &nbsp; &nbsp;
-        &raquo; <a href="{{ route('legacy.diary.index', ['tab' => $tab]) }}">{{ __('legacy_classic.no') }}</a> &laquo;
+        <button type="submit" class="kp-danger">{{ __('legacy_classic.yes') }}</button>
+        <a href="{{ route('legacy.diary.index', ['tab' => $tab]) }}">{{ __('legacy_classic.no') }}</a>
     </form>
 @endsection

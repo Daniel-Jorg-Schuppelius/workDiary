@@ -6,14 +6,14 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Bereitschaft oder Notdienst anlegen und ändern wie im Altportal: Datum in Tag, Monat, Jahr. Erwartet: $item, $users, $isEdit, $kind --}}
+{{-- Bereitschaft oder Notdienst anlegen und ändern wie im Altportal, das Datum mit dem Datumswähler. Erwartet: $item, $users, $isEdit, $kind --}}
 @php
     $cell = $kind === 'oncall' ? 'bereit' : 'notdnst';
     $tab = $kind === 'oncall' ? 'bereitschaft' : 'notdienst';
     $userKey = fn ($id) => \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $id);
     $selectedUser = (string) old('user', $item !== null ? $userKey($item->user) : '');
 @endphp
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.duty.' . $kind . '.title'))
 @section('bodyClass', 'tb')
 
@@ -40,16 +40,10 @@
                     </select>
                 </td>
             </tr>
-            @foreach (['von' => 'from_parts', 'bis' => 'until_parts'] as $field => $labelKey)
+            @foreach (['von' => 'from', 'bis' => 'until'] as $field => $labelKey)
                 <tr>
-                    <td class="rechts">{{ __('legacy_classic.label.' . $labelKey) }}</td>
-                    <td class="ohne">
-                        <span role="group" aria-label="{{ __('legacy_classic.label.' . $labelKey) }}">
-                            <input type="text" name="{{ $field }}_day" maxlength="2" class="kp-short" inputmode="numeric" aria-label="{{ __('legacy_classic.date_part.day') }}" value="{{ old($field . '_day', $item?->{$field}?->format('d')) }}">
-                            <input type="text" name="{{ $field }}_month" maxlength="2" class="kp-short" inputmode="numeric" aria-label="{{ __('legacy_classic.date_part.month') }}" value="{{ old($field . '_month', $item?->{$field}?->format('m')) }}">
-                            <input type="text" name="{{ $field }}_year" maxlength="4" class="kp-year" inputmode="numeric" aria-label="{{ __('legacy_classic.date_part.year') }}" value="{{ old($field . '_year', $item?->{$field}?->format('Y')) }}">
-                        </span>
-                    </td>
+                    <td class="rechts"><label for="tb-duty-{{ $field }}">{{ __('legacy_classic.label.' . $labelKey) }}</label></td>
+                    <td class="ohne"><input id="tb-duty-{{ $field }}" type="date" name="{{ $field }}" value="{{ old($field, $item?->{$field}?->format('Y-m-d')) }}"></td>
                 </tr>
             @endforeach
             <tr>

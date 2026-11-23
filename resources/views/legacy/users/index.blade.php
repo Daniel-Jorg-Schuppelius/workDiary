@@ -17,7 +17,6 @@
             <x-page-toolbar :subtitle="__('Legacy-Mitarbeiterliste aus dem Altsystem.')">
                 <span class="text-sm text-muted">{{ trans_choice(':n Mitarbeiter|:n Mitarbeiter', $legacyUsers->count(), ['n' => $legacyUsers->count()]) }}</span>
                 <x-slot:actions>
-                    <x-icon-btn icon="history" size="sm" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('legacy.users.create')"

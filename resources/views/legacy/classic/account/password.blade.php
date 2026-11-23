@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Passwort ändern wie im Altportal (zugang.php). --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.password.title'))
 @section('bodyClass', 'tb')
 

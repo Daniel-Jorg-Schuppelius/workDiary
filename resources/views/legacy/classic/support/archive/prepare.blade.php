@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Archivierung als eigener Menüpunkt „Löschen" wie im Altportal (admin/delauftr.php). Erwartet: $cutoff, $eligibleCount, $writeEnabled --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_support.classic.archiving.title'))
 
 @section('content')
@@ -27,6 +27,6 @@
             <p><button type="submit">{{ __('legacy_support.classic.archiving.run') }}</button></p>
         </form>
     @else
-        <p class="kp-msg">{{ __('legacy_support.read_only') }}</p>
+        <p class="kp-alert">{{ __('legacy_support.read_only') }}</p>
     @endif
 @endsection

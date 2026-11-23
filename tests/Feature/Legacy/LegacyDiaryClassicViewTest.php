@@ -103,15 +103,15 @@ class LegacyDiaryClassicViewTest extends TestCase {
             ->assertSee(__('legacy_classic.work_orders'))
             ->assertSee('Kältemasch')
             ->assertDontSee('Fremder Auftrag')
-            ->assertDontSee(__('legacy_classic.menu.users'));
+            ->assertDontSee('href="' . route('legacy.users.index') . '"', false);
     }
 
     public function test_office_enters_with_date_and_time_fields_and_the_employee_is_notified(): void {
         $this->actingAs($this->office)->post(route('legacy.diary.store'), [
             'user' => $this->userKey(5),
-            'von_date' => '17.11.2026',
+            'von_date' => '2026-11-17',
             'von_time' => '08:00',
-            'bis_date' => '17.11.2026',
+            'bis_date' => '2026-11-17',
             'bis_time' => '10:30',
             'inhalt' => 'Wartung Kühlraum',
             'sms' => 'j',
@@ -129,9 +129,9 @@ class LegacyDiaryClassicViewTest extends TestCase {
     public function test_invalid_classic_dates_are_reported(): void {
         $this->actingAs($this->office)->from(route('legacy.diary.create'))->post(route('legacy.diary.store'), [
             'user' => $this->userKey(5),
-            'von_date' => '31.02.2026',
+            'von_date' => '2026-02-31',
             'von_time' => '08:00',
-            'bis_date' => '17.11.2026',
+            'bis_date' => '2026-11-17',
             'bis_time' => '25:00',
             'inhalt' => 'Wartung',
             'gelesen' => 2,
@@ -208,7 +208,7 @@ class LegacyDiaryClassicViewTest extends TestCase {
             ->assertViewIs('legacy.diary.index');
     }
 
-    public function test_duties_are_managed_with_day_month_year_fields(): void {
+    public function test_duties_are_managed_with_date_pickers(): void {
         DB::connection('legacy')->table('bereit')->insert(['id' => 7, 'user' => 6, 'von' => '2026-11-20', 'bis' => '2026-11-22']);
 
         $this->actingAs($this->office)->get(route('legacy.diary.index', ['tab' => 'bereitschaft']))
@@ -219,15 +219,15 @@ class LegacyDiaryClassicViewTest extends TestCase {
 
         $this->actingAs($this->office)->post(route('legacy.oncall.store'), [
             'user' => $this->userKey(5),
-            'von_day' => '1', 'von_month' => '12', 'von_year' => '2026',
-            'bis_day' => '03', 'bis_month' => '12', 'bis_year' => '2026',
+            'von' => '2026-12-01',
+            'bis' => '2026-12-03',
         ])->assertRedirect(route('legacy.diary.index', ['tab' => 'bereitschaft']));
 
         $this->assertDatabaseHas('bereit', ['user' => 5, 'von' => '2026-12-01 00:00:00', 'bis' => '2026-12-03 00:00:00'], 'legacy');
 
         $this->actingAs($this->office)->get(route('legacy.notdienst.create'))
             ->assertOk()
-            ->assertSee('name="von_day"', false);
+            ->assertSee('type="date" name="von"', false);
         $this->actingAs($this->office)->get(route('legacy.oncall.edit', [7, 'delete' => 1]))
             ->assertOk()
             ->assertSee('Monteur Zwei')
@@ -326,6 +326,24 @@ class LegacyDiaryClassicViewTest extends TestCase {
             ->assertSee('tb-today', false)
             ->assertSee('Monteur Zwei')
             ->assertSee(__('legacy_classic.menu.logout'));
+    }
+
+    public function test_classic_pages_keep_the_app_header_with_the_view_switch(): void {
+        $this->actingAs($this->office)->get(route('legacy.diary.week'))
+            ->assertOk()
+            ->assertSee('id="app-header"', false)
+            ->assertSee(route('legacy.view', ['mode' => LegacyView::MODERN, 'back' => '/legacy/diary/week']), false);
+
+        // Urlaub gibt es nur in der neuen Ansicht: dort kein Schalter.
+        $this->actingAs($this->office)->get(route('legacy.diary.index', ['tab' => 'urlaub']))
+            ->assertOk()
+            ->assertDontSee('/legacy/view/classic', false);
+
+        // Ohne App-Konto (Callcenter) sitzt der Schalter in der eigenen Kopfzeile.
+        $this->get(route('legacy.callcenter.login'))
+            ->assertOk()
+            ->assertSee('kp-switch', false)
+            ->assertSee('/legacy/view/modern', false);
     }
 
     public function test_one_switch_for_the_whole_legacy_area(): void {

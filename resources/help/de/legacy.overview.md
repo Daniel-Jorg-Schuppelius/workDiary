@@ -1,7 +1,7 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 7
+version: 8
 keywords:
     - Klassische Ansicht
     - altes System
@@ -136,8 +136,11 @@ und der Plattformbetrieb.
 
 ## Klassische Ansicht
 
-Wer die Masken der alten Portale gewohnt ist, schaltet über **Klassische Ansicht**
-auf deren Aussehen um – für Tagebuch, Callcenter und Support-Portal zugleich:
+Wer die Masken der alten Portale gewohnt ist, schaltet mit **Klassisch** neben
+dem Seitentitel auf deren Aufbau um – für Tagebuch, Callcenter und Support-Portal
+zugleich; **Neu** wechselt zurück. Die Kopfzeile der App bleibt, darunter stehen
+das alte Menü, die alten Begriffe und die gelbe Fläche, aufgefrischt mit heutiger
+Schrift, Symbolen und Farbpunkten für den Status:
 
 - **Tagebuch** zeigt die Woche wie früher: Das Büro sieht je Tag alle Mitarbeiter
   mit den Stunden von 7 bis 21 Uhr, ein Klick auf einen Namen legt einen Eintrag
@@ -145,16 +148,16 @@ auf deren Aussehen um – für Tagebuch, Callcenter und Support-Portal zugleich:
   Spalten, die Farbe neben dem Auftrag zeigt den Status.
 - **Überblick** fragt zuerst nach dem Zeitraum (ab heute oder bis heute) und dem
   Status und zeigt dann die Liste.
-- Ein Eintrag hat Datum und Uhrzeit in getrennten Feldern. Mitarbeiter
+- Datum und Uhrzeit eines Eintrags wählt man im Kalender des Browsers. Mitarbeiter
   **antworten** (das meldet ein Problem) oder setzen **gelesen** und **erledigt**.
 - **Mitarbeiter**, **Bereitschaft**, **Notdienst**, **Archiv**, **Löschen** und
   **Passwort** folgen den alten Masken; **Löschen** verschiebt ältere Einträge
   oder alle Einträge eines Mitarbeiters ins Archiv.
 - Das **Callcenter** zeigt den Notdienstplan von gestern bis in fünf Tagen, den
   heutigen Tag gelb.
-- Das **Support-Portal** hat den gelben Grund, die alten Tabellen, Menüs und
-  Statuskästchen und den Termin in vier Feldern.
+- Das **Support-Portal** zeigt den Status als Farbpunkt mit Text; der Termin
+  besteht aus Datum und Stunde.
 
-Daten und Rechte sind dieselben; **Neue Ansicht** wechselt zurück. Die Wahl gilt
-für den Browser, die Vorgabe legt der Betrieb fest. Urlaub und die Archivliste
-gibt es nur in der neuen Ansicht.
+Ohne Konto in der App (Kundenportal, Callcenter) sitzt der Umschalter oben rechts.
+Daten und Rechte sind dieselben. Die Wahl gilt für den Browser, die Vorgabe legt
+der Betrieb fest. Urlaub und die Archivliste gibt es nur in der neuen Ansicht.

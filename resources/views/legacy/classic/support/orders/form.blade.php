@@ -11,7 +11,7 @@
     entry (Eintragung, kp_edit.php), appointment (Termin ändern, Löschen, superedit.php),
     customer (Kundenauswahl, mod_kunde.php). Erwartet: $order, $isEdit, $form, $customers, $selectedCustomer, $orderer, $mechanics
 --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', $isEdit ? __('legacy_support.orders.edit_title', ['number' => $order->id]) : __('legacy_support.orders.create'))
 
 @section('content')
@@ -81,7 +81,7 @@
             @csrf
             @method('DELETE')
             <label><input type="checkbox" name="confirm" value="1" required> {{ __('legacy_support.classic.delete_entry') }}</label>
-            <button type="submit">{{ __('legacy_support.classic.delete') }}</button>
+            <button type="submit" class="kp-danger">{{ __('legacy_support.classic.delete') }}</button>
         </form>
     @elseif ($form === 'customer')
         <form method="POST" action="{{ $action }}">

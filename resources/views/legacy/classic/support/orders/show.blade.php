@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Auftrag lesen wie im Altportal (admin/kp_detail.php, Archiv: kp_detail_a.php). Erwartet: $order, $archived --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_support.orders.show_title', ['number' => $order->id]))
 
 @section('content')

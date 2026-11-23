@@ -6,13 +6,10 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Meldungen als schlichter Text wie im Altportal; dieses Layout zeigt keine Flashes zentral. --}}
-@foreach (['success', 'status'] as $flashKey)
-    @if (session($flashKey))
-        <p class="kp-msg" role="status">{{ session($flashKey) }}</p>
+{{-- Meldungen als Hinweiskasten; App-Hülle und eigenes Layout geben sie hier statt zentral aus. --}}
+@foreach (['success' => ['kp-alert--success', 'status'], 'status' => ['kp-alert--success', 'status'], 'info' => ['', 'status'], 'warning' => ['kp-alert--warning', 'alert'], 'error' => ['kp-alert--error', 'alert']] as $flashKey => [$flashTone, $flashRole])
+    @if (is_string(session($flashKey)) && session($flashKey) !== '')
+        <p class="kp-alert {{ $flashTone }}" role="{{ $flashRole }}">{{ session($flashKey) }}</p>
     @endif
 @endforeach
-@if (session('error'))
-    <p class="kp-msg kp-msg--error" role="alert">{{ session('error') }}</p>
-@endif
-<x-validation-errors class="kp-msg kp-msg--error" />
+<x-validation-errors class="kp-alert kp-alert--error" />

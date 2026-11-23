@@ -1,7 +1,7 @@
 ---
 title: "Ancien système (legacy)"
 topic: legacy.overview
-version: 7
+version: 8
 keywords:
     - affichage classique
     - ancienne application
@@ -123,9 +123,12 @@ administrateurs de l'ancien système et à l'exploitation de la plateforme.
 
 ## Affichage classique
 
-Qui est habitué aux écrans des anciens portails passe à leur aspect via
-**Affichage classique** – pour le journal, le centre d'appels et le portail
-support à la fois :
+Qui est habitué aux écrans des anciens portails passe à leur présentation avec
+**Classique** à côté du titre de la page – pour le journal, le centre d'appels et
+le portail support à la fois ; **Nouveau** revient en arrière. L'en-tête de
+l'application reste ; en dessous viennent l'ancien menu, les anciens termes et la
+surface jaune, rafraîchis avec la police actuelle, des icônes et des points de
+couleur pour le statut :
 
 - **Journal** affiche la semaine comme avant : le bureau voit pour chaque jour
   tous les employés avec les heures de 7 h à 21 h, et un clic sur un nom crée
@@ -133,17 +136,18 @@ support à la fois :
   d'urgence colorent les colonnes, la couleur à côté de l'ordre indique le statut.
 - **Aperçu** demande d'abord la période (à partir d'aujourd'hui ou jusqu'à
   aujourd'hui) et le statut, puis affiche la liste.
-- Une entrée a la date et l'heure dans des champs séparés. Les employés
-  **répondent** (ce qui signale un problème) ou indiquent **lu** et **terminé**.
+- La date et l'heure d'une entrée se choisissent dans le calendrier du
+  navigateur. Les employés **répondent** (ce qui signale un problème) ou
+  indiquent **lu** et **terminé**.
 - **Employés**, **Astreinte**, **Service d'urgence**, **Archives**, **Supprimer**
   et **Mot de passe** suivent les anciens écrans ; **Supprimer** déplace les
   entrées anciennes ou toutes les entrées d'un employé vers les archives.
 - Le **centre d'appels** affiche le planning du service d'urgence d'hier à dans
   cinq jours, avec aujourd'hui en jaune.
-- Le **portail support** a le fond jaune, les anciens tableaux, menus et cases
-  de statut et le rendez-vous en quatre champs.
+- Le **portail support** affiche le statut par un point de couleur avec du
+  texte ; le rendez-vous se compose d'une date et d'une heure.
 
-Les données et les droits restent les mêmes ; **Nouvel affichage** revient en
-arrière. Le choix vaut pour le navigateur, l'exploitation fixe la valeur par
-défaut. Les congés et la liste des archives n'existent que dans le nouvel
-affichage.
+Sans compte dans l'application (portail client, centre d'appels), le commutateur
+se trouve en haut à droite. Les données et les droits restent les mêmes. Le choix
+vaut pour le navigateur, l'exploitation fixe la valeur par défaut. Les congés et
+la liste des archives n'existent que dans le nouvel affichage.

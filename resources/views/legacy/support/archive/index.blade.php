@@ -20,7 +20,6 @@
     <x-index-page overflow="clip" :subtitle="__('legacy_support.archive.subtitle')">
         <x-slot:actions>
             <x-icon-btn icon="support" size="sm" :href="route('legacy.support.orders.index')" show-label>{{ __('legacy_support.nav.orders') }}</x-icon-btn>
-            <x-icon-btn icon="history" size="sm" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
         </x-slot:actions>
 
         @if ($writeEnabled)

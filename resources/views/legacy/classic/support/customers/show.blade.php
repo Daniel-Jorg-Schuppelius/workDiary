@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Kundenzugang ansehen bzw. Rückfrage vor dem Löschen (admin/listuser.php, deluser.php). Erwartet: $customer, $confirmDelete, $writeEnabled --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', $customer->kunde)
 
 @section('content')
@@ -28,7 +28,7 @@
                     <form method="POST" action="{{ route('legacy.support.customers.destroy', $customer) }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit">{{ __('legacy_support.classic.yes') }}</button>
+                        <button type="submit" class="kp-danger">{{ __('legacy_support.classic.yes') }}</button>
                     </form>
                 </th>
             </tr>

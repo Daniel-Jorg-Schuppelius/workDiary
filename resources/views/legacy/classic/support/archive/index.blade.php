@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Archiv des Support-Portals im Aussehen des Altportals (admin/kp_archiv.php). --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_support.classic.archive_title'))
 
 @section('content')

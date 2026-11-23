@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Auftragsübersicht des Büros im Aussehen des Altportals (admin/kp_info.php). --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_support.classic.portal'))
 
 @section('content')
@@ -37,7 +37,7 @@
     <p>{{ __('legacy_support.classic.logged_in_as', ['name' => (string) (auth()->user()?->name ?? '')]) }}</p>
     @include('legacy.classic._flash')
     @unless ($writeEnabled)
-        <p class="kp-msg">{{ __('legacy_support.read_only') }}</p>
+        <p class="kp-alert">{{ __('legacy_support.read_only') }}</p>
     @endunless
 
     @if ($writeEnabled)
@@ -48,9 +48,9 @@
             <input type="hidden" name="email" value="{{ $mailSetting?->email }}">
             <button type="submit" class="kp-mail kp-mail--{{ $mailOn ? 'on' : 'off' }}"
                     title="{{ $mailOn ? __('legacy_support.classic.mail_switch_off') : __('legacy_support.classic.mail_switch_on') }}">
-                <span class="kp-sr-only">{{ $mailOn ? __('legacy_support.classic.mail_switch_off') : __('legacy_support.classic.mail_switch_on') }}</span>
+                <x-icon :name="$mailOn ? 'mark_email_read' : 'unsubscribe'" size="18px" />
+                {{ $mailOn ? __('legacy_support.classic.mail_on') : __('legacy_support.classic.mail_off') }}
             </button>
-            {{ $mailOn ? __('legacy_support.classic.mail_on') : __('legacy_support.classic.mail_off') }}
         </form>
     @endif
 
@@ -67,7 +67,7 @@
         @endif
     </p>
     @if ($filteredCustomer !== null)
-        <p class="kp-msg">{{ __('legacy_support.classic.filtered_customer', ['name' => $filteredCustomer->kunde]) }}</p>
+        <p class="kp-alert">{{ __('legacy_support.classic.filtered_customer', ['name' => $filteredCustomer->kunde]) }}</p>
     @endif
 
     @include('legacy.classic.support._year_select', [

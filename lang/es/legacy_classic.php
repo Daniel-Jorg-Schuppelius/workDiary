@@ -12,8 +12,11 @@
  */
 
 return [
-    'switch_to_modern' => 'Vista nueva',
-    'switch_to_classic' => 'Vista clásica',
+    'switch' => [
+        'label' => 'Vista del sistema antiguo',
+        'classic' => 'Clásica',
+        'modern' => 'Nueva',
+    ],
     'page' => 'Página :current de :last',
     'diary_title' => 'Diario en línea',
     'overview_title' => 'Diario en línea, resumen',
@@ -81,8 +84,6 @@ return [
         'until' => 'hasta:',
         'from_time' => 'desde, hora',
         'until_time' => 'hasta, hora',
-        'from_parts' => 'desde: día[2] mes[2] año[4]',
-        'until_parts' => 'hasta: día[2] mes[2] año[4]',
         'information' => 'Información:',
         'answer' => 'Respuesta:',
         'notify' => 'enviar aviso',
@@ -92,11 +93,6 @@ return [
         'password' => 'Contraseña:',
         'repeat' => 'Repetición:',
         'email' => 'Correo electrónico:',
-    ],
-    'date_part' => [
-        'day' => 'Día',
-        'month' => 'Mes',
-        'year' => 'Año',
     ],
     'action' => [
         'change' => 'cambiar',

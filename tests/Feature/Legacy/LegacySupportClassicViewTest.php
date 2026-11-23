@@ -109,20 +109,20 @@ class LegacySupportClassicViewTest extends TestCase {
         $this->get('/legacy/view/retro')->assertNotFound();
     }
 
-    public function test_entry_form_takes_the_appointment_in_four_fields(): void {
+    public function test_entry_form_takes_the_appointment_as_date_and_hour(): void {
         $id = $this->order();
 
         $this->actingAs($this->office)->get(route('legacy.support.orders.edit', $id))
             ->assertOk()
             ->assertViewIs('legacy.classic.support.orders.form')
-            ->assertSee('name="tj"', false)
+            ->assertSee('name="termin_date" value=""', false)
             ->assertSee(__('legacy_support.classic.status_option.read'));
 
         $this->actingAs($this->office)->put(route('legacy.support.orders.update', $id), [
             'kunde' => Sqid::encode(LegacySupportCustomer::class, 10),
             'kname' => 'Frau Beispiel',
             'auftrag' => 'Verdampfer vereist',
-            'tj' => '2026', 'tm' => '11', 'tt' => '12', 'th' => '8',
+            'termin_date' => '2026-11-12', 'termin_hour' => '8',
             'wer' => 'Monteur Eins',
             'status' => LegacySupportOrder::STATUS_SEEN,
         ])->assertRedirect();
@@ -136,7 +136,7 @@ class LegacySupportClassicViewTest extends TestCase {
             ->put(route('legacy.support.orders.update', $id), [
                 'kunde' => Sqid::encode(LegacySupportCustomer::class, 10),
                 'auftrag' => 'x',
-                'tj' => '2026', 'tm' => '', 'tt' => '12', 'th' => '8',
+                'termin_date' => '2026-02-31', 'termin_hour' => '8',
                 'status' => LegacySupportOrder::STATUS_SEEN,
             ])
             ->assertSessionHasErrors('termin');
@@ -156,7 +156,7 @@ class LegacySupportClassicViewTest extends TestCase {
             'kname' => 'Frau Beispiel', 'telefon' => '0123 4567', 'objekt' => 'Kühlraum Halle 2',
             'auftrag' => 'Verdampfer vereist', 'wer' => 'Monteur Eins', 'antwort' => 'Wir kommen.',
             'intern' => 'Leiter mitnehmen', 'dauer' => '1 h', 'status' => (string) LegacySupportOrder::STATUS_SCHEDULED,
-            'tj' => '2026', 'tm' => '11', 'tt' => '13', 'th' => '14',
+            'termin_date' => '2026-11-13', 'termin_hour' => '14',
         ])->assertRedirect();
         $row = $this->row($id);
         $this->assertSame('2026-11-13 14:00:00', $row->termin);
@@ -165,13 +165,13 @@ class LegacySupportClassicViewTest extends TestCase {
         // Teilmaske „Kundenauswahl": der Termin kommt versteckt mit und bleibt.
         $this->actingAs($this->office)->get(route('legacy.support.orders.edit', [$id, 'form' => 'customer']))
             ->assertOk()
-            ->assertSee('name="tj" value="2026"', false);
+            ->assertSee('name="termin_date" value="2026-11-13"', false);
         $this->actingAs($this->office)->put(route('legacy.support.orders.update', $id), [
             'kunde' => Sqid::encode(LegacySupportCustomer::class, 11),
             'kname' => 'Frau Beispiel', 'telefon' => '0123 4567', 'objekt' => 'Kühlraum Halle 2',
             'auftrag' => 'Verdampfer vereist', 'wer' => 'Monteur Eins', 'antwort' => 'Wir kommen.',
             'intern' => 'Leiter mitnehmen', 'dauer' => '1 h', 'status' => (string) LegacySupportOrder::STATUS_SCHEDULED,
-            'tj' => '2026', 'tm' => '11', 'tt' => '13', 'th' => '14',
+            'termin_date' => '2026-11-13', 'termin_hour' => '14',
         ])->assertRedirect();
         $row = $this->row($id);
         $this->assertSame(11, (int) $row->kunde);
@@ -189,7 +189,7 @@ class LegacySupportClassicViewTest extends TestCase {
         $this->actingAs($this->office)->put(route('legacy.support.orders.update', $id), [
             'kunde' => Sqid::encode(LegacySupportCustomer::class, 10),
             'auftrag' => 'Verdampfer vereist',
-            'tj' => '', 'tm' => '', 'tt' => '', 'th' => '',
+            'termin_date' => '', 'termin_hour' => '8',
             'status' => LegacySupportOrder::STATUS_DONE,
         ])->assertRedirect(route('legacy.support.orders.index', ['year' => 2025]));
     }

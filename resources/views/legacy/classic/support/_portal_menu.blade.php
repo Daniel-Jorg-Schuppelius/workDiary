@@ -7,29 +7,19 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Menü der Kunden wie im Altportal (kunde/menue.php). Erwartet: $customer --}}
-@php $writeEnabled = (bool) config('app.legacy_write_enabled'); @endphp
+@php
+    $writeEnabled = (bool) config('app.legacy_write_enabled');
+    $menu = array_values(array_filter([
+        $writeEnabled ? ['href' => route('legacy.portal.orders.create'), 'label' => __('legacy_support.classic.menu.new_order'), 'active' => request()->routeIs('legacy.portal.orders.create')] : null,
+        ['href' => route('legacy.portal.orders.index'), 'label' => __('legacy_support.classic.menu.orders'), 'active' => request()->routeIs('legacy.portal.orders.index', 'legacy.portal.orders.show')],
+        $writeEnabled ? ['href' => route('legacy.portal.password.edit'), 'label' => __('legacy_support.classic.menu.password'), 'title' => __('legacy_support.classic.menu.password_title'), 'active' => request()->routeIs('legacy.portal.password.edit')] : null,
+        ['href' => route('legacy.portal.logout'), 'label' => __('legacy_support.classic.menu.logout'), 'title' => __('legacy_support.classic.menu.logout_title'), 'post' => true],
+    ]));
+@endphp
 <h2>{{ __('legacy_support.classic.portal') }}</h2>
-<p>{{ __('legacy_support.classic.logged_in_as', ['name' => $customer->kunde]) }}</p>
-<nav aria-label="{{ __('legacy_support.classic.portal') }}">
-    <table class="hmenue">
-        <tr>
-            @if ($writeEnabled)
-                <td><a href="{{ route('legacy.portal.orders.create') }}">&nbsp;{{ __('legacy_support.classic.menu.new_order') }}&nbsp;</a></td>
-            @endif
-            <td><a href="{{ route('legacy.portal.orders.index') }}">&nbsp;{{ __('legacy_support.classic.menu.orders') }}&nbsp;</a></td>
-            @if ($writeEnabled)
-                <td><a href="{{ route('legacy.portal.password.edit') }}" title="{{ __('legacy_support.classic.menu.password_title') }}">&nbsp;{{ __('legacy_support.classic.menu.password') }}&nbsp;</a></td>
-            @endif
-            <td>
-                <form method="POST" action="{{ route('legacy.portal.logout') }}">
-                    @csrf
-                    <button type="submit" class="kp-linkbutton" title="{{ __('legacy_support.classic.menu.logout_title') }}">&nbsp;{{ __('legacy_support.classic.menu.logout') }}&nbsp;</button>
-                </form>
-            </td>
-        </tr>
-    </table>
-</nav>
+<p class="kp-userline">{{ __('legacy_support.classic.logged_in_as', ['name' => $customer->kunde]) }}</p>
+@include('legacy.classic._menu', ['label' => __('legacy_support.classic.portal'), 'rows' => [$menu]])
 @unless ($writeEnabled)
-    <p class="kp-msg">{{ __('legacy_support.portal.read_only') }}</p>
+    <p class="kp-alert">{{ __('legacy_support.portal.read_only') }}</p>
 @endunless
 @include('legacy.classic._flash')

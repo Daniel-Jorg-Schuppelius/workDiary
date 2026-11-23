@@ -16,8 +16,8 @@ use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaveLegacyDiaryEntryRequest extends FormRequest {
-    /** Vorbelegung der klassischen Eingabe: Datum und Uhrzeit getrennt wie im Altportal. */
-    public const string CLASSIC_DATE = 'd.m.Y';
+    /** Werteformat der Datums- und Zeitfelder der klassischen Ansicht (Datumswähler des Browsers). */
+    public const string CLASSIC_DATE = 'Y-m-d';
 
     public const string CLASSIC_TIME = 'H:i';
 

@@ -40,7 +40,7 @@
         </form>
     </x-auth-card>
 
-    <p class="mt-6 text-center text-sm">
-        <a href="{{ route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()]) }}" class="text-primary transition hover:opacity-80">{{ __('legacy_classic.switch_to_classic') }}</a>
-    </p>
+    <div class="mt-6 flex justify-center">
+        @include('legacy._view_switch')
+    </div>
 @endsection

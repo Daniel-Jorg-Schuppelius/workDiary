@@ -43,7 +43,6 @@ class DuplicateFlashRuleTest extends TestCase {
         'resources/views/quotes/portal.blade.php' => 'eigenständige Angebotsseite ohne App-Layout',
         'resources/views/careers/layout.blade.php' => 'eigenes öffentliches Karriere-Layout, zentrale Flash-Stelle',
         'resources/views/legacy/support/portal/' => 'Kundenseiten des Legacy-Support-Portals auf layouts.public/guest ohne zentralen Flash (role lokal)',
-        'resources/views/legacy/classic/' => 'Klassische Ansicht des Legacy-Bereichs: eigenes Dokument ohne App-Layout (role lokal)',
     ];
 
     public function test_views_do_not_render_layout_flashes_locally(): void {

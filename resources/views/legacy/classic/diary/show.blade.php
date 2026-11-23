@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Eintrag im Tagebuch: Büro mit „ändern", Mitarbeiter mit „antworten" und „gelesen"/„erledigt" wie im Altportal. Erwartet: $entry, $isAdmin, $isOwn --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.entry_title'))
 @section('bodyClass', 'tb')
 

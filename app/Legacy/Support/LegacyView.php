@@ -44,6 +44,18 @@ final class LegacyView {
     }
 
     /**
+     * Legacy-Seite mit Gegenstück in beiden Darstellungen. Urlaub und die
+     * Archivliste kennt das Altportal nicht; dort bliebe der Schalter wirkungslos.
+     */
+    public static function offersSwitch(Request $request): bool {
+        if (! $request->routeIs('legacy.*') || $request->routeIs('legacy.view', 'legacy.archive.index')) {
+            return false;
+        }
+
+        return ! ($request->routeIs('legacy.diary.index') && $request->query('tab') === 'urlaub');
+    }
+
+    /**
      * Viewname der gewählten Darstellung.
      *
      * @param  view-string  $modern

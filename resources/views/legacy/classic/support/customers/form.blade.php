@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Kundenzugang anlegen bzw. ändern wie im Altportal (admin/edituser.php). Erwartet: $customer, $isEdit --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', $isEdit ? __('legacy_support.customers.edit') : __('legacy_support.customers.create'))
 
 @section('content')

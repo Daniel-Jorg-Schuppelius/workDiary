@@ -25,7 +25,7 @@
                 <td><input id="cc-username" type="text" name="username" value="{{ old('username') }}" autocomplete="username" required></td>
             </tr>
             <tr>
-                <td><label for="cc-password">{{ __('legacy_classic.label.password') }}</label></td>
+                <td class="rechts"><label for="cc-password">{{ __('legacy_classic.label.password') }}</label></td>
                 <td><input id="cc-password" type="password" name="password" autocomplete="current-password" required></td>
             </tr>
             <tr><td colspan="2"><button type="submit">{{ __('legacy_classic.login') }}</button></td></tr>

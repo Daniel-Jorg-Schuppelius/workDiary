@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Archivierter Eintrag, nur lesen. Erwartet: $entry --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.archive.title'))
 @section('bodyClass', 'tb')
 

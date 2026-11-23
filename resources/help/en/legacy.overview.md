@@ -1,7 +1,7 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 7
+version: 8
 keywords:
     - classic view
     - old system
@@ -131,8 +131,11 @@ administrators and platform operations.
 
 ## Classic view
 
-Anyone used to the screens of the old portals switches to their look via
-**Classic view** – for the diary, the call centre and the support portal at once:
+Anyone used to the screens of the old portals switches to their layout with
+**Classic** next to the page title – for the diary, the call centre and the
+support portal at once; **New** switches back. The app header stays; below it
+come the old menu, the old terms and the yellow area, refreshed with today's
+font, icons and coloured dots for the status:
 
 - **Diary** shows the week as before: the office sees all employees for each day
   with the hours from 7 am to 9 pm, and a click on a name creates an entry;
@@ -140,16 +143,17 @@ Anyone used to the screens of the old portals switches to their look via
   and the colour next to the order shows the status.
 - **Overview** first asks for the period (from today or until today) and the
   status and then shows the list.
-- An entry has date and time in separate fields. Employees **answer** (which
-  reports a problem) or set **read** and **done**.
+- Date and time of an entry are picked in the browser's calendar. Employees
+  **answer** (which reports a problem) or set **read** and **done**.
 - **Employees**, **Standby**, **Emergency service**, **Archive**, **Delete** and
   **Password** follow the old screens; **Delete** moves older entries or all
   entries of one employee to the archive.
 - The **call centre** shows the emergency service plan from yesterday to five
   days ahead, with today in yellow.
-- The **support portal** has the yellow background, the old tables, menus and
-  status boxes and the appointment in four fields.
+- The **support portal** shows the status as a coloured dot with text; the
+  appointment consists of a date and an hour.
 
-Data and permissions are the same; **New view** switches back. The choice applies
-to the browser; operations sets the default. Vacation and the archive list exist
-only in the new view.
+Without an account in the app (customer portal, call centre) the switch sits at
+the top right. Data and permissions are the same. The choice applies to the
+browser; operations sets the default. Vacation and the archive list exist only
+in the new view.

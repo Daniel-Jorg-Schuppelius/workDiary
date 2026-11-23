@@ -6,12 +6,12 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Sortierbarer Spaltenkopf wie im Altportal (»Spalte« = aktiv). Erwartet: $route, $key, $label, $sort, $dir; optional $params, $routeParams, $colspan, $width --}}
+{{-- Sortierbarer Spaltenkopf; die aktive Spalte zeigt die Richtung als Pfeil. Erwartet: $route, $key, $label, $sort, $dir; optional $params, $routeParams, $colspan, $width --}}
 @php
     $isActive = $sort === $key;
     $nextDir = $isActive && $dir === 'asc' ? 'desc' : 'asc';
     $href = route($route, array_merge($routeParams ?? [], $params ?? [], ['sort' => $key, 'dir' => $nextDir]));
 @endphp
 <th @isset($colspan) colspan="{{ $colspan }}" @endisset @isset($width) style="width: {{ $width }}" @endisset @if ($isActive) aria-sort="{{ $dir === 'asc' ? 'ascending' : 'descending' }}" @endif>
-    @if ($isActive)&raquo;@endif<a href="{{ $href }}">{{ $label }}</a>@if ($isActive)&laquo;@endif
+    <a href="{{ $href }}">{{ $label }}@if ($isActive) <x-icon :name="$dir === 'asc' ? 'arrow_upward' : 'arrow_downward'" size="16px" />@endif</a>
 </th>

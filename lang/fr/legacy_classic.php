@@ -12,8 +12,11 @@
  */
 
 return [
-    'switch_to_modern' => 'Nouvel affichage',
-    'switch_to_classic' => 'Affichage classique',
+    'switch' => [
+        'label' => 'Affichage de l’ancien système',
+        'classic' => 'Classique',
+        'modern' => 'Nouveau',
+    ],
     'page' => 'Page :current sur :last',
     'diary_title' => 'Journal en ligne',
     'overview_title' => 'Journal en ligne, aperçu',
@@ -81,8 +84,6 @@ return [
         'until' => 'au :',
         'from_time' => 'du, heure',
         'until_time' => 'au, heure',
-        'from_parts' => 'du : jour[2] mois[2] année[4]',
-        'until_parts' => 'au : jour[2] mois[2] année[4]',
         'information' => 'Information :',
         'answer' => 'Réponse :',
         'notify' => 'envoyer un avis',
@@ -92,11 +93,6 @@ return [
         'password' => 'Mot de passe :',
         'repeat' => 'Répétition :',
         'email' => 'Adresse e-mail :',
-    ],
-    'date_part' => [
-        'day' => 'Jour',
-        'month' => 'Mois',
-        'year' => 'Année',
     ],
     'action' => [
         'change' => 'modifier',

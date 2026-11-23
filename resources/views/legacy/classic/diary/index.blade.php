@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Überblick wie im Altportal (uesicht.php): erst die Auswahl, dann die Liste. Erwartet: $entries, $canViewAll --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.overview_title'))
 @section('bodyClass', 'tb')
 

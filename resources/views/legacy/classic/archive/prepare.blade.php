@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- „Löschen von Aufträgen" wie im Altportal (delauftr.php): ältere Daten oder alles eines Mitarbeiters ins Archiv. Erwartet: $users, $writeEnabled --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.archiving.title'))
 @section('bodyClass', 'tb')
 
@@ -17,7 +17,7 @@
     <h1>{{ __('legacy_classic.archiving.title') }}</h1>
 
     @if (! $writeEnabled)
-        <p class="kp-msg kp-msg--error" role="alert">{{ __('legacy_classic.read_only') }}</p>
+        <p class="kp-alert kp-alert--error" role="alert">{{ __('legacy_classic.read_only') }}</p>
     @else
         <p>{{ __('legacy_classic.archiving.older_hint') }}</p>
         <p class="kp-legend">{{ __('legacy_classic.archiving.archive_hint') }}</p>

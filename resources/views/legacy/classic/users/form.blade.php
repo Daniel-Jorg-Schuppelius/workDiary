@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Mitarbeiter anlegen und ändern wie im Altportal; das Passwort zweimal, leer bleibt es beim Ändern. Erwartet: $legacyUser, $isEdit --}}
-@extends('legacy.classic.layout')
+@extends('legacy.classic.shell')
 @section('title', __('legacy_classic.users.title'))
 @section('bodyClass', 'tb')
 

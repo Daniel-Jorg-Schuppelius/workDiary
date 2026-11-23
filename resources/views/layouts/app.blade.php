@@ -52,6 +52,7 @@
         <script @cspNonce>window.__formats = @json(['date' => \App\Support\Formats::date(), 'time' => \App\Support\Formats::time()]);</script>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
+            @stack('head')
         @else
             {{-- Ohne Build kein gebündeltes app.css → strukturelles Layout-CSS
                  (Quelle: resources/css/layout.css) inline als Fallback. --}}
@@ -150,6 +151,9 @@
             $canAccessLegacy = $_authUser instanceof \App\Models\Platform\User ? $_authUser->canAccessLegacy() : false;
             $canAccessNew = $_authUser instanceof \App\Models\Platform\User ? $_authUser->canAccessNew() : false;
             $showModeSwitch = $legacyConfigured && $canAccessLegacy && $canAccessNew;
+            // Klassische Ansicht des Legacy-Bereichs: eigenes Menü statt Seitenleiste, eigene Meldungen.
+            $_classicShell = \Illuminate\Support\Facades\View::hasSection('legacy-classic');
+            $_legacyViewSwitch = \App\Legacy\Support\LegacyView::offersSwitch(request());
 
             // Org-Switcher: nur für Admins, und nur wenn überhaupt
             // mehrere Organisationen existieren. Aktive Org kommt aus dem
@@ -198,6 +202,10 @@
                         <span class="text-muted">/</span>
                         <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Auftragsbuch'))</span>
                     </a>
+                    {{-- Legacy-Seiten mit klassischem Gegenstück: Umschalter Klassisch | Neu neben dem Titel. --}}
+                    @if ($_legacyViewSwitch)
+                        <div class="ml-3 shrink-0">@include('legacy._view_switch')</div>
+                    @endif
                 </div>
                 @if ($_useGrid)
                     <div class="header-center">
@@ -321,6 +329,7 @@
                             @endif
                         @else
                             {{-- Sidebar-Toggle (nur < lg) --}}
+                            @unless ($_classicShell)
                             <button type="button"
                                     id="app-sidebar-toggle"
                                     class="btn btn-sm btn-ghost btn-square lg:hidden"
@@ -329,6 +338,7 @@
                                     aria-expanded="false">
                                 <x-icon name="menu" class="text-[1.25rem]" />
                             </button>
+                            @endunless
 
 
                             @if (! empty($manageNavItems))
@@ -928,7 +938,7 @@
         @endauth
 
         @auth
-        @unless ($isLegacyMode)
+        @unless ($isLegacyMode || $_classicShell)
         {{-- Sidebar: persistent ab lg, sonst Drawer --}}
         <aside id="app-sidebar"
                class="wd-badge fixed z-40 -translate-x-full transform shadow-xl transition-transform duration-200 lg:translate-x-0"
@@ -1266,7 +1276,9 @@
             {{-- Vertretung (Feature 202): „Sie vertreten …“ / „Vertreten durch …“. --}}
             <x-delegation-banner />
         @endauth
-        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-help-pad with-sidebar-pad @endunless @endauth">
+        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode || $_classicShell) with-help-pad with-sidebar-pad @endunless @endauth">
+            {{-- Die klassische Legacy-Ansicht zeigt Meldungen in ihrem eigenen Stil (legacy.classic._flash). --}}
+            @unless ($_classicShell)
             {{-- Zentrale Flashes (I4): einzige Render-Stelle für success/error/
                  warning/info — Views rendern diese Keys NICHT erneut
                  (Gate: DuplicateFlashRuleTest). role macht sie für
@@ -1301,6 +1313,7 @@
                     {{ session('info') }}
                 </div>
             @endif
+            @endunless
             {{-- Folgedialog nach einer Weiterleitung (with('open_dialog', route(…))):
                  als Flash statt Query, sonst merkte RememberListUrl ihn sich. --}}
             @if (is_string(session('open_dialog')))

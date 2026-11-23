@@ -6,114 +6,269 @@
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  *
- * Klassische Ansicht des Legacy-Bereichs: Farben, Schrift und Tabellen der
- * Altportale (Support kp.css, Tagebuch tb.css). Bewusst ohne Tailwind — dessen
- * Grundgerüst würde Überschriften und Tabellen zurücksetzen.
+ * Klassische Ansicht des Legacy-Bereichs: Aufbau, Farbwelt und Begriffe der
+ * Altportale (Support kp.css, Tagebuch tb.css), behutsam aufgefrischt — Schrift
+ * und Symbole der App, Luft, runde Ecken, auf schmalen Schirmen nutzbar.
+ * Bewusst ohne Tailwind: dessen Grundgerüst würde Tabellen und Überschriften
+ * zurücksetzen.
  */
 
-body.kp-classic {
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+
+@font-face {
+    font-family: "Material Symbols Outlined";
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: block;
+    src: url("../fonts/material-symbols-outlined.woff2") format("woff2");
+}
+
+.kp-classic {
+    --kp-bg: #fffbd6;
+    --kp-surface: #fff;
+    --kp-ink: #1f2a33;
+    --kp-olive: #67674f;
+    --kp-brand: #004c7e;
+    --kp-brand-dark: #003659;
+    --kp-accent: #fbba6d;
+    --kp-accent-soft: #feecd2;
+    --kp-line: #dcd8b8;
+    --kp-line-strong: #b9b59a;
+    --kp-head: #f5f2dd;
+    --kp-zebra: #eef9e4;
+    --kp-hover: #fff4c9;
+    --kp-input: #f3f9ff;
+    --kp-input-line: #9dc0da;
+    --kp-danger: #c62828;
+    --kp-radius: 8px;
+    --kp-shadow: 0 1px 2px rgb(0 0 0 / 6%), 0 2px 6px rgb(0 0 0 / 6%);
+
     margin: 0;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    color: #000;
-    background-color: #ffffbb;
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--kp-ink);
+    background-color: var(--kp-bg);
 }
 
 .kp-page {
-    padding: 8px 12px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 16px 32px;
     text-align: center;
 }
 
 .kp-classic h1 {
-    font-size: 20px;
-    font-weight: bold;
-    color: #67674f;
-    text-align: center;
+    margin: 12px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--kp-olive);
 }
 
 .kp-classic h2 {
-    font-size: 16px;
-    font-weight: bold;
-    color: #67674f;
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--kp-olive);
 }
 
-.kp-classic a,
-.kp-classic .kp-linkbutton {
-    color: #004c7e;
-    font-weight: bold;
+.kp-classic p {
+    margin: 8px 0;
+}
+
+/* Links und Symbolschrift */
+.kp-classic a {
+    color: var(--kp-brand);
+    font-weight: 600;
     text-decoration: none;
+    border-radius: 4px;
 }
 
-.kp-classic a:hover,
-.kp-classic .kp-linkbutton:hover {
-    color: #000;
-    background: #fbba6d;
+.kp-classic a:hover {
+    color: var(--kp-ink);
+    background: var(--kp-accent-soft);
 }
 
-.kp-classic a:focus-visible,
-.kp-classic button:focus-visible,
-.kp-classic input:focus-visible,
-.kp-classic select:focus-visible,
-.kp-classic textarea:focus-visible {
-    outline: 2px solid #004c7e;
-    outline-offset: 1px;
+.kp-classic a.kp-normal {
+    font-weight: 400;
 }
 
-.kp-classic input,
+.kp-classic .material-symbols-outlined {
+    font-family: "Material Symbols Outlined";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    direction: ltr;
+    vertical-align: middle;
+    font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+}
+
+.kp-classic :focus-visible {
+    outline: 2px solid var(--kp-brand);
+    outline-offset: 2px;
+}
+
+/* Eingaben */
+.kp-classic input:not([type="checkbox"], [type="radio"]),
 .kp-classic select,
 .kp-classic textarea {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    font-weight: bold;
-    color: #000;
-    background-color: #d0edff;
-    border: 1px solid #67674f;
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 6px 8px;
+    font: inherit;
+    color: var(--kp-ink);
+    background-color: var(--kp-input);
+    border: 1px solid var(--kp-input-line);
+    border-radius: 6px;
+}
+
+.kp-classic input:not([type="checkbox"], [type="radio"]),
+.kp-classic select {
+    min-height: 34px;
+}
+
+.kp-classic input:focus,
+.kp-classic select:focus,
+.kp-classic textarea:focus {
+    border-color: var(--kp-brand);
+    box-shadow: 0 0 0 3px rgb(0 76 126 / 15%);
+    outline: none;
+}
+
+.kp-classic select[multiple],
+.kp-classic select[size] {
+    padding: 4px;
 }
 
 .kp-classic textarea {
     width: 100%;
-    min-width: 18em;
-    box-sizing: border-box;
+    min-width: 22em;
 }
 
-.kp-classic input.kp-short {
-    width: 3.2em;
+.kp-classic input[type="checkbox"],
+.kp-classic input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--kp-brand);
+    vertical-align: middle;
 }
 
-.kp-classic input.kp-year {
-    width: 4.2em;
-}
-
+/* Knöpfe */
 .kp-classic button,
 .kp-classic input[type="submit"] {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    color: #000;
-    background-color: #e8e8e8;
-    border: 2px outset #dfdfdf;
-    padding: 1px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    font: inherit;
+    font-weight: 600;
+    color: #fff;
+    background-color: var(--kp-brand);
+    border: 1px solid var(--kp-brand);
+    border-radius: 6px;
     cursor: pointer;
 }
 
-.kp-classic .kp-linkbutton {
-    font-family: inherit;
-    font-size: inherit;
+.kp-classic button:hover,
+.kp-classic input[type="submit"]:hover {
+    background-color: var(--kp-brand-dark);
+}
+
+.kp-classic button.kp-danger {
+    background-color: var(--kp-danger);
+    border-color: var(--kp-danger);
+}
+
+.kp-classic button.kp-danger:hover {
+    background-color: #9f1d1d;
+}
+
+.kp-classic button.kp-linkbutton {
     padding: 0;
-    border: 0;
+    font-weight: 600;
+    color: var(--kp-brand);
     background: none;
-    cursor: pointer;
+    border: 0;
+    border-radius: 4px;
 }
 
-/* Tabellen: zentriert wie unter <center> im Altportal, auf schmalen Schirmen scrollbar. */
+.kp-classic button.kp-linkbutton:hover {
+    color: var(--kp-ink);
+    background: var(--kp-accent-soft);
+}
+
+/* Menü: Knopfleiste der Altportale, die aktive Seite ist markiert. */
+.kp-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 12px;
+}
+
+.kp-menu ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.kp-menu form {
+    margin: 0;
+}
+
+.kp-menu a,
+.kp-menu button.kp-linkbutton {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    color: var(--kp-brand);
+    background: var(--kp-surface);
+    border: 1px solid var(--kp-line);
+    border-radius: 6px;
+    box-shadow: var(--kp-shadow);
+}
+
+.kp-menu a:hover,
+.kp-menu button.kp-linkbutton:hover {
+    color: var(--kp-ink);
+    background: var(--kp-accent-soft);
+    border-color: var(--kp-accent);
+}
+
+.kp-menu a[aria-current="page"] {
+    color: #fff;
+    background: var(--kp-brand);
+    border-color: var(--kp-brand);
+}
+
+.kp-userline {
+    margin: 4px 0;
+    color: var(--kp-olive);
+}
+
+/* Tabellen: zentriert wie unter <center>, als Karte; schmale Schirme scrollen. */
 .kp-scroll {
     max-width: 100%;
     overflow-x: auto;
 }
 
 .kp-classic table {
-    margin: 0 auto;
+    margin: 8px auto;
     border-collapse: separate;
-    border-spacing: 2px;
+    border-spacing: 0;
     text-align: left;
 }
 
@@ -123,28 +278,48 @@ body.kp-classic {
 
 .kp-classic table.kp-medium {
     width: 70%;
-    min-width: 32em;
+    min-width: min(32em, 100%);
 }
 
-.kp-classic table.eintrag,
-.kp-classic table.hmenue {
-    background-color: #fff;
-    border-collapse: collapse;
-}
-
-.kp-classic table.hmenue td {
-    padding: 2px 4px;
-}
-
-.kp-classic table.kp-list tbody tr:nth-child(odd) {
-    background-color: #d6fabc;
+.kp-classic th {
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--kp-olive);
+    text-align: center;
+    white-space: nowrap;
+    background: var(--kp-head);
+    border-bottom: 1px solid var(--kp-line);
 }
 
 .kp-classic td {
-    font-size: 12px;
-    color: #67674f;
-    padding: 1px;
+    padding: 6px 10px;
     vertical-align: top;
+}
+
+.kp-classic table.kp-list,
+.kp-classic table.eintrag {
+    background: var(--kp-surface);
+    border: 1px solid var(--kp-line);
+    border-radius: var(--kp-radius);
+    box-shadow: var(--kp-shadow);
+    overflow: hidden;
+}
+
+.kp-classic table.kp-list td {
+    border-bottom: 1px solid #efecd8;
+}
+
+.kp-classic table.kp-list tbody tr:nth-child(odd) {
+    background-color: var(--kp-zebra);
+}
+
+.kp-classic table.kp-list tbody tr:hover {
+    background-color: var(--kp-hover);
+}
+
+.kp-classic table.kp-list tbody tr:last-child td {
+    border-bottom: 0;
 }
 
 .kp-classic td.kp-center {
@@ -152,125 +327,224 @@ body.kp-classic {
 }
 
 .kp-classic td.kp-icon {
-    width: 15px;
+    width: 28px;
+    padding: 4px 2px;
     text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.kp-classic td.kp-icon a {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
 }
 
 .kp-classic td.kp-label {
+    font-weight: 600;
+    color: var(--kp-olive);
     white-space: nowrap;
 }
 
-.kp-classic th {
-    font-size: 14px;
-    font-weight: bold;
-    color: #67674f;
-    text-align: center;
-    border: 1px solid #67674f;
+.kp-classic .kp-pre {
+    white-space: pre-wrap;
 }
 
 .kp-classic .kp-overdue-text {
-    color: #f00;
-    font-weight: bold;
+    color: var(--kp-danger);
+    font-weight: 600;
 }
 
+/* Abstand für Formulare und Tabellen in der Seitenmitte; Nachfragen mit Knopf und Link nebeneinander. */
 .kp-classic .kp-msg {
-    margin: 6px auto;
-    font-weight: bold;
-    color: #004c7e;
+    margin: 10px auto;
 }
 
-.kp-classic .kp-msg--error {
-    color: #c00;
+.kp-classic form.kp-msg {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 16px;
 }
 
-.kp-classic .kp-legend {
-    margin: 4px auto 8px;
-    color: #67674f;
+/* Hinweise und Meldungen */
+.kp-alert {
+    max-width: 760px;
+    margin: 10px auto;
+    padding: 8px 14px;
+    text-align: left;
+    background: #eef6fc;
+    border: 1px solid #b9d6ea;
+    border-left: 4px solid var(--kp-brand);
+    border-radius: 6px;
 }
 
-.kp-classic .kp-legend span {
-    margin-right: 10px;
+.kp-alert--success {
+    background: #edf8ee;
+    border-color: #b7dfbc;
+    border-left-color: #2e7d32;
+}
+
+.kp-alert--warning {
+    background: #fff6e0;
+    border-color: #f3d08b;
+    border-left-color: #c77c02;
+}
+
+.kp-alert--error {
+    background: #fdeeee;
+    border-color: #f1bcbc;
+    border-left-color: var(--kp-danger);
+}
+
+.kp-alert ul {
+    margin: 4px 0 0;
+    padding-left: 18px;
+}
+
+/* Status: Farbpunkt mit Text in den Farben der alten Kästchen. */
+.kp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     white-space: nowrap;
 }
 
-/* Statuskästchen und Symbole: 13 px mit eingelassenem Rand wie die GIFs des Altportals. */
-.kp-box {
+.kp-dot {
     display: inline-block;
-    width: 13px;
-    height: 13px;
-    box-sizing: border-box;
+    flex: none;
+    width: 10px;
+    height: 10px;
     vertical-align: middle;
-    border: 1px solid;
-    border-color: #7f7f7f #fff #fff #7f7f7f;
-    box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #dfdfdf;
-    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 15%);
 }
 
-.kp-box--new { background-color: #ff515d; }
-.kp-box--seen { background-color: #fff200; }
-.kp-box--scheduled { background-color: #00f; }
-.kp-box--done { background-color: #0f0; }
-.kp-box--archived { background-color: #9a9a9a; }
+.kp-dot--new { background-color: #e5484d; }
+.kp-dot--seen { background-color: #f2c200; }
+.kp-dot--scheduled { background-color: #2f6fde; }
+.kp-dot--done { background-color: #2fa44f; }
+.kp-dot--archived { background-color: #9a9a9a; }
 
-.kp-box--overdue {
-    background-color: #f00;
-    animation: kp-blink 1s steps(2, start) infinite;
+.kp-dot--overdue {
+    background-color: #e00;
+    animation: kp-pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes kp-blink {
-    to { background-color: #fff; }
+@keyframes kp-pulse {
+    50% { box-shadow: 0 0 0 4px rgb(238 0 0 / 25%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .kp-box--overdue { animation: none; }
+    .kp-dot--overdue { animation: none; }
 }
 
-/* Symbole der Auftragsliste, nachgezeichnet nach den Bildchen des Altportals. */
-.kp-box--view {
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M1.5 6.5C3 4 4.6 3 6.5 3s3.5 1 5 3.5C10 9 8.4 10 6.5 10S3 9 1.5 6.5z' fill='%23f6e7b0' stroke='%23000' stroke-width='.9'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.8' fill='%23004c7e'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+.kp-classic .kp-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 14px;
+    margin: 8px auto 12px;
+    color: var(--kp-olive);
 }
 
-.kp-box--edit {
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M3 10.2l.8-2.8 5-5 2 2-5 5z' fill='%23f0dd03' stroke='%23000' stroke-width='.8'/%3E%3Cpath d='M3 10.2l.8-2.8 2 2z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+.kp-legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
-.kp-box--delete {
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M3.2 3.2l6.6 6.6M9.8 3.2l-6.6 6.6' stroke='%23f00' stroke-width='2.2'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+/* E-Mail-Hinweis der Auftragsübersicht als Schalter */
+.kp-classic button.kp-mail {
+    padding: 4px 12px;
+    color: #1b5e20;
+    background: #e3f5e1;
+    border: 1px solid #a8d8a3;
+    border-radius: 999px;
 }
 
-.kp-box--appointment {
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Cpath d='M3.2 3.2l6.6 6.6M9.8 3.2l-6.6 6.6' stroke='%23f304a7' stroke-width='2.2'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+.kp-classic button.kp-mail--off {
+    color: #8e1b1b;
+    background: #fbe4e2;
+    border-color: #efb1ab;
 }
 
-.kp-box--customer {
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 13'%3E%3Crect width='13' height='13' fill='%23004865'/%3E%3Cpath d='M5.4 2h2.2l-.4 5.8H5.8z M5.5 8.8h2v2h-2z' fill='%23ffeb00'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+.kp-classic button.kp-mail:hover {
+    filter: brightness(0.96);
 }
-
-/* E-Mail-Schalter der Auftragsübersicht: Umschlag auf grün (an) bzw. rot (aus). */
-.kp-mail {
-    display: inline-block;
-    width: 30px;
-    height: 20px;
-    vertical-align: middle;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20'%3E%3Crect x='5' y='3.5' width='20' height='13' fill='%23f8e8c8' stroke='%23c87830'/%3E%3Cpath d='M5 3.5l10 7.5 10-7.5' fill='none' stroke='%23c87830'/%3E%3C/svg%3E");
-    background-size: 100% 100%;
-}
-
-.kp-mail--on { background-color: #6bf35a; }
-.kp-mail--off { background-color: #ff2a12; }
 
 .kp-pager {
-    margin: 8px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px auto;
 }
 
-.kp-footer {
-    padding: 8px 12px 16px;
-    text-align: center;
-    font-size: 11px;
-    color: #67674f;
+/* Kopfzeile der Seiten ohne App-Konto (Kundenportal, Callcenter), angelehnt an die der App. */
+.kp-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 8px 16px;
+    background: var(--kp-surface);
+    border-bottom: 1px solid var(--kp-line);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+}
+
+.kp-topbar__title {
+    font-weight: 600;
+    color: var(--kp-ink);
+}
+
+.kp-topbar__brand {
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--kp-brand);
+}
+
+/* Umschalter Klassisch | Neu ohne App-Stylesheet */
+.kp-switch {
+    display: inline-flex;
+    border: 1px solid var(--kp-brand);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.kp-classic .kp-switch a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    color: var(--kp-brand);
+    background: var(--kp-surface);
+    border-radius: 0;
+}
+
+.kp-classic .kp-switch a + a {
+    border-left: 1px solid var(--kp-brand);
+}
+
+.kp-classic .kp-switch a[aria-current="true"] {
+    color: #fff;
+    background: var(--kp-brand);
+}
+
+/* In der App-Hülle ist der Hauptbereich die gelbe Fläche. */
+main.kp-classic.kp-page {
+    max-width: none;
+    padding: 12px 16px 28px;
+    border-radius: var(--panel-radius, 12px);
 }
 
 .kp-sr-only {
@@ -285,84 +559,141 @@ body.kp-classic {
     border: 0;
 }
 
-.kp-classic a.kp-normal {
-    font-weight: normal;
-}
-
-.kp-classic .kp-pre {
-    white-space: pre-wrap;
-}
-
-/* Online-Tagebuch und Notdienstplan (tb.css): Zellen mit Rahmen, Kopf- und Zustandsfarben. */
-.tb td {
-    color: #004c7e;
-    border: 1px solid #67674f;
-    vertical-align: middle;
-}
-
+/* Online-Tagebuch und Notdienstplan (tb.css): Raster mit Zellrahmen, Kopf- und Zustandsfarben. */
 .tb table.eintrag {
-    border-spacing: 0;
+    border-left: 0;
+    border-top: 0;
+}
+
+.tb table.eintrag td,
+.tb table.eintrag th {
+    padding: 3px 8px;
+    border-right: 1px solid var(--kp-line);
+    border-bottom: 1px solid var(--kp-line);
+}
+
+.tb table.eintrag tr > :first-child {
+    border-left: 1px solid var(--kp-line);
+}
+
+.tb table.eintrag tr:first-child > * {
+    border-top: 1px solid var(--kp-line);
+}
+
+.tb td {
+    color: var(--kp-ink);
+    vertical-align: middle;
 }
 
 .tb td.ohne,
 .tb td.rechts {
-    border: 0;
-    background-color: #ffffbb;
+    background: transparent;
 }
 
-.tb td.rechts { text-align: right; }
-.tb td.mitte { text-align: center; }
-.tb td.grau { background-color: #eeffee; text-align: center; }
-.tb td.fett { font-weight: bold; }
+.tb td.rechts {
+    font-weight: 600;
+    color: var(--kp-olive);
+    text-align: right;
+}
 
-.tb td.ro, .tb td.rob, .tb td.ron, .tb td.rog, .tb td.rogb, .tb td.rogn { border-right-style: none; }
+.tb td.mitte {
+    text-align: center;
+}
+
+.tb td.grau {
+    text-align: center;
+    background-color: #f2fbee;
+}
+
+.tb table.eintrag td.ro, .tb table.eintrag td.rob, .tb table.eintrag td.ron,
+.tb table.eintrag td.rog, .tb table.eintrag td.rogb, .tb table.eintrag td.rogn {
+    border-right: 0;
+}
+
 .tb td.lo, .tb td.lob, .tb td.lon, .tb td.log, .tb td.logb, .tb td.logn,
-.tb td.neu, .tb td.off, .tb td.work, .tb td.ok { border-left-style: none; width: 10px; }
+.tb td.neu, .tb td.off, .tb td.work, .tb td.ok {
+    width: 10px;
+    padding: 0 4px;
+}
 
-.tb td.rob, .tb td.lob { background-color: #ddeeff; }
-.tb td.ron, .tb td.lon { background-color: #ffe0cc; }
-.tb td.rog, .tb td.log { background-color: #eeffee; }
-.tb td.rogb, .tb td.logb { background-color: #c0e0ff; }
-.tb td.rogn, .tb td.logn { background-color: #ffccaa; }
+.tb td.rob, .tb td.lob { background-color: #e3effc; }
+.tb td.ron, .tb td.lon { background-color: #ffe7d6; }
+.tb td.rog, .tb td.log { background-color: #f2fbee; }
+.tb td.rogb, .tb td.logb { background-color: #cfe4fa; }
+.tb td.rogn, .tb td.logn { background-color: #ffd5b8; }
 
-.tb td.neu { background-color: #f00; }
-.tb td.off { background-color: #ff0; }
-.tb td.work { background-color: #0f0; }
-.tb td.ok { background-color: #99aa99; }
+.tb td.neu { background-color: #e5484d; }
+.tb td.off { background-color: #f2c200; }
+.tb td.work { background-color: #2fa44f; }
+.tb td.ok { background-color: #9aa79a; }
 
-.tb td.bereit { background-color: #ddeeff; }
-.tb td.notdnst { background-color: #ffccaa; }
-.tb td.option-edit { background-color: #ddff88; text-align: center; }
-.tb td.option-delete { background-color: #ffe0e0; text-align: center; }
+.tb td.bereit { background-color: #e3effc; }
+.tb td.notdnst { background-color: #ffd5b8; }
+.tb td.option-edit,
+.tb td.option-delete {
+    text-align: center;
+}
 
 .tb td.tb-slot {
     min-width: 80px;
-    max-width: 120px;
+    max-width: 130px;
     overflow: hidden;
     white-space: nowrap;
 }
 
-.tb th.kopf { background-color: #333399; color: #fff; }
-.tb th.kheute { background-color: #339933; color: #fff; }
-.tb th.kso { background-color: #cc0000; color: #fff; }
-.tb th.ksa { background-color: #993333; color: #fff; }
-.tb th.mit, .tb th.mitb, .tb th.mitn { color: #000; font-weight: normal; }
-.tb th.mit { background-color: #ddeeff; }
-.tb th.mitb { background-color: #c0e0ff; }
-.tb th.mitn { background-color: #ffccaa; }
-.tb th.tb-today { background-color: #ffff33; }
+.tb th.kopf { color: #fff; background-color: #34389a; }
+.tb th.kheute { color: #fff; background-color: #2e8b3d; }
+.tb th.kso { color: #fff; background-color: #c62828; }
+.tb th.ksa { color: #fff; background-color: #8d3a3a; }
+.tb th.mit, .tb th.mitb, .tb th.mitn { font-weight: 400; color: var(--kp-ink); }
+.tb th.mit { background-color: #e3effc; }
+.tb th.mitb { background-color: #cfe4fa; }
+.tb th.mitn { background-color: #ffd5b8; }
+.tb th.tb-today { background-color: #fff27a; }
 
 .tb th.kopf a, .tb th.kheute a, .tb th.kso a, .tb th.ksa a { color: #fff; }
 
-/* Legende: Beschriftungen ohne Rahmen, die Farbkästchen behalten Rahmen und Farbe. */
-.tb .tb-legend td:not([class]) { border: 0; background-color: #ffffbb; }
-
-.tb input.rad { background-color: #ffffbb; border: 0; }
-
-.tb table.hmenue {
-    border-collapse: separate;
-    border-spacing: 5px 10px;
-    background-color: transparent;
+.tb table.tb-legend {
+    margin: 6px auto;
 }
 
-.tb table.hmenue td { background-color: #fff; }
+.tb table.tb-legend td {
+    padding: 2px 4px;
+    color: var(--kp-olive);
+    white-space: nowrap;
+}
+
+.tb table.tb-legend td[class] {
+    width: 12px;
+    border-radius: 3px;
+}
+
+/* Schmale Schirme */
+@media (max-width: 640px) {
+    .kp-classic {
+        font-size: 15px;
+    }
+
+    .kp-page {
+        padding: 10px 8px 24px;
+    }
+
+    .kp-classic textarea {
+        min-width: 0;
+    }
+
+    .kp-classic table.kp-medium {
+        width: 100%;
+    }
+
+    .kp-menu a,
+    .kp-menu button.kp-linkbutton {
+        padding: 6px 10px;
+    }
+}
+
+@media (forced-colors: active) {
+    .kp-dot {
+        forced-color-adjust: none;
+    }
+}

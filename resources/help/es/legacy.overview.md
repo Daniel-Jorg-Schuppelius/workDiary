@@ -1,7 +1,7 @@
 ---
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
-version: 7
+version: 8
 keywords:
     - vista clásica
     - sistema antiguo
@@ -123,8 +123,11 @@ administradores del sistema antiguo y a la operación de la plataforma.
 ## Vista clásica
 
 Quien esté acostumbrado a las pantallas de los portales antiguos cambia a su
-aspecto con **Vista clásica** – para el diario, el centro de llamadas y el portal
-de soporte a la vez:
+estructura con **Clásica** junto al título de la página – para el diario, el
+centro de llamadas y el portal de soporte a la vez; **Nueva** vuelve atrás. La
+cabecera de la aplicación se mantiene; debajo aparecen el menú antiguo, los
+términos antiguos y la superficie amarilla, renovados con la tipografía actual,
+iconos y puntos de color para el estado:
 
 - **Diario** muestra la semana como antes: la oficina ve para cada día a todos
   los empleados con las horas de 7 a 21, y un clic en un nombre crea una
@@ -132,16 +135,18 @@ de soporte a la vez:
   urgencia colorean las columnas, el color junto a la orden indica el estado.
 - **Resumen** pregunta primero por el periodo (desde hoy o hasta hoy) y el estado
   y luego muestra la lista.
-- Una entrada tiene fecha y hora en campos separados. Los empleados **responden**
-  (lo que comunica un problema) o marcan **leído** y **hecho**.
+- La fecha y la hora de una entrada se eligen en el calendario del navegador.
+  Los empleados **responden** (lo que comunica un problema) o marcan **leído** y
+  **hecho**.
 - **Empleados**, **Guardia**, **Servicio de urgencia**, **Archivo**, **Eliminar**
   y **Contraseña** siguen las pantallas antiguas; **Eliminar** mueve al archivo
   las entradas antiguas o todas las entradas de un empleado.
 - El **centro de llamadas** muestra el plan del servicio de urgencia desde ayer
   hasta dentro de cinco días, con hoy en amarillo.
-- El **portal de soporte** tiene el fondo amarillo, las tablas, menús y casillas
-  de estado antiguos y la cita en cuatro campos.
+- El **portal de soporte** muestra el estado como punto de color con texto; la
+  cita consta de fecha y hora.
 
-Los datos y permisos son los mismos; **Vista nueva** vuelve atrás. La elección
-vale para el navegador; la operación fija el valor predeterminado. Las vacaciones
-y la lista del archivo solo existen en la vista nueva.
+Sin cuenta en la aplicación (portal de clientes, centro de llamadas) el
+interruptor está arriba a la derecha. Los datos y permisos son los mismos. La
+elección vale para el navegador; la operación fija el valor predeterminado. Las
+vacaciones y la lista del archivo solo existen en la vista nueva.

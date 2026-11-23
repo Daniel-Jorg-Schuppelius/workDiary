@@ -7,6 +7,9 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Kopf der Kundenseiten: Kunde, Navigation, Meldungen. Erwartet: $customer, $active (orders|create|password) --}}
+<div class="mb-4 flex justify-end">
+    @include('legacy._view_switch')
+</div>
 <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
     <div>
         <p class="text-xs uppercase tracking-[0.2em] text-muted">{{ __('legacy_support.portal.title') }}</p>
@@ -18,7 +21,6 @@
             <x-icon-btn icon="add" size="sm" :tone="$active === 'create' ? 'primary' : 'ghost'" :href="route('legacy.portal.orders.create')" show-label>{{ __('legacy_support.portal.new_order') }}</x-icon-btn>
             <x-icon-btn icon="lock" size="sm" :tone="$active === 'password' ? 'primary' : 'ghost'" :href="route('legacy.portal.password.edit')" show-label>{{ __('legacy_support.portal.change_password') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="history" size="sm" tone="ghost" :href="route('legacy.view', ['mode' => \App\Legacy\Support\LegacyView::CLASSIC, 'back' => request()->getRequestUri()])" show-label>{{ __('legacy_classic.switch_to_classic') }}</x-icon-btn>
     </nav>
 </div>
 
