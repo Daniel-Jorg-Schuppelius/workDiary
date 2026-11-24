@@ -216,6 +216,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Geändert
 
+- Abos & Lizenzen (`MVP-1804`): Eine Gutschrift gleicht zu viel berechnete
+  Positionen desselben Produkts beim selben Empfänger aus, die älteste zuerst.
+  Die Positionen zeigen „durch Gutschrift ausgeglichen“ und zählen nicht mehr
+  unter „Frei“, „Zu viel“ und „Zu viel berechnet“. Bisher blieb der Betrag
+  stehen, solange die Gutschrift im Buchhaltungsprogramm keinen Bezug auf die
+  Rechnung trug.
 - Abos & Lizenzen (`MVP-1803`): Wird eine Domain nach ihrer Verlängerung
   gekündigt, bleibt das schon berechnete Jahr als Lizenzjahr stehen, statt am
   Kündigungstag zu enden. Der Rest der Verlängerungsrechnung erschien bisher

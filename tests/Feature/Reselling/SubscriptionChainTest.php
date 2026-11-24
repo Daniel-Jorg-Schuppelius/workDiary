@@ -230,6 +230,17 @@ class SubscriptionChainTest extends TestCase {
             ->assertSee('finanzen/', false)
             ->assertSee(__('resale.voucher.open'));
         $this->assertStringContainsString('94,80', app(ResaleOverview::class)->build($this->organization)['summary']['overbilled']);
+
+        // Gutschrift über beide Jahre (ohne Rechnungsbezug im Buchhaltungsprogramm): nichts ist mehr zu viel berechnet.
+        $credit = $this->invoice('GS/2026/0001', '2026-09-01', '2026-09-01');
+        $credit->forceFill(['quantity' => 24, 'total_net' => '-94.80'])->save();
+        $credit->voucher->forceFill(['voucher_type' => 'creditnote', 'voucher_status' => 'open', 'service_starts_on' => null, 'service_ends_on' => null])->save();
+        $row = collect(app(\App\Services\Reselling\Register\RecipientReconciler::class)->overview($this->organization))->firstWhere('customer.id', $this->customer->id);
+        $this->assertSame(0.0, $row['overbilled'] ?? null, 'die Gutschrift gleicht beide Rechnungen aus');
+        $this->assertSame(0.0, $row['free'] ?? null);
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->customer))->assertOk()
+            ->assertSee(__('resale.board.credited', ['amount' => '12 Mon.']))
+            ->assertDontSee(__('resale.board.surplus.after_end'));
     }
 
     public function test_correction_sheet_nets_what_to_credit_against_what_to_bill(): void {

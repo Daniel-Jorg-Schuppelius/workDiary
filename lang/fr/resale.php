@@ -1567,6 +1567,7 @@ return [
             'outside' => 'hors durée',
             'unknown' => 'sans abonnement',
         ],
+        'credited' => ':amount compensé par un avoir',
         'surplus_hint' => [
             'duplicate' => 'L’année de licence concernée par cette ligne est déjà couverte. Créez un avoir ou, s’il ne s’agit pas d’une licence, ignorez-la.',
             'after_end' => 'La dernière année de licence de ce produit est terminée, la facture a continué. Créez un avoir et vérifiez le modèle récurrent.',

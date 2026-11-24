@@ -1567,6 +1567,7 @@ return [
             'outside' => 'außerhalb der Laufzeit',
             'unknown' => 'ohne Abo',
         ],
+        'credited' => ':amount durch Gutschrift ausgeglichen',
         'surplus_hint' => [
             'duplicate' => 'Das Lizenzjahr, in das diese Position fällt, ist schon gedeckt. Gutschrift erstellen oder, falls es keine Lizenz ist, ignorieren.',
             'after_end' => 'Das letzte Lizenzjahr dieses Produkts ist vorbei, die Rechnung lief weiter. Gutschrift erstellen und die Serienvorlage prüfen.',

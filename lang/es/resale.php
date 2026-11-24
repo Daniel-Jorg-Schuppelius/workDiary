@@ -1567,6 +1567,7 @@ return [
             'outside' => 'fuera del plazo',
             'unknown' => 'sin suscripción',
         ],
+        'credited' => ':amount compensado con un abono',
         'surplus_hint' => [
             'duplicate' => 'El año de licencia al que corresponde esta línea ya está cubierto. Cree un abono o, si no es una licencia, ignórela.',
             'after_end' => 'El último año de licencia de este producto ha terminado, la factura siguió emitiéndose. Cree un abono y revise la plantilla periódica.',

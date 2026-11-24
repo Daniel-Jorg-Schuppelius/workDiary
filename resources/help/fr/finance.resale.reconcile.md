@@ -112,4 +112,6 @@ article » ou « Montant différent » et peuvent y être justifiés ou supprim�
 haut produit × année de licence chez tous les fournisseurs du client. La
 feuille de correction en dessous indique les factures à créditer, les années
 de licence à facturer, les écarts et le solde ; elle se télécharge en XLSX. Un
-avoir qui se réfère à la facture retire ses lignes de la liste.
+avoir du même produit compense les lignes trop facturées, la plus ancienne
+d’abord ; l’avoir n’a pas besoin de se référer à la facture. La ligne indique
+alors « compensé par un avoir ».

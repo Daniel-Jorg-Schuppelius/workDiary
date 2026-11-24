@@ -107,5 +107,7 @@ removed there.
 **Licence picture and correction sheet:** The workspace shows product ×
 licence year across all providers of the customer at the top. The correction
 sheet below lists the invoices to credit, the licence years to bill, the
-deviations and the balance; it can be downloaded as XLSX. A credit note that
-refers to the invoice removes its lines from the list.
+deviations and the balance; it can be downloaded as XLSX. A credit note for
+the same product settles lines that were billed too much, oldest first; the
+credit note does not need to refer to the invoice. The line then shows
+“settled by a credit note”.

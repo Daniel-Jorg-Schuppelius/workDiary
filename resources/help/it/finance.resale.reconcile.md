@@ -110,4 +110,6 @@ diverso» e possono essere motivati o rimossi lì.
 alto prodotto × anno di licenza presso tutti i fornitori del cliente. Il
 foglio di correzione sotto indica le fatture da accreditare, gli anni di
 licenza da fatturare, gli scostamenti e il saldo; si scarica come XLSX. Una
-nota di credito riferita alla fattura toglie le sue righe dall’elenco.
+nota di credito dello stesso prodotto compensa le righe fatturate in eccesso,
+dalla più vecchia; non serve che la nota di credito si riferisca alla fattura.
+La riga mostra allora «compensato da una nota di credito».

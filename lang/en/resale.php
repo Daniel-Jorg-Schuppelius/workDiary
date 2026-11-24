@@ -1567,6 +1567,7 @@ return [
             'outside' => 'outside the term',
             'unknown' => 'no subscription',
         ],
+        'credited' => ':amount settled by a credit note',
         'surplus_hint' => [
             'duplicate' => 'The licence year this line falls into is already covered. Create a credit note or, if it is not a licence, ignore it.',
             'after_end' => 'The last licence year of this product is over, the invoice kept running. Create a credit note and check the recurring template.',

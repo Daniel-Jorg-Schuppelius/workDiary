@@ -390,7 +390,7 @@ class ResaleCachingTest extends TestCase {
         $period = $data['licence']->periods()->orderBy('starts_on')->firstOrFail();
         app(PeriodLinker::class)->attach($period, $line, 12, null, null);
 
-        $stateKey = 'resale:reconcile-recipients:1:' . $this->organization->id . ':2026-09-07';
+        $stateKey = 'resale:reconcile-recipients:2:' . $this->organization->id . ':2026-09-07';
         $overview = function (): array {
             $this->newRequest();
             ResaleCacheStamp::bump((int) $this->organization->id);

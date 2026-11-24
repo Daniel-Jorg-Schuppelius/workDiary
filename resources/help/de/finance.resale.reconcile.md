@@ -107,5 +107,7 @@ und lassen sich dort begründen oder lösen.
 **Lizenzbild und Korrekturblatt:** Die Arbeitsmappe zeigt oben Produkt ×
 Lizenzjahr über alle Anbieter des Kunden. Das Korrekturblatt darunter nennt
 die Rechnungen zum Gutschreiben, die Lizenzjahre zum Berechnen, die
-Abweichungen und den Saldo; es lässt sich als XLSX laden. Eine Gutschrift mit
-Bezug auf die Rechnung nimmt deren Positionen aus der Liste.
+Abweichungen und den Saldo; es lässt sich als XLSX laden. Eine Gutschrift
+desselben Produkts gleicht zu viel berechnete Positionen aus, die älteste
+zuerst; ein Rechnungsbezug an der Gutschrift ist dafür nicht nötig. Die
+Position zeigt dann „durch Gutschrift ausgeglichen“.

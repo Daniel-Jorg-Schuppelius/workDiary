@@ -1567,6 +1567,7 @@ return [
             'outside' => 'fuori durata',
             'unknown' => 'senza abbonamento',
         ],
+        'credited' => ':amount compensato da una nota di credito',
         'surplus_hint' => [
             'duplicate' => 'L’anno di licenza a cui si riferisce questa riga è già coperto. Crei una nota di credito o, se non è una licenza, la ignori.',
             'after_end' => 'L’ultimo anno di licenza di questo prodotto è terminato, la fattura è proseguita. Crei una nota di credito e verifichi il modello ricorrente.',

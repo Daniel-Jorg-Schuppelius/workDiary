@@ -110,4 +110,6 @@ distinto» y pueden justificarse o quitarse allí.
 arriba producto × año de licencia en todos los proveedores del cliente. La
 hoja de corrección debajo indica las facturas que hay que abonar, los años de
 licencia que hay que facturar, las desviaciones y el saldo; se descarga como
-XLSX. Un abono que hace referencia a la factura retira sus líneas de la lista.
+XLSX. Un abono del mismo producto compensa las líneas facturadas de más, la más
+antigua primero; el abono no necesita hacer referencia a la factura. La línea
+muestra entonces «compensado con un abono».

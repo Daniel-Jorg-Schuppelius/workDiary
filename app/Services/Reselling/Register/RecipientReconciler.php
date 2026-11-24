@@ -45,7 +45,7 @@ use Illuminate\Support\Facades\Cache;
  * Übersicht und die Belegtexte liegen zehn Minuten im Cache unter dem Org-Stempel
  * ({@see ResaleCacheStamp}) — Leistungsanalyse 2026-11-02, perfc-01/03/09.
  *
- * @phpstan-type LineRow array{line: MirrorLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool, surplus: string|null, free_amount: float}
+ * @phpstan-type LineRow array{line: MirrorLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool, surplus: string|null, free_amount: float, credited: float}
  * @phpstan-type Candidate array{row: LineRow, distance: int, count: int, rows: list<LineRow>, group_free: float, group_licences: float}
  * @phpstan-type PeriodRow array{period: ResalePeriod, subscription: ResaleSubscription, required: float, covered: float, needed: float, product: string, candidates: list<Candidate>, taken: list<Candidate>, foreign: list<Candidate>, voided: list<Candidate>}
  * @phpstan-type CreditNoteRow array{line: MirrorLine, months: float, licences: float, per_licence: float, linked: float, periods: list<string>}
@@ -76,7 +76,7 @@ final class RecipientReconciler {
     public const array OVERBILLED = [self::SURPLUS_DUPLICATE, self::SURPLUS_AFTER_END];
 
     /** Form des Stands je Empfänger; wechselt mit jeder Änderung an der Rechnung oder am Fingerabdruck. */
-    private const int STATE_VERSION = 1;
+    private const int STATE_VERSION = 2;
 
     /** Der Fingerabdruck entwertet; die Frist räumt nur ab (der Schlüssel trägt den Stichtag). */
     private const int STATE_TTL = 86400;
@@ -264,6 +264,8 @@ final class RecipientReconciler {
      */
     private function recipientStates(Organization $organization, CarbonImmutable $reference, array $byCustomer, array $linesByRecipient): array {
         $organizationId = (int) $organization->id;
+        // Offene Gutschriften je Empfänger (MVP-1804): sie verrechnen sich mit zu viel berechneten Positionen.
+        $credits = $this->openCredits($organization, array_values(array_filter(array_keys($byCustomer + $linesByRecipient), 'is_int')));
         $register = RegisterFingerprint::rows($organizationId);
         $periodsBySubscription = $register['periods'];
         $linksBySubscription = $register['links'];
@@ -297,6 +299,9 @@ final class RecipientReconciler {
                 $identity = $line->identity();
                 $parts[] = $identity . '=' . $hashOf($identity);
                 array_push($parts, ...($linksByLine[$identity] ?? []));
+            }
+            foreach ($credits[$recipient] ?? [] as $credit) {
+                $parts[] = 'credit:' . $credit['line']->identity() . '=' . RegisterFingerprint::line($credit['line']) . ':' . $credit['months'];
             }
             $fingerprints[$recipient] = RegisterFingerprint::hash($parts);
             $entry = $cached[(string) $recipient] ?? null;
@@ -336,7 +341,7 @@ final class RecipientReconciler {
         }
         foreach ($dirty as $recipient) {
             $recipientSubscriptions = $byCustomer[$recipient] ?? collect();
-            $analysis = $this->analyze($recipientSubscriptions, $linesByRecipient[$recipient] ?? collect(), $linkedMonths, $reference);
+            $analysis = $this->analyze($recipientSubscriptions, $linesByRecipient[$recipient] ?? collect(), $linkedMonths, $reference, credits: $credits[$recipient] ?? []);
             $deviating = is_int($recipient) ? ($deviatingByRecipient[$recipient] ?? ['amount' => 0.0, 'count' => 0]) : ['amount' => 0.0, 'count' => 0];
             $openAmount = self::openAmount($recipientSubscriptions, $reference);
             $states[$recipient] = [
@@ -458,8 +463,12 @@ final class RecipientReconciler {
         $linkedMonths = $this->linker->consumed($lines->merge($others));
         $inbox = $this->inboxHints($organization, $lines);
 
-        return ['subscriptions' => $subscriptions, 'has_source' => $this->mirror->coversRecipient($organization, $customer), 'pending' => $pending, 'inbox' => $inbox, 'credit_notes' => $this->creditNoteRows($organization, $customer)]
-            + $this->analyze($subscriptions, $lines, $linkedMonths, $reference, $others, $voided, $recipientTokens, $baseTokens, $customer->id);
+        // Gutschriften einmal je Request laden: für die Liste, die Verrechnung und die Übersicht (MVP-1804).
+        $creditLines = $this->creditLines($organization)->filter(static fn(MirrorLine $line): bool => $line->recipientCustomerId === $customer->id)->values();
+        $creditConsumed = $this->linker->consumed($creditLines);
+
+        return ['subscriptions' => $subscriptions, 'has_source' => $this->mirror->coversRecipient($organization, $customer), 'pending' => $pending, 'inbox' => $inbox, 'credit_notes' => self::creditNoteRows($creditLines, $creditConsumed)]
+            + $this->analyze($subscriptions, $lines, $linkedMonths, $reference, $others, $voided, $recipientTokens, $baseTokens, $customer->id, self::openCreditsOf($creditLines, $creditConsumed)[(int) $customer->id] ?? []);
     }
 
     /** Leistungszeitraum der Position = Laufzeit der Periode, an beiden Enden auf {@see SAME_TERM_DAYS} Tage. */
@@ -485,14 +494,66 @@ final class RecipientReconciler {
     }
 
     /**
+     * Gutschrift-Positionen je Empfänger mit den Lizenzmonaten, die noch an keiner Periode als negativer
+     * Bezug hängen — sie stehen der Verrechnung mit zu viel berechneten Positionen zur Verfügung.
+     *
+     * @param  list<int>  $customerIds
+     * @return array<int, list<array{line: MirrorLine, months: float}>>
+     */
+    private function openCredits(Organization $organization, array $customerIds): array {
+        $lines = $this->creditLines($organization)->filter(static fn(MirrorLine $line): bool => in_array($line->recipientCustomerId, $customerIds, true))->values();
+        if ($lines->isEmpty()) {
+            return [];
+        }
+
+        return self::openCreditsOf($lines, $this->linker->consumed($lines));
+    }
+
+    /**
+     * Gutschrift-Positionen aller Empfänger, die auch Rechnungspositionen haben — je Request einmal geladen.
+     * Ohne Rechnung gibt es nichts zu verrechnen.
+     *
+     * @return Collection<int, MirrorLine>
+     */
+    private function creditLines(Organization $organization): Collection {
+        return $this->memo->remember('mirror-lines:credits:' . $organization->id, function () use ($organization): Collection {
+            $recipients = [];
+            foreach ($this->mirror->allLines($organization) as $line) {
+                if ($line->recipientCustomerId !== null) {
+                    $recipients[$line->recipientCustomerId] = true;
+                }
+            }
+
+            return $recipients === [] ? collect() : $this->mirror->creditNoteLines($organization, array_keys($recipients));
+        });
+    }
+
+    /**
+     * @param  Collection<int, MirrorLine>  $lines
+     * @param  array<string, array{months: float, periods: list<string>}>  $consumed
+     * @return array<int, list<array{line: MirrorLine, months: float}>>
+     */
+    private static function openCreditsOf(Collection $lines, array $consumed): array {
+        $credits = [];
+        foreach ($lines as $line) {
+            $months = LicenseMonths::ofLine($line) - abs($consumed[$line->identity()]['months'] ?? 0.0);
+            if ($months > 0.001 && $line->recipientCustomerId !== null) {
+                $credits[$line->recipientCustomerId][] = ['line' => $line, 'months' => $months];
+            }
+        }
+
+        return $credits;
+    }
+
+    /**
      * Gutschrift-Lizenzpositionen des Empfängers mit Lizenzmonaten (Betrag)
      * und dem, was davon schon als negativer Bezug hängt.
      *
+     * @param  Collection<int, MirrorLine>  $creditLines
+     * @param  array<string, array{months: float, periods: list<string>}>  $consumed
      * @return list<CreditNoteRow>
      */
-    private function creditNoteRows(Organization $organization, Customer $customer): array {
-        $creditLines = $this->mirror->creditNoteLines($organization, [$customer->id]);
-        $consumed = $this->linker->consumed($creditLines);
+    private static function creditNoteRows(Collection $creditLines, array $consumed): array {
         $rows = [];
         foreach ($creditLines as $line) {
             $split = LicenseMonths::split($line);
@@ -746,9 +807,10 @@ final class RecipientReconciler {
      * @param  Collection<int, MirrorLine>  $voided  stornierte Lizenzpositionen dieses Empfängers und verwandter Empfänger
      * @param  array<string, array<string, true>>  $recipientTokens  Empfängerschlüssel → Kern-Tokens des Empfängernamens
      * @param  array<string, true>  $baseTokens  Kern-Tokens des Empfängers selbst
+     * @param  list<array{line: MirrorLine, months: float}>  $credits  Gutschrift-Positionen des Empfängers mit ihren noch nicht verrechneten Lizenzmonaten
      * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, overbilled: float, free_lines: int, free_amount: float}
      */
-    private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $recipientTokens = [], array $baseTokens = [], ?int $ownCustomerId = null): array {
+    private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $recipientTokens = [], array $baseTokens = [], ?int $ownCustomerId = null, array $credits = []): array {
         /** @var array<string, string> $articleNames Katalogschlüssel → Name */
         $articleNames = [];
         foreach ($lines as $line) {
@@ -789,7 +851,7 @@ final class RecipientReconciler {
             $linked = $linkedMonths[$identity]['months'] ?? 0.0;
             $key = $productOf($line);
             $labels[$key] ??= $line->label();
-            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => null, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0];
+            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => null, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0, 'credited' => 0.0];
             $lineRows[] = $lineRow;
             $invoiced[$key] = ($invoiced[$key] ?? 0.0) + $months;
             $freeByProduct[$key] = ($freeByProduct[$key] ?? 0.0) + $lineRow['free'];
@@ -806,7 +868,7 @@ final class RecipientReconciler {
                 continue;
             }
             $recipient = trim((string) $line->recipientName);
-            $otherRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'recipient_id' => $line->recipientCustomerId, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0];
+            $otherRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$identity]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'recipient_id' => $line->recipientCustomerId, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0, 'credited' => 0.0];
         }
         /** @var list<LineRow> $voidedRows */
         $voidedRows = [];
@@ -814,7 +876,7 @@ final class RecipientReconciler {
             $split = LicenseMonths::split($line);
             $own = $ownCustomerId !== null && $line->recipientCustomerId === $ownCustomerId;
             $recipient = trim((string) $line->recipientName);
-            $voidedRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => $own || $recipient === '' ? null : $recipient, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0];
+            $voidedRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => $own || $recipient === '' ? null : $recipient, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false, 'surplus' => null, 'free_amount' => 0.0, 'credited' => 0.0];
         }
         // Je Produkt gruppiert: die Periodenschleife sieht nur die Zeilen ihres Produkts (perfc-03).
         /** @var array<string, list<LineRow>> $lineRowsByProduct */
@@ -1011,6 +1073,47 @@ final class RecipientReconciler {
             }
         }
 
+        // Gutschriften verrechnen (MVP-1804): eine Gutschrift desselben Produkts nimmt freie Positionen aus der
+        // Rechnung, die keine offene Periode mehr braucht — zuerst die zu viel berechneten, älteste zuerst.
+        // Ein Rechnungsbezug an der Gutschrift ist dafür nicht nötig; das Buchhaltungsprogramm liefert ihn oft nicht.
+        /** @var array<string, float> $creditPool Produkt → Lizenzmonate aus Gutschriften */
+        $creditPool = [];
+        foreach ($credits as $credit) {
+            $creditKey = $productOf($credit['line']);
+            $creditPool[$creditKey] = ($creditPool[$creditKey] ?? 0.0) + $credit['months'];
+        }
+        if ($creditPool !== []) {
+            // Zu viel berechnete zuerst, darin die älteste Rechnung zuerst.
+            $order = [];
+            foreach ($lineRows as $index => $row) {
+                if ($row['free'] > 0.001 && $row['surplus'] !== null) {
+                    $order[] = ['index' => $index, 'rank' => in_array($row['surplus'], self::OVERBILLED, true) ? 0 : 1, 'date' => (string) $row['line']->voucherDate?->format('Y-m-d')];
+                }
+            }
+            usort($order, static fn(array $a, array $b): int => ($a['rank'] <=> $b['rank']) ?: strcmp($a['date'], $b['date']));
+            foreach ($order as $entry) {
+                $row = $lineRows[$entry['index']];
+                $take = min($row['free'], $creditPool[$row['product']] ?? 0.0);
+                if ($take <= 0.001) {
+                    continue;
+                }
+                $creditPool[$row['product']] -= $take;
+                $amount = round($row['free_amount'] * $take / $row['free'], 2);
+                $freeByProduct[$row['product']] = max(0.0, ($freeByProduct[$row['product']] ?? 0.0) - $take);
+                $freeAmount -= $amount;
+                if ($entry['rank'] === 0) {
+                    $overbilled -= $amount;
+                }
+                $row['credited'] = $take;
+                $row['free'] -= $take;
+                $row['free_amount'] = round($row['free_amount'] - $amount, 2);
+                if ($row['free'] <= 0.001) {
+                    $freeLines--;
+                }
+                $lineRows[$entry['index']] = $row;
+            }
+        }
+
         /** @var list<ProductRow> $productRows */
         $productRows = [];
         $free = $missing = $surplus = 0.0;
@@ -1041,7 +1144,7 @@ final class RecipientReconciler {
         }
         usort($productRows, static fn(array $a, array $b): int => (($b['missing'] + $b['surplus']) <=> ($a['missing'] + $a['surplus'])) ?: strcmp($a['label'], $b['label']));
 
-        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'product_by_subscription' => $productBySubscription, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus, 'overbilled' => round($overbilled, 2), 'free_lines' => $freeLines, 'free_amount' => round($freeAmount, 2)];
+        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'product_by_subscription' => $productBySubscription, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus, 'overbilled' => max(0.0, round($overbilled, 2)), 'free_lines' => max(0, $freeLines), 'free_amount' => max(0.0, round($freeAmount, 2))];
     }
 
     /** @return \Illuminate\Database\Eloquent\Builder<ResaleSubscription> */

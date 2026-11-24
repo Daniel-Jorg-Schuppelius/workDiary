@@ -266,7 +266,11 @@
                                 <span class="text-warning">{{ __('resale.invoices.remaining', ['amount' => $licenceMonths::label($lineRow['free'], $lineRow['per_licence'])]) }}</span>
                             @endif
                             {{-- Keine offene Periode kann die Position brauchen (MVP-1766): doppelt, nach Abo-Ende, außerhalb der Laufzeit, ohne Abo. --}}
-                            @if ($lineRow['surplus'] !== null)
+                            @if ($lineRow['credited'] > 0.001)
+                                {{-- Mit einer Gutschrift desselben Produkts verrechnet (MVP-1804). --}}
+                                <span class="block text-success">{{ __('resale.board.credited', ['amount' => $licenceMonths::label($lineRow['credited'], $lineRow['per_licence'])]) }}</span>
+                            @endif
+                            @if ($lineRow['surplus'] !== null && $lineRow['free'] > 0.001)
                                 @php $overbilled = in_array($lineRow['surplus'], \App\Services\Reselling\Register\RecipientReconciler::OVERBILLED, true); @endphp
                                 <x-status-badge size="xs" :tone="$overbilled ? 'warning' : 'info'" class="mt-0.5"
                                                 :label="__('resale.board.surplus.' . $lineRow['surplus']) . ($overbilled ? ' · ' . \CommonToolkit\ValueObjects\Money::ofFloat($lineRow['free_amount'], $line->currency, 2)->format() : '')"
