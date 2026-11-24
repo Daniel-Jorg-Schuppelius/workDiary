@@ -1,7 +1,7 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 9
+version: 10
 keywords:
     - classic view
     - old system
@@ -153,6 +153,9 @@ status:
   days ahead, with today in yellow.
 - The **support portal** shows the status as a coloured dot with text; the
   appointment consists of a date and an hour.
+
+The yellow area fills the screen. Long tables scroll within their box: lists
+keep their header row, the week grid keeps the column with date and hour.
 
 Without an account in the app (customer portal, call centre) the switch sits at
 the top right. Data and permissions are the same. The choice applies to the

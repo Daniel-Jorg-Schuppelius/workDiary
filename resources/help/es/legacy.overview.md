@@ -1,7 +1,7 @@
 ---
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
-version: 9
+version: 10
 keywords:
     - vista clásica
     - sistema antiguo
@@ -145,6 +145,10 @@ renovados con la tipografía actual, iconos y puntos de color para el estado:
   hasta dentro de cinco días, con hoy en amarillo.
 - El **portal de soporte** muestra el estado como punto de color con texto; la
   cita consta de fecha y hora.
+
+La superficie amarilla ocupa toda la pantalla. Las tablas largas se desplazan
+dentro de su recuadro: las listas mantienen su fila de encabezado y la cuadrícula
+semanal la columna con fecha y hora.
 
 Sin cuenta en la aplicación (portal de clientes, centro de llamadas) el
 interruptor está arriba a la derecha. Los datos y permisos son los mismos. La

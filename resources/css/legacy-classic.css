@@ -259,10 +259,51 @@
     color: var(--kp-olive);
 }
 
-/* Tabellen: zentriert wie unter <center>, als Karte; schmale Schirme scrollen. */
+/* Tabellen: zentriert wie unter <center>, als Karte. Der Kasten scrollt in beide
+   Richtungen und ist höchstens so hoch wie der freie Bildschirm, damit beide
+   Scrollbalken erreichbar bleiben. */
+/* position: relative hält auch die absolut gesetzten Screenreader-Texte im Kasten. */
 .kp-scroll {
+    position: relative;
     max-width: 100%;
-    overflow-x: auto;
+    max-height: calc(100vh - var(--app-header-h, 0px) - var(--app-footer-h, 0px) - 2rem);
+    max-height: calc(100dvh - var(--app-header-h, 0px) - var(--app-footer-h, 0px) - 2rem);
+    overflow: auto;
+}
+
+/* Volle Höhe in der App-Hülle wie wd-page-fill: die gelbe Fläche füllt den Platz
+   zwischen Kopf- und Fußzeile, der Tabellenkasten nimmt den Rest. Eigene Klasse,
+   weil wd-page-fill den rechten Rand in die Kinder verlegt und die zentrierten
+   Tabellen sonst schief stünden. */
+.kp-fill {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--app-header-h) - var(--app-footer-h));
+    height: calc(100dvh - var(--app-header-h) - var(--app-footer-h));
+    overflow: clip;
+}
+
+/* margin 0: mit dem zentrierenden auto-Rand würde die Fläche so breit wie ihre Tabelle. */
+.kp-fill > main.kp-classic {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    overflow: auto;
+}
+
+.kp-fill > main.kp-classic > .kp-scroll {
+    flex: 1 1 auto;
+    min-height: 12rem;
+}
+
+/* Listen: die Kopfzeile bleibt beim Scrollen stehen. */
+.kp-classic .kp-scroll table:not(.tb-grid) tr:first-child > th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .kp-classic table {
@@ -304,6 +345,29 @@
     border-radius: var(--kp-radius);
     box-shadow: var(--kp-shadow);
     overflow: hidden;
+}
+
+/* Im Kasten schneidet die Tabelle nicht ab (sonst blieben Kopfzeilen und Randspalten
+   an ihr hängen); die runden Ecken tragen dafür die Eckzellen. */
+.kp-classic .kp-scroll > table.kp-list,
+.kp-classic .kp-scroll > table.eintrag {
+    overflow: visible;
+}
+
+.kp-classic .kp-scroll table > :first-child > tr:first-child > :first-child {
+    border-top-left-radius: var(--kp-radius);
+}
+
+.kp-classic .kp-scroll table > :first-child > tr:first-child > :last-child {
+    border-top-right-radius: var(--kp-radius);
+}
+
+.kp-classic .kp-scroll table > :last-child > tr:last-child > :first-child {
+    border-bottom-left-radius: var(--kp-radius);
+}
+
+.kp-classic .kp-scroll table > :last-child > tr:last-child > :last-child {
+    border-bottom-right-radius: var(--kp-radius);
 }
 
 .kp-classic table.kp-list td {
@@ -641,6 +705,31 @@ main.kp-classic.kp-page {
     white-space: nowrap;
 }
 
+/* Wochenraster: Stunden- und Tagesspalte links und rechts bleiben beim seitlichen
+   Scrollen stehen; ohne eigenen Grund schiene das Raster durch. */
+.tb .kp-scroll .tb-grid tr > :first-child,
+.tb .kp-scroll .tb-grid tr > :last-child {
+    position: sticky;
+    z-index: 1;
+}
+
+.tb .kp-scroll .tb-grid tr > :first-child {
+    left: 0;
+}
+
+.tb .kp-scroll .tb-grid tr > :last-child {
+    right: 0;
+}
+
+.tb .tb-grid td.mitte {
+    background-color: var(--kp-surface);
+}
+
+.tb .tb-grid td.mitte,
+.tb .tb-grid td.grau {
+    white-space: nowrap;
+}
+
 .tb th.kopf { color: #fff; background-color: #34389a; }
 .tb th.kheute { color: #fff; background-color: #2e8b3d; }
 .tb th.kso { color: #fff; background-color: #c62828; }
@@ -676,6 +765,20 @@ main.kp-classic.kp-page {
     border-radius: 3px;
 }
 
+/* Handys und niedrige Querformate: die Seite scrollt natürlich wie die Inhaltsseiten
+   der App, der Tabellenkasten behält seine Höchsthöhe. */
+@media (max-width: 767px), (orientation: landscape) and (max-height: 480px) {
+    .kp-fill {
+        height: auto;
+        overflow: visible;
+    }
+
+    .kp-fill > main.kp-classic {
+        flex: none;
+        overflow: visible;
+    }
+}
+
 /* Schmale Schirme */
 @media (max-width: 640px) {
     .kp-classic {
@@ -692,6 +795,21 @@ main.kp-classic.kp-page {
 
     .kp-classic table.kp-medium {
         width: 100%;
+    }
+
+    /* Formulare: Beschriftungen brechen um und Felder nehmen die Zellbreite, damit
+       die Tabelle nicht über den Rand ragt. */
+    .kp-classic table:not(.kp-scroll *) th {
+        white-space: normal;
+    }
+
+    .kp-classic table:not(.kp-scroll *) :is(input:not([type="checkbox"], [type="radio"], [type="submit"]), select) {
+        width: 100%;
+    }
+
+    /* Im Wochenraster bleibt nur die linke Randspalte stehen, sonst bliebe kaum Platz. */
+    .tb .kp-scroll .tb-grid tr > :last-child:not(:first-child) {
+        position: static;
     }
 
     .kp-menu a,

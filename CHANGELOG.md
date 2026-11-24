@@ -22,8 +22,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Bereich, behutsam aufgefrischt: das alte Menü in der Kopfzeile der App an
   Stelle der neuen Navigation, die aktive Seite markiert, die gelbe Fläche und die
   alten Begriffe, dazu Schrift und Symbole der App, Status als Farbpunkt mit Text,
-  Datum und Uhrzeit über die Datumswähler des Browsers und eine auf dem Handy
-  nutzbare Darstellung.
+  Datum und Uhrzeit über die Datumswähler des Browsers, volle Bildschirmhöhe mit
+  Tabellen, die in ihrem Kasten scrollen (Kopfzeile bzw. Datums- und Stundenspalte
+  bleiben stehen), und eine auf dem Handy nutzbare Darstellung.
   Das Support-Portal hat für Kunden und Büro die alten Listen und Teilmasken für
   Termin (Datum und Stunde) und Kundenauswahl. Das Online-Tagebuch zeigt die
   Chefsicht je Tag und Mitarbeiter und die Wochenübersicht der Mitarbeiter, dazu

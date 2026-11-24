@@ -15,7 +15,7 @@
     $longDate = fn ($day) => $day->copy()->locale($locale)->isoFormat('dd D. MMM YYYY');
 @endphp
 <div class="kp-scroll">
-    <table class="eintrag">
+    <table class="eintrag tb-grid">
         <tr>
             <th colspan="16" class="kopf">{{ $longDate($days->first()) }} &nbsp; - &nbsp; {{ $longDate($days->last()) }}</th>
         </tr>

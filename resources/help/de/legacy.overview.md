@@ -1,7 +1,7 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 9
+version: 10
 keywords:
     - Klassische Ansicht
     - altes System
@@ -158,6 +158,9 @@ Status:
   heutigen Tag gelb.
 - Das **Support-Portal** zeigt den Status als Farbpunkt mit Text; der Termin
   besteht aus Datum und Stunde.
+
+Die gelbe Fläche füllt den Bildschirm. Lange Tabellen scrollen in ihrem Kasten:
+Listen behalten ihre Kopfzeile, das Wochenraster die Spalte mit Datum und Stunde.
 
 Ohne Konto in der App (Kundenportal, Callcenter) sitzt der Umschalter oben rechts.
 Daten und Rechte sind dieselben. Die Wahl gilt für den Browser, die Vorgabe legt

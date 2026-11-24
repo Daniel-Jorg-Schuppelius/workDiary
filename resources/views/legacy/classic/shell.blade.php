@@ -9,7 +9,7 @@
 {{-- Klassische Ansicht für angemeldete Nutzer: Kopfzeile der App mit dem Menü des Altportals (Support-Portal bzw. Tagebuch), darunter die Masken im Aussehen der Altportale. --}}
 @extends('layouts.app')
 @section('legacy-classic', '1')
-@section('wrapper-height-class', '')
+@section('wrapper-height-class', 'kp-fill')
 @section('nav-title')
     @yield('title')
 @endsection

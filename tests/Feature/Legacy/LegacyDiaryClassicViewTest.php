@@ -329,7 +329,11 @@ class LegacyDiaryClassicViewTest extends TestCase {
     }
 
     public function test_classic_pages_carry_their_menu_and_the_view_switch_in_the_app_header(): void {
-        $header = Str::between($this->actingAs($this->office)->get(route('legacy.diary.week'))->assertOk()->getContent(), 'id="app-header"', '</header>');
+        $html = (string) $this->actingAs($this->office)->get(route('legacy.diary.week'))->assertOk()->getContent();
+        // Volle Höhe: die Fläche füllt den Bildschirm, das Raster scrollt in seinem Kasten.
+        $this->assertStringContainsString('kp-fill', $html);
+        $this->assertStringContainsString('class="eintrag tb-grid"', $html);
+        $header = Str::between($html, 'id="app-header"', '</header>');
         $this->assertStringContainsString(route('legacy.view', ['mode' => LegacyView::MODERN, 'back' => '/legacy/diary/week']), $header);
         $this->assertStringContainsString('aria-label="' . __('legacy_classic.diary_title') . '"', $header);
         $this->assertStringContainsString('href="' . route('legacy.archive.week') . '"', $header);

@@ -15,7 +15,7 @@
     $locale = app()->getLocale();
 @endphp
 <div class="kp-scroll">
-    <table class="eintrag">
+    <table class="eintrag tb-grid">
         <tr>
             <td class="mitte"><a href="{{ route($route, ['week' => $weekOffset - 1]) }}" title="{{ __('legacy_classic.week_back') }}">&nbsp;&laquo;&nbsp;</a></td>
             <th colspan="{{ $span }}">{{ $monday->format(\App\Support\Formats::date()) }} – {{ $monday->copy()->addDays(6)->format(\App\Support\Formats::date()) }}</th>

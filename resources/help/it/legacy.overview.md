@@ -1,7 +1,7 @@
 ---
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
-version: 9
+version: 10
 keywords:
     - visualizzazione classica
     - vecchio sistema
@@ -146,6 +146,10 @@ attuale, icone e punti colorati per lo stato:
   cinque giorni dopo, con oggi in giallo.
 - Il **portale assistenza** mostra lo stato come punto colorato con testo;
   l'appuntamento è composto da data e ora.
+
+La superficie gialla riempie lo schermo. Le tabelle lunghe scorrono nel loro
+riquadro: gli elenchi mantengono la riga di intestazione, la griglia settimanale
+la colonna con data e ora.
 
 Senza account nell'applicazione (portale clienti, call center) il commutatore si
 trova in alto a destra. Dati e permessi restano gli stessi. La scelta vale per il

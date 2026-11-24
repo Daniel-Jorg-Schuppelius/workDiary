@@ -1,7 +1,7 @@
 ---
 title: "Ancien système (legacy)"
 topic: legacy.overview
-version: 9
+version: 10
 keywords:
     - affichage classique
     - ancienne application
@@ -147,6 +147,10 @@ statut :
   cinq jours, avec aujourd'hui en jaune.
 - Le **portail support** affiche le statut par un point de couleur avec du
   texte ; le rendez-vous se compose d'une date et d'une heure.
+
+La surface jaune remplit l'écran. Les longs tableaux défilent dans leur cadre :
+les listes gardent leur ligne d'en-tête, la grille de la semaine la colonne avec
+la date et l'heure.
 
 Sans compte dans l'application (portail client, centre d'appels), le commutateur
 se trouve en haut à droite. Les données et les droits restent les mêmes. Le choix
