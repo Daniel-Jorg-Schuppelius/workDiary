@@ -15,7 +15,8 @@
 --}}
 @if (($variant ?? 'page') === 'header')
     <nav aria-label="{{ $label }}">
-        <ul class="flex items-center gap-1 overflow-x-auto sm:flex-wrap sm:justify-center">
+        {{-- Nur auf dem Handy waagerecht scrollbar; overflow-y-hidden, sonst zeigte ein gedrückter Knopf einen Balken. --}}
+        <ul class="-my-1 flex items-center gap-1 overflow-x-auto overflow-y-hidden py-1 sm:my-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:py-0">
             @foreach (array_filter($rows) as $row)
                 @if (! $loop->first)
                     <li aria-hidden="true" class="mx-1 h-5 w-px shrink-0 bg-base-300"></li>
