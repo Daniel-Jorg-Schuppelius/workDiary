@@ -121,6 +121,49 @@ class DomainAccountingMirrorTest extends TestCase {
             ->assertSee(\CommonToolkit\ValueObjects\Money::of('5.36', \CommonToolkit\Enums\CurrencyCode::Euro, 2)->format());
     }
 
+    public function test_domain_cancelled_after_its_renewal_keeps_the_paid_year(): void {
+        $domain = $this->domain('ruhehof-beispiel.de');
+        $subscription = $this->subscription('ruhehof-beispiel.de', '2025-06-25');
+        $this->entry('2025-06-18 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'ruhehof-beispiel.de', '-4.50', ['domain_projection_id' => $domain->id]);
+        $this->entry('2026-06-18 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'ruhehof-beispiel.de', '-4.50', ['domain_projection_id' => $domain->id]);
+        // Zwei Monate nach der Verlängerung gekündigt: der Anbieter hat das Jahr berechnet und erstattet nicht.
+        $subscription->forceFill(['domain_projection_id' => $domain->id, 'status' => 'ended', 'ends_on' => '2026-08-25', 'renewal' => 'cancel'])->save();
+        (new PeriodPlanner)->sync($subscription->refresh());
+
+        $last = $subscription->periods()->reorder('starts_on', 'desc')->firstOrFail();
+        $this->assertSame(['2026-06-25', '2027-06-24'], [$last->starts_on->toDateString(), $last->ends_on->toDateString()], 'das bezahlte Jahr läuft voll, nicht bis zum Kündigungstag');
+
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame('12.00', $last->links()->first()?->months, 'die Verlängerung deckt das ganze Jahr');
+        $analysis = (new \App\Services\Reselling\Register\RecipientReconciler)->forCustomer($this->organization, $this->nordlicht);
+        $this->assertSame(0.0, $analysis['free'], 'kein freier Rest, nichts „zu viel“');
+
+        // Bestand: die Periode war schon am Kündigungstag gekürzt und vom Lauf mit zwei Monaten bestätigt.
+        $link = $last->links()->firstOrFail();
+        $link->forceFill(['months' => 2, 'quantity' => 1])->save();
+        $last->forceFill(['ends_on' => '2026-08-25', 'status' => PeriodStatus::Billed, 'decided_at' => now(), 'decided_by_user_id' => null])->save();
+        (new PeriodPlanner)->sync($subscription->refresh());
+        $this->assertSame('2027-06-24', $last->fresh()?->ends_on->toDateString(), 'die gekürzte Periode wächst auf das bezahlte Jahr');
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(12.0, (float) $last->fresh()?->links()->sum('months'), 'der Lauf füllt den Bezug auf das ganze Jahr auf');
+        $this->assertSame(PeriodStatus::Billed, $last->fresh()?->status);
+
+        // Ohne Verlängerung im Journal bleibt die Kürzung auf den Kündigungstag.
+        $unpaid = $this->subscription('stillhof-beispiel.de', '2025-06-25');
+        $unpaid->forceFill(['domain_projection_id' => $this->domain('stillhof-beispiel.de')->id, 'status' => 'ended', 'ends_on' => '2026-08-25'])->save();
+        (new PeriodPlanner)->sync($unpaid->refresh());
+        $this->assertSame('2026-08-25', $unpaid->periods()->reorder('starts_on', 'desc')->firstOrFail()->ends_on->toDateString());
+
+        // Erstattet der Anbieter das Jahr, bleibt es ebenfalls gekürzt.
+        $refundedDomain = $this->domain('rueckhof-beispiel.de');
+        $refunded = $this->subscription('rueckhof-beispiel.de', '2025-06-25');
+        $this->entry('2026-06-18 04:00:00', 'RENEW_DOMAIN_ANNUAL', 'rueckhof-beispiel.de', '-4.50', ['domain_projection_id' => $refundedDomain->id]);
+        $this->entry('2026-08-24 04:00:00', 'REFUND', 'rueckhof-beispiel.de', '4.50', ['domain_projection_id' => $refundedDomain->id]);
+        $refunded->forceFill(['domain_projection_id' => $refundedDomain->id, 'status' => 'ended', 'ends_on' => '2026-08-25'])->save();
+        (new PeriodPlanner)->sync($refunded->refresh());
+        $this->assertSame('2026-08-25', $refunded->periods()->reorder('starts_on', 'desc')->firstOrFail()->ends_on->toDateString());
+    }
+
     public function test_transfer_with_kept_cycle_covers_the_year_from_the_next_anniversary(): void {
         // Transfer im April, die Registry verlängert ab dem alten Laufzeitende: das bezahlte Jahr beginnt am Stichtag.
         $kept = $this->domain('optikwerk-beispiel.one');

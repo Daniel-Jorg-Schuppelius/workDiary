@@ -33,6 +33,26 @@ class LicenseMonthsTest extends TestCase {
         return (new LexofficeInvoiceMirrorSource)->toLine($line, canPreview: false);
     }
 
+    public function test_service_lines_never_count_as_a_domain_position(): void {
+        $line = function (string $name, ?string $unit, string $description): MirrorLine {
+            $model = new LexofficeVoucherLine(['quantity' => 1, 'unit_name' => $unit, 'unit_net' => '60.00', 'total_net' => '60.00', 'currency' => 'EUR', 'name' => $name, 'description' => $description]);
+            $model->setRelation('voucher', new LexofficeVoucher(['voucher_date' => '2024-01-16', 'service_starts_on' => '2023-07-04', 'service_ends_on' => '2023-12-30', 'currency' => 'EUR']));
+
+            return (new LexofficeInvoiceMirrorSource)->toLine($model, canPreview: false);
+        };
+        // Stundenposition, die die Domain nur im Text nennt: zählte als Domainrechnung über sechs Monate.
+        $support = $line('Business Support', 'Stunde', 'Basic IT (IT-Support zu Geschäftszeiten) Wordpress BEISPIELHOF.DE Datenübernahme');
+        $this->assertTrue($support->isServiceLine());
+        $this->assertFalse($support->mentionsDomain('beispielhof.de'));
+        $this->assertFalse($support->mentionsDomainLoosely('beispielhoff.de', ['beispielhoff.de']));
+        // Dienstleistung ohne Stundeneinheit.
+        $this->assertFalse($line('Einrichtung Webseite', 'Stück', 'für beispielhof.de')->mentionsDomain('beispielhof.de'));
+        // Die Domainposition selbst bleibt erkannt.
+        $domain = $line('Top-Level-Domain', 'Jahr', '.de-Domain inkl. Verwaltung (beispielhof.de)');
+        $this->assertFalse($domain->isServiceLine());
+        $this->assertTrue($domain->mentionsDomain('beispielhof.de'));
+    }
+
     public function test_split_separates_licences_from_months(): void {
         // „12 Monat" ohne Zeitraum: eine Lizenz über zwölf Monate.
         $this->assertSame(['licences' => 1.0, 'months' => 12.0], LicenseMonths::split($this->line(12, 'Monat')));

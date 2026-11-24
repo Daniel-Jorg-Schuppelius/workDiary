@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{BillingFrequency, PeriodStatus};
+use App\Models\Domain\DomainAccountingEntry;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Concerns\AssertsStatusTransition;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
@@ -81,7 +83,46 @@ final class PeriodPlanner {
             }
         }
 
-        return $this->planOwnRhythm($subscription->starts_on, $subscription->interval, $endsOn, $horizon);
+        return $this->keepPaidDomainTerm($subscription, $endsOn, $this->planOwnRhythm($subscription->starts_on, $subscription->interval, $endsOn, $horizon));
+    }
+
+    /**
+     * Bezahltes Domainjahr bleibt stehen (MVP-1803): Wird eine Domain nach ihrer Verlängerung gekündigt,
+     * hat der Anbieter das Jahr schon berechnet und erstattet es nicht. Die letzte Periode läuft dann
+     * ihre volle Länge statt am Kündigungstag zu enden — sonst bliebe der Rest der Rechnung „frei“ und
+     * zählte als zu viel berechnet. Maßgeblich ist das Journal des Anbieters; eine Erstattung im selben
+     * Fenster lässt die Kürzung stehen.
+     *
+     * @param  list<array{starts_on: CarbonImmutable, ends_on: CarbonImmutable}>  $periods
+     * @return list<array{starts_on: CarbonImmutable, ends_on: CarbonImmutable}>
+     */
+    private function keepPaidDomainTerm(ResaleSubscription $subscription, ?CarbonImmutable $endsOn, array $periods): array {
+        if ($endsOn === null || $subscription->domain_projection_id === null || ! $subscription->isDomain()) {
+            return $periods;
+        }
+        $last = $periods === [] ? null : $periods[count($periods) - 1];
+        $cut = $last !== null && $last['ends_on']->lessThan($subscription->interval->advance($last['starts_on'])->subDay());
+        // Gekürzte letzte Periode — oder ein Stummel, den die Planung ganz weggelassen hat.
+        $start = $cut ? $last['starts_on'] : ($last !== null ? $subscription->interval->advance($last['starts_on']) : $subscription->starts_on);
+        if (! $start->lessThan($endsOn)) {
+            return $periods;
+        }
+        $charged = (float) DomainAccountingEntry::query()->withoutGlobalScopes()
+            ->where('organization_id', $subscription->organization_id)
+            ->where('domain_projection_id', $subscription->domain_projection_id)
+            ->whereBetween('entry_date', DateRange::days($start->subDays(DomainSubscriptionSync::START_TOLERANCE_DAYS), $endsOn))
+            ->sum('net_amount');
+        if ($charged >= 0.0) {
+            return $periods; // nichts berechnet oder erstattet
+        }
+        $full = ['starts_on' => $start, 'ends_on' => $subscription->interval->advance($start)->subDay()];
+        if ($cut) {
+            $periods[count($periods) - 1] = $full;
+        } else {
+            $periods[] = $full;
+        }
+
+        return $periods;
     }
 
     /**
@@ -246,6 +287,17 @@ final class PeriodPlanner {
                         'status' => PeriodStatus::Open,
                     ]);
                     $result['created']++;
+
+                    continue;
+                }
+                // Bezahltes Domainjahr (MVP-1803): eine vom Lauf bestätigte, am Kündigungstag gekürzte Periode wächst
+                // auf das berechnete Jahr und geht zurück in den Vorschlagslauf. Entscheidungen des Nutzers bleiben.
+                if ($period->isLocked() && $period->decided_by_user_id === null && $period->status === PeriodStatus::Billed
+                    && $subscription->isDomain() && $slot['ends_on']->greaterThan($period->ends_on)) {
+                    $period->fill(['ends_on' => $slot['ends_on'], 'expected_purchase' => $expectedPurchase, 'expected_sale' => $expectedSale, 'decided_at' => null]);
+                    $period->status = $this->coverageStatus($period);
+                    $period->save();
+                    $result['updated']++;
 
                     continue;
                 }

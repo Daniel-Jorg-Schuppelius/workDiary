@@ -62,6 +62,18 @@ final class ProductNameMatcher {
         return MarketplaceCompany::matchKey($text);
     }
 
+    /** Eigene Dienstleistung (Support, Stunden, Wartung, Einrichtung …) — nie ein Abo-Produkt, auch wenn der Text eine Domain oder ein Produkt nennt. */
+    public function looksLikeService(string $text): bool {
+        $haystack = ' ' . self::normalize($text) . ' ';
+        foreach (self::SERVICE_HINTS as $hint) {
+            if (str_contains($haystack, ' ' . $hint . ' ')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** Domain-Artikel: „Top-Level-Domain“, „.de-Domain inkl. Verwaltung“, „TLD“ — ohne eigene Dienstleistung im Text. */
     public function looksLikeDomainProduct(string $text): bool {
         $haystack = ' ' . self::normalize($text) . ' ';

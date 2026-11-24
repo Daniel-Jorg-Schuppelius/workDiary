@@ -216,6 +216,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Geändert
 
+- Abos & Lizenzen (`MVP-1803`): Wird eine Domain nach ihrer Verlängerung
+  gekündigt, bleibt das schon berechnete Jahr als Lizenzjahr stehen, statt am
+  Kündigungstag zu enden. Der Rest der Verlängerungsrechnung erschien bisher
+  als frei und unter „Zu viel“. Maßgeblich ist das Journal des Anbieters; ohne
+  Buchung oder nach einer Erstattung endet das Jahr wie bisher mit der
+  Kündigung.
 - Legacy-Tagebuch: Der E-Mail-Hinweis eines Eintrags geht wie im Altsystem nur
   an den Mitarbeiter, wenn jemand anderes den Eintrag speichert; die eigene
   Antwort löst keinen Hinweis an sich selbst mehr aus.
@@ -312,6 +318,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Abos & Lizenzen (`MVP-1802`): Eine Stunden- oder Dienstleistungsposition, die
+  eine Domain nur im Text nennt („Support … WordPress beispiel.de“), zählt
+  nicht mehr als Domainrechnung. Sie erschien bisher mit den Monaten ihres
+  Leistungszeitraums als freie Position und unter „Zu viel“.
 - Legacy-Tagebuch: Das Häkchen „E-Mail-Hinweis senden“ wurde beim Speichern
   verworfen, der Hinweis an den Mitarbeiter ging nie hinaus. Es wird jetzt
   gespeichert und löst den Hinweis aus.

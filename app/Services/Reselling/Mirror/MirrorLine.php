@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
+use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use App\Services\Reselling\Register\LicenseMonths;
 use App\Support\{CarbonFmt, DomainNames};
 use Carbon\CarbonImmutable;
@@ -31,6 +32,8 @@ use CommonToolkit\ValueObjects\Money;
  * Gutschriften ist nur {@see $totalNet} negativ.
  */
 final readonly class MirrorLine {
+    private const array HOUR_UNITS = ['stunde', 'stunden', 'std', 'std.', 'h'];
+
     public const string STATUS_ISSUED = 'issued';
 
     public const string STATUS_PAID = 'paid';
@@ -108,6 +111,12 @@ final readonly class MirrorLine {
         return trim($this->name . ' ' . (string) $this->description);
     }
 
+    /** Stundenposition oder eigene Dienstleistung laut Artikel bzw. Positionsname — kein Abo-Produkt. */
+    public function isServiceLine(): bool {
+        return in_array(mb_strtolower(trim((string) $this->unitName)), self::HOUR_UNITS, true)
+            || (new ProductNameMatcher)->looksLikeService((string) $this->articleName . ' ' . $this->name);
+    }
+
     /**
      * Nennt die Position diese Domain? Domainrechnungen tragen den Namen nur
      * im Text („.de-Domain inkl. Verwaltung (lastkraft-logistik.de)“), der
@@ -115,6 +124,11 @@ final readonly class MirrorLine {
      * weder „sub.lastkraft-logistik.de“ noch „lastkraft-logistik.dev“ trifft.
      */
     public function mentionsDomain(string $domain): bool {
+        // Eine Dienstleistung, die die Domain im Text nennt („Support … WordPress beispiel.de“), berechnet nicht die Domain (MVP-1802).
+        if ($this->isServiceLine()) {
+            return false;
+        }
+
         return DomainNames::mentioned((string) $this->articleName . ' ' . $this->text(), $domain);
     }
 
@@ -139,7 +153,7 @@ final readonly class MirrorLine {
      */
     public function looselyMentionedDomain(string $domain, array $knownDomains): ?string {
         $domain = mb_strtolower(trim($domain));
-        if ($domain === '' || ! str_contains($domain, '.')) {
+        if ($domain === '' || ! str_contains($domain, '.') || $this->isServiceLine()) {
             return null;
         }
         [$label, $suffix] = explode('.', $domain, 2);
