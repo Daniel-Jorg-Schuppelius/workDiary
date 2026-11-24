@@ -1,7 +1,7 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 10
+version: 11
 keywords:
     - classic view
     - old system
@@ -156,6 +156,7 @@ status:
 
 The yellow area fills the screen. Long tables scroll within their box: lists
 keep their header row, the week grid keeps the column with date and hour.
+Password and sign-out are in the user menu.
 
 Without an account in the app (customer portal, call centre) the switch sits at
 the top right. Data and permissions are the same. The choice applies to the

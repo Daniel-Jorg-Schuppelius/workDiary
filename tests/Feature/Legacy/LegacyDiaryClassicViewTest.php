@@ -337,6 +337,10 @@ class LegacyDiaryClassicViewTest extends TestCase {
         $this->assertStringContainsString(route('legacy.view', ['mode' => LegacyView::MODERN, 'back' => '/legacy/diary/week']), $header);
         $this->assertStringContainsString('aria-label="' . __('legacy_classic.diary_title') . '"', $header);
         $this->assertStringContainsString('href="' . route('legacy.archive.week') . '"', $header);
+        // Passwort und Abmelden stehen im Benutzermenü, nicht noch einmal im Tagebuchmenü.
+        $diaryMenu = Str::between($header, 'aria-label="' . __('legacy_classic.diary_title') . '"', '</nav>');
+        $this->assertStringNotContainsString(route('legacy.account.password.edit'), $diaryMenu);
+        $this->assertStringNotContainsString(route('logout'), $diaryMenu);
         // Die Navigation der neuen Legacy-Ansicht entfällt.
         $this->assertStringNotContainsString('aria-label="' . __('Hauptnavigation') . '"', $header);
 

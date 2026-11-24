@@ -1,7 +1,7 @@
 ---
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
-version: 10
+version: 11
 keywords:
     - vista clásica
     - sistema antiguo
@@ -149,6 +149,7 @@ renovados con la tipografía actual, iconos y puntos de color para el estado:
 La superficie amarilla ocupa toda la pantalla. Las tablas largas se desplazan
 dentro de su recuadro: las listas mantienen su fila de encabezado y la cuadrícula
 semanal la columna con fecha y hora.
+La contraseña y el cierre de sesión están en el menú de usuario.
 
 Sin cuenta en la aplicación (portal de clientes, centro de llamadas) el
 interruptor está arriba a la derecha. Los datos y permisos son los mismos. La

@@ -53,8 +53,6 @@ return [
         'users_title' => 'Gestire i collaboratori',
         'archiving' => 'Elimina',
         'archiving_title' => 'Elimina i dati vecchi',
-        'password' => 'Password',
-        'password_title' => 'Cambia password',
         'logout' => 'esci',
         'logout_title' => 'Chiudi applicazione',
         'oncall' => 'Reperibilità',

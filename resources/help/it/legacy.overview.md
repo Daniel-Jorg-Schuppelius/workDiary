@@ -1,7 +1,7 @@
 ---
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
-version: 10
+version: 11
 keywords:
     - visualizzazione classica
     - vecchio sistema
@@ -150,6 +150,7 @@ attuale, icone e punti colorati per lo stato:
 La superficie gialla riempie lo schermo. Le tabelle lunghe scorrono nel loro
 riquadro: gli elenchi mantengono la riga di intestazione, la griglia settimanale
 la colonna con data e ora.
+Password e disconnessione si trovano nel menu utente.
 
 Senza account nell'applicazione (portale clienti, call center) il commutatore si
 trova in alto a destra. Dati e permessi restano gli stessi. La scelta vale per il

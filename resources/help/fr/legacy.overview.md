@@ -1,7 +1,7 @@
 ---
 title: "Ancien système (legacy)"
 topic: legacy.overview
-version: 10
+version: 11
 keywords:
     - affichage classique
     - ancienne application
@@ -151,6 +151,7 @@ statut :
 La surface jaune remplit l'écran. Les longs tableaux défilent dans leur cadre :
 les listes gardent leur ligne d'en-tête, la grille de la semaine la colonne avec
 la date et l'heure.
+Le mot de passe et la déconnexion se trouvent dans le menu utilisateur.
 
 Sans compte dans l'application (portail client, centre d'appels), le commutateur
 se trouve en haut à droite. Les données et les droits restent les mêmes. Le choix

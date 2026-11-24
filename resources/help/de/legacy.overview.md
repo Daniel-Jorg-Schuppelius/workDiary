@@ -1,7 +1,7 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 10
+version: 11
 keywords:
     - Klassische Ansicht
     - altes System
@@ -161,6 +161,7 @@ Status:
 
 Die gelbe Fläche füllt den Bildschirm. Lange Tabellen scrollen in ihrem Kasten:
 Listen behalten ihre Kopfzeile, das Wochenraster die Spalte mit Datum und Stunde.
+Passwort und Abmelden erreicht man über das Benutzermenü.
 
 Ohne Konto in der App (Kundenportal, Callcenter) sitzt der Umschalter oben rechts.
 Daten und Rechte sind dieselben. Die Wahl gilt für den Browser, die Vorgabe legt

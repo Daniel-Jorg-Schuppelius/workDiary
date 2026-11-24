@@ -53,8 +53,6 @@ return [
         'users_title' => 'Manage employees',
         'archiving' => 'Delete',
         'archiving_title' => 'Delete old records',
-        'password' => 'Password',
-        'password_title' => 'Change password',
         'logout' => 'log out',
         'logout_title' => 'Quit application',
         'oncall' => 'Standby',

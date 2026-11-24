@@ -53,8 +53,6 @@ return [
         'users_title' => 'Gestionar empleados',
         'archiving' => 'Eliminar',
         'archiving_title' => 'Eliminar datos antiguos',
-        'password' => 'Contraseña',
-        'password_title' => 'Cambiar contraseña',
         'logout' => 'cerrar sesión',
         'logout_title' => 'Salir de la aplicación',
         'oncall' => 'Guardia',

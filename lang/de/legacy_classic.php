@@ -53,8 +53,6 @@ return [
         'users_title' => 'Verwalten der Mitarbeiter',
         'archiving' => 'Löschen',
         'archiving_title' => 'Löschen alter Datenbestände',
-        'password' => 'Passwort',
-        'password_title' => 'Passwort ändern',
         'logout' => 'abmelden',
         'logout_title' => 'Anwendung beenden',
         'oncall' => 'Bereitschaft',

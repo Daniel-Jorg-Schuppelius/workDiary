@@ -8,14 +8,15 @@
 --}}
 {{--
     Knopfleiste der Altportale. Erwartet: $label, $rows (Zeilen aus Einträgen mit
-    href, label, optional title, active, post — post sendet ein Formular, etwa zum Abmelden).
+    href, label, optional title, active, post — post sendet ein Formular, etwa zum Abmelden;
+    leere Zeilen entfallen).
     $variant 'header' setzt sie als zweite Zeile in die Kopfzeile der App (Zeilen nebeneinander,
     getrennt durch einen Strich); sonst steht sie im alten Stil auf der Seite.
 --}}
 @if (($variant ?? 'page') === 'header')
     <nav aria-label="{{ $label }}">
         <ul class="flex items-center gap-1 overflow-x-auto sm:flex-wrap sm:justify-center">
-            @foreach ($rows as $row)
+            @foreach (array_filter($rows) as $row)
                 @if (! $loop->first)
                     <li aria-hidden="true" class="mx-1 h-5 w-px shrink-0 bg-base-300"></li>
                 @endif
@@ -36,7 +37,7 @@
     </nav>
 @else
     <nav class="kp-menu" aria-label="{{ $label }}">
-        @foreach ($rows as $row)
+        @foreach (array_filter($rows) as $row)
             <ul>
                 @foreach ($row as $item)
                     <li>

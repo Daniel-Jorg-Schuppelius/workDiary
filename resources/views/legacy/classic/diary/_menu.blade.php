@@ -18,8 +18,6 @@
         ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.diary.index'), 'label' => __('legacy_classic.menu.overview'), 'title' => __('legacy_classic.menu.overview_title'), 'active' => $onIndex && ! in_array($menuTab, ['bereitschaft', 'notdienst'], true)],
         $canManage ? ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.users.index'), 'label' => __('legacy_classic.menu.users'), 'title' => __('legacy_classic.menu.users_title'), 'active' => request()->routeIs('legacy.users.*')] : null,
         $canManage && $writeEnabled ? ['href' => route('legacy.archive.prepare'), 'label' => __('legacy_classic.menu.archiving'), 'title' => __('legacy_classic.menu.archiving_title'), 'active' => request()->routeIs('legacy.archive.prepare')] : null,
-        $writeEnabled ? ['href' => route('legacy.account.password.edit'), 'label' => __('legacy_classic.menu.password'), 'title' => __('legacy_classic.menu.password_title'), 'active' => request()->routeIs('legacy.account.password.edit')] : null,
-        ['href' => route('logout'), 'label' => __('legacy_classic.menu.logout'), 'title' => __('legacy_classic.menu.logout_title'), 'post' => true],
     ]));
     $rowTwo = array_values(array_filter([
         $canManage ? ['href' => route('legacy.diary.index', ['tab' => 'bereitschaft']), 'label' => __('legacy_classic.menu.oncall'), 'title' => __('legacy_classic.menu.oncall_title'), 'active' => ($onIndex && $menuTab === 'bereitschaft') || request()->routeIs('legacy.oncall.*')] : null,
