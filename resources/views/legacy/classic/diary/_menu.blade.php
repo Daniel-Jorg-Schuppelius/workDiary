@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Menü des Online-Tagebuchs wie im Altportal (admin/menue.php); Verwaltung nur für das Büro. --}}
+{{-- Menü des Online-Tagebuchs wie im Altportal (admin/menue.php) in der Kopfzeile; Verwaltung nur für das Büro. --}}
 @php
     $menuUser = auth()->user();
     $canManage = \App\Legacy\Support\LegacyRoleResolver::canManage($menuUser);
@@ -28,5 +28,4 @@
         $canManage ? ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.orders.index'), 'label' => __('legacy_classic.menu.support')] : null,
     ]));
 @endphp
-<p class="kp-userline">{{ __('legacy_classic.logged_in_as', ['name' => $menuUser?->name]) }}</p>
-@include('legacy.classic._menu', ['label' => __('legacy_classic.diary_title'), 'rows' => [$rowOne, $rowTwo]])
+@include('legacy.classic._menu', ['label' => __('legacy_classic.diary_title'), 'rows' => [$rowOne, $rowTwo], 'variant' => 'header'])

@@ -23,7 +23,6 @@ return [
     'entry_title' => 'Diario en línea, entrada',
     'entry_new_title' => 'Diario en línea, nueva entrada',
     'entry_edit_title' => 'Diario en línea, cambiar entrada',
-    'logged_in_as' => 'conectado como: :name',
     'choose_week' => 'Semana desde:',
     'show' => 'mostrar',
     'save' => 'guardar',

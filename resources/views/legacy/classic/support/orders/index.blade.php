@@ -31,10 +31,7 @@
         $filteredCustomer = $customerId !== null ? $customers->firstWhere('id', $customerId) : null;
     @endphp
 
-    @include('legacy.classic.support._office_menu')
-
     <h2>{{ __('legacy_support.classic.portal') }}</h2>
-    <p>{{ __('legacy_support.classic.logged_in_as', ['name' => (string) (auth()->user()?->name ?? '')]) }}</p>
     @include('legacy.classic._flash')
     @unless ($writeEnabled)
         <p class="kp-alert">{{ __('legacy_support.read_only') }}</p>

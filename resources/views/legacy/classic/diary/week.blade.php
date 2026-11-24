@@ -12,7 +12,6 @@
 @section('bodyClass', 'tb')
 
 @section('content')
-    @include('legacy.classic.diary._menu')
     @include('legacy.classic._flash')
     @include('legacy.classic.diary._week_select', ['route' => 'legacy.diary.week'])
 

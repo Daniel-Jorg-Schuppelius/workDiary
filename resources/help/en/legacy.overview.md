@@ -1,7 +1,7 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 8
+version: 9
 keywords:
     - classic view
     - old system
@@ -132,10 +132,11 @@ administrators and platform operations.
 ## Classic view
 
 Anyone used to the screens of the old portals switches to their layout with
-**Classic** next to the page title – for the diary, the call centre and the
-support portal at once; **New** switches back. The app header stays; below it
-come the old menu, the old terms and the yellow area, refreshed with today's
-font, icons and coloured dots for the status:
+**Classic** next to the user menu – for the diary, the call centre and the
+support portal at once; **New** switches back. The old menu then sits in the app
+header in place of the new navigation; below it come the old terms and the
+yellow area, refreshed with today's font, icons and coloured dots for the
+status:
 
 - **Diary** shows the week as before: the office sees all employees for each day
   with the hours from 7 am to 9 pm, and a click on a name creates an entry;

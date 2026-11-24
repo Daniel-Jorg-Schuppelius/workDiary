@@ -1,7 +1,7 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 8
+version: 9
 keywords:
     - Klassische Ansicht
     - altes System
@@ -137,10 +137,11 @@ und der Plattformbetrieb.
 ## Klassische Ansicht
 
 Wer die Masken der alten Portale gewohnt ist, schaltet mit **Klassisch** neben
-dem Seitentitel auf deren Aufbau um – für Tagebuch, Callcenter und Support-Portal
-zugleich; **Neu** wechselt zurück. Die Kopfzeile der App bleibt, darunter stehen
-das alte Menü, die alten Begriffe und die gelbe Fläche, aufgefrischt mit heutiger
-Schrift, Symbolen und Farbpunkten für den Status:
+dem Benutzermenü auf deren Aufbau um – für Tagebuch, Callcenter und Support-Portal
+zugleich; **Neu** wechselt zurück. Das alte Menü steht dann in der Kopfzeile der
+App an Stelle der neuen Navigation; darunter folgen die alten Begriffe und die
+gelbe Fläche, aufgefrischt mit heutiger Schrift, Symbolen und Farbpunkten für den
+Status:
 
 - **Tagebuch** zeigt die Woche wie früher: Das Büro sieht je Tag alle Mitarbeiter
   mit den Stunden von 7 bis 21 Uhr, ein Klick auf einen Namen legt einen Eintrag

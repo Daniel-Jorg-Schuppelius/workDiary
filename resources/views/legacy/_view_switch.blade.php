@@ -24,7 +24,7 @@
         @endforeach
     </div>
 @else
-    <div class="join" role="group" aria-label="{{ __('legacy_classic.switch.label') }}">
+    <div class="join shrink-0" role="group" aria-label="{{ __('legacy_classic.switch.label') }}">
         @foreach ($switchModes as $switchMode => $switchItem)
             <x-icon-btn :icon="$switchItem['icon']" size="sm" :tone="$switchItem['active'] ? 'primary' : 'outline'" class="join-item"
                         :href="route('legacy.view', ['mode' => $switchMode, 'back' => $switchBack])"

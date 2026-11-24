@@ -12,7 +12,6 @@
 @section('bodyClass', 'tb')
 
 @section('content')
-    @include('legacy.classic.diary._menu')
     @include('legacy.classic._flash')
     <h1 aria-label="{{ __('legacy_classic.archive.title') }}">{{ __('legacy_classic.archive.heading') }}</h1>
     @include('legacy.classic.diary._week_select', ['route' => 'legacy.archive.week'])

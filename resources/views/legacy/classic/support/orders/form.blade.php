@@ -28,7 +28,6 @@
         $action = $isEdit ? route('legacy.support.orders.update', $order) : route('legacy.support.orders.store');
     @endphp
 
-    @include('legacy.classic.support._office_menu')
     <p><a href="{{ \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.orders.index') }}">{{ __('legacy_support.classic.to_list') }}</a></p>
     @include('legacy.classic._flash')
 

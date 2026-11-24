@@ -151,7 +151,7 @@
             $canAccessLegacy = $_authUser instanceof \App\Models\Platform\User ? $_authUser->canAccessLegacy() : false;
             $canAccessNew = $_authUser instanceof \App\Models\Platform\User ? $_authUser->canAccessNew() : false;
             $showModeSwitch = $legacyConfigured && $canAccessLegacy && $canAccessNew;
-            // Klassische Ansicht des Legacy-Bereichs: eigenes Menü statt Seitenleiste, eigene Meldungen.
+            // Klassische Ansicht des Legacy-Bereichs: eigenes Menü in der Kopfzeile statt Seitenleiste, eigene Meldungen.
             $_classicShell = \Illuminate\Support\Facades\View::hasSection('legacy-classic');
             $_legacyViewSwitch = \App\Legacy\Support\LegacyView::offersSwitch(request());
 
@@ -202,10 +202,6 @@
                         <span class="text-muted">/</span>
                         <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Auftragsbuch'))</span>
                     </a>
-                    {{-- Legacy-Seiten mit klassischem Gegenstück: Umschalter Klassisch | Neu neben dem Titel. --}}
-                    @if ($_legacyViewSwitch)
-                        <div class="ml-3 shrink-0">@include('legacy._view_switch')</div>
-                    @endif
                 </div>
                 @if ($_useGrid)
                     <div class="header-center">
@@ -251,7 +247,9 @@
                             });
                         @endphp
 
-                        @if ($isLegacyMode)
+                        @if ($_classicShell)
+                            {{-- Klassische Legacy-Ansicht: ihr Menü steht in der zweiten Kopfzeile (legacy-menu). --}}
+                        @elseif ($isLegacyMode)
                             {{-- Legacy-Modus: klassische Inline-/Dropdown-Navigation im Header --}}
                             <nav class="hidden xl:flex items-center gap-1" aria-label="{{ __('Hauptnavigation') }}">
                                 @foreach ($mainNavItems as $item)
@@ -329,7 +327,6 @@
                             @endif
                         @else
                             {{-- Sidebar-Toggle (nur < lg) --}}
-                            @unless ($_classicShell)
                             <button type="button"
                                     id="app-sidebar-toggle"
                                     class="btn btn-sm btn-ghost btn-square lg:hidden"
@@ -338,7 +335,6 @@
                                     aria-expanded="false">
                                 <x-icon name="menu" class="text-[1.25rem]" />
                             </button>
-                            @endunless
 
 
                             @if (! empty($manageNavItems))
@@ -563,6 +559,11 @@
                                 </form>
                             @endif
                         @endisset
+
+                        {{-- Legacy-Seiten mit klassischem Gegenstück: Umschalter Klassisch | Neu neben dem Benutzermenü. --}}
+                        @if ($_legacyViewSwitch)
+                            @include('legacy._view_switch')
+                        @endif
 
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                             {{-- Kontext-Hilfe (Feature 039): Nur auf Mobil/Tablet (<lg)
@@ -927,6 +928,9 @@
                 @unless ($isLegacyMode)
                     {{-- Datumsauswahl wird im .header-center innerhalb der .header-row gerendert. --}}
                 @endunless
+                @if ($_classicShell && \Illuminate\Support\Facades\View::hasSection('legacy-menu'))
+                    <div class="border-t border-base-300 px-3 py-1.5 xl:px-4">@yield('legacy-menu')</div>
+                @endif
             @endauth
         </header>
 

@@ -1,7 +1,7 @@
 ---
 title: "Ancien système (legacy)"
 topic: legacy.overview
-version: 8
+version: 9
 keywords:
     - affichage classique
     - ancienne application
@@ -124,11 +124,12 @@ administrateurs de l'ancien système et à l'exploitation de la plateforme.
 ## Affichage classique
 
 Qui est habitué aux écrans des anciens portails passe à leur présentation avec
-**Classique** à côté du titre de la page – pour le journal, le centre d'appels et
-le portail support à la fois ; **Nouveau** revient en arrière. L'en-tête de
-l'application reste ; en dessous viennent l'ancien menu, les anciens termes et la
-surface jaune, rafraîchis avec la police actuelle, des icônes et des points de
-couleur pour le statut :
+**Classique** à côté du menu utilisateur – pour le journal, le centre d'appels et
+le portail support à la fois ; **Nouveau** revient en arrière. L'ancien menu se
+place alors dans l'en-tête de l'application à la place de la nouvelle
+navigation ; en dessous viennent les anciens termes et la surface jaune,
+rafraîchis avec la police actuelle, des icônes et des points de couleur pour le
+statut :
 
 - **Journal** affiche la semaine comme avant : le bureau voit pour chaque jour
   tous les employés avec les heures de 7 h à 21 h, et un clic sur un nom crée

@@ -11,7 +11,6 @@
 @section('title', __('legacy_support.orders.show_title', ['number' => $order->id]))
 
 @section('content')
-    @include('legacy.classic.support._office_menu')
     <p><a href="{{ \App\Http\Middleware\RememberListUrl::urlFor($archived ? 'legacy.support.archive.index' : 'legacy.support.orders.index') }}">{{ __('legacy_support.classic.to_list') }}</a></p>
 
     @php

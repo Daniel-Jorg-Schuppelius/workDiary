@@ -23,7 +23,6 @@ return [
     'entry_title' => 'Online diary, entry',
     'entry_new_title' => 'Online diary, new entry',
     'entry_edit_title' => 'Online diary, change entry',
-    'logged_in_as' => 'logged in as: :name',
     'choose_week' => 'Week from:',
     'show' => 'show',
     'save' => 'save',

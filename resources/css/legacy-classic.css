@@ -653,17 +653,25 @@ main.kp-classic.kp-page {
 
 .tb th.kopf a, .tb th.kheute a, .tb th.kso a, .tb th.ksa a { color: #fff; }
 
-.tb table.tb-legend {
+.tb .tb-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 8px;
     margin: 6px auto;
 }
 
-.tb table.tb-legend td {
+.tb .tb-legend table {
+    margin: 0;
+}
+
+.tb .tb-legend td {
     padding: 2px 4px;
     color: var(--kp-olive);
     white-space: nowrap;
 }
 
-.tb table.tb-legend td[class] {
+.tb .tb-legend td[class] {
     width: 12px;
     border-radius: 3px;
 }

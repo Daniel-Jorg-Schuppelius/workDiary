@@ -11,7 +11,6 @@
 @section('title', $isEdit ? __('legacy_support.customers.edit') : __('legacy_support.customers.create'))
 
 @section('content')
-    @include('legacy.classic.support._office_menu')
     <p><a href="{{ \App\Http\Middleware\RememberListUrl::urlFor('legacy.support.customers.index') }}">{{ __('legacy_support.classic.to_list') }}</a></p>
     @include('legacy.classic._flash')
 

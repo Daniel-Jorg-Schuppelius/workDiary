@@ -1,7 +1,7 @@
 ---
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
-version: 8
+version: 9
 keywords:
     - visualizzazione classica
     - vecchio sistema
@@ -124,10 +124,11 @@ amministratori del vecchio sistema e alla gestione della piattaforma.
 ## Visualizzazione classica
 
 Chi è abituato alle maschere dei vecchi portali passa alla loro struttura con
-**Classica** accanto al titolo della pagina – per diario, call center e portale
-assistenza insieme; **Nuova** torna indietro. L'intestazione dell'applicazione
-resta; sotto compaiono il vecchio menu, i vecchi termini e la superficie gialla,
-rinfrescati con il carattere attuale, icone e punti colorati per lo stato:
+**Classica** accanto al menu utente – per diario, call center e portale
+assistenza insieme; **Nuova** torna indietro. Il vecchio menu compare allora
+nell'intestazione dell'applicazione al posto della nuova navigazione; sotto
+seguono i vecchi termini e la superficie gialla, rinfrescati con il carattere
+attuale, icone e punti colorati per lo stato:
 
 - **Diario** mostra la settimana come prima: l'ufficio vede per ogni giorno tutti
   i collaboratori con le ore dalle 7 alle 21, e un clic su un nome crea una voce;

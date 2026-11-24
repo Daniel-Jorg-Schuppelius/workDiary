@@ -12,7 +12,6 @@
 @section('bodyClass', 'tb')
 
 @section('content')
-    @include('legacy.classic.diary._menu')
     @include('legacy.classic._flash')
     <h1>{{ __('legacy_classic.archiving.title') }}</h1>
 

@@ -11,7 +11,6 @@
 @section('title', __('legacy_support.classic.archiving.title'))
 
 @section('content')
-    @include('legacy.classic.support._office_menu')
     <h1>{{ __('legacy_support.classic.archiving.title') }}</h1>
     <h2>{{ __('legacy_support.classic.archiving.subtitle') }}</h2>
     @include('legacy.classic._flash')

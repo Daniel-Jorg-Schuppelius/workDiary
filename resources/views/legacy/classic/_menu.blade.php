@@ -9,22 +9,48 @@
 {{--
     Knopfleiste der Altportale. Erwartet: $label, $rows (Zeilen aus Einträgen mit
     href, label, optional title, active, post — post sendet ein Formular, etwa zum Abmelden).
+    $variant 'header' setzt sie als zweite Zeile in die Kopfzeile der App (Zeilen nebeneinander,
+    getrennt durch einen Strich); sonst steht sie im alten Stil auf der Seite.
 --}}
-<nav class="kp-menu" aria-label="{{ $label }}">
-    @foreach ($rows as $row)
-        <ul>
-            @foreach ($row as $item)
-                <li>
-                    @if ($item['post'] ?? false)
-                        <form method="POST" action="{{ $item['href'] }}">
-                            @csrf
-                            <button type="submit" class="kp-linkbutton" @isset($item['title']) title="{{ $item['title'] }}" @endisset>{{ $item['label'] }}</button>
-                        </form>
-                    @else
-                        <a href="{{ $item['href'] }}" @isset($item['title']) title="{{ $item['title'] }}" @endisset @if ($item['active'] ?? false) aria-current="page" @endif>{{ $item['label'] }}</a>
-                    @endif
-                </li>
+@if (($variant ?? 'page') === 'header')
+    <nav aria-label="{{ $label }}">
+        <ul class="flex items-center gap-1 overflow-x-auto sm:flex-wrap sm:justify-center">
+            @foreach ($rows as $row)
+                @if (! $loop->first)
+                    <li aria-hidden="true" class="mx-1 h-5 w-px shrink-0 bg-base-300"></li>
+                @endif
+                @foreach ($row as $item)
+                    <li class="shrink-0">
+                        @if ($item['post'] ?? false)
+                            <form method="POST" action="{{ $item['href'] }}">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-ghost" @isset($item['title']) title="{{ $item['title'] }}" @endisset>{{ $item['label'] }}</button>
+                            </form>
+                        @else
+                            <a href="{{ $item['href'] }}" class="btn btn-sm {{ ($item['active'] ?? false) ? 'btn-primary' : 'btn-ghost' }}" @isset($item['title']) title="{{ $item['title'] }}" @endisset @if ($item['active'] ?? false) aria-current="page" @endif>{{ $item['label'] }}</a>
+                        @endif
+                    </li>
+                @endforeach
             @endforeach
         </ul>
-    @endforeach
-</nav>
+    </nav>
+@else
+    <nav class="kp-menu" aria-label="{{ $label }}">
+        @foreach ($rows as $row)
+            <ul>
+                @foreach ($row as $item)
+                    <li>
+                        @if ($item['post'] ?? false)
+                            <form method="POST" action="{{ $item['href'] }}">
+                                @csrf
+                                <button type="submit" class="kp-linkbutton" @isset($item['title']) title="{{ $item['title'] }}" @endisset>{{ $item['label'] }}</button>
+                            </form>
+                        @else
+                            <a href="{{ $item['href'] }}" @isset($item['title']) title="{{ $item['title'] }}" @endisset @if ($item['active'] ?? false) aria-current="page" @endif>{{ $item['label'] }}</a>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        @endforeach
+    </nav>
+@endif

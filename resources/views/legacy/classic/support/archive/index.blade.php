@@ -19,10 +19,7 @@
         ]);
     @endphp
 
-    @include('legacy.classic.support._office_menu')
-
     <h2>{{ __('legacy_support.classic.archive_title') }}</h2>
-    <p>{{ __('legacy_support.classic.logged_in_as', ['name' => (string) (auth()->user()?->name ?? '')]) }}</p>
     @include('legacy.classic._flash')
 
     @include('legacy.classic.support._year_select', [

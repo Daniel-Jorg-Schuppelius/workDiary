@@ -11,7 +11,6 @@
 @section('title', __('legacy_support.nav.customers'))
 
 @section('content')
-    @include('legacy.classic.support._office_menu')
     <h2>{{ __('legacy_support.classic.portal') }}</h2>
     @include('legacy.classic._flash')
     <p>{{ __('legacy_support.customers.portal_address') }} <a href="{{ route('legacy.portal.login') }}">{{ route('legacy.portal.login') }}</a></p>

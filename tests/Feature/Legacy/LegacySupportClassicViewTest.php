@@ -16,7 +16,7 @@ use App\Legacy\Support\LegacyView;
 use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{Config, DB};
 use Tests\Concerns\UsesLegacySqlite;
 use Tests\TestCase;
@@ -204,7 +204,11 @@ class LegacySupportClassicViewTest extends TestCase {
 
         $this->actingAs($this->office)->get(route('legacy.support.orders.show', $id))->assertOk()->assertViewIs('legacy.classic.support.orders.show')->assertSee('Nur fürs Büro');
         $this->actingAs($this->office)->get(route('legacy.support.orders.create'))->assertOk()->assertSee(__('legacy_support.classic.new_entry'))->assertSee('bueradmin');
-        $this->actingAs($this->office)->get(route('legacy.support.customers.index'))->assertOk()->assertSee(__('legacy_support.classic.customers.new_user'))->assertDontSee('Kalt1');
+        $page = $this->actingAs($this->office)->get(route('legacy.support.customers.index'))->assertOk()->assertSee(__('legacy_support.classic.customers.new_user'))->assertDontSee('Kalt1');
+        // Das Büromenü steht in der Kopfzeile der App, die aktive Seite ist markiert.
+        $header = Str::between((string) $page->getContent(), 'id="app-header"', '</header>');
+        $this->assertStringContainsString('aria-label="' . __('legacy_support.classic.portal') . '"', $header);
+        $this->assertStringContainsString('href="' . route('legacy.support.customers.index') . '" class="btn btn-sm btn-primary"', $header);
         $this->actingAs($this->office)->get(route('legacy.support.customers.create'))->assertOk()->assertSee(__('legacy_support.classic.customers.create_question'));
         $this->actingAs($this->office)->get(route('legacy.support.customers.show', [11, 'delete' => 1]))->assertOk()->assertSee(__('legacy_support.classic.customers.delete_question'));
         $this->actingAs($this->office)->get(route('legacy.support.archive.index', ['year' => 2015]))->assertOk()->assertSee('Altauftrag');

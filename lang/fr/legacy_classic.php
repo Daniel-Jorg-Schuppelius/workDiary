@@ -23,7 +23,6 @@ return [
     'entry_title' => 'Journal en ligne, entrée',
     'entry_new_title' => 'Journal en ligne, nouvelle entrée',
     'entry_edit_title' => 'Journal en ligne, modifier l’entrée',
-    'logged_in_as' => 'connecté en tant que : :name',
     'choose_week' => 'Semaine du :',
     'show' => 'afficher',
     'save' => 'enregistrer',

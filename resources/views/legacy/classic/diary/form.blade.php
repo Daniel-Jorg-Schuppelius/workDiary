@@ -12,7 +12,6 @@
 @section('bodyClass', 'tb')
 
 @section('content')
-    @include('legacy.classic.diary._menu')
     @include('legacy.classic._flash')
     @php
         $dateFormat = \App\Legacy\Http\Requests\SaveLegacyDiaryEntryRequest::CLASSIC_DATE;

@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Menü der Bürokonten wie im Altportal (admin/menue.php); die Listen behalten Jahr und Sortierung. --}}
+{{-- Menü der Bürokonten wie im Altportal (admin/menue.php) in der Kopfzeile; die Listen behalten Jahr und Sortierung. --}}
 @php
     $writeEnabled = (bool) config('app.legacy_write_enabled');
     $menu = array_values(array_filter([
@@ -18,4 +18,4 @@
         ['href' => \App\Http\Middleware\RememberListUrl::urlFor('legacy.diary.week'), 'label' => __('legacy_classic.menu.diary')],
     ]));
 @endphp
-@include('legacy.classic._menu', ['label' => __('legacy_support.classic.portal'), 'rows' => [$menu]])
+@include('legacy.classic._menu', ['label' => __('legacy_support.classic.portal'), 'rows' => [$menu], 'variant' => 'header'])

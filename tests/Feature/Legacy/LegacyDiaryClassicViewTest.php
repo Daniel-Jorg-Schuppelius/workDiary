@@ -16,7 +16,7 @@ use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Transport\ArrayTransport;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{Config, DB};
 use Tests\Concerns\UsesLegacySqlite;
 use Tests\TestCase;
@@ -328,11 +328,13 @@ class LegacyDiaryClassicViewTest extends TestCase {
             ->assertSee(__('legacy_classic.menu.logout'));
     }
 
-    public function test_classic_pages_keep_the_app_header_with_the_view_switch(): void {
-        $this->actingAs($this->office)->get(route('legacy.diary.week'))
-            ->assertOk()
-            ->assertSee('id="app-header"', false)
-            ->assertSee(route('legacy.view', ['mode' => LegacyView::MODERN, 'back' => '/legacy/diary/week']), false);
+    public function test_classic_pages_carry_their_menu_and_the_view_switch_in_the_app_header(): void {
+        $header = Str::between($this->actingAs($this->office)->get(route('legacy.diary.week'))->assertOk()->getContent(), 'id="app-header"', '</header>');
+        $this->assertStringContainsString(route('legacy.view', ['mode' => LegacyView::MODERN, 'back' => '/legacy/diary/week']), $header);
+        $this->assertStringContainsString('aria-label="' . __('legacy_classic.diary_title') . '"', $header);
+        $this->assertStringContainsString('href="' . route('legacy.archive.week') . '"', $header);
+        // Die Navigation der neuen Legacy-Ansicht entfällt.
+        $this->assertStringNotContainsString('aria-label="' . __('Hauptnavigation') . '"', $header);
 
         // Urlaub gibt es nur in der neuen Ansicht: dort kein Schalter.
         $this->actingAs($this->office)->get(route('legacy.diary.index', ['tab' => 'urlaub']))
@@ -351,6 +353,7 @@ class LegacyDiaryClassicViewTest extends TestCase {
             ->get(route('legacy.diary.week'))
             ->assertOk()
             ->assertViewIs('legacy.diary.week')
+            ->assertSee('aria-label="' . __('Hauptnavigation') . '"', false)
             ->assertSee(route('legacy.view', ['mode' => LegacyView::CLASSIC, 'back' => '/legacy/diary/week']), false);
 
         $this->actingAs($this->office)->get(route('legacy.view', ['mode' => LegacyView::MODERN, 'back' => '/legacy/diary/week?week=1']))

@@ -1,7 +1,7 @@
 ---
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
-version: 8
+version: 9
 keywords:
     - vista clásica
     - sistema antiguo
@@ -123,11 +123,11 @@ administradores del sistema antiguo y a la operación de la plataforma.
 ## Vista clásica
 
 Quien esté acostumbrado a las pantallas de los portales antiguos cambia a su
-estructura con **Clásica** junto al título de la página – para el diario, el
-centro de llamadas y el portal de soporte a la vez; **Nueva** vuelve atrás. La
-cabecera de la aplicación se mantiene; debajo aparecen el menú antiguo, los
-términos antiguos y la superficie amarilla, renovados con la tipografía actual,
-iconos y puntos de color para el estado:
+estructura con **Clásica** junto al menú de usuario – para el diario, el centro
+de llamadas y el portal de soporte a la vez; **Nueva** vuelve atrás. El menú
+antiguo aparece entonces en la cabecera de la aplicación en lugar de la
+navegación nueva; debajo siguen los términos antiguos y la superficie amarilla,
+renovados con la tipografía actual, iconos y puntos de color para el estado:
 
 - **Diario** muestra la semana como antes: la oficina ve para cada día a todos
   los empleados con las horas de 7 a 21, y un clic en un nombre crea una

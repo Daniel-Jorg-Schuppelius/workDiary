@@ -6,18 +6,24 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Legende der Wochenraster: Dienste wie im Altportal, dazu die Zustandsfarben. --}}
-<table class="tb-legend kp-msg">
-    <tr>
-        <td class="rogb">&nbsp;</td><td class="lob">&nbsp;</td><td>&nbsp;{{ __('legacy_classic.legend.oncall') }}&nbsp;</td>
-        <td class="rogn">&nbsp;</td><td class="lon">&nbsp;</td><td>&nbsp;{{ __('legacy_classic.legend.notdienst') }}&nbsp;</td>
-    </tr>
-</table>
-<table class="tb-legend kp-msg">
-    <tr>
-        <td class="off">&nbsp;</td><td>&nbsp;{{ __('legacy_classic.status.unread') }}&nbsp;</td>
-        <td class="work">&nbsp;</td><td>&nbsp;{{ __('legacy_classic.status.confirmed') }}&nbsp;</td>
-        <td class="ok">&nbsp;</td><td>&nbsp;{{ __('legacy_classic.status.done') }}&nbsp;</td>
-        <td class="neu">&nbsp;</td><td>&nbsp;{{ __('legacy_classic.status.problem') }}&nbsp;</td>
-    </tr>
-</table>
+{{-- Legende der Wochenraster: Dienste wie im Altportal, dazu die Zustandsfarben; Farbfeld und Text bleiben beim Umbruch zusammen. --}}
+@php
+    $legendRows = [
+        [[['rogb', 'lob'], __('legacy_classic.legend.oncall')], [['rogn', 'lon'], __('legacy_classic.legend.notdienst')]],
+        [[['off'], __('legacy_classic.status.unread')], [['work'], __('legacy_classic.status.confirmed')], [['ok'], __('legacy_classic.status.done')], [['neu'], __('legacy_classic.status.problem')]],
+    ];
+@endphp
+@foreach ($legendRows as $legendRow)
+    <div class="tb-legend">
+        @foreach ($legendRow as [$legendSwatches, $legendText])
+            <table role="presentation">
+                <tr>
+                    @foreach ($legendSwatches as $legendSwatch)
+                        <td class="{{ $legendSwatch }}">&nbsp;</td>
+                    @endforeach
+                    <td>&nbsp;{{ $legendText }}&nbsp;</td>
+                </tr>
+            </table>
+        @endforeach
+    </div>
+@endforeach

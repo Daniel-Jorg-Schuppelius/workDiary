@@ -19,10 +19,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Werte: `opcache.memory_consumption=512`, `opcache.interned_strings_buffer=128`,
   `opcache.max_accelerated_files=30000`.
 - Legacy-Bereich: klassische Ansicht im Aufbau der Altportale für den ganzen
-  Bereich, behutsam aufgefrischt: Kopfzeile der App, darunter das alte Menü als
-  Knopfleiste mit markierter Seite, die gelbe Fläche und die alten Begriffe, dazu
-  Schrift und Symbole der App, Status als Farbpunkt mit Text, Datum und Uhrzeit
-  über die Datumswähler des Browsers und eine auf dem Handy nutzbare Darstellung.
+  Bereich, behutsam aufgefrischt: das alte Menü in der Kopfzeile der App an
+  Stelle der neuen Navigation, die aktive Seite markiert, die gelbe Fläche und die
+  alten Begriffe, dazu Schrift und Symbole der App, Status als Farbpunkt mit Text,
+  Datum und Uhrzeit über die Datumswähler des Browsers und eine auf dem Handy
+  nutzbare Darstellung.
   Das Support-Portal hat für Kunden und Büro die alten Listen und Teilmasken für
   Termin (Datum und Stunde) und Kundenauswahl. Das Online-Tagebuch zeigt die
   Chefsicht je Tag und Mitarbeiter und die Wochenübersicht der Mitarbeiter, dazu
@@ -30,7 +31,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Status sowie Bereitschaft, Notdienst, Mitarbeiter mit Passwort-Wiederholung,
   Archiv, Löschen und Passwort. Der Notdienstplan des Callcenters reicht von
   gestern bis in fünf Tagen. Routen, Prüfungen und Daten sind dieselben wie in
-  der neuen Ansicht. Der Umschalter „Klassisch | Neu“ steht neben dem Seitentitel
+  der neuen Ansicht. Der Umschalter „Klassisch | Neu“ steht neben dem Benutzermenü
   (ohne App-Konto oben rechts) und gilt je Browser für den ganzen Bereich.
   Vorgabe über `LEGACY_VIEW` (`classic`, sonst `modern`), Überschriften der
   Anmeldungen über `LEGACY_SUPPORT_TITLE` und `LEGACY_CALLCENTER_SUBTITLE`. Nach

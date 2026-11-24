@@ -23,7 +23,6 @@ return [
     'entry_title' => 'Diario online, voce',
     'entry_new_title' => 'Diario online, nuova voce',
     'entry_edit_title' => 'Diario online, modifica voce',
-    'logged_in_as' => 'connesso come: :name',
     'choose_week' => 'Settimana dal:',
     'show' => 'mostra',
     'save' => 'salva',

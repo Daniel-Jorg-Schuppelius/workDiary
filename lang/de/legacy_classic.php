@@ -23,7 +23,6 @@ return [
     'entry_title' => 'Online-Tagebuch, Eintrag',
     'entry_new_title' => 'Online-Tagebuch, neuer Eintrag',
     'entry_edit_title' => 'Online-Tagebuch, Eintrag ändern',
-    'logged_in_as' => 'eingeloggt als: :name',
     'choose_week' => 'Woche ab:',
     'show' => 'anzeigen',
     'save' => 'speichern',
