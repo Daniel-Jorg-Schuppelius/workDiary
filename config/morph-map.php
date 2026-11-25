@@ -448,6 +448,7 @@ return [
         'import_run_errors' => \App\Models\Integration\ImportRunError::class,
         'import_runs' => \App\Models\Integration\ImportRun::class,
         'import_value_mappings' => \App\Models\Integration\ImportValueMapping::class,
+        'incoming_dismissed_files' => \App\Models\Invoicing\IncomingDismissedFile::class,
         'incoming_einvoice_transfers' => \App\Models\Invoicing\IncomingEInvoiceTransfer::class,
         'incoming_einvoices' => \App\Models\Invoicing\IncomingEInvoice::class,
         'incoming_invoice_retentions' => \App\Models\Finance\IncomingInvoiceRetention::class,

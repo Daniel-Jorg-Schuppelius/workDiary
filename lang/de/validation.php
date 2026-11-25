@@ -2324,6 +2324,7 @@ return [
         'questions_per_attempt' => 'Fragen je Versuch',
         'questions_per_attempt_percent' => 'Fragen je Versuch (%)',
         'queue' => 'Warteschlange',
+        'only' => 'Eingang',
         'queue_group' => 'Gruppe',
         'queue_group.*' => 'Gruppe',
         'queue_id' => 'Warteschlange',

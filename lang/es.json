@@ -11261,5 +11261,21 @@
     "Ein projektgebundener Vertrag gilt nur über sein Projekt und lässt sich nicht an ein Asset binden.": "Un contrato vinculado a un proyecto solo se aplica a través de su proyecto y no puede asignarse a un activo.",
     "Gilt für Service-Tickets zu diesem Asset vor den Verträgen von Projekt und Kunde. Zur Wahl stehen Verträge des gespeicherten Kunden und Verträge ohne Kundenbindung.": "Se aplica a los tickets de servicio de este activo antes que los contratos del proyecto y del cliente. Puede elegir contratos del cliente guardado y contratos sin cliente.",
     "Nur Wiederholdefekte": "Solo defectos recurrentes",
-    "Keine Wiederholdefekte im gewählten Zeitraum.": "No hay defectos recurrentes en el periodo seleccionado."
+    "Keine Wiederholdefekte im gewählten Zeitraum.": "No hay defectos recurrentes en el periodo seleccionado.",
+    "Nur offene, nicht übergebene Eingänge lassen sich als „keine Rechnung“ löschen.": "Solo las entradas abiertas y no transferidas se pueden eliminar como «no es una factura».",
+    "Keine Rechnung — von Hand gelöscht.": "No es una factura: eliminada manualmente.",
+    "Der Eingang wurde nicht gefunden.": "No se encontró la entrada.",
+    "Eingang als „keine Rechnung“ gelöscht.": "Entrada eliminada como «no es una factura».",
+    ":deleted Eingänge als „keine Rechnung“ gelöscht, :skipped übersprungen.": ":deleted entradas eliminadas como «no es una factura», :skipped omitidas.",
+    "Als „keine Rechnung“ löschen? Beleg, Dokument und Dateien werden entfernt, eine Zuordnung wird aufgehoben; es bleibt der Audit-Eintrag.": "¿Eliminar como «no es una factura»? Se eliminan el comprobante, el documento y los archivos, y se anula cualquier asignación; se conserva la entrada de auditoría.",
+    "Eingänge dieses Reiters nacheinander bearbeiten: nach jeder Aktion folgt der nächste.": "Procesar las entradas de esta pestaña una tras otra: después de cada acción sigue la siguiente.",
+    "Durcharbeiten": "Procesar en serie",
+    "Keine Rechnung – löschen": "No es una factura: eliminar",
+    ":position von :total": ":position de :total",
+    "Voriger Eingang": "Entrada anterior",
+    "Die Datei wird wieder aufgenommen.": "El archivo vuelve a admitirse.",
+    "Gelöschte Dateien": "Archivos eliminados",
+    "Von Hand als „keine Rechnung“ gelöscht. Dieselbe Datei wird aus dem Rechnungspostfach nicht wieder aufgenommen; ein Upload von Hand lässt sie wieder zu.": "Eliminados manualmente como «no es una factura». El mismo archivo no vuelve a admitirse desde el buzón de facturas; una subida manual lo vuelve a permitir.",
+    "Datei wieder zulassen? Sie wird beim nächsten Eingang wieder aufgenommen.": "¿Volver a permitir el archivo? Se admitirá en su próxima llegada.",
+    "Wieder zulassen": "Volver a permitir"
 }

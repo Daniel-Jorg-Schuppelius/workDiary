@@ -2324,6 +2324,7 @@ return [
         'questions_per_attempt' => 'Preguntas por intento',
         'questions_per_attempt_percent' => 'Preguntas por intento (%)',
         'queue' => 'Cola',
+        'only' => 'Entrada',
         'queue_group' => 'Grupo',
         'queue_group.*' => 'Grupo',
         'queue_id' => 'Cola',

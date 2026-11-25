@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 12
+version: 15
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -182,6 +182,25 @@ Operatoren sind unter anderem „ist“, „enthält“, „beginnt mit“, „e
 „entspricht“ (regulärer Ausdruck). Aktionen: verwerfen, als keine Rechnung
 ablegen, einer Partei zuordnen. Die erste passende Regel gewinnt; Regeln
 greifen beim Abruf, beim Upload und bei der Nacherkennung.
+
+**Keine Rechnung – löschen:** Werbung, Lieferscheine oder Signaturbilder
+entfernen Sie in einem Schritt: über das Papierkorb-Symbol in der Zeile, über
+„Keine Rechnung – löschen“ für die Auswahl oder auf der Detailseite. Beleg,
+Dokument und Dateien werden entfernt, eine Zuordnung wird vorher aufgehoben;
+es bleibt der Audit-Eintrag. Das geht nur für offene Eingänge: fachlich
+freigegebene, übergebene und per Legal Hold gehaltene bleiben stehen.
+
+Eine so gelöschte Datei merkt sich WorkDiary: Liegt dieselbe Datei einer
+späteren Mail bei, etwa die AGB, wird sie nicht wieder aufgenommen. Unter
+„Regeln“ stehen die gelöschten Dateien mit „Wieder zulassen“; ein Upload von
+Hand lässt die Datei ebenfalls wieder zu.
+
+**Durcharbeiten:** In den Reitern „Zuzuordnen“ und „Zu prüfen“ öffnet
+„Durcharbeiten“ den ersten Eingang. Der Kopf zeigt den Stand („3 von 17“) und
+führt mit „Weiter“ zum nächsten. Nach dem Zuordnen, Entscheiden oder Löschen
+folgt der nächste Eingang von selbst; solange ein Eingang noch im Reiter
+steht, etwa nach dem Erfassen der Werte, bleibt er geöffnet. Am Ende der
+Schlange kommen übersprungene Eingänge erneut, danach die Liste.
 
 Abgelehnte Belege stehen im Reiter „Abgelehnt“ und lassen sich dort endgültig
 löschen. Nach der eingestellten Frist (Standard 30 Tage) schlägt die
@@ -427,3 +446,8 @@ Bankverbindung hinterlegt, gilt sie als neue Bankverbindung und muss vor der
 Zahlung bestätigt werden; in den Lieferantenstamm kommt sie nur, wenn jemand
 sie dort ausdrücklich einträgt. Jede Bestätigung gilt nur für die bestätigte
 IBAN — ändert sie sich, sperrt der Zahlungsvorschlag erneut.
+
+Stand beim Eingang das Lesewerkzeug `zbarimg` nicht bereit, zeigt die Karte
+„GiroCode nicht lesbar“ mit dem Knopf „Erneut lesen“; nach der Installation
+holt der Deploy die Lesung für offene Eingänge nach (`php artisan incoming-
+invoices:read-girocodes`).

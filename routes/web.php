@@ -3565,8 +3565,12 @@ Route::middleware('auth')->group(function () {
             Route::post('sammel-freigeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'bulkApprove'])->name('bulk-approve');
             // Abgelehnte Eingänge endgültig löschen (MVP-1212).
             Route::post('sammel-loeschen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'bulkDiscard'])->name('bulk-discard');
+            // „Keine Rechnung – löschen“ (MVP-1805): Auswahl oder ein Eingang, ablehnen und verwerfen in einem Schritt.
+            Route::post('keine-rechnung', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'notInvoice'])->name('not-invoice');
             // Regeln des Rechnungseingangs (MVP-1208/1211): Absenderregeln und Posteingangsregeln einsehen, schalten, löschen.
             Route::get('regeln', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'index'])->name('rules');
+            // Als „keine Rechnung“ gelöschte Datei wieder zulassen (MVP-1808).
+            Route::delete('regeln/dateien/{file}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyDismissedFile'])->name('rules.files.destroy');
             Route::delete('regeln/absender/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroySenderRule'])->name('rules.sender.destroy');
             Route::post('regeln/automation/{rule}/umschalten', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'toggleRule'])->name('rules.automation.toggle');
             Route::delete('regeln/automation/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyRule'])->name('rules.automation.destroy');
@@ -3593,6 +3597,8 @@ Route::middleware('auth')->group(function () {
             Route::post('{incoming}/aufteilen/zuruecksetzen', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'reset'])->name('split.reset');
             Route::post('{incoming}/aufteilen', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'split'])->middleware('throttle:6,1')->name('split');
             Route::post('{incoming}/eine-rechnung', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'dismiss'])->name('split.dismiss');
+            // GiroCode nachlesen, wenn beim Eingang das Lesewerkzeug fehlte (MVP-1807).
+            Route::post('{incoming}/girocode-lesen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'rereadGiroCode'])->name('girocode.reread');
             Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
             Route::post('{incoming}/uebergeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'transfer'])->name('transfer');
             Route::post('{incoming}/kein-doppel', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'clearDuplicate'])->name('duplicate.clear');

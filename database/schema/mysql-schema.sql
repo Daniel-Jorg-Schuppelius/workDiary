@@ -12685,6 +12685,26 @@ CREATE TABLE `import_value_mappings` (
   CONSTRAINT `import_value_mappings_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `incoming_dismissed_files`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `incoming_dismissed_files` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `sha256` char(64) NOT NULL,
+  `file_name` varchar(255) DEFAULT NULL,
+  `hits` int(10) unsigned NOT NULL DEFAULT 0,
+  `last_matched_at` timestamp NULL DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `incoming_dismissed_files_org_sha_unique` (`organization_id`,`sha256`),
+  KEY `incoming_dismissed_files_created_by_foreign` (`created_by`),
+  CONSTRAINT `incoming_dismissed_files_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_dismissed_files_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `incoming_einvoice_transfers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -29838,3 +29858,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1143,'2027_04_26_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1144,'2027_04_27_100000_add_is_direct_billing_to_resale_periods',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1145,'2027_04_28_100000_add_deviation_note_to_resale_periods',3);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1146,'2027_04_29_100000_add_mirror_number_indexes',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1147,'2027_04_30_100000_create_incoming_dismissed_files_table',5);

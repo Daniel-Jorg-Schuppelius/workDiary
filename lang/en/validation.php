@@ -2358,6 +2358,7 @@ return [
         'questions_per_attempt' => 'Questions per attempt',
         'questions_per_attempt_percent' => 'Questions per attempt (%)',
         'queue' => 'Queue',
+        'only' => 'Document',
         'queue_group' => 'Group',
         'queue_group.*' => 'Group',
         'queue_id' => 'Queue',

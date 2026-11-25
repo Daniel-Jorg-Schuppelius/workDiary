@@ -34,6 +34,9 @@
     ];
     $bulk = ($bulkParties !== null || $bulkDiscard) && $incomings->isNotEmpty();
     $colspan = $bulk ? 9 : 8;
+    // Durcharbeiten (MVP-1806): aus den Reitern „Zuzuordnen“ und „Zu prüfen“ trägt der Link die Schlange.
+    $showParams = static fn ($document): array => ['document' => $document] + ($queue !== null ? ['queue' => $queue] : []);
+    $notInvoiceConfirm = __('Als „keine Rechnung“ löschen? Beleg, Dokument und Dateien werden entfernt, eine Zuordnung wird aufgehoben; es bleibt der Audit-Eintrag.');
 @endphp
 
 @section('content')
@@ -49,6 +52,10 @@
                 <x-icon-btn icon="upload_file" tone="primary" size="sm" type="submit"
                             show-label>{{ __('Rechnungen hochladen') }}</x-icon-btn>
             </form>
+        @endif
+        @if ($canManage && $queueStart !== null)
+            <x-icon-btn icon="playlist_play" tone="primary" size="sm" :href="route('finance.incoming-invoices.show', $showParams($queueStart))"
+                        :title="__('Eingänge dieses Reiters nacheinander bearbeiten: nach jeder Aktion folgt der nächste.')" show-label>{{ __('Durcharbeiten') }}</x-icon-btn>
         @endif
         @if ($canManage)
             <x-icon-btn icon="rule_settings" size="sm" placement="menu" :href="route('finance.incoming-invoices.rules')" show-label>{{ __('Regeln') }}</x-icon-btn>
@@ -128,6 +135,10 @@
                                   data-confirm-dialog data-confirm-message="{{ __('Ausgewählte Eingänge fachlich freigeben? Eingänge mit Hindernissen am Übergabe-Tor bleiben stehen.') }}"
                                   data-confirm-icon="gavel" data-confirm-label="{{ __('Fachlich freigeben') }}">{{ __('Fachlich freigeben') }}</x-button>
                     @endif
+                    {{-- Keine Rechnung (MVP-1805): ablehnen und verwerfen in einem Schritt. --}}
+                    <x-button type="submit" tone="error" size="sm" icon="delete" formaction="{{ route('finance.incoming-invoices.not-invoice') }}" formnovalidate
+                              data-confirm-dialog data-confirm-message="{{ $notInvoiceConfirm }}"
+                              data-confirm-tone="error" data-confirm-icon="delete" data-confirm-label="{{ __('Keine Rechnung – löschen') }}">{{ __('Keine Rechnung – löschen') }}</x-button>
                 </x-slot:actions>
             </x-bulk-toolbar>
     @endif
@@ -181,7 +192,7 @@
                 </td>
                 <td class="font-mono text-sm">
                     @if ($incoming->document !== null)
-                        <a class="link link-hover" href="{{ route('finance.incoming-invoices.show', $incoming->document) }}">{{ $incoming->invoice_number ?? '—' }}</a>
+                        <a class="link link-hover" href="{{ route('finance.incoming-invoices.show', $showParams($incoming->document)) }}">{{ $incoming->invoice_number ?? '—' }}</a>
                     @else
                         {{ $incoming->invoice_number ?? '—' }}
                     @endif
@@ -213,9 +224,16 @@
                             <x-icon-btn icon="edit_note" :href="route('finance.incoming-invoices.values.form', $incoming)" data-entry-modal-trigger :label="__('Werte erfassen')" />
                         @endif
                         <x-icon-btn icon="rule" :href="route('finance.incoming-invoices.assign.form', $incoming)" data-entry-modal-trigger :label="__('Zuordnen')" />
+                        @if (in_array($incoming->status, [\App\Enums\Invoicing\IncomingEInvoiceStatus::Received, \App\Enums\Invoicing\IncomingEInvoiceStatus::Question], true))
+                            {{-- Eigenes Formular (form=): die Zeile liegt im Sammelformular, dessen Guard eine Auswahl verlangt. --}}
+                            <x-icon-btn icon="delete" tone="error" type="submit" form="not-invoice-form" name="only" value="{{ $incoming->sqid }}"
+                                        data-confirm-dialog data-confirm-message="{{ $notInvoiceConfirm }}"
+                                        data-confirm-tone="error" data-confirm-icon="delete" data-confirm-label="{{ __('Keine Rechnung – löschen') }}"
+                                        :label="__('Keine Rechnung – löschen')" />
+                        @endif
                     @endif
                     @if ($incoming->document !== null)
-                        <x-icon-btn icon="visibility" :href="route('finance.incoming-invoices.show', $incoming->document)" :label="__('Anzeigen')" />
+                        <x-icon-btn icon="visibility" :href="route('finance.incoming-invoices.show', $showParams($incoming->document))" :label="__('Anzeigen')" />
                     @endif
                 </td>
             </tr>
@@ -226,6 +244,9 @@
 
     @if ($bulk)
         </form>
+    @endif
+    @if ($canManage)
+        <form id="not-invoice-form" method="POST" action="{{ route('finance.incoming-invoices.not-invoice') }}" class="hidden">@csrf</form>
     @endif
 
     <x-slot:footer>

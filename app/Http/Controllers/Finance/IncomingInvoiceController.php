@@ -18,14 +18,16 @@ use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition, Inc
 use App\Exceptions\IncomingInvoiceDecisionException;
 use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
+use App\Jobs\Invoicing\AnalyzeIncomingInvoicePagesJob;
 use App\Models\Accounting\FixedAsset;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Invoicing\{IncomingEInvoice, IncomingEInvoiceTransfer};
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceTransferGate, IncomingInvoiceTransferService};
-use App\Support\{CarbonFmt, SortableQuery, Sqid};
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceQueue, IncomingInvoiceTransferGate, IncomingInvoiceTransferService};
+use App\Services\Invoicing\GiroCode\GiroCodeReader;
+use App\Support\{CarbonFmt, ErrorText, SortableQuery, Sqid};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Generators\InvoiceHtmlGenerator;
@@ -46,6 +48,7 @@ class IncomingInvoiceController extends Controller {
     public function __construct(
         private readonly IncomingEInvoiceService $eInvoices,
         private readonly IncomingInvoiceTransferService $transfers,
+        private readonly IncomingInvoiceQueue $queue,
     ) {}
 
     /** Reiter der Arbeitsliste (MVP-1110/1111): benannte Filterzustände. */
@@ -113,6 +116,9 @@ class IncomingInvoiceController extends Controller {
             // Sammelaktion (MVP-1224) auch für zugeordnete, noch nicht übergebene Eingänge: umhängen, aufheben.
             'bulkParties' => in_array($tab, ['assign', 'review', 'all'], true) && $user->canManageBilling() ? $this->assignmentOptions() : null,
             'bulkDiscard' => $tab === 'rejected' && $user->canManageBilling(),
+            // Durcharbeiten (MVP-1806): Einstieg beim ersten Eingang des Reiters.
+            'queue' => IncomingInvoiceQueue::from($tab),
+            'queueStart' => IncomingInvoiceQueue::from($tab) !== null ? $this->queue->first($tab, $user)?->document : null,
             'kindHints' => app(\App\Services\Invoicing\EInvoice\IncomingInvoiceKindHints::class),
         ]);
     }
@@ -139,6 +145,52 @@ class IncomingInvoiceController extends Controller {
 
         return redirect()->toList('finance.incoming-invoices.index')
             ->with($skipped > 0 ? 'warning' : 'success', __(':deleted Eingänge endgültig gelöscht, :skipped übersprungen.', ['deleted' => $deleted, 'skipped' => $skipped]));
+    }
+
+    /**
+     * „Keine Rechnung – löschen“ (MVP-1805) für die Auswahl oder einen Eingang
+     * (`only`): Zuordnung aufheben, ablehnen, verwerfen. Übergebene, schon
+     * entschiedene und gehaltene Eingänge bleiben mit Grund stehen.
+     */
+    public function notInvoice(Request $request): RedirectResponse {
+        $actor = $this->authorizeBilling();
+        $data = $request->validate([
+            'only' => ['nullable', 'string', 'max:64'],
+            'ids' => ['required_without:only', 'array', 'max:200'],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $single = isset($data['only']);
+        $ids = Sqid::decodeMany(IncomingEInvoice::class, $single ? [(string) $data['only']] : $data['ids']);
+        $deleted = 0;
+        /** @var array<string, int> $skipped */
+        $skipped = [];
+        $last = null;
+        foreach (IncomingEInvoice::query()->whereKey($ids)->get() as $incoming) {
+            try {
+                $this->eInvoices->dismissAsNoInvoice($incoming, $actor);
+                $deleted++;
+                $last = $incoming;
+            } catch (\RuntimeException $e) {
+                $reason = ErrorText::for($e);
+                $skipped[$reason] = ($skipped[$reason] ?? 0) + 1;
+            }
+        }
+        if ($single) {
+            if ($last === null) {
+                return back()->with('error', array_key_first($skipped) ?? (string) __('Der Eingang wurde nicht gefunden.'));
+            }
+            $next = $this->queue->continueUrl(IncomingInvoiceQueue::from($request->input('queue')), $actor, $last);
+
+            return ($next !== null ? redirect()->to($next) : redirect()->toList('finance.incoming-invoices.index'))
+                ->with('success', __('Eingang als „keine Rechnung“ gelöscht.'));
+        }
+        $message = (string) __(':deleted Eingänge als „keine Rechnung“ gelöscht, :skipped übersprungen.', ['deleted' => $deleted, 'skipped' => count($ids) - $deleted]);
+        if ($skipped !== []) {
+            arsort($skipped);
+            $message .= ' ' . __('Gründe: :reasons', ['reasons' => implode(' ', array_map(static fn (string $reason, int $count): string => $count . ' × ' . $reason, array_keys($skipped), $skipped))]);
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')->with($deleted < count($ids) ? 'warning' : 'success', $message);
     }
 
     /**
@@ -375,6 +427,23 @@ class IncomingInvoiceController extends Controller {
         return $back->with('success', __('Als kein Doppel bestätigt.'));
     }
 
+    /** GiroCode nachlesen (MVP-1807): der Stand „Lesewerkzeug fehlt“ stammt vom Eingang und heilt sonst nie. */
+    public function rereadGiroCode(IncomingEInvoice $incoming, GiroCodeReader $reader): RedirectResponse {
+        $this->authorizeBilling();
+        abort_if($incoming->document === null, 404);
+        Gate::authorize('view', $incoming->document);
+        if (! GiroCodeReader::lacksTool($incoming) || $incoming->isClosed()) {
+            return back()->with('error', __('incoming_pdf.girocode.reread.not_needed'));
+        }
+        if (! $reader->isAvailable()) {
+            return back()->with('error', __('incoming_pdf.girocode.reread.still_missing'));
+        }
+        $incoming->forceFill(['girocode' => ['status' => GiroCodeReader::PENDING]])->saveQuietly();
+        AnalyzeIncomingInvoicePagesJob::dispatch((int) $incoming->id, (int) $incoming->organization_id);
+
+        return back()->with('success', __('incoming_pdf.girocode.reread.queued'));
+    }
+
     public function decide(Request $request, \App\Models\Invoicing\IncomingEInvoice $incoming): RedirectResponse {
         $this->authorizeBilling();
 
@@ -390,8 +459,15 @@ class IncomingInvoiceController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        $redirect = redirect()->route('finance.incoming-invoices.show', $incoming->document)
-            ->with('success', __('Entscheidung gespeichert.'));
+        // Durcharbeiten (MVP-1806): verlässt der Eingang die Schlange, folgt der nächste.
+        $queue = IncomingInvoiceQueue::from($request->input('queue'));
+        $next = $this->queue->continueUrl($queue, $this->authUser(), $incoming);
+        $redirect = match (true) {
+            $next !== null => redirect()->to($next),
+            $queue !== null => redirect()->toList('finance.incoming-invoices.index'),
+            default => redirect()->route('finance.incoming-invoices.show', $incoming->document),
+        };
+        $redirect = $redirect->with('success', __('Entscheidung gespeichert.'));
 
         // Feature 117: Bei der Zahlungsfreigabe warnen, wenn dem Lieferanten
         // Pflichtnachweise fehlen. Sperren wäre hier zu spät — die Leistung
@@ -441,7 +517,7 @@ class IncomingInvoiceController extends Controller {
         return redirect()->toList('finance.incoming-invoices.index')->with($skipped !== [] ? 'warning' : 'success', $message);
     }
 
-    public function show(Document $document): View {
+    public function show(Request $request, Document $document): View {
         Gate::authorize('view', $document);
         abort_unless($document->document_type === DocumentType::Invoice, 404);
         $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->where('document_id', $document->id)->first();
@@ -462,9 +538,19 @@ class IncomingInvoiceController extends Controller {
 
         $organization = $incoming?->organization;
         $targets = $organization !== null ? $this->transfers->targets($organization) : [];
+        $user = $this->authUser();
+        $queue = IncomingInvoiceQueue::from($request->query('queue'));
+        $inQueue = $queue !== null && $incoming !== null && $this->queue->contains($queue, $user, $incoming);
 
         return view('finance.incoming-invoices.show', [
             'incoming' => $incoming,
+            // Durcharbeiten (MVP-1806): Stand und Nachbarn in der Schlange des Reiters.
+            'queue' => $inQueue ? $queue : null,
+            'queueNav' => $inQueue ? [
+                ...$this->queue->position($queue, $user, $incoming),
+                'previous' => $this->queue->previous($queue, $user, $incoming)?->document,
+                'next' => $this->queue->next($queue, $user, $incoming)?->document,
+            ] : null,
             'splitContainer' => $splitContainer,
             'transferTargets' => $targets,
             'transferJournals' => $incoming !== null && $targets !== [] ? $incoming->transfers()->get()->keyBy('target') : collect(),

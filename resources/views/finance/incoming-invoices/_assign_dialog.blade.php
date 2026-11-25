@@ -25,6 +25,10 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Zuordnen')"
 >
+    {{-- Durcharbeiten (MVP-1806): die Schlange reist mit, danach folgt der nächste Eingang. --}}
+    @if (\App\Services\Invoicing\EInvoice\IncomingInvoiceQueue::from(request('queue')) !== null)
+        <input type="hidden" name="queue" value="{{ request('queue') }}">
+    @endif
     @if ($kindHintLabel !== null)
         {{-- Belegart-Hinweis (MVP-1216): „Keine Rechnung“ ist vorbelegt, die Entscheidung bleibt beim Menschen. --}}
         <div class="alert alert-info alert-soft text-sm" role="status">

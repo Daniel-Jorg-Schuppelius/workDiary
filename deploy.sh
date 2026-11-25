@@ -118,6 +118,8 @@ if [ "$(id -u)" = "0" ] && [ -z "${DEPLOY_AS_OWNER:-}" ]; then
     fi
     runuser -u "$DEPLOY_OWNER" -- "$PHP_BIN" scripts/check-tools.php ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"} \
         || echo "  ⚠ Es fehlen weiterhin Werkzeuge (Paket nicht verfügbar?) — siehe Bericht." >&2
+    # GiroCodes nachlesen, die beim Eingang am fehlenden zbarimg scheiterten.
+    runuser -u "$DEPLOY_OWNER" -- "$PHP_BIN" artisan incoming-invoices:read-girocodes || true
     exit 0
 fi
 
@@ -307,6 +309,7 @@ elif [ ! -f "$TOOLS_INSTALLER" ]; then
 elif tools_can_install; then
     tools_install
     tools_report || echo "  ⚠ Es fehlen weiterhin Werkzeuge (Paket nicht verfügbar?) — siehe Bericht." >&2
+    "$PHP_BIN" artisan incoming-invoices:read-girocodes || true
 elif ! tools_report; then
     echo "  ⚠ Installation braucht root: Deploy als root starten (sudo ./deploy.sh — läuft dann als $(id -un) und installiert selbst) oder nachholen:" >&2
     echo "    sudo bash $PWD/$TOOLS_INSTALLER" >&2

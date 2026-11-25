@@ -2324,6 +2324,7 @@ return [
         'questions_per_attempt' => 'Domande per tentativo',
         'questions_per_attempt_percent' => 'Domande per tentativo (%)',
         'queue' => 'Coda',
+        'only' => 'Documento',
         'queue_group' => 'Gruppo',
         'queue_group.*' => 'Gruppo',
         'queue_id' => 'Coda',

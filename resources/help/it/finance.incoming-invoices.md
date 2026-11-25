@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 12
+version: 15
 keywords:
     - più aliquote
     - fattura fornitore
@@ -193,6 +193,26 @@ comprendono «è», «contiene», «inizia con», «termina con» e «corrispond
 (espressione regolare). Azioni: scartare, archiviare come non è una fattura,
 assegnare a una parte. Vince la prima regola corrispondente; le regole si
 applicano al recupero, al caricamento e al nuovo riconoscimento.
+
+**Non è una fattura – elimina:** rimuova pubblicità, bolle di consegna o
+immagini di firma in un solo passaggio: con l’icona del cestino nella riga,
+con «Non è una fattura – elimina» per la selezione oppure nella pagina di
+dettaglio. Giustificativo, documento e file vengono rimossi e un’eventuale
+assegnazione viene prima annullata; resta la voce di audit. È possibile solo
+per i documenti aperti: quelli approvati, trasferiti o sottoposti a blocco
+legale restano.
+
+WorkDiary ricorda un file eliminato in questo modo: se lo stesso file
+accompagna un’e-mail successiva, ad esempio le condizioni generali, non viene
+più accettato. In «Regole» sono elencati i file eliminati con «Consenti di
+nuovo»; anche un caricamento manuale lo consente di nuovo.
+
+**Elabora in sequenza:** nelle schede «Da assegnare» e «Da verificare»,
+«Elabora in sequenza» apre il primo documento. L’intestazione mostra la
+posizione («3 di 17») e «Avanti» porta al successivo. Dopo l’assegnazione, la
+decisione o l’eliminazione, il documento successivo segue da sé; finché un
+documento resta nella scheda, ad esempio dopo l’inserimento dei valori, rimane
+aperto. Alla fine della coda tornano i documenti saltati, poi l’elenco.
 
 I documenti rifiutati si trovano nella scheda «Rifiutato», dove può eliminarli
 definitivamente. Trascorso il periodo impostato (30 giorni per impostazione
@@ -446,3 +466,8 @@ vale come nuova coordinata bancaria e deve essere confermata prima del
 pagamento; entra nell’anagrafica del fornitore solo se qualcuno la inserisce lì
 espressamente. Ogni conferma vale solo per l’IBAN confermato — se cambia, la
 proposta di pagamento blocca di nuovo.
+
+Se lo strumento di lettura `zbarimg` non era disponibile alla ricezione, la
+scheda mostra «GiroCode non leggibile» con il pulsante «Leggi di nuovo»; dopo
+l’installazione il deploy recupera la lettura dei documenti aperti (`php
+artisan incoming-invoices:read-girocodes`).

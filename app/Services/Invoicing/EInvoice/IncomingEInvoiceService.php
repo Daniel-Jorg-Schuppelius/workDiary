@@ -314,6 +314,11 @@ class IncomingEInvoiceService {
         if ($duplicate !== null) {
             return ['status' => 'duplicate', 'incoming' => $duplicate, 'document' => null];
         }
+        // Von Hand hochgeladen: eine früher als „keine Rechnung“ gelöschte Datei ist damit wieder zugelassen (MVP-1808).
+        if ($source === 'upload') {
+            \App\Models\Invoicing\IncomingDismissedFile::query()->withoutGlobalScopes()
+                ->where('organization_id', $actor->organization_id)->where('sha256', $sha256)->delete();
+        }
 
         // Dateisicherheitsprüfung (Feature 066, Eingangsverarbeitung Schritt 3):
         // nach Hash/Dublette, vor dem Parsen. Alle Kanäle laufen hier durch,
@@ -369,6 +374,11 @@ class IncomingEInvoiceService {
         $seen = [];
         foreach ($candidates as $attachment) {
             $sha256 = CryptoHelper::hash($attachment->content);
+            if ($this->isDismissedFile($organizationId, $sha256)) {
+                $result['discarded']++;
+
+                continue;
+            }
             if (isset($seen[$sha256]) || $this->duplicateOf($organizationId, $sha256) !== null) {
                 $result['duplicates']++;
 
@@ -844,6 +854,43 @@ class IncomingEInvoiceService {
                 app(\App\Services\Document\DocumentService::class)->purge($document, $actor, $reason);
             }
         });
+    }
+
+    /**
+     * „Keine Rechnung – löschen“ von Hand (MVP-1805): Zuordnung aufheben,
+     * ablehnen und verwerfen in einem Schritt. Nur offene Eingänge ohne
+     * Übergabe; scheitert das Verwerfen (Legal Hold), bleibt alles, wie es war.
+     */
+    public function dismissAsNoInvoice(\App\Models\Invoicing\IncomingEInvoice $incoming, \App\Models\Platform\User $actor): void {
+        $open = [\App\Enums\Invoicing\IncomingEInvoiceStatus::Received, \App\Enums\Invoicing\IncomingEInvoiceStatus::Question];
+        $handedOver = [\App\Enums\Invoicing\IncomingInvoiceTransferStatus::Transferred->value, \App\Enums\Invoicing\IncomingInvoiceTransferStatus::Linked->value];
+        if ($incoming->transferred_at !== null || ! in_array($incoming->status, $open, true)
+            || $incoming->transfers()->whereIn('status', $handedOver)->exists()) {
+            throw new \RuntimeException((string) __('Nur offene, nicht übergebene Eingänge lassen sich als „keine Rechnung“ löschen.'));
+        }
+        $reason = (string) __('Keine Rechnung — von Hand gelöscht.');
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($incoming, $actor, $reason): void {
+            if ($incoming->supplier_id !== null || $incoming->customer_id !== null) {
+                app(IncomingInvoiceMatcher::class)->unassign($incoming, $actor);
+            }
+            app(IncomingInvoiceRules::class)->reject($incoming, $reason, $actor);
+            $this->discard($incoming, $reason, $actor);
+            // Dieselbe Datei nimmt das Rechnungspostfach nicht wieder auf (MVP-1808).
+            \App\Models\Invoicing\IncomingDismissedFile::query()->withoutGlobalScopes()->firstOrCreate(
+                ['organization_id' => $incoming->organization_id, 'sha256' => $incoming->sha256],
+                ['file_name' => StringHelper::trimToNull(mb_substr((string) $incoming->document?->title, 0, 255)), 'created_by' => $actor->id],
+            );
+        });
+    }
+
+    /** Von Hand als „keine Rechnung“ gelöschte Datei (MVP-1808); zählt den Treffer. */
+    private function isDismissedFile(int $organizationId, string $sha256): bool {
+        $file = \App\Models\Invoicing\IncomingDismissedFile::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)->where('sha256', $sha256)->first();
+        $file?->forceFill(['hits' => $file->hits + 1, 'last_matched_at' => now()])->save();
+
+        return $file !== null;
     }
 
     /**

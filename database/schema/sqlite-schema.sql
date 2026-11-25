@@ -26348,6 +26348,23 @@ CREATE INDEX "acc_voucher_org_number_idx" on "accounting_vouchers"(
   "organization_id",
   "voucher_number"
 );
+CREATE TABLE IF NOT EXISTS "incoming_dismissed_files"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "sha256" varchar not null,
+  "file_name" varchar,
+  "hits" integer not null default '0',
+  "last_matched_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "incoming_dismissed_files_org_sha_unique" on "incoming_dismissed_files"(
+  "organization_id",
+  "sha256"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -27495,3 +27512,4 @@ INSERT INTO migrations VALUES(1143,'2027_04_26_120000_add_stock_delivery_to_clai
 INSERT INTO migrations VALUES(1144,'2027_04_27_100000_add_is_direct_billing_to_resale_periods',2);
 INSERT INTO migrations VALUES(1145,'2027_04_28_100000_add_deviation_note_to_resale_periods',3);
 INSERT INTO migrations VALUES(1146,'2027_04_29_100000_add_mirror_number_indexes',4);
+INSERT INTO migrations VALUES(1147,'2027_04_30_100000_create_incoming_dismissed_files_table',5);

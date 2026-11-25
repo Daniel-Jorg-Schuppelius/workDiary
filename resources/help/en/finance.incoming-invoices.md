@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 12
+version: 15
 keywords:
     - several tax rates
     - supplier invoice
@@ -180,6 +180,25 @@ amount (`amount_gross`) and recognition (`recognition`); operators include
 expression). Actions: discard, file as not an invoice, assign to a party. The
 first matching rule wins; rules apply on retrieval, on upload and on
 re-recognition.
+
+**Not an invoice – delete:** remove advertising, delivery notes or signature
+images in one step: with the bin icon in the row, with “Not an invoice –
+delete” for the selection, or on the detail page. Record, document and files
+are removed and any assignment is lifted first; the audit entry remains. This
+only works for open documents: approved, transferred and legally held ones
+stay.
+
+WorkDiary remembers a file deleted this way: if the same file comes with a
+later email, for example the terms and conditions, it is not accepted again.
+“Rules” lists the deleted files with “Allow again”; a manual upload also
+allows the file again.
+
+**Work through:** in the “To assign” and “To review” tabs, “Work through”
+opens the first document. The header shows the position (“3 of 17”) and
+“Next” leads to the following one. After assigning, deciding or deleting, the
+next document follows by itself; as long as a document is still in the tab,
+for example after entering values, it stays open. At the end of the queue
+skipped documents come up again, then the list.
 
 Rejected documents are listed in the “Rejected” tab, where you can delete them
 permanently. After the configured period (default 30 days) retention proposes
@@ -414,3 +433,8 @@ If no bank account is stored for the supplier, it counts as new bank details
 and must be confirmed before payment; it only enters the supplier master data
 if someone enters it there explicitly. Every confirmation applies only to the
 confirmed IBAN — if it changes, the payment proposal blocks again.
+
+If the reading tool `zbarimg` was not available on receipt, the card shows
+“GiroCode not readable” with the button “Read again”; after installation the
+deploy catches up on open documents (`php artisan incoming-invoices:read-
+girocodes`).

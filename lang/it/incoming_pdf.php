@@ -110,6 +110,12 @@ return [
             'too_large' => 'Il file è troppo grande per essere letto.',
             'scan_failed' => 'Si è verificato un errore durante la lettura.',
         ],
+        'reread' => [
+            'action' => 'Leggi di nuovo',
+            'queued' => 'Il GiroCode viene riletto in background.',
+            'still_missing' => 'Lo strumento di lettura (zbarimg) manca ancora. Dopo l’installazione riavviare la coda (queue:restart).',
+            'not_needed' => 'Non c’è nulla da rileggere per questo documento.',
+        ],
         'field' => [
             'name' => 'Beneficiario',
             'iban' => 'IBAN',

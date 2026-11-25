@@ -133,7 +133,19 @@ final class GiroCodeReader {
     public static function isAwaited(IncomingEInvoice $incoming): bool {
         $status = ((array) $incoming->girocode)['status'] ?? null;
 
-        return $incoming->girocode === null || $status === self::PENDING;
+        return $incoming->girocode === null || $status === self::PENDING || self::lacksTool($incoming);
+    }
+
+    /** Gelesen, als das Lesewerkzeug fehlte (MVP-1807): der Stand ist kein Befund am Beleg und wird nachgeholt. */
+    public static function lacksTool(IncomingEInvoice $incoming): bool {
+        $reading = (array) $incoming->girocode;
+
+        return ($reading['status'] ?? null) === self::UNREADABLE && ($reading['reason'] ?? null) === 'tool_missing';
+    }
+
+    /** Lesewerkzeug vorhanden. */
+    public function isAvailable(): bool {
+        return $this->codes->isAvailable();
     }
 
     /**

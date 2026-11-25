@@ -24,7 +24,7 @@ use App\Models\Supplier\Supplier;
 use App\Rules\Iban;
 use App\Services\Accounting\Posting\PostingSourceRegistry;
 use App\Services\Finance\Accounting\ContactPushService;
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceParties, IncomingInvoiceRules, IncomingInvoiceTaxBreakdown, IncomingInvoiceTaxCaseResolver, IncomingInvoiceTransferService};
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceParties, IncomingInvoiceQueue, IncomingInvoiceRules, IncomingInvoiceTaxBreakdown, IncomingInvoiceTaxCaseResolver, IncomingInvoiceTransferService};
 use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
@@ -131,7 +131,7 @@ class IncomingInvoiceAssignmentController extends Controller {
                 return back()->with('error', ErrorText::for($e));
             }
 
-            return redirect()->toList('finance.incoming-invoices.index')->with('success', __('Zuordnung aufgehoben.'));
+            return $this->backToWork($incoming)->with('success', __('Zuordnung aufgehoben.'));
         }
 
         $direction = DocumentDirection::from((string) $data['direction']);
@@ -171,7 +171,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             $followers += $this->matcher->rematchOpen((int) $incoming->organization_id, $incoming)['assigned'];
         }
 
-        return redirect()->toList('finance.incoming-invoices.index')->with('success', $followers > 0
+        return $this->backToWork($incoming)->with('success', $followers > 0
             ? trans_choice('Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.', $followers, ['count' => $followers])
             : __('Eingang zugeordnet.'));
     }
@@ -264,7 +264,14 @@ class IncomingInvoiceAssignmentController extends Controller {
             ]);
         }
 
-        return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
+        return $this->backToWork($incoming)->with('success', $message);
+    }
+
+    /** Durcharbeiten (MVP-1806): derselbe Eingang, solange er in der Schlange steht, sonst der nächste; ohne Schlange die Liste. */
+    private function backToWork(IncomingEInvoice $incoming): RedirectResponse {
+        $next = app(IncomingInvoiceQueue::class)->continueUrl(IncomingInvoiceQueue::from(request()->input('queue')), $this->authUser(), $incoming);
+
+        return $next !== null ? redirect()->to($next) : redirect()->toList('finance.incoming-invoices.index');
     }
 
     /** Dialog: Steuerfall der Eingangsrechnung (MVP-1621), vorbelegt aus Beleg und Lieferant. */
@@ -656,6 +663,6 @@ class IncomingInvoiceAssignmentController extends Controller {
                 : __('Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.', ['party' => $party]));
         }
 
-        return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
+        return $this->backToWork($incoming)->with('success', $message);
     }
 }

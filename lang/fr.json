@@ -11261,5 +11261,21 @@
     "Ein projektgebundener Vertrag gilt nur über sein Projekt und lässt sich nicht an ein Asset binden.": "Un contrat lié à un projet ne s’applique que par son projet et ne peut pas être rattaché à un actif.",
     "Gilt für Service-Tickets zu diesem Asset vor den Verträgen von Projekt und Kunde. Zur Wahl stehen Verträge des gespeicherten Kunden und Verträge ohne Kundenbindung.": "S’applique aux tickets de service de cet actif avant les contrats du projet et du client. Vous pouvez choisir les contrats du client enregistré et les contrats sans client.",
     "Nur Wiederholdefekte": "Défauts récurrents uniquement",
-    "Keine Wiederholdefekte im gewählten Zeitraum.": "Aucun défaut récurrent sur la période sélectionnée."
+    "Keine Wiederholdefekte im gewählten Zeitraum.": "Aucun défaut récurrent sur la période sélectionnée.",
+    "Nur offene, nicht übergebene Eingänge lassen sich als „keine Rechnung“ löschen.": "Seules les entrées ouvertes et non transmises peuvent être supprimées comme « pas une facture ».",
+    "Keine Rechnung — von Hand gelöscht.": "Pas une facture — supprimée manuellement.",
+    "Der Eingang wurde nicht gefunden.": "L’entrée est introuvable.",
+    "Eingang als „keine Rechnung“ gelöscht.": "Entrée supprimée comme « pas une facture ».",
+    ":deleted Eingänge als „keine Rechnung“ gelöscht, :skipped übersprungen.": ":deleted entrées supprimées comme « pas une facture », :skipped ignorées.",
+    "Als „keine Rechnung“ löschen? Beleg, Dokument und Dateien werden entfernt, eine Zuordnung wird aufgehoben; es bleibt der Audit-Eintrag.": "Supprimer comme « pas une facture » ? La pièce, le document et les fichiers sont supprimés et toute affectation est levée ; l’entrée d’audit est conservée.",
+    "Eingänge dieses Reiters nacheinander bearbeiten: nach jeder Aktion folgt der nächste.": "Traiter les entrées de cet onglet l’une après l’autre : la suivante s’affiche après chaque action.",
+    "Durcharbeiten": "Traiter à la suite",
+    "Keine Rechnung – löschen": "Pas une facture – supprimer",
+    ":position von :total": ":position sur :total",
+    "Voriger Eingang": "Entrée précédente",
+    "Die Datei wird wieder aufgenommen.": "Le fichier est de nouveau accepté.",
+    "Gelöschte Dateien": "Fichiers supprimés",
+    "Von Hand als „keine Rechnung“ gelöscht. Dieselbe Datei wird aus dem Rechnungspostfach nicht wieder aufgenommen; ein Upload von Hand lässt sie wieder zu.": "Supprimés manuellement comme « pas une facture ». Le même fichier n’est plus repris depuis la boîte de factures ; un import manuel l’autorise de nouveau.",
+    "Datei wieder zulassen? Sie wird beim nächsten Eingang wieder aufgenommen.": "Autoriser de nouveau le fichier ? Il sera repris à sa prochaine arrivée.",
+    "Wieder zulassen": "Autoriser de nouveau"
 }

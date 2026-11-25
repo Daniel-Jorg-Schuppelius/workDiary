@@ -10,6 +10,25 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Rechnungseingang (`MVP-1808`): Eine als „keine Rechnung“ gelöschte Datei
+  nimmt das Rechnungspostfach nicht wieder auf (etwa die AGB, die jeder Mail
+  beiliegt). Die Seite „Regeln“ zeigt die gelöschten Dateien mit Treffern und
+  „Wieder zulassen“; ein Upload von Hand lässt die Datei ebenfalls wieder zu.
+  Neue Tabelle `incoming_dismissed_files` (Migration `2027_04_30_100000`).
+- Rechnungseingang (`MVP-1807`): Ein GiroCode, dessen Lesung beim Eingang am
+  fehlenden `zbarimg` scheiterte, wird nachgelesen — über „Erneut lesen“ an der
+  GiroCode-Karte und über `php artisan incoming-invoices:read-girocodes`, das
+  der Deploy nach der Werkzeuginstallation aufruft. Bisher blieb „Das
+  Lesewerkzeug fehlt“ am Beleg stehen, auch nachdem `zbar-tools` installiert war.
+- Rechnungseingang (`MVP-1805`, `MVP-1806`): Eingänge, die keine Rechnung
+  sind, lassen sich in einem Schritt löschen — über den Papierkorb in der
+  Zeile, „Keine Rechnung – löschen“ für die Auswahl oder auf der Detailseite.
+  Beleg, Dokument und Dateien werden entfernt, eine Zuordnung wird vorher
+  aufgehoben; es bleibt der Audit-Eintrag. Freigegebene, übergebene und per
+  Legal Hold gehaltene Eingänge bleiben stehen. „Durcharbeiten“ in den Reitern
+  „Zuzuordnen“ und „Zu prüfen“ öffnet die Eingänge nacheinander: Der Kopf zeigt
+  den Stand, nach dem Zuordnen, Entscheiden oder Löschen folgt der nächste
+  Eingang von selbst.
 - Betrieb (`MVP-1792`, `MVP-1793`): Anfragen ab 1,5 Sekunden stehen mit Route,
   Zahl der Datenbankabfragen und Datenbankzeit im Log (`PERF_SLOW_REQUEST_MS`,
   `0` schaltet ab; ohne URL-Parameter und ohne Nutzer). Die Diagnose zeigt im

@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 12
+version: 15
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -195,6 +195,27 @@ los adjuntos (`attachment_names`), el nombre de archivo (`file_name`), el país
 archivar como no es una factura, asignar a una parte. Gana la primera regla
 que coincide; las reglas se aplican en la recogida, en la subida y en el
 nuevo reconocimiento.
+
+**No es una factura: eliminar:** elimine publicidad, albaranes o imágenes de
+firma en un solo paso: con el icono de papelera de la fila, con «No es una
+factura: eliminar» para la selección o en la página de detalle. Se eliminan
+el comprobante, el documento y los archivos, y antes se anula cualquier
+asignación; se conserva la entrada de auditoría. Solo es posible con entradas
+abiertas: las aprobadas, las transferidas y las retenidas legalmente
+permanecen.
+
+WorkDiary recuerda un archivo eliminado de este modo: si el mismo archivo
+llega con un correo posterior, por ejemplo las condiciones generales, no
+vuelve a admitirse. En «Reglas» figuran los archivos eliminados con «Volver a
+permitir»; una subida manual también lo vuelve a permitir.
+
+**Procesar en serie:** en las pestañas «Por asignar» y «Por revisar»,
+«Procesar en serie» abre la primera entrada. El encabezado muestra la
+posición («3 de 17») y «Siguiente» lleva a la próxima. Tras asignar, decidir
+o eliminar, la siguiente entrada aparece por sí sola; mientras una entrada
+siga en la pestaña, por ejemplo tras registrar los valores, permanece
+abierta. Al final de la cola vuelven las entradas omitidas y después la
+lista.
 
 Los documentos rechazados figuran en la pestaña «Rechazado», donde puede
 eliminarlos definitivamente. Tras el plazo configurado (30 días por defecto),
@@ -444,3 +465,8 @@ nuevo y debe confirmarse antes del pago; solo pasa a los datos maestros del
 proveedor si alguien lo introduce allí expresamente. Cada confirmación vale
 solo para el IBAN confirmado: si cambia, la propuesta de pago vuelve a
 bloquear.
+
+Si la herramienta de lectura `zbarimg` no estaba disponible al recibir la
+entrada, la tarjeta muestra «GiroCode no legible» con el botón «Leer de
+nuevo»; tras la instalación, el despliegue recupera la lectura de las entradas
+abiertas (`php artisan incoming-invoices:read-girocodes`).

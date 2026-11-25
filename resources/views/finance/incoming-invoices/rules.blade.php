@@ -42,6 +42,24 @@
             </ul>
         </x-card>
     @endif
+    @if ($dismissedFiles->isNotEmpty())
+        {{-- Als „keine Rechnung“ gelöschte Dateien (MVP-1808): dieselbe Datei nimmt das Rechnungspostfach nicht wieder auf. --}}
+        <x-card :title="__('Gelöschte Dateien')" :subtitle="__('Von Hand als „keine Rechnung“ gelöscht. Dieselbe Datei wird aus dem Rechnungspostfach nicht wieder aufgenommen; ein Upload von Hand lässt sie wieder zu.')">
+            <ul class="divide-y divide-base-200 text-sm">
+                @foreach ($dismissedFiles as $file)
+                    <li class="flex flex-wrap items-center justify-between gap-2 py-1">
+                        <span>
+                            <strong>{{ $file->file_name ?? __('Ohne Namen') }}</strong>
+                            <span class="text-xs text-muted"> · {{ $file->created_at?->fdatetime() }}@if ($file->creator) · {{ $file->creator->name }}@endif · {{ trans_choice(':count Treffer|:count Treffer', $file->hits, ['count' => $file->hits]) }}@if ($file->last_matched_at) ({{ $file->last_matched_at->fdatetime() }})@endif</span>
+                        </span>
+                        <x-action-form :action="route('finance.incoming-invoices.rules.files.destroy', $file)" method="DELETE" :confirm="__('Datei wieder zulassen? Sie wird beim nächsten Eingang wieder aufgenommen.')" class="inline">
+                            <x-button type="submit" size="xs" icon="undo">{{ __('Wieder zulassen') }}</x-button>
+                        </x-action-form>
+                    </li>
+                @endforeach
+            </ul>
+        </x-card>
+    @endif
     <x-table scroll="flex" :pinRows="true" :zebra="true">
         <x-slot:head>
             <tr>

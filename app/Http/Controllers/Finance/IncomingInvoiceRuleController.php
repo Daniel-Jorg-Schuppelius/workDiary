@@ -16,7 +16,7 @@ use App\Enums\Billing\DocumentDirection;
 use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Automation\AutomationRule;
-use App\Models\Invoicing\InvoiceSenderRule;
+use App\Models\Invoicing\{IncomingDismissedFile, InvoiceSenderRule};
 use App\Services\Invoicing\Automation\IncomingInvoiceReceivedTrigger;
 use App\Services\Invoicing\EInvoice\{IncomingInvoiceParties, IncomingInvoiceRules};
 use App\Support\ErrorText;
@@ -48,6 +48,8 @@ class IncomingInvoiceRuleController extends Controller {
             'canEditAutomations' => $user->isAdmin(),
             // Am Sammelkontakt geparkte Belege (MVP-1225).
             'parked' => $this->parties->parkedAtCollective((int) $user->organization_id),
+            // Als „keine Rechnung“ gelöschte Dateien (MVP-1808).
+            'dismissedFiles' => IncomingDismissedFile::query()->with('creator:id,name')->latest('id')->limit(200)->get(),
         ]);
     }
 
@@ -85,6 +87,14 @@ class IncomingInvoiceRuleController extends Controller {
         $rule->delete();
 
         return redirect()->toList('finance.incoming-invoices.rules')->with('success', __('Regel gelöscht.'));
+    }
+
+    /** Gelöschte Datei wieder zulassen (MVP-1808). */
+    public function destroyDismissedFile(IncomingDismissedFile $file): RedirectResponse {
+        $this->authorizeBilling();
+        $file->delete();
+
+        return redirect()->toList('finance.incoming-invoices.rules')->with('success', __('Die Datei wird wieder aufgenommen.'));
     }
 
     public function destroySenderRule(InvoiceSenderRule $rule): RedirectResponse {

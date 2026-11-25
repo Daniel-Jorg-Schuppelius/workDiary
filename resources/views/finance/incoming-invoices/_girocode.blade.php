@@ -42,6 +42,12 @@
                     @if (isset($giroReasons[$giroReading['reason'] ?? '']))
                         <span class="text-muted">{{ $giroReasons[$giroReading['reason']] }}</span>
                     @endif
+                    {{-- Nachlesen (MVP-1807): der Stand vom Eingang heilt nicht von selbst. --}}
+                    @if (\App\Services\Invoicing\GiroCode\GiroCodeReader::lacksTool($incoming) && ! $incoming->isClosed() && (auth()->user()?->canManageBilling() ?? false))
+                        <x-action-form :action="route('finance.incoming-invoices.girocode.reread', $incoming)">
+                            <x-icon-btn icon="refresh" size="xs" tone="outline" type="submit" show-label>{{ __('incoming_pdf.girocode.reread.action') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
                 @elseif ($giroStatus === \App\Services\Invoicing\GiroCode\GiroCodeReader::INVALID)
                     {{ __('incoming_pdf.girocode.status.invalid') }}
                 @else

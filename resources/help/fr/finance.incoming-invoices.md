@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 12
+version: 15
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -200,6 +200,27 @@ par », « se termine par » et « correspond à » (expression régulière). Ac
 rejeter et supprimer, classer comme pas une facture, attribuer à une partie. La
 première règle correspondante l’emporte ; les règles s’appliquent à la
 relève, à l’import et à la nouvelle reconnaissance.
+
+**Pas une facture – supprimer :** supprimez publicités, bons de livraison ou
+images de signature en une seule étape : avec l’icône de corbeille de la
+ligne, avec « Pas une facture – supprimer » pour la sélection ou sur la page
+de détail. La pièce, le document et les fichiers sont supprimés et toute
+affectation est levée au préalable ; l’entrée d’audit est conservée. Cela ne
+vaut que pour les entrées ouvertes : celles qui sont validées, transmises ou
+sous conservation légale restent.
+
+WorkDiary mémorise un fichier supprimé ainsi : si le même fichier accompagne
+un e-mail ultérieur, par exemple les conditions générales, il n’est plus
+repris. « Règles » liste les fichiers supprimés avec « Autoriser de nouveau »
+; un import manuel l’autorise également de nouveau.
+
+**Traiter à la suite :** dans les onglets « À attribuer » et « À vérifier »,
+« Traiter à la suite » ouvre la première entrée. L’en-tête indique la position
+(« 3 sur 17 ») et « Suivant » mène à la prochaine. Après une affectation, une
+décision ou une suppression, l’entrée suivante s’affiche d’elle-même ; tant
+qu’une entrée reste dans l’onglet, par exemple après la saisie des valeurs,
+elle reste ouverte. À la fin de la file, les entrées ignorées reviennent,
+puis la liste.
 
 Les documents refusés figurent dans l’onglet « Refusé », où vous pouvez les
 supprimer définitivement. Après le délai configuré (30 jours par défaut), la
@@ -457,3 +478,8 @@ coordonnée bancaire et doit être confirmé avant le paiement ; il n’entre da
 les données de base du fournisseur que si quelqu’un l’y saisit expressément.
 Chaque confirmation ne vaut que pour l’IBAN confirmé — s’il change, la
 proposition de paiement bloque à nouveau.
+
+Si l’outil de lecture `zbarimg` n’était pas disponible à la réception, la
+carte affiche « GiroCode illisible » avec le bouton « Relire » ; après
+l’installation, le déploiement rattrape la lecture des entrées ouvertes (`php
+artisan incoming-invoices:read-girocodes`).

@@ -11261,5 +11261,21 @@
     "Ein projektgebundener Vertrag gilt nur über sein Projekt und lässt sich nicht an ein Asset binden.": "A project-bound contract only applies through its project and cannot be bound to an asset.",
     "Gilt für Service-Tickets zu diesem Asset vor den Verträgen von Projekt und Kunde. Zur Wahl stehen Verträge des gespeicherten Kunden und Verträge ohne Kundenbindung.": "Applies to service tickets for this asset ahead of the project and customer contracts. You can choose contracts of the saved customer and contracts without a customer.",
     "Nur Wiederholdefekte": "Repeat defects only",
-    "Keine Wiederholdefekte im gewählten Zeitraum.": "No repeat defects in the selected period."
+    "Keine Wiederholdefekte im gewählten Zeitraum.": "No repeat defects in the selected period.",
+    "Nur offene, nicht übergebene Eingänge lassen sich als „keine Rechnung“ löschen.": "Only open documents that have not been transferred can be deleted as \"not an invoice\".",
+    "Keine Rechnung — von Hand gelöscht.": "Not an invoice — deleted manually.",
+    "Der Eingang wurde nicht gefunden.": "The document was not found.",
+    "Eingang als „keine Rechnung“ gelöscht.": "Document deleted as \"not an invoice\".",
+    ":deleted Eingänge als „keine Rechnung“ gelöscht, :skipped übersprungen.": ":deleted documents deleted as \"not an invoice\", :skipped skipped.",
+    "Als „keine Rechnung“ löschen? Beleg, Dokument und Dateien werden entfernt, eine Zuordnung wird aufgehoben; es bleibt der Audit-Eintrag.": "Delete as \"not an invoice\"? Record, document and files are removed and any assignment is lifted; the audit entry remains.",
+    "Eingänge dieses Reiters nacheinander bearbeiten: nach jeder Aktion folgt der nächste.": "Work through the documents of this tab one after another: the next one follows after each action.",
+    "Durcharbeiten": "Work through",
+    "Keine Rechnung – löschen": "Not an invoice – delete",
+    ":position von :total": ":position of :total",
+    "Voriger Eingang": "Previous document",
+    "Die Datei wird wieder aufgenommen.": "The file will be accepted again.",
+    "Gelöschte Dateien": "Deleted files",
+    "Von Hand als „keine Rechnung“ gelöscht. Dieselbe Datei wird aus dem Rechnungspostfach nicht wieder aufgenommen; ein Upload von Hand lässt sie wieder zu.": "Deleted manually as \"not an invoice\". The same file is not accepted again from the invoice mailbox; a manual upload allows it again.",
+    "Datei wieder zulassen? Sie wird beim nächsten Eingang wieder aufgenommen.": "Allow the file again? It will be accepted on its next arrival.",
+    "Wieder zulassen": "Allow again"
 }

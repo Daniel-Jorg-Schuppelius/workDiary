@@ -19,32 +19,59 @@
 @section('content')
 @php($unparsed = $parsed === null || $summary === null)
 @php($manual = (array) data_get($incoming?->summary, 'manual', []))
+@php($canWork = $incoming !== null && $incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected && (auth()->user()?->canManageBilling() ?? false))
+@php($queueParams = $queue !== null ? ['queue' => $queue] : [])
 @php($canCapture = $incoming !== null && $incoming->recognition !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured && $incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected && (auth()->user()?->canManageBilling() ?? false))
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar back-route="finance.incoming-invoices.index" :back-label="__('Zur Liste')">
+        {{-- Beim Durcharbeiten (MVP-1806) führt der Rückpfeil zur Liste, nicht zum vorigen Eingang. --}}
+        <x-page-toolbar back-route="finance.incoming-invoices.index" :back-label="__('Zur Liste')" :back-origin="$queueNav === null">
             <x-slot:title>{{ $document->title }}</x-slot:title>
             <x-slot:subtitle>{{ $document->description }}</x-slot:subtitle>
             @if ($incoming !== null)
                 <x-slot:badges>
                     <x-origin-badge :subject="$incoming" />
+                    @if ($queueNav !== null)
+                        <x-status-badge tone="info">{{ $queue === 'review' ? __('Zu prüfen') : __('Zuzuordnen') }} · {{ __(':position von :total', ['position' => $queueNav['position'], 'total' => $queueNav['total']]) }}</x-status-badge>
+                    @endif
                 </x-slot:badges>
             @endif
             <x-slot:actions>
+                {{-- Durcharbeiten (MVP-1806): Nachbarn in der Schlange des Reiters. --}}
+                @if ($queueNav !== null)
+                    @if ($queueNav['previous'] !== null)
+                        <x-icon-btn icon="chevron_left" tone="outline" size="sm" :href="route('finance.incoming-invoices.show', ['document' => $queueNav['previous']] + $queueParams)" :label="__('Voriger Eingang')" />
+                    @endif
+                    @if ($queueNav['next'] !== null)
+                        <x-icon-btn icon="chevron_right" tone="outline" size="sm" :href="route('finance.incoming-invoices.show', ['document' => $queueNav['next']] + $queueParams)" show-label>{{ __('Weiter') }}</x-icon-btn>
+                    @endif
+                @endif
                 {{-- Zuordnen und Werte erfassen (MVP-1110). --}}
-                @if ($incoming !== null && $incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected && (auth()->user()?->canManageBilling() ?? false))
+                @if ($canWork)
                     <x-icon-btn icon="rule" tone="primary" size="sm" data-entry-modal-trigger
-                                :href="route('finance.incoming-invoices.assign.form', $incoming)"
+                                :href="route('finance.incoming-invoices.assign.form', ['incoming' => $incoming] + $queueParams)"
                                 show-label>{{ __('Zuordnen') }}</x-icon-btn>
                     @if ($canCapture)
                         <x-icon-btn icon="edit_note" tone="outline" size="sm" data-entry-modal-trigger
-                                    :href="route('finance.incoming-invoices.values.form', $incoming)"
+                                    :href="route('finance.incoming-invoices.values.form', ['incoming' => $incoming] + $queueParams)"
                                     show-label>{{ $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted || $manual !== [] ? __('Werte korrigieren') : __('Werte erfassen') }}</x-icon-btn>
                     @endif
                     @if ($canTemplate)
                         <x-icon-btn icon="crop_free" tone="outline" size="sm"
                                     :href="route('finance.incoming-invoices.template.edit', $document)"
                                     show-label>{{ __('Vorlage') }}</x-icon-btn>
+                    @endif
+                    {{-- Keine Rechnung (MVP-1805): ablehnen und verwerfen in einem Schritt. --}}
+                    @if (in_array($incoming->status, [\App\Enums\Invoicing\IncomingEInvoiceStatus::Received, \App\Enums\Invoicing\IncomingEInvoiceStatus::Question], true))
+                        <x-action-form :action="route('finance.incoming-invoices.not-invoice')"
+                                       :confirm="__('Als „keine Rechnung“ löschen? Beleg, Dokument und Dateien werden entfernt, eine Zuordnung wird aufgehoben; es bleibt der Audit-Eintrag.')"
+                                       confirm-icon="delete" confirm-tone="error" :confirm-label="__('Keine Rechnung – löschen')">
+                            <input type="hidden" name="only" value="{{ $incoming->sqid }}">
+                            @if ($queue !== null)
+                                <input type="hidden" name="queue" value="{{ $queue }}">
+                            @endif
+                            <x-icon-btn icon="delete" tone="error" size="sm" type="submit" :placement="$queue !== null ? 'bar' : 'danger'" show-label>{{ __('Keine Rechnung – löschen') }}</x-icon-btn>
+                        </x-action-form>
                     @endif
                 @endif
                 <x-icon-btn icon="download" tone="outline" size="sm"
@@ -92,7 +119,7 @@
                     @if ($canCapture)
                         <x-slot:actions>
                             <x-icon-btn icon="edit_note" tone="outline" size="sm" data-entry-modal-trigger
-                                        :href="route('finance.incoming-invoices.values.form', $incoming)"
+                                        :href="route('finance.incoming-invoices.values.form', ['incoming' => $incoming] + $queueParams)"
                                         show-label>{{ __('Korrigieren') }}</x-icon-btn>
                         </x-slot:actions>
                     @endif
@@ -424,6 +451,9 @@
                     </x-detail-grid>
                     <form method="POST" action="{{ route('finance.incoming-invoices.decide', $incoming) }}" class="mt-2 flex flex-wrap items-end gap-2">
                         @csrf
+                        @if ($queue !== null)
+                            <input type="hidden" name="queue" value="{{ $queue }}">
+                        @endif
                         <select name="decision" class="select select-sm select-bordered" aria-label="{{ __('Entscheidung') }}">
                             <option value="approved">{{ __('Fachlich freigeben') }}</option>
                             <option value="question">{{ __('Rückfrage') }}</option>

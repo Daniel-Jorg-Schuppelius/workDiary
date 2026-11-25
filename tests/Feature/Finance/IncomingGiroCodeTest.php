@@ -251,6 +251,32 @@ class IncomingGiroCodeTest extends TestCase {
             ->assertSee(__('incoming_pdf.girocode.reason.tool_missing'));
     }
 
+    /** MVP-1807: der Stand „Lesewerkzeug fehlt“ heilte nie, auch nachdem zbarimg installiert war. */
+    public function test_a_reading_that_lacked_the_tool_is_read_again_by_command_and_button(): void {
+        $this->scan['available'] = false;
+        $incoming = $this->receive(self::pdf([self::invoiceHtml()]));
+        $this->assertTrue(GiroCodeReader::lacksTool($incoming));
+        $reread = route('finance.incoming-invoices.girocode.reread', $incoming);
+
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSee(__('incoming_pdf.girocode.reread.action'));
+        $this->post($reread)->assertSessionHas('error', __('incoming_pdf.girocode.reread.still_missing'));
+        $this->artisan('incoming-invoices:read-girocodes')->assertSuccessful();
+        $this->assertTrue(GiroCodeReader::lacksTool($incoming->refresh()));
+
+        $this->scan['available'] = true;
+        $this->artisan('incoming-invoices:read-girocodes')->assertSuccessful();
+        $this->assertFalse(GiroCodeReader::lacksTool($incoming->refresh()));
+        $this->assertNotSame(GiroCodeReader::PENDING, data_get($incoming->girocode, 'status'));
+        $this->post($reread)->assertSessionHas('error', __('incoming_pdf.girocode.reread.not_needed'));
+
+        $incoming->forceFill(['girocode' => ['status' => GiroCodeReader::UNREADABLE, 'reason' => 'tool_missing']])->save();
+        \Illuminate\Support\Facades\Bus::fake([\App\Jobs\Invoicing\AnalyzeIncomingInvoicePagesJob::class]);
+        $this->post($reread)->assertSessionHas('success', __('incoming_pdf.girocode.reread.queued'));
+        \Illuminate\Support\Facades\Bus::assertDispatched(\App\Jobs\Invoicing\AnalyzeIncomingInvoicePagesJob::class);
+        $this->assertSame(GiroCodeReader::PENDING, data_get($incoming->refresh()->girocode, 'status'));
+    }
+
     public function test_amount_and_name_differences_warn_without_blocking(): void {
         $this->supplier();
         $this->codesOnPage(1, [self::payload(self::MASTER_IBAN, '99.00', 'Ganz Anderer Empfaenger')]);

@@ -100,6 +100,7 @@ class ViewConventionRuleTest extends TestCase {
     private const array DANGER_ALLOW = [
         'resources/views/crisis/show.blade.php' => 'Krise ausrufen ist die Hauptaktion der Seite, keine Löschung.',
         'resources/views/crisis/index.blade.php' => 'Krisenfall anlegen ist die Hauptaktion der Seite.',
+        'resources/views/finance/incoming-invoices/show.blade.php' => 'Beim Durcharbeiten (MVP-1806) steht „Keine Rechnung – löschen“ sichtbar im Kopf, sonst im Gefahrenbereich des Menüs (Entscheidung 2026-11-25).',
     ];
 
     /** @var array<string, string> V12 — keine Aktionsmenüs, sondern Formulare im Popover */

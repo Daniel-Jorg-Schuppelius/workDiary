@@ -23,6 +23,10 @@
     :submit-label="__('Speichern')"
     :size="$previewMime !== null ? 'wide' : 'standard'"
 >
+    {{-- Durcharbeiten (MVP-1806): die Schlange reist mit, danach folgt der nächste Eingang. --}}
+    @if (\App\Services\Invoicing\EInvoice\IncomingInvoiceQueue::from(request('queue')) !== null)
+        <input type="hidden" name="queue" value="{{ request('queue') }}">
+    @endif
     <div @class(['grid gap-4', 'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start' => $previewMime !== null])>
         @if ($previewMime !== null)
             {{-- Bleibt beim Scrollen zu den Beträgen stehen; Höhe aus der Dialoghöhe abzüglich Kopf und Fuß. --}}

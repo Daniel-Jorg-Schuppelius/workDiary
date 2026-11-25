@@ -11261,5 +11261,21 @@
     "Ein projektgebundener Vertrag gilt nur über sein Projekt und lässt sich nicht an ein Asset binden.": "Un contratto legato a un progetto vale solo tramite il suo progetto e non può essere assegnato a un asset.",
     "Gilt für Service-Tickets zu diesem Asset vor den Verträgen von Projekt und Kunde. Zur Wahl stehen Verträge des gespeicherten Kunden und Verträge ohne Kundenbindung.": "Vale per i ticket di assistenza di questo asset prima dei contratti del progetto e del cliente. Può scegliere i contratti del cliente salvato e i contratti senza cliente.",
     "Nur Wiederholdefekte": "Solo difetti ricorrenti",
-    "Keine Wiederholdefekte im gewählten Zeitraum.": "Nessun difetto ricorrente nel periodo selezionato."
+    "Keine Wiederholdefekte im gewählten Zeitraum.": "Nessun difetto ricorrente nel periodo selezionato.",
+    "Nur offene, nicht übergebene Eingänge lassen sich als „keine Rechnung“ löschen.": "Solo i documenti aperti e non trasferiti possono essere eliminati come «non è una fattura».",
+    "Keine Rechnung — von Hand gelöscht.": "Non è una fattura — eliminata manualmente.",
+    "Der Eingang wurde nicht gefunden.": "Il documento non è stato trovato.",
+    "Eingang als „keine Rechnung“ gelöscht.": "Documento eliminato come «non è una fattura».",
+    ":deleted Eingänge als „keine Rechnung“ gelöscht, :skipped übersprungen.": ":deleted documenti eliminati come «non è una fattura», :skipped saltati.",
+    "Als „keine Rechnung“ löschen? Beleg, Dokument und Dateien werden entfernt, eine Zuordnung wird aufgehoben; es bleibt der Audit-Eintrag.": "Eliminare come «non è una fattura»? Giustificativo, documento e file vengono rimossi e un’eventuale assegnazione viene annullata; resta la voce di audit.",
+    "Eingänge dieses Reiters nacheinander bearbeiten: nach jeder Aktion folgt der nächste.": "Elaborare i documenti di questa scheda uno dopo l’altro: dopo ogni azione segue il successivo.",
+    "Durcharbeiten": "Elabora in sequenza",
+    "Keine Rechnung – löschen": "Non è una fattura – elimina",
+    ":position von :total": ":position di :total",
+    "Voriger Eingang": "Documento precedente",
+    "Die Datei wird wieder aufgenommen.": "Il file viene di nuovo accettato.",
+    "Gelöschte Dateien": "File eliminati",
+    "Von Hand als „keine Rechnung“ gelöscht. Dieselbe Datei wird aus dem Rechnungspostfach nicht wieder aufgenommen; ein Upload von Hand lässt sie wieder zu.": "Eliminati manualmente come «non è una fattura». Lo stesso file non viene più accettato dalla casella fatture; un caricamento manuale lo consente di nuovo.",
+    "Datei wieder zulassen? Sie wird beim nächsten Eingang wieder aufgenommen.": "Consentire di nuovo il file? Verrà accettato al prossimo arrivo.",
+    "Wieder zulassen": "Consenti di nuovo"
 }
