@@ -447,7 +447,7 @@ final class ResaleOverview {
                     }
                 }
             }
-            foreach ($audit->forSubscriptions($organization, [$subscription]) as $finding) {
+            foreach ($audit->forSubscriptions($organization, [$subscription], overbooked: false) as $finding) {
                 if ($finding['kind'] === LinkAudit::MISMATCH) {
                     $state['mismatch']++;
                 } elseif (in_array($finding['kind'], LinkAudit::DEVIATIONS, true)) {

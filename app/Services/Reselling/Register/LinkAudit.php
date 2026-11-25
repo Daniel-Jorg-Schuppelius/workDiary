@@ -55,7 +55,7 @@ final class LinkAudit {
      * @param  iterable<ResaleSubscription>  $subscriptions
      * @return list<Finding>
      */
-    public function forSubscriptions(Organization $organization, iterable $subscriptions): array {
+    public function forSubscriptions(Organization $organization, iterable $subscriptions, bool $overbooked = true): array {
         /** @var list<ResalePeriodLink> $links */
         $links = [];
         /** @var array<int, ResalePeriod> $periodsById */
@@ -79,9 +79,9 @@ final class LinkAudit {
         $findings = [];
 
         // Überbucht: Verbrauch der Position über ALLE Perioden der Organisation gegen ihre Lizenzmonate.
-        $consumed = $this->linker->consumed(array_values($lines));
+        $consumed = $overbooked ? $this->linker->consumed(array_values($lines)) : [];
         $seen = [];
-        foreach ($links as $link) {
+        foreach ($overbooked ? $links : [] as $link) {
             $line = $lines[$link->mirrorIdentity()] ?? null;
             if ($line === null || $line->isCreditNote || isset($seen[$line->identity()])) {
                 continue;
