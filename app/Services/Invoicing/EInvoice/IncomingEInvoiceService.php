@@ -592,6 +592,9 @@ class IncomingEInvoiceService {
             $container->source_reference,
             is_string($containerSummary['mail_subject'] ?? null) ? $containerSummary['mail_subject'] : null,
             array_values(array_filter((array) ($containerSummary['mail_attachments'] ?? []), 'is_string')),
+            is_string($containerSummary['mail_from_name'] ?? null) ? $containerSummary['mail_from_name'] : null,
+            is_string($containerSummary['mail_received_at'] ?? null) ? $containerSummary['mail_received_at'] : null,
+            is_string($containerSummary['mail_mailbox'] ?? null) ? $containerSummary['mail_mailbox'] : null,
         );
         $stored = $this->persist($actor, $sha256, $contents, 'application/pdf', $container->source, null, $fileName, $summary, $origin, [
             'document' => $document,
@@ -683,6 +686,12 @@ class IncomingEInvoiceService {
         if ($origin?->subject !== null && trim($origin->subject) !== '') {
             $summary['mail_subject'] = mb_substr(trim($origin->subject), 0, 500);
         }
+        // Herkunfts-Mail zum Nachsehen (MVP-1811).
+        foreach (['mail_from_name' => $origin?->senderName, 'mail_received_at' => $origin?->receivedAt, 'mail_mailbox' => $origin?->mailbox] as $key => $value) {
+            if ($value !== null && trim($value) !== '') {
+                $summary[$key] = mb_substr(trim($value), 0, 191);
+            }
+        }
         if ($origin !== null && $origin->attachmentNames !== []) {
             $summary['mail_attachments'] = array_map(static fn (string $name): string => mb_substr($name, 0, 191), $origin->attachmentNames);
         }
@@ -769,6 +778,8 @@ class IncomingEInvoiceService {
             // Gegenpartei nur bei eindeutigem, exaktem Treffer (MVP-1108).
             app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
         }
+        // Belege, die auf diese Rechnung warten (MVP-1810).
+        $this->attachAwaiting($incoming);
         // Sammel-PDF und GiroCode (MVP-1662/1663): Rastern und Lesen in der Medien-Warteschlange, nie im Request.
         if ($incoming->exists && $pages) {
             \App\Jobs\Invoicing\AnalyzeIncomingInvoicePagesJob::dispatch((int) $incoming->id, (int) $incoming->organization_id)->afterCommit();
@@ -862,26 +873,118 @@ class IncomingEInvoiceService {
      * Übergabe; scheitert das Verwerfen (Legal Hold), bleibt alles, wie es war.
      */
     public function dismissAsNoInvoice(\App\Models\Invoicing\IncomingEInvoice $incoming, \App\Models\Platform\User $actor): void {
-        $open = [\App\Enums\Invoicing\IncomingEInvoiceStatus::Received, \App\Enums\Invoicing\IncomingEInvoiceStatus::Question];
-        $handedOver = [\App\Enums\Invoicing\IncomingInvoiceTransferStatus::Transferred->value, \App\Enums\Invoicing\IncomingInvoiceTransferStatus::Linked->value];
-        if ($incoming->transferred_at !== null || ! in_array($incoming->status, $open, true)
-            || $incoming->transfers()->whereIn('status', $handedOver)->exists()) {
-            throw new \RuntimeException((string) __('Nur offene, nicht übergebene Eingänge lassen sich als „keine Rechnung“ löschen.'));
-        }
+        $this->assertRemovable($incoming);
         $reason = (string) __('Keine Rechnung — von Hand gelöscht.');
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($incoming, $actor, $reason): void {
-            if ($incoming->supplier_id !== null || $incoming->customer_id !== null) {
-                app(IncomingInvoiceMatcher::class)->unassign($incoming, $actor);
-            }
-            app(IncomingInvoiceRules::class)->reject($incoming, $reason, $actor);
-            $this->discard($incoming, $reason, $actor);
+            $this->removeOpen($incoming, $actor, $reason);
             // Dieselbe Datei nimmt das Rechnungspostfach nicht wieder auf (MVP-1808).
             \App\Models\Invoicing\IncomingDismissedFile::query()->withoutGlobalScopes()->firstOrCreate(
                 ['organization_id' => $incoming->organization_id, 'sha256' => $incoming->sha256],
                 ['file_name' => StringHelper::trimToNull(mb_substr((string) $incoming->document?->title, 0, 255)), 'created_by' => $actor->id],
             );
         });
+    }
+
+    /**
+     * Beleg an eine Rechnung des Eingangs hängen (MVP-1809): Mahnung,
+     * Lieferschein oder Schreiben wird samt eigenen Anhängen Anhang der
+     * Rechnung, der eigene Eingang entfällt. Die Rechnung darf freigegeben
+     * oder übergeben sein — eine Mahnung kommt meist danach.
+     */
+    public function attachToInvoice(\App\Models\Invoicing\IncomingEInvoice $source, \App\Models\Invoicing\IncomingEInvoice $target, ?\App\Models\Platform\User $actor): void {
+        if ($target->is($source) || $target->organization_id !== $source->organization_id || $target->isClosed()) {
+            throw new \RuntimeException((string) __('Der Beleg lässt sich nur an eine andere, nicht abgelehnte Rechnung des Eingangs hängen.'));
+        }
+        $this->assertRemovable($source);
+        $original = $source->storedOriginal();
+        if ($original === null) {
+            throw new \RuntimeException((string) __('Das Original des Belegs liegt nicht mehr vor.'));
+        }
+        // Vor dem Kopieren: ein gehaltener Beleg scheitert sonst erst beim Verwerfen, die Kopien lägen schon auf der Platte.
+        $holds = app(\App\Services\Retention\LegalHoldService::class);
+        $holds->assertNotHeld($source);
+        if ($source->document !== null) {
+            $holds->assertNotHeld($source->document);
+        }
+        $reason = (string) __('An Rechnung :number angehängt.', ['number' => $target->invoice_number ?? '#' . $target->id]);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($source, $target, $actor, $original, $reason): void {
+            $attacher = app(\App\Services\Attachments\FileAttacher::class);
+            foreach ($source->attachments as $attachment) {
+                $attacher->copy($attachment, $target, $actor?->id);
+            }
+            $target->audit('incoming_einvoice.document_attached', [
+                'sha256' => $source->sha256,
+                'number' => $source->invoice_number,
+                'kind_hint' => $source->kindHint(),
+                'sender' => $source->sender_email,
+                'file' => $original['name'],
+            ]);
+            $this->removeOpen($source, $actor, $reason);
+            $attacher->storeContent($target, $original['contents'], $original['name'], $original['mime'], $actor?->id);
+        });
+    }
+
+    /**
+     * Auf eine Rechnung warten, die noch nicht eingegangen ist (MVP-1810): der
+     * Beleg verlässt die Arbeitsliste und hängt sich an, sobald ein Eingang
+     * diese Nummer trägt ({@see attachAwaiting()}).
+     */
+    public function awaitInvoice(\App\Models\Invoicing\IncomingEInvoice $incoming, string $number, \App\Models\Platform\User $actor): void {
+        $this->assertRemovable($incoming);
+        $key = \App\Support\ReferenceTokens::key($number);
+        if ($key === null) {
+            throw new \RuntimeException((string) __('Die Rechnungsnummer ist nicht verwertbar.'));
+        }
+        $incoming->forceFill(['awaited_invoice_number' => mb_substr(trim($number), 0, 64), 'awaited_invoice_number_key' => mb_substr($key, 0, 64)])->save();
+        $incoming->audit('incoming_einvoice.awaiting_invoice', ['number' => $incoming->awaited_invoice_number, 'actor_user_id' => $actor->id]);
+    }
+
+    /**
+     * Wartende Belege an die Rechnung hängen, deren Nummer sie nennen
+     * (MVP-1810). Der Mensch hat das Anhängen beim Zurückstellen entschieden;
+     * ein Fehlschlag (Legal Hold, fehlendes Original) lässt den Beleg warten.
+     */
+    public function attachAwaiting(\App\Models\Invoicing\IncomingEInvoice $invoice): int {
+        if (! $invoice->exists || $invoice->invoice_number_key === null || $invoice->isClosed() || $invoice->awaited_invoice_number_key !== null || $invoice->kindHint() !== null) {
+            return 0;
+        }
+        $attached = 0;
+        $waiting = \App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()
+            ->where('organization_id', $invoice->organization_id)
+            ->where('awaited_invoice_number_key', $invoice->invoice_number_key)
+            ->whereKeyNot($invoice->getKey())
+            ->orderBy('id')->get();
+        foreach ($waiting as $source) {
+            try {
+                $this->attachToInvoice($source, $invoice, null);
+                $attached++;
+            } catch (\RuntimeException $e) {
+                \Illuminate\Support\Facades\Log::warning('Wartender Beleg nicht angehängt', ['incoming_id' => $source->id, 'invoice_id' => $invoice->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return $attached;
+    }
+
+    /** Nur offene Eingänge ohne Übergabe lassen sich von Hand entfernen. */
+    private function assertRemovable(\App\Models\Invoicing\IncomingEInvoice $incoming): void {
+        $open = [\App\Enums\Invoicing\IncomingEInvoiceStatus::Received, \App\Enums\Invoicing\IncomingEInvoiceStatus::Question];
+        $handedOver = [\App\Enums\Invoicing\IncomingInvoiceTransferStatus::Transferred->value, \App\Enums\Invoicing\IncomingInvoiceTransferStatus::Linked->value];
+        if ($incoming->transferred_at !== null || ! in_array($incoming->status, $open, true)
+            || $incoming->transfers()->whereIn('status', $handedOver)->exists()) {
+            throw new \RuntimeException((string) __('Nur offene, nicht übergebene Eingänge lassen sich als „keine Rechnung“ löschen.'));
+        }
+    }
+
+    /** Zuordnung aufheben, ablehnen, verwerfen — in der Transaktion des Aufrufers. */
+    private function removeOpen(\App\Models\Invoicing\IncomingEInvoice $incoming, ?\App\Models\Platform\User $actor, string $reason): void {
+        if ($incoming->supplier_id !== null || $incoming->customer_id !== null) {
+            app(IncomingInvoiceMatcher::class)->unassign($incoming, $actor);
+        }
+        app(IncomingInvoiceRules::class)->reject($incoming, $reason, $actor);
+        $this->discard($incoming, $reason, $actor);
     }
 
     /** Von Hand als „keine Rechnung“ gelöschte Datei (MVP-1808); zählt den Treffer. */
@@ -953,6 +1056,7 @@ class IncomingEInvoiceService {
         if (! $this->applyRules($incoming)) {
             app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
         }
+        $this->attachAwaiting($incoming);
 
         return true;
     }

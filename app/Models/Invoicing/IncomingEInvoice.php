@@ -37,6 +37,8 @@ use Illuminate\Support\Facades\Storage;
  * @property string $source
  * @property string|null $invoice_number
  * @property string|null $invoice_number_key
+ * @property string|null $awaited_invoice_number
+ * @property string|null $awaited_invoice_number_key
  * @property int|null $duplicate_of_id
  * @property int|null $duplicate_cleared_user_id
  * @property \Illuminate\Support\Carbon|null $duplicate_cleared_at
@@ -341,6 +343,7 @@ class IncomingEInvoice extends Model {
      */
     public function scopeAwaitingAssignment(Builder $query): Builder {
         return $query->whereNull('supplier_id')->whereNull('customer_id')
+            ->whereNull('awaited_invoice_number_key')
             ->whereNotIn('status', self::CLOSED_STATUSES);
     }
 
@@ -352,7 +355,18 @@ class IncomingEInvoice extends Model {
      */
     public function scopeAwaitingReview(Builder $query): Builder {
         return $query->where(static fn ($party) => $party->whereNotNull('supplier_id')->orWhereNotNull('customer_id'))
+            ->whereNull('awaited_invoice_number_key')
             ->whereIn('status', [IncomingEInvoiceStatus::Received->value, IncomingEInvoiceStatus::Question->value]);
+    }
+
+    /**
+     * Wartet auf eine Rechnung, die noch nicht eingegangen ist (MVP-1810).
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeAwaitingInvoice(Builder $query): Builder {
+        return $query->whereNotNull('awaited_invoice_number_key')->whereNotIn('status', self::CLOSED_STATUSES);
     }
 
     /**

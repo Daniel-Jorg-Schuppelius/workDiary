@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\EInvoice;
 
-/** Herkunft eines Rechnungseingangs aus dem Postfach (MVP-1107): Absender und Message-ID. */
+/** Herkunft eines Rechnungseingangs aus dem Postfach (MVP-1107): Absender und Message-ID; seit MVP-1811 auch Absendername, Empfangszeit und Postfach. */
 final class IncomingOrigin {
     /** @param  list<string>  $attachmentNames */
     public function __construct(
@@ -20,5 +20,8 @@ final class IncomingOrigin {
         public readonly ?string $reference = null,
         public readonly ?string $subject = null,
         public readonly array $attachmentNames = [],
+        public readonly ?string $senderName = null,
+        public readonly ?string $receivedAt = null,
+        public readonly ?string $mailbox = null,
     ) {}
 }

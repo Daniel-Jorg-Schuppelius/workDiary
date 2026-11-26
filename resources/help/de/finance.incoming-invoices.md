@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 15
+version: 16
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -194,6 +194,15 @@ Eine so gelöschte Datei merkt sich WorkDiary: Liegt dieselbe Datei einer
 späteren Mail bei, etwa die AGB, wird sie nicht wieder aufgenommen. Unter
 „Regeln“ stehen die gelöschten Dateien mit „Wieder zulassen“; ein Upload von
 Hand lässt die Datei ebenfalls wieder zu.
+
+**An Rechnung anhängen:** Eine Mahnung oder ein anderes Schreiben zu einer
+Rechnung hängen Sie im Dialog „Zuordnen“ über den Weg „An Rechnung anhängen“
+an die Rechnung; sie darf schon freigegeben oder übergeben sein. Der Beleg
+steht danach unter den Anhängen der Rechnung, der eigene Eingang entfällt. Ist
+die Rechnung noch nicht eingegangen, tragen Sie ihre Nummer ein: Der Beleg
+wartet im Reiter „Wartet auf Rechnung“ und hängt sich an, sobald ein Eingang
+diese Nummer trägt. Bei Belegen aus dem Postfach nennt die Karte „Eingang“
+Absender, Betreff, Empfangszeit, Postfach und Anhänge der E-Mail.
 
 **Durcharbeiten:** In den Reitern „Zuzuordnen“ und „Zu prüfen“ öffnet
 „Durcharbeiten“ den ersten Eingang. Der Kopf zeigt den Stand („3 von 17“) und

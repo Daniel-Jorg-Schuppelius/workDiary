@@ -26,6 +26,7 @@
     $tabItems = [
         ['label' => __('Zuzuordnen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'assign'] + $queryBase, 'active' => $tab === 'assign', 'count' => $assignCount, 'icon' => 'rule'],
         ['label' => __('Zu prüfen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'review'] + $queryBase, 'active' => $tab === 'review', 'count' => $reviewCount, 'icon' => 'fact_check'],
+        ...($waitingCount > 0 || $tab === 'waiting' ? [['label' => __('Wartet auf Rechnung'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'waiting'] + $queryBase, 'active' => $tab === 'waiting', 'count' => $waitingCount, 'icon' => 'hourglass_top']] : []),
         ...($transferCount > 0 || $tab === 'transfer' ? [['label' => __('Übergabe offen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'transfer'] + $queryBase, 'active' => $tab === 'transfer', 'count' => $transferCount, 'icon' => 'outbox']] : []),
         ...($failedCount > 0 || $tab === 'failed' ? [['label' => __('Übergabe fehlgeschlagen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'failed'] + $queryBase, 'active' => $tab === 'failed', 'count' => $failedCount, 'icon' => 'sync_problem']] : []),
         ...($duplicateCount > 0 || $tab === 'duplicates' ? [['label' => __('Möglicher Doppel-Eingang'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'duplicates'] + $queryBase, 'active' => $tab === 'duplicates', 'count' => $duplicateCount, 'icon' => 'content_copy']] : []),
@@ -209,6 +210,9 @@
                 </td>
                 <td>
                     <x-status-badge outline>{{ $incoming->status->label() }}</x-status-badge>
+                    @if ($incoming->awaited_invoice_number_key !== null && ! $incoming->isClosed())
+                        <x-status-badge tone="info">{{ __('Wartet auf Rechnung :number', ['number' => $incoming->awaited_invoice_number]) }}</x-status-badge>
+                    @endif
                     @if ($incoming->isPossibleDuplicate())
                         <x-status-badge tone="warning">{{ __('Möglicher Doppel-Eingang') }}</x-status-badge>
                     @endif
@@ -238,7 +242,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="$colspan" icon="receipt_long" :title="match ($tab) { 'assign' => __('Nichts zuzuordnen.'), 'review' => __('Nichts zu prüfen.'), 'transfer', 'failed' => __('Keine offenen Übergaben.'), 'duplicates' => __('Kein möglicher Doppel-Eingang offen.'), default => __('Keine Eingänge im Zeitraum.') }" />
+            <x-table.empty :colspan="$colspan" icon="receipt_long" :title="match ($tab) { 'assign' => __('Nichts zuzuordnen.'), 'review' => __('Nichts zu prüfen.'), 'transfer', 'failed' => __('Keine offenen Übergaben.'), 'duplicates' => __('Kein möglicher Doppel-Eingang offen.'), 'waiting' => __('Kein Beleg wartet auf eine Rechnung.'), default => __('Keine Eingänge im Zeitraum.') }" />
         @endforelse
     </x-table>
 

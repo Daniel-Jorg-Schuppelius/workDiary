@@ -2324,6 +2324,8 @@ return [
         'questions_per_attempt' => 'Questions par tentative',
         'questions_per_attempt_percent' => 'Questions par tentative (%)',
         'queue' => 'File d\'attente',
+        'attach_to' => 'Facture de rattachement',
+        'attach_number' => 'Numéro de facture attendu',
         'only' => 'Entrée',
         'queue_group' => 'Groupe',
         'queue_group.*' => 'Groupe',

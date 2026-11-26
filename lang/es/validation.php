@@ -2324,6 +2324,8 @@ return [
         'questions_per_attempt' => 'Preguntas por intento',
         'questions_per_attempt_percent' => 'Preguntas por intento (%)',
         'queue' => 'Cola',
+        'attach_to' => 'Factura de destino',
+        'attach_number' => 'Número de factura esperado',
         'only' => 'Entrada',
         'queue_group' => 'Grupo',
         'queue_group.*' => 'Grupo',

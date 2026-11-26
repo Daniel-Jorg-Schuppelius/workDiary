@@ -45,7 +45,7 @@ class IncomingInvoiceAssignmentController extends Controller {
     use AuthorizesOrganizationManagement;
     use ResolvesCurrentOrganization;
 
-    private const array MODES = ['existing', 'collective', 'new', 'adopt', 'not_invoice', 'unassign'];
+    private const array MODES = ['existing', 'collective', 'new', 'adopt', 'not_invoice', 'attach', 'unassign'];
 
     public function __construct(
         private readonly IncomingInvoiceMatcher $matcher,
@@ -62,8 +62,24 @@ class IncomingInvoiceAssignmentController extends Controller {
         $isPurchase = $incoming->direction !== DocumentDirection::Outgoing;
         $prefill = $this->parties->fieldsOf($incoming);
         $organization = $incoming->organization;
+        // An Rechnung anhängen (MVP-1809): angemahnte Rechnungen vorn, danach die jüngsten Eingänge; bei erkanntem Bezug ist der Weg vorbelegt.
+        $reminded = $incoming->reminderTargets()->reject(static fn (IncomingEInvoice $target): bool => $target->isClosed())->values();
+        $proposal = $this->kindHints->proposal($incoming);
+        $awaitedNumber = $incoming->awaited_invoice_number ?? (string) (array_values(array_filter(array_map(strval(...), (array) (((array) $incoming->summary)['reminder_for'] ?? []))))[0] ?? '');
+        // Mahnung mit erkannter Rechnungsnummer: anhängen bzw. auf die Rechnung warten statt „Keine Rechnung“.
+        if ($proposal !== null && ($reminded->isNotEmpty() || ($incoming->kindHint() === 'reminder' && $awaitedNumber !== ''))) {
+            $proposal['mode'] = 'attach';
+        }
+        if ($incoming->awaited_invoice_number_key !== null) {
+            $proposal = ['mode' => 'attach', 'note' => (string) ($proposal['note'] ?? '')];
+        }
 
         return view('finance.incoming-invoices._assign_dialog', [
+            'attachReminded' => $reminded,
+            'awaitedNumber' => $reminded->isEmpty() ? $awaitedNumber : '',
+            'attachTargets' => IncomingEInvoice::query()->openForWork()->whereKeyNot($incoming->getKey())->whereNotIn('id', $reminded->modelKeys())
+                ->whereNotNull('invoice_number')->orderByDesc('received_at')->orderByDesc('id')->limit(200)
+                ->get(['id', 'invoice_number', 'seller_name', 'buyer_name', 'direction', 'issue_date', 'received_at']),
             'incoming' => $incoming,
             'partyName' => $incoming->counterpartyName(),
             'otherOpen' => $incoming->openOfSameParty()->count(),
@@ -75,7 +91,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             'accountingLeads' => $organization !== null && ! app(ContactPushService::class)->pushAllowed() && app(IncomingInvoiceTransferService::class)->hasTargets($organization),
             // Belegart-Hinweis (MVP-1216): Mahnung, Lieferschein, Versandmarke … — Vorschlag „Keine Rechnung“.
             'kindHintLabel' => $this->kindHints->label($incoming->kindHint()),
-            'proposal' => $this->kindHints->proposal($incoming),
+            'proposal' => $proposal,
             'reminderTargets' => $incoming->reminderTargets(),
             'suppliers' => Supplier::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
             'customers' => Customer::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
@@ -107,6 +123,8 @@ class IncomingInvoiceAssignmentController extends Controller {
             'exclude_action' => ['nullable', Rule::in(['', 'reject', 'discard'])],
             'note' => ['nullable', 'required_if:mode,not_invoice', 'string', 'max:500'],
             'candidate' => ['nullable', 'required_if:mode,adopt', 'string', 'max:160'],
+            'attach_to' => ['nullable', 'string', 'max:64'],
+            'attach_number' => ['nullable', Rule::requiredIf($request->input('mode') === 'attach' && ! $request->filled('attach_to')), 'string', 'max:64'],
         ]);
         if ($incoming->transferred_at !== null) {
             return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
@@ -123,6 +141,32 @@ class IncomingInvoiceAssignmentController extends Controller {
         $applyToOpen = (bool) ($data['apply_to_open'] ?? false);
         if ($data['mode'] === 'not_invoice') {
             return $this->rejectAsNoInvoice($incoming, (string) $data['note'], $actor, (string) ($data['exclude_action'] ?? ''), $applyToOpen);
+        }
+        // Ein anderer Weg beendet das Warten auf eine Rechnung (MVP-1810).
+        if ($incoming->awaited_invoice_number_key !== null) {
+            $incoming->forceFill(['awaited_invoice_number' => null, 'awaited_invoice_number_key' => null])->save();
+        }
+        if ($data['mode'] === 'attach' && ($data['attach_to'] ?? '') === '') {
+            try {
+                $this->invoices->awaitInvoice($incoming, (string) $data['attach_number'], $actor);
+            } catch (RuntimeException $e) {
+                return back()->with('error', ErrorText::for($e));
+            }
+
+            return $this->backToWork($incoming)->with('success', __('Der Beleg wartet auf Rechnung :number und hängt sich an, sobald sie eingeht.', ['number' => $incoming->awaited_invoice_number]));
+        }
+        if ($data['mode'] === 'attach') {
+            $target = IncomingEInvoice::query()->whereKey(Sqid::decodeMany(IncomingEInvoice::class, [(string) $data['attach_to']]))->first();
+            if ($target === null) {
+                return back()->with('error', __('Die Rechnung wurde nicht gefunden.'));
+            }
+            try {
+                $this->invoices->attachToInvoice($incoming, $target, $actor);
+            } catch (RuntimeException $e) {
+                return back()->with('error', ErrorText::for($e));
+            }
+
+            return $this->backToWork($incoming)->with('success', __('Beleg an Rechnung :number angehängt.', ['number' => $target->invoice_number ?? '—']));
         }
         if ($data['mode'] === 'unassign') {
             try {
@@ -254,6 +298,8 @@ class IncomingInvoiceAssignmentController extends Controller {
         $incoming->audit('incoming_einvoice.values_captured', ['number' => $data['invoice_number'], 'gross' => (string) $data['amount_gross']]);
         // Mit erfasster USt-IdNr. kann der Abgleich jetzt eindeutig sein.
         $this->matcher->autoAssign($incoming);
+        // Belege, die auf diese Rechnung warten (MVP-1810).
+        $this->invoices->attachAwaiting($incoming);
         // Lernen aus der Korrektur (Phase 151): Werte im Wortgitter → Zonen der Lieferantenvorlage.
         $learned = app(\App\Services\Invoicing\Recognition\TemplateLearner::class)->learnFromValues($incoming, $data, $actor);
         $message = (string) __('Werte erfasst.');

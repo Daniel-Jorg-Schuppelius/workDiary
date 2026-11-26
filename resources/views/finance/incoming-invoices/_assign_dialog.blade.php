@@ -79,6 +79,7 @@
                     <input type="radio" name="mode" value="adopt" class="join-item btn btn-sm" aria-label="{{ __('Aus Buchhaltung übernehmen') }}" @checked($mode === 'adopt') @disabled($lookup['candidates'] === [])>
                 @endif
                 <input type="radio" name="mode" value="not_invoice" class="join-item btn btn-sm" aria-label="{{ __('Keine Rechnung') }}" @checked($mode === 'not_invoice')>
+                <input type="radio" name="mode" value="attach" class="join-item btn btn-sm" aria-label="{{ __('An Rechnung anhängen') }}" @checked($mode === 'attach')>
                 @if ($canUnassign)
                     <input type="radio" name="mode" value="unassign" class="join-item btn btn-sm" aria-label="{{ __('Zuordnung aufheben') }}" @checked($mode === 'unassign')>
                 @endif
@@ -151,6 +152,27 @@
         <x-input-field name="new_city" :label="__('Ort')" :value="old('new_city', $prefill['city'])" />
         <x-input-field name="new_country" :label="__('Land (ISO)')" :value="old('new_country', $prefill['country'])" />
         <x-input-field name="new_iban" :label="__('IBAN')" :value="old('new_iban', $prefill['iban'])" />
+    </x-form-group>
+
+    {{-- An Rechnung anhängen (MVP-1809): Mahnung oder Schreiben wird Anhang der Rechnung, der eigene Eingang entfällt. --}}
+    <x-form-group :legend="__('An Rechnung anhängen')" icon="attach_file" cols="1" :description="__('Nur beim Weg „An Rechnung anhängen“: Der Beleg wird Anhang der gewählten Rechnung, dieser Eingang entfällt. Die Rechnung darf schon freigegeben oder übergeben sein.')">
+        <x-select-field name="attach_to" :label="__('Rechnung')">
+            <option value="">—</option>
+            @foreach ([[__('Angemahnt'), $attachReminded], [__('Weitere Eingänge'), $attachTargets]] as [$groupLabel, $targets])
+                @if ($targets->isNotEmpty())
+                    <optgroup label="{{ $groupLabel }}">
+                        @foreach ($targets as $target)
+                            <option value="{{ $target->sqid }}" @selected(old('attach_to', $attachReminded->count() === 1 ? $attachReminded->first()->sqid : null) === $target->sqid)>
+                                {{ $target->invoice_number ?? '—' }} · {{ $target->counterpartyName() ?? '—' }}@if ($target->issue_date) · {{ $target->issue_date->fdate() }}@endif
+                            </option>
+                        @endforeach
+                    </optgroup>
+                @endif
+            @endforeach
+        </x-select-field>
+        {{-- Rechnung noch nicht eingegangen (MVP-1810): der Beleg wartet und hängt sich an, sobald sie da ist. --}}
+        <x-input-field name="attach_number" :label="__('Oder: Rechnungsnummer, auf die der Beleg wartet')" :value="old('attach_number', $awaitedNumber)" maxlength="64"
+                       :hint="__('Ist die Rechnung noch nicht im Eingang, wartet der Beleg im Reiter „Wartet auf Rechnung“ und hängt sich an, sobald ein Eingang diese Nummer trägt.')" />
     </x-form-group>
 
     <x-form-group :legend="__('Keine Rechnung')" icon="block" cols="1" :description="__('Nur beim Weg „Keine Rechnung“: Der Eingang wird mit Begründung abgelehnt.')">

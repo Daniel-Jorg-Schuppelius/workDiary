@@ -12796,6 +12796,8 @@ CREATE TABLE `incoming_einvoices` (
   `girocode_confirmed_at` datetime DEFAULT NULL,
   `girocode_confirmed_by` bigint(20) unsigned DEFAULT NULL,
   `creditor_iban_confirmed_hash` varchar(64) DEFAULT NULL,
+  `awaited_invoice_number` varchar(64) DEFAULT NULL,
+  `awaited_invoice_number_key` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ine_org_hash_unique` (`organization_id`,`sha256`),
   KEY `ine_document_fk` (`document_id`),
@@ -12819,6 +12821,7 @@ CREATE TABLE `incoming_einvoices` (
   KEY `ine_girocode_confirmed_by_fk` (`girocode_confirmed_by`),
   KEY `ine_org_source_sha_idx` (`organization_id`,`source_sha256`),
   KEY `ine_source_document_fk` (`source_document_id`),
+  KEY `incoming_einvoices_org_awaited_idx` (`organization_id`,`awaited_invoice_number_key`),
   CONSTRAINT `fk_inc_einv_iban_confirmed_by` FOREIGN KEY (`creditor_iban_confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_matched_user_id_foreign` FOREIGN KEY (`matched_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -29859,3 +29862,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1144,'2027_04_27_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1145,'2027_04_28_100000_add_deviation_note_to_resale_periods',3);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1146,'2027_04_29_100000_add_mirror_number_indexes',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1147,'2027_04_30_100000_create_incoming_dismissed_files_table',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1148,'2027_05_01_100000_add_awaited_invoice_to_incoming_einvoices',6);

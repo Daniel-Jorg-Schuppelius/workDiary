@@ -622,6 +622,8 @@ return [
         'split_dismissed' => 'PDF groupé conservé comme une seule facture',
         'split_reset' => 'Scission du PDF groupé réinitialisée',
         'girocode_read' => 'GiroCode lu',
+        'document_attached' => 'Pièce jointe ajoutée',
+        'awaiting_invoice' => 'En attente de facture',
         'girocode_confirmed' => 'IBAN différent du GiroCode confirmé',
         'candidate_linked' => 'Transmission liée à une pièce existante',
         'candidate_dismissed' => 'Transmission créée malgré une correspondance',

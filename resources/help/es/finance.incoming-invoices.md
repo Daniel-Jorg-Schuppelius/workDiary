@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 15
+version: 16
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -208,6 +208,15 @@ WorkDiary recuerda un archivo eliminado de este modo: si el mismo archivo
 llega con un correo posterior, por ejemplo las condiciones generales, no
 vuelve a admitirse. En «Reglas» figuran los archivos eliminados con «Volver a
 permitir»; una subida manual también lo vuelve a permitir.
+
+**Adjuntar a factura:** adjunte un recordatorio de pago u otro escrito
+relativo a una factura a esa factura en el diálogo «Asignar» mediante la vía
+«Adjuntar a factura»; la factura puede estar ya aprobada o transferida. El
+comprobante figura después entre los adjuntos de la factura y su propia
+entrada desaparece. Si la factura aún no ha llegado, indique su número: el
+comprobante espera en la pestaña «Espera factura» y se adjunta en cuanto una
+entrada lleve ese número. En los comprobantes del buzón, la tarjeta «Entrada»
+indica remitente, asunto, hora de recepción, buzón y adjuntos del correo.
 
 **Procesar en serie:** en las pestañas «Por asignar» y «Por revisar»,
 «Procesar en serie» abre la primera entrada. El encabezado muestra la

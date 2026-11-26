@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 15
+version: 16
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -213,6 +213,16 @@ WorkDiary mémorise un fichier supprimé ainsi : si le même fichier accompagne
 un e-mail ultérieur, par exemple les conditions générales, il n’est plus
 repris. « Règles » liste les fichiers supprimés avec « Autoriser de nouveau »
 ; un import manuel l’autorise également de nouveau.
+
+**Joindre à une facture :** joignez une relance ou un autre courrier
+concernant une facture à cette facture dans la boîte de dialogue « Affecter »,
+par la voie « Joindre à une facture » ; la facture peut déjà être validée ou
+transmise. La pièce figure ensuite parmi les pièces jointes de la facture et
+sa propre entrée disparaît. Si la facture n’est pas encore arrivée, saisissez
+son numéro : la pièce attend dans l’onglet « En attente de facture » et s’y
+joint dès qu’une entrée porte ce numéro. Pour les pièces issues de la boîte
+aux lettres, la carte « Réception » indique l’expéditeur, l’objet, l’heure de
+réception, la boîte et les pièces jointes de l’e-mail.
 
 **Traiter à la suite :** dans les onglets « À attribuer » et « À vérifier »,
 « Traiter à la suite » ouvre la première entrée. L’en-tête indique la position

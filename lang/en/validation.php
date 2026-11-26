@@ -2358,6 +2358,8 @@ return [
         'questions_per_attempt' => 'Questions per attempt',
         'questions_per_attempt_percent' => 'Questions per attempt (%)',
         'queue' => 'Queue',
+        'attach_to' => 'Invoice to attach to',
+        'attach_number' => 'Awaited invoice number',
         'only' => 'Document',
         'queue_group' => 'Group',
         'queue_group.*' => 'Group',

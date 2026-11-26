@@ -351,7 +351,9 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->get(route('finance.incoming-invoices.assign.form', $reminder))->assertOk()
             ->assertSee(__('Sieht aus wie'))->assertSee('Mahnung zu RZXRE2501475')
             ->assertSee(route('finance.incoming-invoices.show', $invoice->document), false)
-            ->assertSee('value="not_invoice" class="join-item btn btn-sm" aria-label="' . __('Keine Rechnung') . '" checked', false);
+            // Mit erkanntem Bezug ist „An Rechnung anhängen“ vorbelegt (MVP-1809).
+            ->assertSee('value="attach" class="join-item btn btn-sm" aria-label="' . __('An Rechnung anhängen') . '" checked', false)
+            ->assertSee('<option value="' . $invoice->sqid . '" selected', false);
         $this->get(route('finance.incoming-invoices.values.form', $reminder))->assertOk()
             ->assertSee('value="2025-07-07"', false)->assertSee(__('Vorschlag aus dem Lieferdatum, bitte am Original prüfen.'));
         $this->get(route('finance.incoming-invoices.show', $reminder->document))->assertOk()

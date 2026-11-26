@@ -622,6 +622,8 @@ return [
         'split_dismissed' => 'Sammel-PDF als eine Rechnung behalten',
         'split_reset' => 'Aufteilung der Sammel-PDF zurückgesetzt',
         'girocode_read' => 'GiroCode gelesen',
+        'document_attached' => 'Beleg angehängt',
+        'awaiting_invoice' => 'Wartet auf Rechnung',
         'girocode_confirmed' => 'Abweichende GiroCode-IBAN bestätigt',
         'candidate_linked' => 'Übergabe mit vorhandenem Beleg verknüpft',
         'candidate_dismissed' => 'Übergabe trotz Treffer neu angelegt',

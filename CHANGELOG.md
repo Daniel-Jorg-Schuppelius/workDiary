@@ -10,6 +10,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Rechnungseingang (`MVP-1809`, `MVP-1810`, `MVP-1811`): Eine Mahnung oder ein anderes
+  Schreiben lässt sich im Dialog „Zuordnen“ an eine Rechnung des Eingangs
+  hängen, auch an eine schon freigegebene oder übergebene; der eigene Eingang
+  entfällt. Ist die Rechnung noch nicht da, wartet der Beleg im Reiter „Wartet
+  auf Rechnung“ und hängt sich an, sobald ein Eingang die genannte Nummer
+  trägt. Die Detailseite nennt die Herkunfts-Mail: Absender, Betreff,
+  Empfangszeit mit Postfach, Anhänge und Message-ID. Neue Spalten
+  `incoming_einvoices.awaited_invoice_number(_key)` (Migration
+  `2027_05_01_100000`).
 - Rechnungseingang (`MVP-1808`): Eine als „keine Rechnung“ gelöschte Datei
   nimmt das Rechnungspostfach nicht wieder auf (etwa die AGB, die jeder Mail
   beiliegt). Die Seite „Regeln“ zeigt die gelöschten Dateien mit Treffern und

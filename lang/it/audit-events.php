@@ -622,6 +622,8 @@ return [
         'split_dismissed' => 'PDF cumulativo mantenuto come un’unica fattura',
         'split_reset' => 'Divisione del PDF cumulativo reimpostata',
         'girocode_read' => 'GiroCode letto',
+        'document_attached' => 'Giustificativo allegato',
+        'awaiting_invoice' => 'In attesa della fattura',
         'girocode_confirmed' => 'IBAN diverso del GiroCode confermato',
         'candidate_linked' => 'Trasmissione collegata a un documento esistente',
         'candidate_dismissed' => 'Trasmissione creata nonostante una corrispondenza',

@@ -14,13 +14,14 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition};
-use App\Models\Document\Document;
+use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Invoicing\{IncomingDismissedFile, IncomingEInvoice};
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingOrigin};
 use App\Services\Mail\MailAttachment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -182,6 +183,91 @@ final class IncomingInvoiceWorkThroughTest extends TestCase {
             ->assertSee('data-toolbar-placement="bar"', false);
         $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
             ->assertSee('data-toolbar-placement="danger"', false)->assertDontSee('data-toolbar-placement="bar"', false);
+    }
+
+    public function test_a_reminder_becomes_an_attachment_of_the_invoice_even_after_transfer(): void {
+        $invoice = $this->incoming(['invoice_number' => 'RE-4711', 'supplier_id' => $this->supplier->id, 'status' => IncomingEInvoiceStatus::Approved, 'transferred_at' => now()]);
+        $reminder = $this->withOriginal($this->incoming(['invoice_number' => null, 'summary' => ['kind_hint' => 'reminder', 'reminder_for' => ['RE-4711']]]), 'Mahnung');
+        $documentId = $reminder->document_id;
+
+        $this->post(route('finance.incoming-invoices.assign', $reminder), ['direction' => 'incoming', 'mode' => 'attach', 'attach_to' => $invoice->sqid])
+            ->assertRedirect()->assertSessionHas('success', __('Beleg an Rechnung :number angehängt.', ['number' => 'RE-4711']));
+
+        $this->assertDatabaseMissing('incoming_einvoices', ['id' => $reminder->id]);
+        $this->assertDatabaseMissing('documents', ['id' => $documentId]);
+        $attachment = $invoice->attachments()->sole();
+        $this->assertSame('mahnung.pdf', $attachment->original_name);
+        $this->assertSame('Mahnung', Storage::disk('local')->get($attachment->path));
+        $this->assertDatabaseHas('audit_logs', ['event' => 'incoming_einvoice.document_attached', 'auditable_id' => $invoice->id]);
+        $this->assertDatabaseMissing('incoming_dismissed_files', ['sha256' => $reminder->sha256]);
+    }
+
+    public function test_a_reminder_waits_for_an_invoice_that_has_not_arrived_and_attaches_itself_later(): void {
+        $reminder = $this->withOriginal($this->incoming(['invoice_number' => null, 'summary' => ['kind_hint' => 'reminder', 'reminder_for' => ['RE-9000']]]), 'Mahnung');
+
+        $this->get(route('finance.incoming-invoices.assign.form', $reminder))->assertOk()
+            ->assertSee('value="attach" class="join-item btn btn-sm" aria-label="' . __('An Rechnung anhängen') . '" checked', false)
+            ->assertSee('value="RE-9000"', false);
+        $this->post(route('finance.incoming-invoices.assign', $reminder), ['direction' => 'incoming', 'mode' => 'attach', 'attach_number' => 'RE-9000'])
+            ->assertRedirect()->assertSessionHas('success');
+
+        $this->assertSame('RE-9000', $reminder->refresh()->awaited_invoice_number);
+        $this->get(route('finance.incoming-invoices.index', ['tab' => 'assign']))->assertOk()->assertSee(__('Nichts zuzuordnen.'));
+        $this->get(route('finance.incoming-invoices.index', ['tab' => 'waiting']))->assertOk()
+            ->assertSee(__('Wartet auf Rechnung :number', ['number' => 'RE-9000']));
+
+        // Eine andere Rechnung lässt den Beleg warten, die genannte nimmt ihn auf.
+        $service = app(IncomingEInvoiceService::class);
+        $this->assertSame(0, $service->attachAwaiting($this->incoming(['invoice_number' => 'RE-9001'])));
+        $invoice = $this->incoming(['invoice_number' => 're-9000 ']);
+        $this->assertSame(1, $service->attachAwaiting($invoice));
+
+        $this->assertDatabaseMissing('incoming_einvoices', ['id' => $reminder->id]);
+        $this->assertSame(1, $invoice->attachments()->count());
+    }
+
+    public function test_capturing_the_values_of_the_awaited_invoice_attaches_the_waiting_reminder(): void {
+        $reminder = $this->withOriginal($this->incoming(['invoice_number' => null]), 'Mahnung');
+        app(IncomingEInvoiceService::class)->awaitInvoice($reminder, 'RE-77', $this->admin);
+        $invoice = $this->incoming(['invoice_number' => null, 'recognition' => IncomingInvoiceRecognition::None]);
+
+        $this->post(route('finance.incoming-invoices.values', $invoice), [
+            'invoice_number' => 'RE-77', 'issue_date' => '2026-11-01', 'currency' => 'EUR', 'amount_gross' => '119.00',
+        ])->assertRedirect();
+
+        $this->assertDatabaseMissing('incoming_einvoices', ['id' => $reminder->id]);
+        $this->assertSame(1, $invoice->attachments()->count());
+    }
+
+    public function test_another_way_ends_the_waiting(): void {
+        $reminder = $this->incoming(['invoice_number' => null]);
+        app(IncomingEInvoiceService::class)->awaitInvoice($reminder, 'RE-77', $this->admin);
+
+        $this->post(route('finance.incoming-invoices.assign', $reminder), ['direction' => 'incoming', 'mode' => 'existing', 'party' => 'supplier:' . $this->supplier->sqid])->assertRedirect();
+
+        $this->assertNull($reminder->refresh()->awaited_invoice_number_key);
+        $this->assertSame($this->supplier->id, $reminder->supplier_id);
+    }
+
+    public function test_the_detail_page_names_the_mail_the_document_came_from(): void {
+        $incoming = $this->incoming([
+            'sender_email' => 'buchhaltung@lieferant.example', 'source_reference' => '<abc-123@lieferant.example>',
+            'summary' => ['mail_subject' => 'Ihre Rechnung November', 'mail_from_name' => 'Buchhaltung Lieferant', 'mail_received_at' => '2026-11-20T08:15:00+00:00', 'mail_mailbox' => 'Rechnungen', 'mail_attachments' => ['rechnung.pdf', 'agb.pdf']],
+        ]);
+
+        $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSee('Buchhaltung Lieferant')->assertSee('Ihre Rechnung November')
+            ->assertSee(__('Postfach :name', ['name' => 'Rechnungen']))->assertSee('rechnung.pdf, agb.pdf')
+            ->assertSee('<abc-123@lieferant.example>');
+    }
+
+    private function withOriginal(IncomingEInvoice $incoming, string $contents): IncomingEInvoice {
+        $path = 'documents/test/' . uniqid('doc', true) . '.pdf';
+        Storage::disk('local')->put($path, $contents);
+        $version = DocumentVersion::factory()->create(['document_id' => $incoming->document_id, 'path' => $path, 'original_name' => 'mahnung.pdf', 'mime' => 'application/pdf', 'uploaded_by_user_id' => $this->admin->id]);
+        $incoming->document->forceFill(['current_version_id' => $version->id])->save();
+
+        return $incoming->refresh();
     }
 
     /** @param  array<string, mixed>  $attributes */

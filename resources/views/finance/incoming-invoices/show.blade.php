@@ -296,8 +296,22 @@
                                 </span>
                             </x-detail-grid.row>
                         @endif
+                        {{-- Herkunfts-Mail (MVP-1811): genug, um die Nachricht im Postfach wiederzufinden. --}}
+                        @php($mail = (array) $incoming->summary)
                         @if ($incoming->sender_email)
-                            <x-detail-grid.row :label="__('Absender')">{{ $incoming->sender_email }}</x-detail-grid.row>
+                            <x-detail-grid.row :label="__('Absender')">@if (! empty($mail['mail_from_name'])){{ $mail['mail_from_name'] }} · @endif{{ $incoming->sender_email }}</x-detail-grid.row>
+                        @endif
+                        @if (! empty($mail['mail_subject']))
+                            <x-detail-grid.row :label="__('Betreff der E-Mail')">{{ $mail['mail_subject'] }}</x-detail-grid.row>
+                        @endif
+                        @if (! empty($mail['mail_received_at']) || ! empty($mail['mail_mailbox']))
+                            <x-detail-grid.row :label="__('E-Mail empfangen')">@if (! empty($mail['mail_received_at'])){{ \Illuminate\Support\Carbon::parse((string) $mail['mail_received_at'])->orgTz()->isoFormat('L LT') }}@endif @if (! empty($mail['mail_mailbox']))<span class="text-xs text-muted">· {{ __('Postfach :name', ['name' => $mail['mail_mailbox']]) }}</span>@endif</x-detail-grid.row>
+                        @endif
+                        @if (($mail['mail_attachments'] ?? []) !== [])
+                            <x-detail-grid.row :label="__('Anhänge der E-Mail')">{{ implode(', ', array_map(strval(...), (array) $mail['mail_attachments'])) }}</x-detail-grid.row>
+                        @endif
+                        @if ($incoming->source_reference && $incoming->sender_email)
+                            <x-detail-grid.row :label="__('Message-ID')"><span class="break-all font-mono text-xs">{{ $incoming->source_reference }}</span></x-detail-grid.row>
                         @endif
                         @if ($incoming->buyer_name || $incoming->buyer_vat_id)
                             <x-detail-grid.row :label="__('Käufer')">{{ $incoming->buyer_name ?? '—' }}@if ($incoming->buyer_vat_id) · {{ $incoming->buyer_vat_id }}@endif</x-detail-grid.row>

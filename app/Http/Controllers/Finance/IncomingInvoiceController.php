@@ -52,7 +52,7 @@ class IncomingInvoiceController extends Controller {
     ) {}
 
     /** Reiter der Arbeitsliste (MVP-1110/1111): benannte Filterzustände. */
-    public const array TABS = ['assign', 'review', 'transfer', 'failed', 'duplicates', 'rejected', 'all'];
+    public const array TABS = ['assign', 'review', 'waiting', 'transfer', 'failed', 'duplicates', 'rejected', 'all'];
 
     /** Sortierbare Spalten → SQL-Spalte. */
     private const array SORTS = [
@@ -84,6 +84,7 @@ class IncomingInvoiceController extends Controller {
         $query = match ($tab) {
             'assign' => IncomingEInvoice::query()->visibleTo($user)->awaitingAssignment(),
             'review' => IncomingEInvoice::query()->visibleTo($user)->awaitingReview(),
+            'waiting' => IncomingEInvoice::query()->visibleTo($user)->awaitingInvoice(),
             'transfer' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($open),
             'failed' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($failed),
             'duplicates' => IncomingEInvoice::query()->visibleTo($user)->openDuplicates(),
@@ -107,6 +108,7 @@ class IncomingInvoiceController extends Controller {
             'dir' => $dir,
             'assignCount' => IncomingEInvoice::query()->visibleTo($user)->awaitingAssignment()->count(),
             'reviewCount' => IncomingEInvoice::query()->visibleTo($user)->awaitingReview()->count(),
+            'waitingCount' => IncomingEInvoice::query()->visibleTo($user)->awaitingInvoice()->count(),
             'transferCount' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($open)->count(),
             'failedCount' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($failed)->count(),
             'duplicateCount' => IncomingEInvoice::query()->visibleTo($user)->openDuplicates()->count(),
@@ -114,7 +116,7 @@ class IncomingInvoiceController extends Controller {
             'canUpload' => Gate::allows('create', Document::class),
             'canManage' => $user->canManageBilling(),
             // Sammelaktion (MVP-1224) auch für zugeordnete, noch nicht übergebene Eingänge: umhängen, aufheben.
-            'bulkParties' => in_array($tab, ['assign', 'review', 'all'], true) && $user->canManageBilling() ? $this->assignmentOptions() : null,
+            'bulkParties' => in_array($tab, ['assign', 'review', 'waiting', 'all'], true) && $user->canManageBilling() ? $this->assignmentOptions() : null,
             'bulkDiscard' => $tab === 'rejected' && $user->canManageBilling(),
             // Durcharbeiten (MVP-1806): Einstieg beim ersten Eingang des Reiters.
             'queue' => IncomingInvoiceQueue::from($tab),

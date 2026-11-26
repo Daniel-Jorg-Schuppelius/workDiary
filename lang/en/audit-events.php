@@ -622,6 +622,8 @@ return [
         'split_dismissed' => 'Combined PDF kept as one invoice',
         'split_reset' => 'Split of the combined PDF reset',
         'girocode_read' => 'GiroCode read',
+        'document_attached' => 'Document attached',
+        'awaiting_invoice' => 'Waiting for invoice',
         'girocode_confirmed' => 'Different GiroCode IBAN confirmed',
         'candidate_linked' => 'Handover linked to existing voucher',
         'candidate_dismissed' => 'Handover created despite a match',

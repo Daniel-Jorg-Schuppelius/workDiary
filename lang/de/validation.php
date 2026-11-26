@@ -2324,6 +2324,8 @@ return [
         'questions_per_attempt' => 'Fragen je Versuch',
         'questions_per_attempt_percent' => 'Fragen je Versuch (%)',
         'queue' => 'Warteschlange',
+        'attach_to' => 'Rechnung zum Anhängen',
+        'attach_number' => 'Erwartete Rechnungsnummer',
         'only' => 'Eingang',
         'queue_group' => 'Gruppe',
         'queue_group.*' => 'Gruppe',

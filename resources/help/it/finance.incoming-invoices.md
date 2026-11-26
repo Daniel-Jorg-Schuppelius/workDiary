@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 15
+version: 16
 keywords:
     - più aliquote
     - fattura fornitore
@@ -206,6 +206,16 @@ WorkDiary ricorda un file eliminato in questo modo: se lo stesso file
 accompagna un’e-mail successiva, ad esempio le condizioni generali, non viene
 più accettato. In «Regole» sono elencati i file eliminati con «Consenti di
 nuovo»; anche un caricamento manuale lo consente di nuovo.
+
+**Allega a fattura:** alleghi un sollecito o un’altra comunicazione relativa a
+una fattura a quella fattura nella finestra «Assegna», con il percorso «Allega
+a fattura»; la fattura può essere già approvata o trasferita. Il
+giustificativo compare poi tra gli allegati della fattura e il suo documento
+in entrata viene rimosso. Se la fattura non è ancora arrivata, inserisca il
+suo numero: il giustificativo attende nella scheda «In attesa della fattura» e
+si allega non appena un documento riporta questo numero. Per i giustificativi
+provenienti dalla casella, la scheda «Entrata» indica mittente, oggetto, ora
+di ricezione, casella e allegati dell’e-mail.
 
 **Elabora in sequenza:** nelle schede «Da assegnare» e «Da verificare»,
 «Elabora in sequenza» apre il primo documento. L’intestazione mostra la

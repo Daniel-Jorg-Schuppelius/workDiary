@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 15
+version: 16
 keywords:
     - several tax rates
     - supplier invoice
@@ -192,6 +192,15 @@ WorkDiary remembers a file deleted this way: if the same file comes with a
 later email, for example the terms and conditions, it is not accepted again.
 “Rules” lists the deleted files with “Allow again”; a manual upload also
 allows the file again.
+
+**Attach to invoice:** attach a reminder or other letter concerning an invoice
+to that invoice in the “Assign” dialog via the path “Attach to invoice”; the
+invoice may already be approved or transferred. The document then appears
+among the invoice’s attachments and its own inbox entry is removed. If the
+invoice has not arrived yet, enter its number: the document waits in the
+“Waiting for invoice” tab and attaches itself as soon as a document carries
+this number. For documents from the mailbox, the “Receipt” card names sender,
+subject, time of receipt, mailbox and attachments of the email.
 
 **Work through:** in the “To assign” and “To review” tabs, “Work through”
 opens the first document. The header shows the position (“3 of 17”) and
