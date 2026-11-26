@@ -10,6 +10,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Rechnungseingang (`MVP-1813`): Für Eingänge von vor dieser Version lässt
+  sich die Herkunfts-Mail aus dem Postfach nachladen — je Eingang über „E-Mail
+  aus dem Postfach nachladen“ in der Karte „Eingang“, für den Bestand über
+  `php artisan incoming-invoices:refresh-mail` (`--open` nur offene Eingänge,
+  `--limit=N`). Mails, die das Postfach nicht mehr hat, bleiben ohne Text.
 - Rechnungseingang (`MVP-1812`): Die Detailseite zeigt den Text der
   Herkunfts-Mail; die Karte „Original“ schaltet zwischen „Original“ und
   „E-Mail“ um. Der Text liegt verschlüsselt am Eingang

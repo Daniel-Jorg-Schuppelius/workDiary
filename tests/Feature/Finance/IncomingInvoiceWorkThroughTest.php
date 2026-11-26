@@ -16,10 +16,11 @@ use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition};
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Invoicing\{IncomingDismissedFile, IncomingEInvoice};
+use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingOrigin};
-use App\Services\Mail\MailAttachment;
+use App\Services\Mail\{MailAttachment, MailboxCursor, MailboxGateway, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Storage};
 use Tests\Concerns\WithOrganization;
@@ -274,6 +275,49 @@ final class IncomingInvoiceWorkThroughTest extends TestCase {
 
         $plain = $this->incoming();
         $this->get(route('finance.incoming-invoices.show', $plain->document))->assertOk()->assertDontSee('data-mail-view', false);
+    }
+
+    public function test_the_mail_of_an_older_document_is_reloaded_from_the_mailbox(): void {
+        $connection = EmailConnection::query()->create([
+            'organization_id' => $this->organization->id, 'name' => 'Rechnungen', 'host' => 'imap.example.test', 'port' => 993, 'encryption' => 'ssl',
+            'username' => 'rechnung@example.test', 'password' => 'geheim', 'folder' => 'INBOX', 'active' => true, 'einvoice_intake' => true, 'created_by' => $this->admin->id,
+        ]);
+        $this->app->instance(MailboxGateway::class, new class implements MailboxGateway {
+            public function fetch(EmailConnection $connection, MailboxCursor $cursor, int $limit): \Generator {
+                yield from [];
+            }
+
+            public function markProcessed(EmailConnection $connection, ParsedMessage $message): void {}
+
+            public function folders(EmailConnection $connection): array {
+                return [];
+            }
+
+            public function find(EmailConnection $connection, string $messageId): ?ParsedMessage {
+                return $messageId !== '<m-1@example.test>' ? null : new ParsedMessage(
+                    messageId: $messageId, uid: 1, fromEmail: 'shop@example.test', fromName: 'Shop Beispiel', subject: 'Dritte Mahnung',
+                    body: "Guten Tag,\n\nIhr Konto weist einen Rückstand auf.", receivedAt: \Illuminate\Support\Carbon::parse('2026-11-20 08:15:00'),
+                );
+            }
+        });
+        $found = $this->incoming(['sender_email' => 'shop@example.test', 'source_reference' => '<m-1@example.test>', 'summary' => ['mail_subject' => 'Betreff vom Eingang']]);
+        $gone = $this->incoming(['sender_email' => 'shop@example.test', 'source_reference' => '<m-2@example.test>']);
+        $upload = $this->incoming();
+
+        $this->get(route('finance.incoming-invoices.show', $found->document))->assertOk()->assertSee(__('E-Mail aus dem Postfach nachladen'));
+        $this->get(route('finance.incoming-invoices.show', $upload->document))->assertOk()->assertDontSee(__('E-Mail aus dem Postfach nachladen'));
+        $this->post(route('finance.incoming-invoices.mail.refresh', $gone))->assertSessionHas('warning', __('Das Postfach hat diese E-Mail nicht mehr.'));
+        $this->artisan('incoming-invoices:refresh-mail')->assertSuccessful();
+
+        $found->refresh();
+        $this->assertStringContainsString('Rückstand', (string) $found->mail_body);
+        $this->assertSame('Betreff vom Eingang', $found->summary['mail_subject']);
+        $this->assertSame('Rechnungen', $found->summary['mail_mailbox']);
+        $this->assertSame('Shop Beispiel', $found->summary['mail_from_name']);
+        $this->assertNull($gone->refresh()->mail_body);
+        $this->get(route('finance.incoming-invoices.show', $found->document))->assertOk()
+            ->assertSee('Ihr Konto weist einen Rückstand auf.')->assertDontSee(__('E-Mail aus dem Postfach nachladen'));
+        $this->assertSame($connection->id, EmailConnection::query()->sole()->id);
     }
 
     private function withOriginal(IncomingEInvoice $incoming, string $contents): IncomingEInvoice {

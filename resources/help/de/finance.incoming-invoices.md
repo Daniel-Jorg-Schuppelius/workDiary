@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 17
+version: 18
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -205,8 +205,9 @@ diese Nummer trägt. Bei Belegen aus dem Postfach nennt die Karte „Eingang“
 Absender, Betreff, Empfangszeit, Postfach und Anhänge der E-Mail.
 
 Den Text der E-Mail lesen Sie in der Karte „Original“ über den Umschalter
-„E-Mail“; er steht nur bei Eingängen zur Verfügung, die seit dieser Version
-aus dem Postfach kamen.
+„E-Mail“; für ältere Eingänge laden Sie ihn in der Karte „Eingang“ über
+„E-Mail aus dem Postfach nachladen“ nach, solange das Postfach die Nachricht
+noch hat.
 
 **Durcharbeiten:** In den Reitern „Zuzuordnen“ und „Zu prüfen“ öffnet
 „Durcharbeiten“ den ersten Eingang. Der Kopf zeigt den Stand („3 von 17“) und

@@ -11299,5 +11299,10 @@
     "Postfach :name": "Mailbox :name",
     "Anhänge der E-Mail": "Email attachments",
     "Message-ID": "Message-ID",
-    "Ohne Betreff": "No subject"
+    "Ohne Betreff": "No subject",
+    "E-Mail aus dem Postfach nachgeladen.": "Email reloaded from the mailbox.",
+    "Das Postfach hat diese E-Mail nicht mehr.": "The mailbox no longer has this email.",
+    "Das Postfach ist gerade nicht erreichbar.": "The mailbox cannot be reached right now.",
+    "Zu diesem Eingang lässt sich keine E-Mail nachladen.": "No email can be reloaded for this document.",
+    "E-Mail aus dem Postfach nachladen": "Reload email from mailbox"
 }

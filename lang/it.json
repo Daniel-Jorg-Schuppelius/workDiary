@@ -11299,5 +11299,10 @@
     "Postfach :name": "Casella :name",
     "Anhänge der E-Mail": "Allegati dell’e-mail",
     "Message-ID": "Message-ID",
-    "Ohne Betreff": "Senza oggetto"
+    "Ohne Betreff": "Senza oggetto",
+    "E-Mail aus dem Postfach nachgeladen.": "E-mail ricaricata dalla casella.",
+    "Das Postfach hat diese E-Mail nicht mehr.": "La casella non contiene più questa e-mail.",
+    "Das Postfach ist gerade nicht erreichbar.": "La casella non è raggiungibile in questo momento.",
+    "Zu diesem Eingang lässt sich keine E-Mail nachladen.": "Per questo documento non è possibile ricaricare alcuna e-mail.",
+    "E-Mail aus dem Postfach nachladen": "Ricarica e-mail dalla casella"
 }

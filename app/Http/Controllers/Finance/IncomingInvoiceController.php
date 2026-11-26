@@ -27,6 +27,7 @@ use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceQueue, IncomingInvoiceTransferGate, IncomingInvoiceTransferService};
 use App\Services\Invoicing\GiroCode\GiroCodeReader;
+use App\Services\Invoicing\Mail\IncomingMailOriginRefresher;
 use App\Support\{CarbonFmt, ErrorText, SortableQuery, Sqid};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
@@ -427,6 +428,20 @@ class IncomingInvoiceController extends Controller {
         }
 
         return $back->with('success', __('Als kein Doppel bestätigt.'));
+    }
+
+    /** Herkunfts-Mail aus dem Postfach nachladen (MVP-1813). */
+    public function refreshMail(IncomingEInvoice $incoming, IncomingMailOriginRefresher $refresher): RedirectResponse {
+        $this->authorizeBilling();
+        abort_if($incoming->document === null, 404);
+        Gate::authorize('view', $incoming->document);
+
+        return match ($refresher->refresh($incoming)) {
+            IncomingMailOriginRefresher::REFRESHED => back()->with('success', __('E-Mail aus dem Postfach nachgeladen.')),
+            IncomingMailOriginRefresher::NOT_FOUND => back()->with('warning', __('Das Postfach hat diese E-Mail nicht mehr.')),
+            IncomingMailOriginRefresher::FAILED => back()->with('error', __('Das Postfach ist gerade nicht erreichbar.')),
+            default => back()->with('error', __('Zu diesem Eingang lässt sich keine E-Mail nachladen.')),
+        };
     }
 
     /** GiroCode nachlesen (MVP-1807): der Stand „Lesewerkzeug fehlt“ stammt vom Eingang und heilt sonst nie. */

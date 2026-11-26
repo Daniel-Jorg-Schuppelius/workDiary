@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 17
+version: 18
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -219,8 +219,8 @@ entrada lleve ese número. En los comprobantes del buzón, la tarjeta «Entrada�
 indica remitente, asunto, hora de recepción, buzón y adjuntos del correo.
 
 El texto del correo se lee en la tarjeta «Original» mediante el conmutador
-«Correo»; solo está disponible para las entradas que llegaron del buzón a
-partir de esta versión.
+«Correo»; para entradas anteriores, recárguelo en la tarjeta «Entrada» con
+«Recargar correo del buzón» mientras el buzón conserve el mensaje.
 
 **Procesar en serie:** en las pestañas «Por asignar» y «Por revisar»,
 «Procesar en serie» abre la primera entrada. El encabezado muestra la

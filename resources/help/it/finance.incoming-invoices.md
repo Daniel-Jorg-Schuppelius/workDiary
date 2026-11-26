@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 17
+version: 18
 keywords:
     - più aliquote
     - fattura fornitore
@@ -218,8 +218,9 @@ provenienti dalla casella, la scheda «Entrata» indica mittente, oggetto, ora
 di ricezione, casella e allegati dell’e-mail.
 
 Il testo dell’e-mail si legge nella scheda «Originale» tramite il selettore
-«E-mail»; è disponibile solo per i documenti arrivati dalla casella a partire
-da questa versione.
+«E-mail»; per i documenti meno recenti lo ricarichi nella scheda «Entrata» con
+«Ricarica e-mail dalla casella», finché la casella contiene ancora il
+messaggio.
 
 **Elabora in sequenza:** nelle schede «Da assegnare» e «Da verificare»,
 «Elabora in sequenza» apre il primo documento. L’intestazione mostra la

@@ -624,6 +624,7 @@ return [
         'girocode_read' => 'GiroCode gelesen',
         'document_attached' => 'Beleg angehängt',
         'awaiting_invoice' => 'Wartet auf Rechnung',
+        'mail_origin_refreshed' => 'Herkunfts-Mail nachgeladen',
         'girocode_confirmed' => 'Abweichende GiroCode-IBAN bestätigt',
         'candidate_linked' => 'Übergabe mit vorhandenem Beleg verknüpft',
         'candidate_dismissed' => 'Übergabe trotz Treffer neu angelegt',

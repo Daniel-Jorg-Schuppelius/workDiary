@@ -333,6 +333,14 @@
                         @if ($incoming->source_reference && $incoming->sender_email)
                             <x-detail-grid.row :label="__('Message-ID')"><span class="break-all font-mono text-xs">{{ $incoming->source_reference }}</span></x-detail-grid.row>
                         @endif
+                        {{-- Bestand ohne Mailtext (MVP-1813): aus dem Postfach nachladen. --}}
+                        @if (\App\Services\Invoicing\Mail\IncomingMailOriginRefresher::applies($incoming) && (auth()->user()?->canManageBilling() ?? false))
+                            <x-detail-grid.row :label="__('E-Mail')">
+                                <x-action-form :action="route('finance.incoming-invoices.mail.refresh', $incoming)">
+                                    <x-icon-btn icon="mark_email_read" size="xs" tone="outline" type="submit" show-label>{{ __('E-Mail aus dem Postfach nachladen') }}</x-icon-btn>
+                                </x-action-form>
+                            </x-detail-grid.row>
+                        @endif
                         @if ($incoming->buyer_name || $incoming->buyer_vat_id)
                             <x-detail-grid.row :label="__('Käufer')">{{ $incoming->buyer_name ?? '—' }}@if ($incoming->buyer_vat_id) · {{ $incoming->buyer_vat_id }}@endif</x-detail-grid.row>
                         @endif

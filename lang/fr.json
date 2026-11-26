@@ -11299,5 +11299,10 @@
     "Postfach :name": "Boîte :name",
     "Anhänge der E-Mail": "Pièces jointes de l’e-mail",
     "Message-ID": "Message-ID",
-    "Ohne Betreff": "Sans objet"
+    "Ohne Betreff": "Sans objet",
+    "E-Mail aus dem Postfach nachgeladen.": "E-mail rechargé depuis la boîte aux lettres.",
+    "Das Postfach hat diese E-Mail nicht mehr.": "La boîte aux lettres ne contient plus cet e-mail.",
+    "Das Postfach ist gerade nicht erreichbar.": "La boîte aux lettres est momentanément inaccessible.",
+    "Zu diesem Eingang lässt sich keine E-Mail nachladen.": "Aucun e-mail ne peut être rechargé pour cette entrée.",
+    "E-Mail aus dem Postfach nachladen": "Recharger l’e-mail depuis la boîte"
 }

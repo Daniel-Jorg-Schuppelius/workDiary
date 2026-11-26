@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 17
+version: 18
 keywords:
     - several tax rates
     - supplier invoice
@@ -203,8 +203,8 @@ this number. For documents from the mailbox, the “Receipt” card names sender
 subject, time of receipt, mailbox and attachments of the email.
 
 You can read the text of the email in the “Original” card via the “Email”
-switch; it is only available for documents that came from the mailbox since
-this version.
+switch; for older documents, reload it in the “Receipt” card via “Reload email
+from mailbox” as long as the mailbox still has the message.
 
 **Work through:** in the “To assign” and “To review” tabs, “Work through”
 opens the first document. The header shows the position (“3 of 17”) and

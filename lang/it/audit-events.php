@@ -624,6 +624,7 @@ return [
         'girocode_read' => 'GiroCode letto',
         'document_attached' => 'Giustificativo allegato',
         'awaiting_invoice' => 'In attesa della fattura',
+        'mail_origin_refreshed' => 'E-mail di origine ricaricata',
         'girocode_confirmed' => 'IBAN diverso del GiroCode confermato',
         'candidate_linked' => 'Trasmissione collegata a un documento esistente',
         'candidate_dismissed' => 'Trasmissione creata nonostante una corrispondenza',

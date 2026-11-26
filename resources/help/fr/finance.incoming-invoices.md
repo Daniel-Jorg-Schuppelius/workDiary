@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 17
+version: 18
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -225,8 +225,9 @@ aux lettres, la carte « Réception » indique l’expéditeur, l’objet, l’h
 réception, la boîte et les pièces jointes de l’e-mail.
 
 Le texte de l’e-mail se lit dans la carte « Original » via le commutateur «
-E-mail » ; il n’est disponible que pour les entrées arrivées de la boîte aux
-lettres depuis cette version.
+E-mail » ; pour les entrées plus anciennes, rechargez-le dans la carte «
+Réception » via « Recharger l’e-mail depuis la boîte » tant que la boîte
+contient encore le message.
 
 **Traiter à la suite :** dans les onglets « À attribuer » et « À vérifier »,
 « Traiter à la suite » ouvre la première entrée. L’en-tête indique la position

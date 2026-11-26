@@ -624,6 +624,7 @@ return [
         'girocode_read' => 'GiroCode read',
         'document_attached' => 'Document attached',
         'awaiting_invoice' => 'Waiting for invoice',
+        'mail_origin_refreshed' => 'Source email reloaded',
         'girocode_confirmed' => 'Different GiroCode IBAN confirmed',
         'candidate_linked' => 'Handover linked to existing voucher',
         'candidate_dismissed' => 'Handover created despite a match',

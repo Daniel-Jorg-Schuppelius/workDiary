@@ -11299,5 +11299,10 @@
     "Postfach :name": "Buzón :name",
     "Anhänge der E-Mail": "Adjuntos del correo",
     "Message-ID": "Message-ID",
-    "Ohne Betreff": "Sin asunto"
+    "Ohne Betreff": "Sin asunto",
+    "E-Mail aus dem Postfach nachgeladen.": "Correo recargado desde el buzón.",
+    "Das Postfach hat diese E-Mail nicht mehr.": "El buzón ya no tiene este correo.",
+    "Das Postfach ist gerade nicht erreichbar.": "El buzón no está accesible en este momento.",
+    "Zu diesem Eingang lässt sich keine E-Mail nachladen.": "No se puede recargar ningún correo para esta entrada.",
+    "E-Mail aus dem Postfach nachladen": "Recargar correo del buzón"
 }

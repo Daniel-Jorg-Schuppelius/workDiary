@@ -624,6 +624,7 @@ return [
         'girocode_read' => 'GiroCode lu',
         'document_attached' => 'Pièce jointe ajoutée',
         'awaiting_invoice' => 'En attente de facture',
+        'mail_origin_refreshed' => 'E-mail d’origine rechargé',
         'girocode_confirmed' => 'IBAN différent du GiroCode confirmé',
         'candidate_linked' => 'Transmission liée à une pièce existante',
         'candidate_dismissed' => 'Transmission créée malgré une correspondance',

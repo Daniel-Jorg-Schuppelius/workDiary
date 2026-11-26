@@ -624,6 +624,7 @@ return [
         'girocode_read' => 'GiroCode leído',
         'document_attached' => 'Comprobante adjuntado',
         'awaiting_invoice' => 'Espera factura',
+        'mail_origin_refreshed' => 'Correo de origen recargado',
         'girocode_confirmed' => 'IBAN distinto del GiroCode confirmado',
         'candidate_linked' => 'Entrega vinculada a un comprobante existente',
         'candidate_dismissed' => 'Entrega creada pese a una coincidencia',

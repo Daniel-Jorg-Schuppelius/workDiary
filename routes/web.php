@@ -3597,6 +3597,8 @@ Route::middleware('auth')->group(function () {
             Route::post('{incoming}/aufteilen/zuruecksetzen', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'reset'])->name('split.reset');
             Route::post('{incoming}/aufteilen', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'split'])->middleware('throttle:6,1')->name('split');
             Route::post('{incoming}/eine-rechnung', [\App\Http\Controllers\Finance\IncomingInvoiceSplitController::class, 'dismiss'])->name('split.dismiss');
+            // Herkunfts-Mail aus dem Postfach nachladen (MVP-1813).
+            Route::post('{incoming}/mail-nachladen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'refreshMail'])->name('mail.refresh');
             // GiroCode nachlesen, wenn beim Eingang das Lesewerkzeug fehlte (MVP-1807).
             Route::post('{incoming}/girocode-lesen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'rereadGiroCode'])->name('girocode.reread');
             Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
