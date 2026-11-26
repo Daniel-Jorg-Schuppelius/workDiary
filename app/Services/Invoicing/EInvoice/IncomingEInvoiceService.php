@@ -595,6 +595,7 @@ class IncomingEInvoiceService {
             is_string($containerSummary['mail_from_name'] ?? null) ? $containerSummary['mail_from_name'] : null,
             is_string($containerSummary['mail_received_at'] ?? null) ? $containerSummary['mail_received_at'] : null,
             is_string($containerSummary['mail_mailbox'] ?? null) ? $containerSummary['mail_mailbox'] : null,
+            $container->mail_body,
         );
         $stored = $this->persist($actor, $sha256, $contents, 'application/pdf', $container->source, null, $fileName, $summary, $origin, [
             'document' => $document,
@@ -736,6 +737,8 @@ class IncomingEInvoiceService {
             'source' => $source,
             'sender_email' => $origin?->senderEmail !== null ? mb_substr(mb_strtolower(trim($origin->senderEmail)), 0, 191) : null,
             'source_reference' => $origin?->reference !== null ? mb_substr($origin->reference, 0, 191) : null,
+            // Nie die leere Zeichenkette: ein verschlüsseltes Feld liest sie nicht zurück.
+            'mail_body' => StringHelper::trimToNull(mb_substr((string) $origin?->body, 0, 100000)),
             'received_at' => $partOf['received_at'] ?? now(),
             'status' => \App\Enums\Invoicing\IncomingEInvoiceStatus::Received,
             'direction' => $classification['direction'],

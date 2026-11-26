@@ -58,7 +58,17 @@ final class MailToIncomingInvoice {
 
         $messageId = (string) ($snapshot['message_id'] ?? $item->external_id ?? '');
         $from = (string) (((array) ($snapshot['from'] ?? []))['email'] ?? '');
-        $result = $this->invoices->storeMessage($actor, $attachments, new IncomingOrigin($from, $messageId));
+        $text = static fn (string $key): ?string => is_string($snapshot[$key] ?? null) ? $snapshot[$key] : null;
+        $result = $this->invoices->storeMessage($actor, $attachments, new IncomingOrigin(
+            $from,
+            $messageId,
+            $text('subject'),
+            array_map(static fn (MailAttachment $attachment): string => $attachment->filename, $attachments),
+            is_string(((array) ($snapshot['from'] ?? []))['name'] ?? null) ? ((array) $snapshot['from'])['name'] : null,
+            $text('received_at'),
+            $text('mailbox'),
+            $text('body'),
+        ));
 
         $incoming = $result['incomings'][0] ?? null;
         if ($incoming instanceof IncomingEInvoice) {

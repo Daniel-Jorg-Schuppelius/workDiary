@@ -10,6 +10,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Rechnungseingang (`MVP-1812`): Die Detailseite zeigt den Text der
+  Herkunfts-Mail; die Karte „Original“ schaltet zwischen „Original“ und
+  „E-Mail“ um. Der Text liegt verschlüsselt am Eingang
+  (`incoming_einvoices.mail_body`, Migration `2027_05_02_100000`) und wird mit
+  ihm gelöscht. Eingänge von vor dieser Version haben keinen Mailtext.
 - Rechnungseingang (`MVP-1809`, `MVP-1810`, `MVP-1811`): Eine Mahnung oder ein anderes
   Schreiben lässt sich im Dialog „Zuordnen“ an eine Rechnung des Eingangs
   hängen, auch an eine schon freigegebene oder übergebene; der eigene Eingang

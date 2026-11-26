@@ -11298,5 +11298,6 @@
     "E-Mail empfangen": "Email received",
     "Postfach :name": "Mailbox :name",
     "Anhänge der E-Mail": "Email attachments",
-    "Message-ID": "Message-ID"
+    "Message-ID": "Message-ID",
+    "Ohne Betreff": "No subject"
 }

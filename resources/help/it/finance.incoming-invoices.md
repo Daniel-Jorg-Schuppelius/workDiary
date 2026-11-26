@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 16
+version: 17
 keywords:
     - più aliquote
     - fattura fornitore
@@ -216,6 +216,10 @@ suo numero: il giustificativo attende nella scheda «In attesa della fattura» e
 si allega non appena un documento riporta questo numero. Per i giustificativi
 provenienti dalla casella, la scheda «Entrata» indica mittente, oggetto, ora
 di ricezione, casella e allegati dell’e-mail.
+
+Il testo dell’e-mail si legge nella scheda «Originale» tramite il selettore
+«E-mail»; è disponibile solo per i documenti arrivati dalla casella a partire
+da questa versione.
 
 **Elabora in sequenza:** nelle schede «Da assegnare» e «Da verificare»,
 «Elabora in sequenza» apre il primo documento. L’intestazione mostra la

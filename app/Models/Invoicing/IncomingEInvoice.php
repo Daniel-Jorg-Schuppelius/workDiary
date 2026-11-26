@@ -58,6 +58,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $buyer_name
  * @property string|null $buyer_vat_id
  * @property string|null $sender_email
+ * @property string|null $mail_body
  * @property string|null $source_reference
  * @property int|null $supplier_id
  * @property int|null $customer_id
@@ -126,7 +127,7 @@ class IncomingEInvoice extends Model {
         'paid_in_run_id',
         // MVP-1107: Rechnungspostfach.
         'direction', 'kind', 'recognition', 'buyer_name', 'buyer_vat_id',
-        'sender_email', 'source_reference',
+        'sender_email', 'source_reference', 'mail_body',
         // MVP-1108: Gegenpartei.
         'supplier_id', 'customer_id', 'match_kind', 'matched_user_id', 'matched_at',
         // MVP-1219: Belegvorlage, die beim Eingang getroffen hat.
@@ -168,6 +169,7 @@ class IncomingEInvoice extends Model {
         'source_page_to' => 'integer',
         'split_proposal' => 'array',
         'girocode' => 'encrypted:array',
+        'mail_body' => 'encrypted',
         'girocode_confirmed_at' => 'datetime',
     ];
 

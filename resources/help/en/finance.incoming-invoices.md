@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 16
+version: 17
 keywords:
     - several tax rates
     - supplier invoice
@@ -201,6 +201,10 @@ invoice has not arrived yet, enter its number: the document waits in the
 “Waiting for invoice” tab and attaches itself as soon as a document carries
 this number. For documents from the mailbox, the “Receipt” card names sender,
 subject, time of receipt, mailbox and attachments of the email.
+
+You can read the text of the email in the “Original” card via the “Email”
+switch; it is only available for documents that came from the mailbox since
+this version.
 
 **Work through:** in the “To assign” and “To review” tabs, “Work through”
 opens the first document. The header shows the position (“3 of 17”) and

@@ -21,7 +21,7 @@ use App\Models\Supplier\Supplier;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingOrigin};
 use App\Services\Mail\MailAttachment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{DB, Storage};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -259,6 +259,21 @@ final class IncomingInvoiceWorkThroughTest extends TestCase {
             ->assertSee('Buchhaltung Lieferant')->assertSee('Ihre Rechnung November')
             ->assertSee(__('Postfach :name', ['name' => 'Rechnungen']))->assertSee('rechnung.pdf, agb.pdf')
             ->assertSee('<abc-123@lieferant.example>');
+    }
+
+    public function test_the_mail_text_is_kept_encrypted_and_shown_next_to_the_original(): void {
+        $attachment = new MailAttachment(filename: 'beleg.pdf', mime: 'application/pdf', content: '%PDF-1.4 kein lesbarer Beleg');
+        $origin = new IncomingOrigin('shop@example.test', '<m-1@example.test>', 'Ihre Bestellung', ['beleg.pdf'], 'Shop Beispiel', '2026-11-20T08:15:00+00:00', 'Rechnungen', "Guten Tag,\n\nanbei die Rechnung zur Bestellung 4711.");
+
+        $incoming = app(IncomingEInvoiceService::class)->storeMessage($this->admin, [$attachment], $origin)['incomings'][0];
+
+        $this->assertStringContainsString('Bestellung 4711', (string) $incoming->refresh()->mail_body);
+        $this->assertStringNotContainsString('Bestellung 4711', (string) DB::table('incoming_einvoices')->where('id', $incoming->id)->value('mail_body'));
+        $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSee('anbei die Rechnung zur Bestellung 4711')->assertSee('data-mail-view', false);
+
+        $plain = $this->incoming();
+        $this->get(route('finance.incoming-invoices.show', $plain->document))->assertOk()->assertDontSee('data-mail-view', false);
     }
 
     private function withOriginal(IncomingEInvoice $incoming, string $contents): IncomingEInvoice {

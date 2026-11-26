@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 16
+version: 17
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -217,6 +217,10 @@ entrada desaparece. Si la factura aún no ha llegado, indique su número: el
 comprobante espera en la pestaña «Espera factura» y se adjunta en cuanto una
 entrada lleve ese número. En los comprobantes del buzón, la tarjeta «Entrada»
 indica remitente, asunto, hora de recepción, buzón y adjuntos del correo.
+
+El texto del correo se lee en la tarjeta «Original» mediante el conmutador
+«Correo»; solo está disponible para las entradas que llegaron del buzón a
+partir de esta versión.
 
 **Procesar en serie:** en las pestañas «Por asignar» y «Por revisar»,
 «Procesar en serie» abre la primera entrada. El encabezado muestra la

@@ -12798,6 +12798,7 @@ CREATE TABLE `incoming_einvoices` (
   `creditor_iban_confirmed_hash` varchar(64) DEFAULT NULL,
   `awaited_invoice_number` varchar(64) DEFAULT NULL,
   `awaited_invoice_number_key` varchar(64) DEFAULT NULL,
+  `mail_body` longtext DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ine_org_hash_unique` (`organization_id`,`sha256`),
   KEY `ine_document_fk` (`document_id`),
@@ -29863,3 +29864,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1145,'2027_04_28_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1146,'2027_04_29_100000_add_mirror_number_indexes',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1147,'2027_04_30_100000_create_incoming_dismissed_files_table',5);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1148,'2027_05_01_100000_add_awaited_invoice_to_incoming_einvoices',6);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1149,'2027_05_02_100000_add_mail_body_to_incoming_einvoices',7);

@@ -23,5 +23,7 @@ final class IncomingOrigin {
         public readonly ?string $senderName = null,
         public readonly ?string $receivedAt = null,
         public readonly ?string $mailbox = null,
+        // Text der Mail (MVP-1812), zum Nachsehen neben dem Original.
+        public readonly ?string $body = null,
     ) {}
 }

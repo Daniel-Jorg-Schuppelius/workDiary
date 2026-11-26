@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 16
+version: 17
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -223,6 +223,10 @@ son numéro : la pièce attend dans l’onglet « En attente de facture » et s�
 joint dès qu’une entrée porte ce numéro. Pour les pièces issues de la boîte
 aux lettres, la carte « Réception » indique l’expéditeur, l’objet, l’heure de
 réception, la boîte et les pièces jointes de l’e-mail.
+
+Le texte de l’e-mail se lit dans la carte « Original » via le commutateur «
+E-mail » ; il n’est disponible que pour les entrées arrivées de la boîte aux
+lettres depuis cette version.
 
 **Traiter à la suite :** dans les onglets « À attribuer » et « À vérifier »,
 « Traiter à la suite » ouvre la première entrée. L’en-tête indique la position

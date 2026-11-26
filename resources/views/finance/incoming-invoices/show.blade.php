@@ -102,17 +102,37 @@
          unter xl folgt es den Daten. --}}
     <div @class(['grid items-start gap-4', 'xl:min-h-0 xl:flex-1 xl:grid-cols-2 xl:grid-rows-[minmax(0,1fr)] xl:items-stretch' => $previewMime !== null])>
         @if ($previewMime !== null)
-            <x-card :title="__('Original')" icon="description" padding="p-0" class="overflow-hidden max-xl:order-last xl:flex xl:flex-col">
+            <x-card :title="__('Original')" icon="description" padding="p-0" class="group overflow-hidden max-xl:order-last xl:flex xl:flex-col">
                 <x-slot:actions>
+                    {{-- Original oder Text der Herkunfts-Mail (MVP-1812): Umschalten ohne Skript über :checked. --}}
+                    @if ($incoming?->mail_body !== null)
+                        <div class="join">
+                            <input type="radio" name="original_view" class="join-item btn btn-xs" aria-label="{{ __('Original') }}" checked>
+                            <input type="radio" name="original_view" class="join-item btn btn-xs" aria-label="{{ __('E-Mail') }}" data-mail-view>
+                        </div>
+                    @endif
                     <x-icon-btn icon="open_in_new" size="sm" :href="route('finance.incoming-invoices.preview', $document)"
                                 target="_blank" rel="noopener" :label="__('In neuem Tab öffnen')" />
                 </x-slot:actions>
-                @include('finance.incoming-invoices._preview', ['height' => 'h-[70vh] xl:h-auto xl:min-h-0 xl:flex-1'])
+                <div class="contents group-has-[[data-mail-view]:checked]:hidden">
+                    @include('finance.incoming-invoices._preview', ['height' => 'h-[70vh] xl:h-auto xl:min-h-0 xl:flex-1'])
+                </div>
+                @if ($incoming?->mail_body !== null)
+                    <div class="hidden h-[70vh] overflow-y-auto p-4 group-has-[[data-mail-view]:checked]:block xl:h-auto xl:min-h-0 xl:flex-1">
+                        @include('finance.incoming-invoices._mail_body', ['incoming' => $incoming])
+                    </div>
+                @endif
             </x-card>
         @endif
         <div @class(['flex min-w-0 flex-col gap-4', 'xl:min-h-0 xl:overflow-y-auto' => $previewMime !== null])>
             {{-- Sammel-PDF (Feature 208, MVP-1662). --}}
             @include('finance.incoming-invoices._split')
+            {{-- Ohne Vorschau des Originals (XML) steht der Text der Herkunfts-Mail als eigene Karte (MVP-1812). --}}
+            @if ($previewMime === null && $incoming?->mail_body !== null)
+                <x-card :title="__('E-Mail')" icon="mail">
+                    @include('finance.incoming-invoices._mail_body', ['incoming' => $incoming])
+                </x-card>
+            @endif
             @if ($unparsed && $incoming !== null && ($incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted || $manual !== []))
                 {{-- PDF bzw. Bild (MVP-1066): erkannte Werte sind Vorschläge; erfasste Werte stehen auch beim Klärfall hier. --}}
                 <x-card :title="$manual !== [] ? __('Rechnungsdaten (von Hand erfasst)') : __('Rechnungsdaten (erkannt)')">

@@ -26280,6 +26280,7 @@ CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
   "creditor_iban_confirmed_hash" varchar,
   "awaited_invoice_number" varchar,
   "awaited_invoice_number_key" varchar,
+  "mail_body" text,
   foreign key("template_id") references "incoming_invoice_templates"("id") on delete set null on update no action,
   foreign key("matched_user_id") references "users"("id") on delete set null on update no action,
   foreign key("customer_id") references "customers"("id") on delete set null on update no action,
@@ -27520,3 +27521,4 @@ INSERT INTO migrations VALUES(1145,'2027_04_28_100000_add_deviation_note_to_resa
 INSERT INTO migrations VALUES(1146,'2027_04_29_100000_add_mirror_number_indexes',4);
 INSERT INTO migrations VALUES(1147,'2027_04_30_100000_create_incoming_dismissed_files_table',5);
 INSERT INTO migrations VALUES(1148,'2027_05_01_100000_add_awaited_invoice_to_incoming_einvoices',6);
+INSERT INTO migrations VALUES(1149,'2027_05_02_100000_add_mail_body_to_incoming_einvoices',7);

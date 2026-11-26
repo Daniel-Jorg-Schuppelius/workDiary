@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 16
+version: 17
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -203,6 +203,10 @@ die Rechnung noch nicht eingegangen, tragen Sie ihre Nummer ein: Der Beleg
 wartet im Reiter „Wartet auf Rechnung“ und hängt sich an, sobald ein Eingang
 diese Nummer trägt. Bei Belegen aus dem Postfach nennt die Karte „Eingang“
 Absender, Betreff, Empfangszeit, Postfach und Anhänge der E-Mail.
+
+Den Text der E-Mail lesen Sie in der Karte „Original“ über den Umschalter
+„E-Mail“; er steht nur bei Eingängen zur Verfügung, die seit dieser Version
+aus dem Postfach kamen.
 
 **Durcharbeiten:** In den Reitern „Zuzuordnen“ und „Zu prüfen“ öffnet
 „Durcharbeiten“ den ersten Eingang. Der Kopf zeigt den Stand („3 von 17“) und
